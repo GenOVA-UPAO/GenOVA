@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -13,6 +15,7 @@ interface HistoryEntryRowProps {
 }
 
 export function HistoryEntryRow({ entry, latest, onRestore }: Readonly<HistoryEntryRowProps>) {
+  const { t, i18n } = useTranslation("llm-settings");
   const when = whenLabel(entry.at);
   return (
     <li className="space-y-2.5 py-4 first:pt-0" data-history-entry={entry.id}>
@@ -20,7 +23,7 @@ export function HistoryEntryRow({ entry, latest, onRestore }: Readonly<HistoryEn
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-foreground">{sourceLabel(entry)}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            <time dateTime={entry.at} title={new Date(entry.at).toLocaleString("es")}>
+            <time dateTime={entry.at} title={new Date(entry.at).toLocaleString(i18n.language.startsWith("en") ? "en" : "es")}>
               {when}
             </time>
             {entry.actor?.name ? ` · ${entry.actor.name}` : null}
@@ -31,12 +34,14 @@ export function HistoryEntryRow({ entry, latest, onRestore }: Readonly<HistoryEn
           size="sm"
           className="shrink-0 max-sm:h-11"
           aria-label={
-            latest ? "Deshacer el último cambio" : `Restaurar la versión de ${when.toLowerCase()}`
+            latest
+              ? t("history.undoLastChange")
+              : t("history.restoreVersionOf", { date: when.toLowerCase() })
           }
           onClick={onRestore}
         >
           <Icon name="arrow-counter-clockwise" size="text-sm" />
-          {latest ? "Deshacer" : "Restaurar"}
+          {latest ? t("history.undoAction") : t("history.restoreAction")}
         </Button>
       </div>
       <ConfigChangeList changes={entry.changes} />

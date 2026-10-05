@@ -1,4 +1,5 @@
 import { useMutation, type useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,10 +40,10 @@ export function useLlmSettingsDraft(
       setDraft(data.settings ?? {});
       setDirty(false);
       await queryClient.invalidateQueries({ queryKey: llmSettingsKeys.all });
-      toast.success("Configuración de IA guardada.");
+      toast.success(t("llm-settings:page.saved"));
     },
     onError: (err: unknown) => {
-      toast.error(errorMessage(err, "No se pudo guardar la configuración."));
+      toast.error(errorMessage(err, t("llm-settings:api.saveConfigError")));
     },
   });
 

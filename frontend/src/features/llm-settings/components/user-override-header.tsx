@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 interface UserOverrideHeaderProps {
@@ -12,14 +14,16 @@ export function UserOverrideHeader({
   disabled,
   onUsePlatform,
 }: Readonly<UserOverrideHeaderProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div className="flex items-center justify-between gap-2">
       <div>
-        <p className="text-sm font-medium">Tu modelo</p>
+        <p className="text-sm font-medium">{t("tasks.userOverride")}</p>
         <p className="text-xs text-muted-foreground">
           {isOverride
-            ? "Se usa en lugar del de la plataforma y se paga con tu clave."
-            : "Ahora usas el de la plataforma. Elige otro para usarlo con tu clave."}
+            ? t("tasks.userOverrideDesc")
+            : t("tasks.userOverridePlatformDesc")}
         </p>
       </div>
       {isOverride ? (
@@ -30,9 +34,10 @@ export function UserOverrideHeader({
           disabled={disabled}
           onClick={onUsePlatform}
         >
-          Usar el de la plataforma
+          {t("tasks.revertToPlatform")}
         </Button>
       ) : null}
     </div>
   );
 }
+

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -15,8 +17,11 @@ export function CatalogResultCount({
   filtered,
   onClear,
 }: Readonly<ResultCountProps>) {
-  const all = total === 1 ? "1 modelo" : `${String(total)} modelos`;
-  const text = filtered ? `${String(shown)} de ${String(total)} modelos` : all;
+  const { t } = useTranslation("llm-settings");
+  const all = t("catalog.allModelsCount", { count: total });
+  const text = filtered
+    ? t("catalog.filteredCount", { shown, total })
+    : all;
   return (
     <div className="flex min-h-7 items-center justify-between gap-2">
       <p role="status" className="text-xs text-muted-foreground tabular-nums">
@@ -30,7 +35,7 @@ export function CatalogResultCount({
           onClick={onClear}
         >
           <Icon name="x" size="text-xs" />
-          Quitar filtros
+          {t("catalog.clearFilters")}
         </Button>
       ) : null}
     </div>

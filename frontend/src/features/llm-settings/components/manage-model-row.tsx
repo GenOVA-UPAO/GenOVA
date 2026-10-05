@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
@@ -21,6 +23,7 @@ interface ManageModelRowProps {
 }
 
 export function ManageModelRow({ model, base, favorite, usage, onToggle }: Readonly<ManageModelRowProps>) {
+  const { t } = useTranslation("llm-settings");
   const providerLabel = PROVIDER_LABELS[model.provider] ?? model.provider;
   const name = withoutProviderSuffix(modelDisplayName(model.label, model.model_id), providerLabel);
   const facts = modelFacts(model);
@@ -35,15 +38,15 @@ export function ManageModelRow({ model, base, favorite, usage, onToggle }: Reado
           <span className="min-w-0 truncate text-sm font-medium text-foreground" title={name}>
             {name}
           </span>
-          {base ? <ModelTag>Modelo base</ModelTag> : null}
-          {facts.recommended && !base ? <ModelTag>Recomendado</ModelTag> : null}
-          {usage.length > 0 ? <ModelTag tone="primary">En uso: {usageSummary(usage)}</ModelTag> : null}
+          {base ? <ModelTag>{t("catalog.baseModel")}</ModelTag> : null}
+          {facts.recommended && !base ? <ModelTag>{t("credentials.recommended")}</ModelTag> : null}
+          {usage.length > 0 ? <ModelTag tone="primary">{t("catalog.inUseWithColon")} {usageSummary(usage)}</ModelTag> : null}
         </div>
         <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           <span>{providerLabel}</span>
           <ModelCapabilities capabilities={facts.capabilities} />
-          <span className="tabular-nums sm:hidden">{mobilePrice(facts)}</span>
-          {context ? <span className="tabular-nums sm:hidden">{context} de contexto</span> : null}
+          <span className="tabular-nums sm:hidden">{mobilePrice(facts, t)}</span>
+          {context ? <span className="tabular-nums sm:hidden">{context} {t("catalog.ofContext")}</span> : null}
         </p>
         {description ? (
           <p lang="en" className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:line-clamp-1" title={model.description ?? undefined}>
@@ -52,15 +55,15 @@ export function ManageModelRow({ model, base, favorite, usage, onToggle }: Reado
         ) : null}
       </div>
       <CatalogPriceCells facts={facts} />
-      <span className={contextClass(context)}>{contextLabel(facts, context)}</span>
+      <span className={contextClass(context)}>{contextLabel(facts, context, t)}</span>
     </li>
   );
 }
 
 /** Imagen y video no tienen ventana de contexto: «Sin dato» parecería un fallo. */
-function contextLabel(facts: ModelFacts, context: string | null): string {
+function contextLabel(facts: ModelFacts, context: string | null, t: (k: string) => string): string {
   if (context) return context;
-  return facts.media ? "No aplica" : "Sin dato";
+  return facts.media ? t("catalog.notApplicable") : t("catalog.noData");
 }
 
 function contextClass(context: string | null): string {
@@ -70,10 +73,10 @@ function contextClass(context: string | null): string {
   );
 }
 
-function mobilePrice(facts: ModelFacts): string {
+function mobilePrice(facts: ModelFacts, t: (k: string) => string): string {
   const summary = priceSummary(facts);
-  if (!summary) return "Precio sin dato";
+  if (!summary) return t("catalog.priceNoData");
   // Imagen y video ya dicen su unidad («$0.039/imagen», «desde $0.05/s»).
   if (facts.free || facts.variable || facts.media) return summary;
-  return `${summary} por 1M tokens`;
+  return `${summary} ${t("catalog.per1MTokens")}`;
 }

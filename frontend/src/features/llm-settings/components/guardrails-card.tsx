@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { useGuardrails } from "../hooks/use-guardrails";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { guardrailsHasChanges } from "../lib/guardrails";
@@ -9,14 +11,15 @@ import { SectionError } from "./section-error";
 import { SettingListSkeleton } from "./setting-list-skeleton";
 
 export function GuardrailsCard() {
+  const { t } = useTranslation("llm-settings");
   const { loading, error, config, draft, saving, setDraft, save } = useGuardrails();
   const store = useLlmSettings();
   const hasChanges = draft ? guardrailsHasChanges(config, draft) : false;
 
   return (
     <PlatformSection
-      title="Filtros de contenido"
-      description="Se aplican a los prompts de cualquier persona que genere un OVA en la plataforma."
+      title={t("guardrails.contentFiltersTitle")}
+      description={t("guardrails.contentFiltersDesc")}
       action={
         <SaveCardButton
           disabled={!hasChanges}

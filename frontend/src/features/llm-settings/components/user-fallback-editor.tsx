@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -25,6 +27,7 @@ export function UserFallbackEditor({
   task,
   disabled,
 }: Readonly<UserFallbackEditorProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   const favorites = useFavoriteActions();
   return (
@@ -46,7 +49,7 @@ export function UserFallbackEditor({
                 provider={item.provider ? item.provider : undefined}
                 modelId={item.model_id ? item.model_id : undefined}
                 disabled={disabled}
-                ariaLabel={`Tu modelo de respaldo ${String(index + 1)} para ${taskMeta(task).label}`}
+                ariaLabel={t("tasks.userFallbackAria", { index: index + 1, task: taskMeta(task).label })}
                 onChange={(ev) => {
                   store.setFallback(task, index, ev.provider, ev.modelId);
                   favorites.keepPicked(ev.provider, ev.modelId);
@@ -56,7 +59,7 @@ export function UserFallbackEditor({
             <Button
               variant="ghost"
               size="icon"
-              aria-label={`Quitar modelo de respaldo ${String(index + 1)}`}
+              aria-label={t("tasks.removeFallbackAria", { index: index + 1 })}
               className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive max-sm:size-11"
               onClick={() => {
                 store.removeFallback(task, index);
@@ -77,8 +80,9 @@ export function UserFallbackEditor({
         }}
         disabled={disabled}
       >
-        <Icon name="plus" size="text-sm" /> Añadir modelo de respaldo
+        <Icon name="plus" size="text-sm" /> {t("tasks.addFallback")}
       </Button>
     </div>
   );
 }
+

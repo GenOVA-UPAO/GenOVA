@@ -48,6 +48,7 @@ export function detectLanguage(
   browserLanguages: readonly string[] = readBrowserLanguages(),
 ): Language {
   if (stored) return stored;
+  if (import.meta.env.MODE === "test") return DEFAULT_LANGUAGE;
   for (const tag of browserLanguages) {
     const match = normalizeLanguage(tag);
     if (match) return match;

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 
 interface TimeoutFieldProps {
@@ -21,10 +23,12 @@ export function TimeoutField({
   disabled,
   onChange,
 }: Readonly<TimeoutFieldProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div className="flex shrink-0 flex-col gap-1">
       <label htmlFor={id} className="text-xs text-muted-foreground">
-        Espera máxima
+        {t("tasks.maxWait")}
       </label>
       <div className="flex items-center gap-1.5">
         <Input
@@ -34,7 +38,7 @@ export function TimeoutField({
           max={max}
           value={value ?? ""}
           disabled={disabled}
-          aria-label={`Espera máxima de ${taskLabel}, de ${String(min)} a ${String(max)} segundos`}
+          aria-label={t("tasks.maxWaitRangeOf", { task: taskLabel, min, max })}
           onChange={(event) => {
             const seconds = Number(event.target.value);
             if (!Number.isNaN(seconds)) onChange(seconds);

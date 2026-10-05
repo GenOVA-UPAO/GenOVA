@@ -1,4 +1,5 @@
 import { type UIEvent, useEffect, useId } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 
@@ -22,6 +23,7 @@ interface ModelComboboxPanelProps {
  * cientos de modelos, el resto aparece al bajar.
  */
 export function ModelComboboxPanel({ state, options, current, label }: Readonly<ModelComboboxPanelProps>) {
+  const { t } = useTranslation("llm-settings");
   const listId = useId();
   const optionId = (index: number) => `${listId}-opt-${String(index)}`;
   const activeId = state.flat.length > 0 ? optionId(state.active) : undefined;
@@ -43,14 +45,14 @@ export function ModelComboboxPanel({ state, options, current, label }: Readonly<
         <input
           type="text"
           role="combobox"
-          aria-label={`Buscar: ${label}`}
+          aria-label={t("combobox.searchAria", { label })}
           aria-expanded="true"
           aria-controls={listId}
           aria-activedescendant={activeId}
           aria-autocomplete="list"
           autoComplete="off"
           spellCheck={false}
-          placeholder="Buscar por nombre, proveedor o id…"
+          placeholder={t("combobox.searchPlaceholder")}
           value={state.query}
           onChange={(event) => {
             state.onQuery(event.target.value);
