@@ -1,0 +1,51 @@
+{
+  "breakdown": {
+    "ariaLabel": "{{status}}: {{pct}} %",
+    "empty": "When OVAs are created, you will see how many are ready, drafts, or have errors.",
+    "statuses": {
+      "borrador": "Drafts",
+      "error": "With error",
+      "generando": "Generating",
+      "listo": "Ready"
+    },
+    "title": "OVAs by status"
+  },
+  "creators": {
+    "empty": "They will appear here once someone creates their first OVA.",
+    "ovaCount_one": "1 OVA",
+    "ovaCount_other": "{{count}} OVAs",
+    "title": "Top creators"
+  },
+  "empty": {
+    "description": "We did not receive metrics. Please try again in a few moments.",
+    "retry": "Retry",
+    "title": "No analytics yet"
+  },
+  "noStudents": {
+    "description": "These metrics count OVAs from students linked to your account. Once linked, their activity will appear here.",
+    "title": "You have no linked students yet"
+  },
+  "page": {
+    "errorTitle": "Could not load analytics",
+    "forbiddenToast": "You do not have access to Analytics.",
+    "loadingSubtitle": "Loading metrics…",
+    "subtitlePlatform": "Metrics for the entire platform.",
+    "subtitleStudents": "Metrics for your linked students.",
+    "title": "Learning analytics"
+  },
+  "recent": {
+    "empty": "No OVAs have been created yet. Activity will appear here.",
+    "title": "Recent activity",
+    "untitled": "Untitled"
+  },
+  "skeleton": {
+    "ariaLabel": "Loading metrics"
+  },
+  "stats": {
+    "linkedStudents": "Linked students",
+    "readyToUse": "Ready to use",
+    "shareHint": "{{share}} % of total",
+    "totalOvas": "Total OVAs",
+    "users": "Users"
+  }
+}

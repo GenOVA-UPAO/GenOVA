@@ -1,0 +1,51 @@
+{
+  "breakdown": {
+    "ariaLabel": "{{status}}: {{pct}} %",
+    "empty": "Cuando haya OVAs verás aquí cuántos están listos, en borrador o con error.",
+    "statuses": {
+      "borrador": "Borradores",
+      "error": "Con error",
+      "generando": "Generando",
+      "listo": "Listos"
+    },
+    "title": "OVAs por estado"
+  },
+  "creators": {
+    "empty": "Aparecerán aquí cuando alguien cree su primer OVA.",
+    "ovaCount_one": "1 OVA",
+    "ovaCount_other": "{{count}} OVAs",
+    "title": "Mayores creadores"
+  },
+  "empty": {
+    "description": "No recibimos métricas. Inténtalo de nuevo en unos momentos.",
+    "retry": "Reintentar",
+    "title": "Aún no hay analíticas"
+  },
+  "noStudents": {
+    "description": "Estas métricas cuentan los OVAs de los alumnos vinculados a tu cuenta. Cuando se vinculen, verás aquí su actividad.",
+    "title": "Aún no tienes alumnos vinculados"
+  },
+  "page": {
+    "errorTitle": "No se pudieron cargar las analíticas",
+    "forbiddenToast": "No tienes acceso a Analítica.",
+    "loadingSubtitle": "Cargando métricas…",
+    "subtitlePlatform": "Métricas de toda la plataforma.",
+    "subtitleStudents": "Métricas de tus alumnos vinculados.",
+    "title": "Analítica de aprendizaje"
+  },
+  "recent": {
+    "empty": "Todavía no se ha creado ningún OVA. La actividad aparecerá aquí.",
+    "title": "Actividad reciente",
+    "untitled": "Sin título"
+  },
+  "skeleton": {
+    "ariaLabel": "Cargando métricas"
+  },
+  "stats": {
+    "linkedStudents": "Alumnos vinculados",
+    "readyToUse": "Listos para usar",
+    "shareHint": "{{share}} % del total",
+    "totalOvas": "OVAs totales",
+    "users": "Usuarios"
+  }
+}
