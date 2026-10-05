@@ -27,6 +27,7 @@ const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   "Experimento Guiado": FLASK_ICON,
   "Mapa Mental": GRAPH_ICON,
   "Lab de Hipótesis": FLASK_ICON,
+  "Applet GeoGebra": "ph-function",
   // Explain
   "Video Teórico": "ph-video-camera",
   "Lectura Guiada": BOOK_ICON,
@@ -60,9 +61,12 @@ const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   "Preguntas de Desarrollo": "ph-chat-text",
   "Simulación Evaluativa": "ph-target",
   "Diploma de Logro": "ph-trophy",
+  "Quiz Adaptativo": "ph-exam",
 };
 
 const KEYWORD_FALLBACKS: [RegExp, string][] = [
+  [/geogebra|matem/i, "ph-function"],
+  [/adaptativo/i, "ph-exam"],
   [/podcast|audio|mic/i, "ph-microphone"],
   [/video|film|storyboard/i, "ph-film-strip"],
   [/cómic|comic|lectura|libro|book/i, "ph-book-open"],

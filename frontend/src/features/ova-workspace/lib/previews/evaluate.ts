@@ -71,4 +71,11 @@ export const EVALUATE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     ["Resumen de logros", "Mensaje motivacional", "Sello / diploma visual"],
     "diploma",
   ),
+  "11": preview(
+    "Quiz Adaptativo",
+    "Cuestionario multinivel con ajuste dinámico de dificultad y reporte de dominio.",
+    "HTML + JS interactivo",
+    ["3 niveles de dificultad", "Ajuste dinámico", "Reporte final de dominio"],
+    "quiz",
+  ),
 };

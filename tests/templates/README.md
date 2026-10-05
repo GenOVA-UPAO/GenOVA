@@ -1,4 +1,4 @@
-# Regresión de las 49 plantillas
+# Regresión de las 51 plantillas
 
 Desde la raíz del worktree:
 
@@ -10,7 +10,7 @@ pnpm --filter genova-tests exec playwright install --with-deps chromium
 pnpm --filter genova-tests test:templates
 ```
 
-La suite falla si el catálogo deja de contener exactamente 49 fixtures. Usa el
+La suite falla si el catálogo deja de contener exactamente 51 fixtures. Usa el
 render de producción, incluyendo CSS y Shadow DOM UPAO, y sirve estáticos en
 `127.0.0.1:8790`. No requiere backend, frontend, BD o proveedor LLM.
 

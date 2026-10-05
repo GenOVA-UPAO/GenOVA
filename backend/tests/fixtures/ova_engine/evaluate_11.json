@@ -1,0 +1,237 @@
+{
+  "concept": "Índices B-tree en Oracle",
+  "params": {
+    "num_per_level": 3,
+    "max_questions": 5,
+    "mastery_threshold": 2
+  },
+  "data": {
+    "titulo": "Quiz Adaptativo: Índices B-tree en Oracle",
+    "instrucciones": "Responde cada pregunta; el sistema ajustará la dificultad según tus respuestas.",
+    "banco": {
+      "bajo": [
+        {
+          "id": "b_1",
+          "enunciado": "¿Qué estructura básica compone un índice B-tree en Oracle? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Un árbol balanceado de bloques raíz, rama y hoja",
+              "correcta": true
+            },
+            {
+              "texto": "Una lista simplemente enlazada en disco",
+              "correcta": false
+            },
+            {
+              "texto": "Una tabla hash sin orden físico",
+              "correcta": false
+            },
+            {
+              "texto": "Un archivo secuencial sin punteros",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        },
+        {
+          "id": "b_2",
+          "enunciado": "¿Qué información almacenan los bloques hoja de un índice B-tree? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Las columnas de la tabla completa",
+              "correcta": false
+            },
+            {
+              "texto": "Pares de clave indexada y ROWID correspondientes",
+              "correcta": true
+            },
+            {
+              "texto": "Planes de ejecución compilados",
+              "correcta": false
+            },
+            {
+              "texto": "Trazas de auditoría de sesiones",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        },
+        {
+          "id": "b_3",
+          "enunciado": "¿Cuál es la sentencia SQL estándar para crear un índice B-tree? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "ALTER TABLE clientes ADD KEY idx",
+              "correcta": false
+            },
+            {
+              "texto": "CREATE KEY idx ON clientes(id)",
+              "correcta": false
+            },
+            {
+              "texto": "CREATE INDEX idx_cli ON clientes(id)",
+              "correcta": true
+            },
+            {
+              "texto": "MAKE INDEX idx ON clientes(id)",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        }
+      ],
+      "medio": [
+        {
+          "id": "m_1",
+          "enunciado": "¿Por qué el optimizador de costos puede descartar un índice B-tree en una tabla pequeña? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Porque leer la tabla completa en pocas lecturas cuesta menos que el índice",
+              "correcta": true
+            },
+            {
+              "texto": "Porque Oracle prohíbe índices en tablas menores a 100 filas",
+              "correcta": false
+            },
+            {
+              "texto": "Porque los bloques hoja se borran automáticamente",
+              "correcta": false
+            },
+            {
+              "texto": "Porque el índice ocupa memoria en disco",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        },
+        {
+          "id": "m_2",
+          "enunciado": "¿Qué operación del plan indica una búsqueda directa por clave única en el índice? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "TABLE ACCESS FULL",
+              "correcta": false
+            },
+            {
+              "texto": "INDEX UNIQUE SCAN",
+              "correcta": true
+            },
+            {
+              "texto": "INDEX FAST FULL SCAN",
+              "correcta": false
+            },
+            {
+              "texto": "HASH JOIN BUFFERED",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        },
+        {
+          "id": "m_3",
+          "enunciado": "¿Cuándo resulta perjudicial agregar múltiples índices B-tree a una tabla transaccional? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Solo en tablas temporales",
+              "correcta": false
+            },
+            {
+              "texto": "Cuando se realizan lecturas masivas continuas",
+              "correcta": false
+            },
+            {
+              "texto": "En cargas con alto volumen de INSERT y UPDATE debido al sobrecosto de mantenimiento",
+              "correcta": true
+            },
+            {
+              "texto": "Nunca es perjudicial tener más índices",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        }
+      ],
+      "alto": [
+        {
+          "id": "a_1",
+          "enunciado": "¿Qué impacto tiene un CLUSTERING_FACTOR cercano al número de bloques de la tabla en un INDEX RANGE SCAN? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Indica excelente alineación física y muy bajo costo de E/S al leer filas contiguas",
+              "correcta": true
+            },
+            {
+              "texto": "Obliga al optimizador a descartar el índice de inmediato",
+              "correcta": false
+            },
+            {
+              "texto": "Significa que la tabla está completamente desordenada",
+              "correcta": false
+            },
+            {
+              "texto": "Provoca bloqueos de biblioteca en el shared pool",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        },
+        {
+          "id": "a_2",
+          "enunciado": "En inserciones monótonamente crecientes (secuencias), ¿qué síntoma de contención suele aparecer en el bloque hoja derecho? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Fallo ORA-01555 de snapshot too old",
+              "correcta": false
+            },
+            {
+              "texto": "Espera por buffer busy waits o index leaf block contention en el 'right-hand block'",
+              "correcta": true
+            },
+            {
+              "texto": "Desbordamiento automático a espacio temporal",
+              "correcta": false
+            },
+            {
+              "texto": "Corrupción física del tablespace de datos",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        },
+        {
+          "id": "a_3",
+          "enunciado": "¿Qué técnica avanzada se recomienda para mitigar la contención de inserción en el extremo derecho de un B-tree? (Índices B-tree en Oracle)",
+          "opciones": [
+            {
+              "texto": "Reconstruir la tabla diariamente con TRUNCATE",
+              "correcta": false
+            },
+            {
+              "texto": "Desactivar la clave primaria",
+              "correcta": false
+            },
+            {
+              "texto": "Utilizar índices basados en funciones o particionamiento hash del índice",
+              "correcta": true
+            },
+            {
+              "texto": "Reducir DB_BLOCK_SIZE a 2KB",
+              "correcta": false
+            }
+          ],
+          "feedback_correcto": "Exacto: la justificación técnica coincide con el principio evaluado.",
+          "feedback_incorrecto": "Incorrecto: revisa el fundamento teórico y la aplicación en este nivel."
+        }
+      ]
+    },
+    "cierre": "Has completado la evaluación formativa adaptativa sobre Índices B-tree en Oracle."
+  }
+}

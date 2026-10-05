@@ -73,4 +73,11 @@ export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     ["Plantea hipótesis", "Prueba / evidencia", "Validación o rechazo"],
     "lab",
   ),
+  "11": preview(
+    "Applet GeoGebra",
+    "Construcción matemática o geométrica interactiva con GeoGebra y consignas guiadas.",
+    INTERACTIVE_HTML,
+    ["Applet interactivo", "Consignas paso a paso", "Verificación de respuestas"],
+    "lab",
+  ),
 };

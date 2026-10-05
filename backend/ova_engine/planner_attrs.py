@@ -41,6 +41,7 @@ ATTRIBUTES: dict[str, str] = {
     "componentes": "¿El tema describe una arquitectura con varios componentes que interactúan entre sí?",
     "diagnostico": "¿El tema consiste en diagnosticar o analizar métricas, reportes o datos?",
     "clasificacion": "¿El tema reúne varias categorías o tipos que se pueden clasificar?",
+    "matematico": "¿El tema involucra matemáticas, geometría, funciones, álgebra o modelos cuantitativos?",
 }
 
 # ---------------------------------------------------------------- normalización
@@ -114,6 +115,7 @@ _KW: dict[str, tuple[str, ...]] = {
     "componentes": (r"arquitectura", r"componentes?", r"procesos?", r"estructuras?", r"almacenamiento", r"servicios?"),
     "diagnostico": (r"diagnos", r"monitor", r"analiz", r"reporte", r"metricas?", r"esperas?", r"trazas?", r"auditor[ií]a de rendimiento", r"planes?\b"),
     "clasificacion": (r"tipos? de", r"clases? de", r"categori", r"niveles", r"estrategias", r"modalidades", r"modos"),
+    "matematico": (r"matemat", r"geometr", r"algebra", r"calculo", r"funcion(es)?\b", r"grafic", r"trigonometr", r"vector", r"probabilidad", r"estadistic", r"ecuaci", r"polinom", r"derivada", r"integral", r"matriz|matrices", r"parabola", r"hiperbola", r"trigonometria"),
 }
 _KW_RE = {k: re.compile("|".join(v)) for k, v in _KW.items()}
 
