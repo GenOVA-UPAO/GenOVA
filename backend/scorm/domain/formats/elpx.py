@@ -127,8 +127,21 @@ def _nav_structure(ids: OdeIdFactory, order: int, label: str, src: str) -> str:
         ],
         "        ",
     )
+    # Mismo juego de claves que escribe eXe: sin titleHtml/description su editor avisa.
     nav_props = _key_values(
-        "odeNavStructureProperties", "odeNavStructureProperty", [("titlePage", label)], "    "
+        "odeNavStructureProperties",
+        "odeNavStructureProperty",
+        [
+            ("titlePage", label),
+            ("visibility", "true"),
+            ("highlight", "false"),
+            ("hidePageTitle", "false"),
+            ("editableInPage", "false"),
+            ("titleNode", label),
+            ("titleHtml", ""),
+            ("description", ""),
+        ],
+        "    ",
     )
     return f"""  <odeNavStructure>
     <odePageId>{page_id}</odePageId>

@@ -402,6 +402,19 @@ def test_elpx_ids_match_format_are_unique_and_synchronized():
     assert len(unique_ids) == len(set(unique_ids))
 
 
+def test_elpx_pages_carry_the_nav_properties_exe_expects():
+    _, xml = _elpx()
+    root = etree.fromstring(xml.encode())
+    page = root.find(f"{ODE_NS}odeNavStructures/{ODE_NS}odeNavStructure")
+    props = {
+        el.findtext(f"{ODE_NS}key"): el.findtext(f"{ODE_NS}value") or ""
+        for el in page.find(f"{ODE_NS}odeNavStructureProperties")
+    }
+    assert props["titlePage"] == props["titleNode"] == "Inicio & <bienvenida>"
+    assert props["titleHtml"] == "" and props["description"] == ""
+    assert props["visibility"] == "true" and props["hidePageTitle"] == "false"
+
+
 def test_elpx_html_view_and_json_properties_are_cdata():
     _, xml = _elpx()
     assert xml.count("<htmlView><![CDATA[") == 2
