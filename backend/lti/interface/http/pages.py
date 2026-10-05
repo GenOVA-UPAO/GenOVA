@@ -52,6 +52,7 @@ def _document(title: str, body: str, *, extra_head: str = "") -> str:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="data:," />
     <title>{escape(title)} · GenOVA</title>
     <style>{_STYLE}</style>
     {extra_head}
@@ -131,12 +132,16 @@ def deep_link_autopost(*, return_url: str, token: str) -> str:
 _PLAYER_SCRIPT = """
 (function () {
   var SCORE_URL = __SCORE_URL__
-  var statusNode = document.getElementById('lti-status')
   var values = { 'cmi.core.lesson_status': 'not attempted', 'cmi.core.score.raw': '' }
   var lastSent = null
   var sending = false
 
-  function say(text) { statusNode.textContent = text }
+  // El script va en <head> (la API debe existir antes de que cargue la OVA):
+  // el nodo de estado se busca al usarlo.
+  function say(text) {
+    var node = document.getElementById('lti-status')
+    if (node) { node.textContent = text }
+  }
 
   function maybeSend() {
     var status = values['cmi.core.lesson_status']
