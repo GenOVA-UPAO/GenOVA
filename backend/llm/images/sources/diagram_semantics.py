@@ -179,6 +179,7 @@ def prepare_diagram(data: dict, context: str = "") -> dict | None:
     if source_edges is None:
         return None
     edges = []
+    inverted: set[int] = set()  # id() de las aristas giradas; la etiqueta puede no marcarlo
     for edge in source_edges:
         card = edge["cardinalidad"]
         a, b = nodes[edge["origen"]], nodes[edge["destino"]]
@@ -190,6 +191,7 @@ def prepare_diagram(data: dict, context: str = "") -> dict | None:
                 card = "1:N" if forward else "N:1"
         if card == "N:1":
             edge["origen"], edge["destino"] = edge["destino"], edge["origen"]
+            inverted.add(id(edge))
             # Retain the distinct relationship label and mark its reversed direction.
             if a != b:
                 label = edge.get("etiqueta", "relación")
@@ -247,14 +249,14 @@ def prepare_diagram(data: dict, context: str = "") -> dict | None:
         if card == "1:N":
             _fk(b, a)
         edges.append(edge)
-    data["aristas"] = _dedupe_reciprocal(edges, nodes)
+    data["aristas"] = _dedupe_reciprocal(edges, nodes, inverted)
     return data
 
 
-def _dedupe_reciprocal(edges: list[dict], nodes: dict) -> list[dict]:
+def _dedupe_reciprocal(edges: list[dict], nodes: dict, inverted: set[int]) -> list[dict]:
     """El LLM suele dar cada relación en los dos sentidos (A→B 1:N y B→A N:1).
 
-    Tras normalizar, el sentido invertido (marcado «(inversa)») duplica una línea
+    Tras normalizar, el sentido invertido (``inverted``) duplica una línea
     ya presente: se descarta salvo que el lado N tenga varias FK de rol hacia el
     mismo padre (sigue / seguido por). Las aristas en el mismo sentido con
     etiquetas distintas son roles explícitos y se conservan.
@@ -263,7 +265,7 @@ def _dedupe_reciprocal(edges: list[dict], nodes: dict) -> list[dict]:
     seen: dict[tuple[str, str], int] = {}
     for edge in edges:
         pair = (edge["origen"], edge["destino"])
-        inverse = edge.get("etiqueta", "").endswith("(inversa)")
+        inverse = id(edge) in inverted
         if inverse and seen.get(pair):
             roles = len(_fk_indices(nodes[pair[1]], nodes[pair[0]]))
             if seen[pair] >= max(1, roles):
