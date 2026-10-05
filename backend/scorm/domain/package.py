@@ -1,3 +1,4 @@
+from hashlib import sha256
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
@@ -32,17 +33,21 @@ def build_shell_zip_bytes(
     """Zip con el shell `index.html` y un recurso HTML por fase en `resources/`.
 
     Cada fase es su propio documento cargado en un iframe del shell: mantiene
-    aislados los documentos completos (con su JS) generados por la IA. Sin API
-    LMS, scorm.js es no-op, así que el mismo shell sirve para IMS y HTML.
+    aislados los documentos completos (con su JS) generados por la IA. IMS y
+    HTML guardan el progreso local; SCORM informa al aula virtual si hay API.
     """
     manifest_builder, scorm_version, package_label, with_cmi5 = SHELL_FLAVORS[flavor]
 
     resources = []
+    progress_digest = sha256(f"{flavor}\0{course_title}\0{module_title}".encode())
     media: list[str] = []
     zip_buffer = BytesIO()
     with ZipFile(zip_buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
         for resource in prepare_phase_resources(phases):
             file_rel = f"resources/{resource.basename}.html"
+            progress_digest.update(
+                f"\0{file_rel}\0{resource.label}\0{resource.html}".encode()
+            )
             zip_file.writestr(file_rel, resource.html)
             for item in resource.media:
                 # Un video ya está comprimido: deflate no gana nada y cuesta CPU.
@@ -55,7 +60,13 @@ def build_shell_zip_bytes(
             zip_file.writestr(
                 "imsmanifest.xml", manifest_builder(course_title, module_title, resource_files, metadata)
             )
-        zip_file.writestr("index.html", build_index_html(course_title, resources, package_label, metadata))
+        zip_file.writestr(
+            "index.html",
+            build_index_html(
+                course_title, resources, package_label, metadata,
+                package_format=flavor, progress_key=progress_digest.hexdigest(),
+            ),
+        )
         zip_file.writestr("resources/styles.css", build_styles_css())
         zip_file.writestr("resources/scorm.js", build_scorm_js(scorm_version))
         zip_file.writestr("resources/xapi.js", build_xapi_js())

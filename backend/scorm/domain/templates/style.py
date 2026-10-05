@@ -135,7 +135,7 @@ button:hover {
 }
 
 #scorm-status {
-  color: var(--muted);
+  color: var(--text);
 }
 
 @media (prefers-reduced-motion: reduce) {

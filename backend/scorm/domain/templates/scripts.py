@@ -217,6 +217,13 @@ def build_app_js() -> str:
   const completeButton = document.getElementById('complete-btn')
   const frame = document.getElementById('res-frame')
   const tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'))
+  const format = document.body.getAttribute('data-package-format')
+  const localMode = format === 'html' || format === 'ims'
+  const storageKey = 'genova-progress-v1:' + document.body.getAttribute('data-progress-key')
+  const resourceSources = tabs.map(function (tab) { return tab.getAttribute('data-src') })
+  const localCompleted = new Set()
+  let lastResource = null
+  let storageAvailable = true
   const visited = {}
   const completed = {}
   const startedAt = Date.now()
@@ -232,8 +239,39 @@ def build_app_js() -> str:
       pad(hours, 4) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(cs % 100, 2))
   }
 
-  const initialized = window.GenovaScorm && window.GenovaScorm.initialize()
-  const xapi = window.GenovaXapi || null
+  const initialized = !localMode && window.GenovaScorm && window.GenovaScorm.initialize()
+  const xapi = localMode ? null : window.GenovaXapi || null
+
+  function showLocalProgress() {
+    const prefix = storageAvailable ? 'Progreso local: ' : 'Progreso de esta sesión: '
+    statusNode.textContent = prefix + localCompleted.size + ' de ' + tabs.length + ' recursos completados.'
+  }
+
+  function saveLocalProgress() {
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify({
+        completed: Array.from(localCompleted), lastResource: lastResource,
+      }))
+    } catch (error) {
+      // file://, navegación privada o cuota llena: la navegación sigue funcionando.
+      storageAvailable = false
+    }
+    showLocalProgress()
+  }
+
+  if (localMode) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(storageKey))
+      if (saved && Array.isArray(saved.completed)) {
+        saved.completed.forEach(function (src) {
+          if (resourceSources.includes(src)) { localCompleted.add(src) }
+        })
+        if (resourceSources.includes(saved.lastResource)) { lastResource = saved.lastResource }
+      }
+    } catch (error) {
+      // Un registro inválido se ignora; no impide abrir el paquete.
+    }
+  }
 
   function selectTab(btn, focus) {
     tabs.forEach(function (t) {
@@ -246,15 +284,24 @@ def build_app_js() -> str:
       frame.setAttribute('aria-label', 'Contenido: ' + btn.textContent.trim())
       const src = btn.getAttribute('data-src')
       visited[src] = true
+      if (localMode) {
+        lastResource = src
+        saveLocalProgress()
+      }
       if (xapi) { xapi.experienced(btn.textContent.trim()) }
       if (focus) { btn.focus() }
     }
   }
 
   function markComplete() {
+    if (localMode) {
+      resourceSources.forEach(function (src) { localCompleted.add(src) })
+      saveLocalProgress()
+      return
+    }
     if (xapi) { xapi.completed() }
     if (!initialized) {
-      statusNode.textContent = 'OVA completado (modo vista previa).'
+      statusNode.textContent = 'OVA completado. Vista sin aula virtual: tu progreso no se enviará'
       return
     }
     window.GenovaScorm.setValue('cmi.core.lesson_status', 'completed')
@@ -299,11 +346,15 @@ def build_app_js() -> str:
     btn.addEventListener('keydown', onKeydown)
   })
 
-  if (tabs.length) { selectTab(tabs[0], false) }
+  if (tabs.length) {
+    selectTab(tabs.find(function (tab) { return tab.getAttribute('data-src') === lastResource }) || tabs[0], false)
+  }
 
-  if (!initialized) {
+  if (localMode) {
+    showLocalProgress()
+  } else if (!initialized) {
     statusNode.textContent =
-      'No se detectó API LMS (modo vista previa). El contenido sigue siendo navegable.'
+      'Vista sin aula virtual: tu progreso no se enviará'
   } else {
     const currentStatus = window.GenovaScorm.getValue('cmi.core.lesson_status')
     if (!currentStatus || currentStatus === 'not attempted') {
@@ -321,9 +372,16 @@ def build_app_js() -> str:
   // autenticar por la ventana del iframe activo, no por event.origin.
   window.addEventListener('message', function (event) {
     if (event.source !== frame.contentWindow || event.data?.type !== 'genova-resource-completed') return
+    const src = frame.getAttribute('src')
+    if (!resourceSources.includes(src)) return
+    if (localMode) {
+      localCompleted.add(src)
+      saveLocalProgress()
+      return
+    }
     const raw = Number(event.data.score)
     if (!Number.isFinite(raw)) return
-    completed[frame.getAttribute('src')] = Math.max(0, Math.min(100, raw))
+    completed[src] = Math.max(0, Math.min(100, raw))
     maybeComplete()
   })
 
