@@ -1,3 +1,5 @@
+import { apiErrorText } from "@/core/i18n/api-error";
+
 import { AuthExpiredBus } from "./auth-expired-bus";
 import { firstNonBlank } from "./text";
 
@@ -138,10 +140,17 @@ export async function apiJson<T = unknown>(
   const body = await readJsonBody(res);
 
   if (!res.ok) {
+    const code = body?.error ?? "";
+    // Código de error conocido → texto traducido; si no, `message` del backend; si no, el respaldo.
     const message =
-      firstNonBlank(body?.message, detailText(body?.detail), opts.fallbackMsg) ??
+      firstNonBlank(
+        apiErrorText(code, res.status),
+        body?.message,
+        detailText(body?.detail),
+        opts.fallbackMsg,
+      ) ??
       `HTTP ${String(res.status)}`;
-    throw new HttpError(message, { status: res.status, code: body?.error ?? "", body });
+    throw new HttpError(message, { status: res.status, code, body });
   }
 
   return (body ?? {}) as T;

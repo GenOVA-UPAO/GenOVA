@@ -63,9 +63,16 @@ for (const name of ["localStorage", "sessionStorage"] as const) {
 }
 
 import "@testing-library/jest-dom/vitest";
+import "@/core/i18n/config";
 
 import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
+import i18n from "i18next";
+import { afterEach, beforeEach } from "vitest";
+
+// Los asserts existentes están en español: cada test arranca en español.
+beforeEach(async () => {
+  await i18n.changeLanguage("es");
+});
 
 afterEach(() => {
   cleanup();
