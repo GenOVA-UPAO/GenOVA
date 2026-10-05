@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,10 +17,6 @@ interface SelectionToolbarProps {
   variant?: "standalone" | "inset";
   onSelectAllChange: (checked: boolean) => void;
   onClearSelection: () => void;
-}
-
-function selectedLabel(count: number): string {
-  return i18n.t("ova-library:selected", { count });
 }
 
 function toolbarClass(variant: "standalone" | "inset", selecting: boolean): string {
@@ -73,7 +68,7 @@ export function SelectionToolbar({
       />
       {selecting ? (
         <span className="text-sm font-medium text-foreground tabular-nums" aria-live="polite">
-          {selectedLabel(selectedCount)}
+          {t("ova-library:selected", { count: selectedCount })}
         </span>
       ) : (
         <label

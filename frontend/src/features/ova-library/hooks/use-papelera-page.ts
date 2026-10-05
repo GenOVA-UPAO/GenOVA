@@ -1,5 +1,5 @@
-import i18n from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ovaNoun } from "../lib/ova-count";
 import { pageMeta } from "../lib/page-meta";
@@ -25,8 +25,9 @@ function useTrashConfirmation() {
 
 /** Hook de estado y acciones para la página de Papelera. */
 export function usePapeleraPage() {
-  const IRREVERSIBLE = i18n.t("ova-library:esta_accion_no_se_puede_deshacer");
-  const DELETE_FOREVER = i18n.t("ova-library:eliminar_definitivamente");
+  const { t } = useTranslation();
+  const IRREVERSIBLE = t("ova-library:esta_accion_no_se_puede_deshacer");
+  const DELETE_FOREVER = t("ova-library:eliminar_definitivamente");
   const [page, setPage] = useState(1);
   const { confirmModal, setConfirmModal, confirmThen } = useTrashConfirmation();
 
@@ -41,7 +42,7 @@ export function usePapeleraPage() {
     confirmThen(
       {
         title: DELETE_FOREVER,
-        message: i18n.t("ova-library:se_eliminara_value_de_forma_permanente_value", { p0: ova.title ?? "OVA", p1: IRREVERSIBLE }),
+        message: t("ova-library:se_eliminara_value_de_forma_permanente_value", { p0: ova.title ?? "OVA", p1: IRREVERSIBLE }),
         confirmLabel: DELETE_FOREVER,
       },
       async () => {
@@ -56,8 +57,8 @@ export function usePapeleraPage() {
     const ids = Array.from(selection.selectedIds);
     confirmThen(
       {
-        title: i18n.t("ova-library:eliminar_value_value_definitivamente", { p0: String(ids.length), p1: ovaNoun(ids.length) }),
-        message: i18n.t("ova-library:deleteSelected", { count: ids.length, warning: IRREVERSIBLE }),
+        title: t("ova-library:eliminar_value_value_definitivamente", { p0: String(ids.length), p1: ovaNoun(ids.length) }),
+        message: t("ova-library:deleteSelected", { count: ids.length, warning: IRREVERSIBLE }),
         confirmLabel: DELETE_FOREVER,
       },
       async () => {
@@ -71,9 +72,9 @@ export function usePapeleraPage() {
   const handleEmptyTrash = () => {
     confirmThen(
       {
-        title: i18n.t("ova-library:vaciar_la_papelera"),
-        message: i18n.t("ova-library:deleteAll", { count: totalItems, warning: IRREVERSIBLE }),
-        confirmLabel: i18n.t("ova-library:vaciar_papelera"),
+        title: t("ova-library:vaciar_la_papelera"),
+        message: t("ova-library:deleteAll", { count: totalItems, warning: IRREVERSIBLE }),
+        confirmLabel: t("ova-library:vaciar_papelera"),
       },
       async () => {
         const ok = await actions.emptyTrash();
