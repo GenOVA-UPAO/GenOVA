@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
@@ -48,15 +47,15 @@ export function OvaCardPrimaryAction({
     <Button asChild variant="outline" className={className}>
       <Link to={workspaceUrl}>
         <Icon name={openIcon(isGenerating, canEdit)} size="text-base" />
-        {openLabel(isGenerating, canEdit)}
+        {t(openLabel(isGenerating, canEdit))}
       </Link>
     </Button>
   );
 }
 
 function openLabel(isGenerating: boolean, canEdit: boolean): string {
-  if (isGenerating) return i18n.t("ova-library:ver_progreso");
-  return canEdit ? i18n.t("ova-library:editar") : i18n.t("ova-library:ver");
+  if (isGenerating) return "ova-library:ver_progreso";
+  return canEdit ? "ova-library:editar" : "ova-library:ver";
 }
 
 function openIcon(isGenerating: boolean, canEdit: boolean): string {

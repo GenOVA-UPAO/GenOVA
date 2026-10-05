@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { OvaStatusBadge } from "@/core/components/ova-status-badge";
+import { formatNumber } from "@/core/i18n/format";
 
 import type { OvaJobInfo } from "../../lib/job-types";
 
@@ -12,7 +13,7 @@ interface OvaCardBadgesProps {
 
 /** Estado, versión y progreso de generación en una sola línea. */
 export function OvaCardBadges({ status, version, job }: Readonly<OvaCardBadgesProps>) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const progress = status === "generando" ? job?.progress : null;
 
   return (
@@ -20,7 +21,7 @@ export function OvaCardBadges({ status, version, job }: Readonly<OvaCardBadgesPr
       <OvaStatusBadge status={status} />
       {progress && (
         <span className="text-xs font-medium text-primary tabular-nums">
-          {progress.done} {t("ova-library:de")} {progress.total}{" "}
+          {formatNumber(progress.done, undefined, i18n.language)} {t("ova-library:de")} {formatNumber(progress.total, undefined, i18n.language)}{" "}
           {t("ova-library:recursos")}{" "}
         </span>
       )}

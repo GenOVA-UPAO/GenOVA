@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import i18n from "i18next";
 export const STATUS_OPTIONS = [
   {
@@ -39,6 +40,8 @@ export function statusFromParam(value: string | null): string {
 }
 
 /** Etiqueta visible de un valor del filtro de estado. */
-export function statusLabel(value: string): string {
-  return STATUS_OPTIONS.find((opt) => opt.value === value)?.label ?? value;
+export function statusLabel(value: string, t: TFunction = i18n.t): string {
+  const known = STATUS_OPTIONS.some((opt) => opt.value === value);
+  if (!known) return value;
+  return t(value === "all" ? "ova-library:todos_los_estados" : `ova-library:${value}`);
 }

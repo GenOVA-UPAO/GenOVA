@@ -15,7 +15,7 @@ export function DashboardPage() {
   const user = useCurrentUser();
   const isAdmin = useIsAdmin();
   const { data, isLoading, error, refetch } = useOvaList({ page: 1 });
-  const firstName = getUserFirstName(user?.full_name);
+  const firstName = getUserFirstName(user?.full_name, t);
 
   let content = (
     <DashboardBody ovas={data?.ovas ?? []} total={data?.total_items ?? 0} isAdmin={isAdmin} />

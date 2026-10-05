@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -14,22 +14,22 @@ interface MisOvasEmptyProps {
   onClearFilters: () => void;
 }
 
-function noResultsDescription(search: string, status: string): string {
+function noResultsDescription(search: string, status: string, t: TFunction): string {
   const byStatus =
-    status === "all" ? "" : i18n.t("ova-library:withStatus", { status: statusLabel(status) });
+    status === "all" ? "" : t("ova-library:withStatus", { status: statusLabel(status, t) });
   if (search)
-    return i18n.t("ova-library:no_hay_ovasvalue_cuyo_titulo_contenga_value", {
+    return t("ova-library:no_hay_ovasvalue_cuyo_titulo_contenga_value", {
       p0: byStatus,
       p1: search,
     });
-  return i18n.t("ova-library:no_hay_ovasvalue", { p0: byStatus });
+  return t("ova-library:no_hay_ovasvalue", { p0: byStatus });
 }
 
 function clearLabel(search: string, status: string): string {
-  if (status === "all") return i18n.t("ova-library:limpiar_busqueda");
+  if (status === "all") return "ova-library:limpiar_busqueda";
   return search
-    ? i18n.t("ova-library:limpiar_filtros")
-    : i18n.t("ova-library:ver_todos_los_estados");
+    ? "ova-library:limpiar_filtros"
+    : "ova-library:ver_todos_los_estados";
 }
 
 /** Estado vacío de la biblioteca: sin OVAs todavía o sin resultados para el filtro. */
@@ -41,10 +41,10 @@ export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOva
       <EmptyState
         icon="magnifying-glass-minus"
         title={t("ova-library:sin_resultados")}
-        description={noResultsDescription(trimmed, status)}
+        description={noResultsDescription(trimmed, status, t)}
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            {clearLabel(trimmed, status)}
+            {t(clearLabel(trimmed, status))}
           </Button>
         }
       />

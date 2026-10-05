@@ -49,7 +49,7 @@ export function TrashedOvaRow({
         <h3 className="line-clamp-2 text-sm font-medium text-foreground" title={title}>
           {title}
         </h3>
-        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={trashedAt(ova)} />
+        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={trashedAt(ova, undefined, t)} />
       </div>
       <TrashedOvaRowActions
         isRestoring={isRestoring}
