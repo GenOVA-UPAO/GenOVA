@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { exportOva } from "@/core/export/api/ova-export.api";
+import type { ExportFormatId } from "@/core/export/lib/formats";
+
 import { ovaLibraryApi } from "../api/ova-library.api";
 import type { MetadataInput } from "../lib/metadata-schema";
 import { ovaCountPhrase } from "../lib/ova-count";
@@ -61,10 +64,10 @@ export function useOvaActions() {
     }
   };
 
-  const downloadOva = async (id: string, title: string) => {
+  const downloadOva = async (id: string, format: ExportFormatId) => {
     setDownloadingId(id);
     try {
-      await ovaLibraryApi.download(id, title);
+      await exportOva(id, format);
       toast.success("Descarga iniciada");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo descargar el archivo.");

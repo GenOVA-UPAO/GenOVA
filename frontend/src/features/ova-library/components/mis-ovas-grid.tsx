@@ -1,4 +1,5 @@
 import { QueryErrorState } from "@/core/components/query-error-state";
+import type { ExportFormatId } from "@/core/export/lib/formats";
 import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../lib/job-types";
@@ -24,7 +25,7 @@ interface MisOvasGridProps {
   onToggleSelect: (id: string) => void;
   onMoveToTrash: (ova: OvaListItem) => void;
   onEditMetadata: (ova: OvaListItem) => void;
-  onDownload: (id: string, title: string) => void;
+  onDownload: (id: string, format: ExportFormatId) => void;
   onDuplicate: (id: string) => void;
   onResume: (id: string) => void;
   onRetry: () => void;
@@ -79,8 +80,8 @@ export function MisOvasGrid({
           isDuplicating={duplicatingId === ova.id}
           onToggleSelect={onToggleSelect}
           onMoveToTrash={onMoveToTrash}
-          onDownload={({ id, title }) => {
-            onDownload(id, title);
+          onDownload={({ id, format }) => {
+            onDownload(id, format);
           }}
           onDuplicate={onDuplicate}
           onEditMetadata={onEditMetadata}

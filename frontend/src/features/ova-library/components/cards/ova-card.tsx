@@ -1,5 +1,6 @@
 import { useCurrentUser } from "@/core/auth/auth-store";
 import { Checkbox } from "@/core/components/ui/checkbox";
+import type { ExportFormatId } from "@/core/export/lib/formats";
 import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../../lib/job-types";
@@ -26,7 +27,7 @@ interface OvaCardProps {
   isDuplicating?: boolean;
   onToggleSelect?: (id: string) => void;
   onMoveToTrash?: (ova: OvaListItem) => void;
-  onDownload?: (data: { id: string; title: string }) => void;
+  onDownload?: (data: { id: string; format: ExportFormatId }) => void;
   onDuplicate?: (id: string) => void;
   onEditMetadata?: (ova: OvaListItem) => void;
   onResume?: (id: string) => void;
@@ -103,7 +104,7 @@ export function OvaCard({
           isDownloading={isDownloading}
           isDuplicating={isDuplicating}
           canEdit={canEdit}
-          onDownload={() => onDownload?.({ id: ova.id, title: ova.title ?? "" })}
+          onDownload={(format) => onDownload?.({ id: ova.id, format })}
           onResume={onResume}
         />
       </div>

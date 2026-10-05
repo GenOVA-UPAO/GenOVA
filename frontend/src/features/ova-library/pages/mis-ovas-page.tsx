@@ -71,7 +71,7 @@ export function MisOvasPage() {
           onToggleSelect={selection.toggle}
           onMoveToTrash={p.setOvaToTrash}
           onEditMetadata={p.setEditingOva}
-          onDownload={(id, title) => { void p.actions.downloadOva(id, title); }}
+          onDownload={(id, format) => { void p.actions.downloadOva(id, format); }}
           onDuplicate={(id) => { void p.actions.duplicateOva(id); }}
           onResume={(id) => { void p.resume(id); }}
           onRetry={() => { void p.refetch(); }}
