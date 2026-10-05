@@ -45,3 +45,5 @@ filetype==1.2.0
 pyotp==2.10.0
 # Validación de sintaxis JS de los OVAs generados (motor QuickJS)
 quickjs==1.19.4
+# Conversión HTML → XHTML para la exportación EPUB 3 (ya venía por python-docx)
+lxml==6.1.1

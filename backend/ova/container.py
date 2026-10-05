@@ -23,6 +23,7 @@ from ova.application.use_cases import (
     EditPhases,
     EditSubelement,
     EditView,
+    ExportPackage,
     ExportScorm,
     ListOvas,
     ListTrashedOvas,
@@ -43,7 +44,7 @@ from ova.infrastructure.sqlalchemy_lifecycle_repository import (
     SqlAlchemyOvaLifecycleRepository,
 )
 from ova.infrastructure.storage_packages import StoragePackageSource
-from scorm import build_scorm_zip_bytes
+from scorm import build_scorm_zip_bytes, get_export_format
 
 
 def _engine_info(html: str) -> dict:
@@ -61,6 +62,7 @@ class OvaUseCases:
     add_phase: AddPhase
     edit_view: EditView
     export_scorm: ExportScorm
+    export_package: ExportPackage
     editor_chat: EditorChat
     list_ovas: ListOvas
     download_ova: DownloadOva
@@ -86,6 +88,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
     chat = SqlAlchemyChatRepository(db)
     packages = ProjectScormPackageCleaner()
     downloads = StoragePackageSource()
+    export_scorm = ExportScorm(lifecycle, editor, downloads)
     return OvaUseCases(
         save_ova=SaveOva(
             creation,
@@ -97,7 +100,8 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         edit_subelement=EditSubelement(editor),
         add_phase=AddPhase(editor),
         edit_view=EditView(editor),
-        export_scorm=ExportScorm(lifecycle, editor, downloads),
+        export_scorm=export_scorm,
+        export_package=ExportPackage(lifecycle, editor, export_scorm, get_export_format),
         editor_chat=EditorChat(editor, chat),
         list_ovas=ListOvas(catalog),
         download_ova=DownloadOva(lifecycle, downloads),

@@ -137,6 +137,21 @@ class PackageSource(Protocol):
     def disk_available(self, file_path: str | None) -> bool: ...
 
 
+class ExportFormatSpec(Protocol):
+    """Un formato de exportación (lo implementa `scorm.ExportFormat`)."""
+
+    @property
+    def id(self) -> str: ...
+
+    @property
+    def extension(self) -> str: ...
+
+    @property
+    def media_type(self) -> str: ...
+
+    def build(self, course_title: str, phases: list[dict] | None) -> bytes: ...
+
+
 class ChatRepository(Protocol):
     def list_messages(self, ova_id: str, limit: int = 200) -> tuple[ChatMessage, ...]: ...
 

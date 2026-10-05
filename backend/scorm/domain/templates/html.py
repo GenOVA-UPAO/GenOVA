@@ -133,8 +133,12 @@ def build_manifest(course_title: str, module_title: str, resource_files: list[st
 """
 
 
-def build_index_html(course_title: str, resources: list[dict]) -> str:
+def build_index_html(
+    course_title: str, resources: list[dict], package_label: str = "SCORM 1.2"
+) -> str:
     """SCO shell: tablist of resources + iframe panel. One SCO for the whole OVA.
+
+    `package_label` is the format shown under the title (SCORM 1.2, SCORM 2004…).
 
     Accessibility (WCAG 2.2 AA): skip link, semantic landmarks, an ARIA tablist
     with roving tabindex + arrow-key navigation (wired in app.js), an
@@ -163,7 +167,7 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
     <main class="container">
       <header>
         <h1>{safe_course_title}</h1>
-        <p>Objeto Virtual de Aprendizaje · GenOVA · SCORM 1.2</p>
+        <p>Objeto Virtual de Aprendizaje · GenOVA · {html_escape(package_label)}</p>
       </header>
 
       <nav class="res-nav" aria-label="Recursos del OVA">
