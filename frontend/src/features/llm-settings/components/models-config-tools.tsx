@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -18,6 +19,7 @@ interface ModelsConfigToolsProps {
  * la página: el admin cambia de modelo a menudo y necesita volver atrás rápido.
  */
 export function ModelsConfigTools({ dirty, onDiscardDraft }: Readonly<ModelsConfigToolsProps>) {
+  const { t } = useTranslation("llm-settings");
   const [panel, setPanel] = useState<"profiles" | "history" | null>(null);
   const openChange = (which: "profiles" | "history") => (open: boolean) => {
     setPanel(open ? which : null);
@@ -32,7 +34,7 @@ export function ModelsConfigTools({ dirty, onDiscardDraft }: Readonly<ModelsConf
         }}
       >
         <Icon name="stack" size="text-base" />
-        Perfiles
+        {t("page.profiles")}
       </Button>
       <Button
         variant="outline"
@@ -42,7 +44,7 @@ export function ModelsConfigTools({ dirty, onDiscardDraft }: Readonly<ModelsConf
         }}
       >
         <Icon name="clock-counter-clockwise" size="text-base" />
-        Historial
+        {t("page.history")}
       </Button>
       <ProfilesSheet
         open={panel === "profiles"}

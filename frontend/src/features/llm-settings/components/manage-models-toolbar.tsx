@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { CatalogBrowser } from "../hooks/use-catalog-browser";
 import { CATALOG_SORTS, type CatalogSort } from "../lib/catalog-browse";
 import { CatalogChips } from "./catalog-chips";
@@ -14,6 +16,7 @@ const ALL_PROVIDERS = "all";
 
 /** Búsqueda, proveedor y orden en una fila; los filtros rápidos, debajo. */
 export function ManageModelsToolbar({ browser, total }: Readonly<ManageModelsToolbarProps>) {
+  const { t } = useTranslation("llm-settings");
   const { filters, setFilters } = browser;
   const showProviders = browser.providers.length > 1;
   return (
@@ -29,10 +32,10 @@ export function ManageModelsToolbar({ browser, total }: Readonly<ManageModelsToo
           {showProviders ? (
             <ManageModelsSelect
               value={filters.provider ?? ALL_PROVIDERS}
-              label="Filtrar por proveedor"
+              label={t("catalog.filterByProvider")}
               className="sm:w-48"
               options={[
-                { value: ALL_PROVIDERS, label: "Todos los proveedores" },
+                { value: ALL_PROVIDERS, label: t("catalog.allProviders") },
                 ...browser.providers.map((p) => ({ value: p.id, label: p.label })),
               ]}
               onChange={(value) => {
@@ -42,7 +45,7 @@ export function ManageModelsToolbar({ browser, total }: Readonly<ManageModelsToo
           ) : null}
           <ManageModelsSelect
             value={filters.sort}
-            label="Ordenar"
+            label={t("catalog.sortAction")}
             className="sm:w-56"
             options={CATALOG_SORTS.map((opt) => ({ value: opt.key, label: opt.label }))}
             onChange={(value) => {
@@ -56,3 +59,4 @@ export function ManageModelsToolbar({ browser, total }: Readonly<ManageModelsToo
     </div>
   );
 }
+

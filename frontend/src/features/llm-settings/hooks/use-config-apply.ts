@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { toast } from "sonner";
 
 import { type ApplyConfigResponse, restoreConfigVersion } from "../api/model-tools.api";
@@ -29,11 +30,11 @@ export function useConfigApply() {
     try {
       const res = await restoreConfigVersion(entryId, "before");
       await refresh();
-      toast.success("Cambio deshecho.", {
+      toast.success(t("llm-settings:history.undoSuccess"), {
         description: res.history_entry ? changesSummary(res.history_entry.changes) : undefined,
       });
     } catch (err: unknown) {
-      toast.error(errorMessage(err, "No se pudo deshacer el cambio."));
+      toast.error(errorMessage(err, t("llm-settings:history.undoError")));
     }
   };
 
@@ -44,7 +45,7 @@ export function useConfigApply() {
   ) => {
     const entry = res.history_entry;
     const incomplete = res.incomplete
-      ? " Algún modelo ya no está en el catálogo y esa tarea se quedó con el de siempre."
+      ? ` ${t("llm-settings:history.incompleteNotice")}`
       : "";
     if (!entry) {
       if (incomplete) toast.success(message, { description: incomplete.trim() });
@@ -55,7 +56,7 @@ export function useConfigApply() {
       description: `${changesSummary(entry.changes)}.${incomplete}`,
       duration: UNDO_TOAST_MS,
       action: {
-        label: "Deshacer",
+        label: t("llm-settings:history.undoAction"),
         onClick: () => {
           void undo(entry.id);
         },

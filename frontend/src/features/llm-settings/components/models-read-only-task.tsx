@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import type { TaskDraft } from "../lib/llm-config-draft";
@@ -31,12 +33,13 @@ export function ModelsReadOnlyTask({
   bounds,
   onGoToCredentials,
 }: Readonly<ModelsReadOnlyTaskProps>) {
-  const subtitle = platformSubtitle(task, draft, adminModels, defaults);
+  const { t } = useTranslation("llm-settings");
+  const subtitle = platformSubtitle(task, draft, adminModels, defaults) ?? t("tasks.noModel");
   return (
     <div className="space-y-4">
       <div className="space-y-4 rounded-lg border border-border px-4 py-3.5">
         <div className="space-y-1">
-          <p className="text-sm font-medium">Modelo principal</p>
+          <p className="text-sm font-medium">{t("tasks.primaryModel")}</p>
           <p className="text-sm text-foreground">{subtitle}</p>
         </div>
         <ModelTaskCardChips
@@ -57,11 +60,10 @@ export function ModelsReadOnlyTask({
       ) : (
         <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border px-4 py-3 sm:flex-row sm:items-center">
           <p className="min-w-0 flex-1 text-sm text-muted-foreground">
-            Esta configuración la define el administrador. Con tu propia clave API puedes elegir
-            otros modelos, que se pagan con tu cuenta.
+            {t("page.readOnlyTaskDesc")}
           </p>
           <Button variant="outline" className="shrink-0 max-sm:h-11" onClick={onGoToCredentials}>
-            Añadir clave
+            {t("page.addKey")}
           </Button>
         </div>
       )}
@@ -74,10 +76,10 @@ function platformSubtitle(
   draft: TaskDraft | undefined,
   adminModels: ChipModel[],
   defaults: Record<string, EnabledModel>,
-): string {
+): string | null {
   const assigned = draft?.default;
   if (assigned?.provider && assigned.model_id) return chipLabel(assigned, adminModels);
   const fallback = Object.hasOwn(defaults, task) ? defaults[task] : undefined;
   if (fallback) return chipLabel(fallback, adminModels);
-  return "Sin modelo";
+  return null;
 }

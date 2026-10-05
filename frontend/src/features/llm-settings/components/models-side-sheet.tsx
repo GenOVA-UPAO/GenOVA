@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -30,6 +31,7 @@ export function ModelsSideSheet({
   action,
   children,
 }: Readonly<ModelsSideSheetProps>) {
+  const { t } = useTranslation(["llm-settings", "common"]);
   // Al cerrarse, el foco vuelve al botón que lo abrió («Perfiles», «Historial»).
   const returnFocus = useReturnFocus({});
   return (
@@ -56,7 +58,7 @@ export function ModelsSideSheet({
                 variant="ghost"
                 size="icon-sm"
                 className="-mt-1 -mr-2 max-sm:size-11"
-                aria-label="Cerrar"
+                aria-label={t("actions.close", { ns: "common" })}
               >
                 <Icon name="x" size="text-base" />
               </Button>

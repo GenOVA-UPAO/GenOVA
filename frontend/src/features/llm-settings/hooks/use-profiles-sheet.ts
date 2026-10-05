@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import type { ModelProfile } from "../api/model-tools.api";
@@ -14,6 +15,7 @@ interface Options {
 
 /** Estado del panel de perfiles: qué diálogo está abierto y qué hace cada acción. */
 export function useProfilesSheet({ open, onOpenChange, onDiscardDraft }: Options) {
+  const { t } = useTranslation("llm-settings");
   const profiles = useModelProfiles(open);
   const feedback = useConfigApply();
   const [saveOpen, setSaveOpen] = useState(false);
@@ -27,9 +29,9 @@ export function useProfilesSheet({ open, onOpenChange, onDiscardDraft }: Options
       await feedback.refresh();
       setApplying(null);
       onOpenChange(false);
-      feedback.announce(`Perfil «${profile.name}» aplicado.`, res);
+      feedback.announce(t("profiles.appliedSuccess", { name: profile.name }), res);
     } catch (err: unknown) {
-      toast.error(errorMessage(err, "No se pudo aplicar el perfil."));
+      toast.error(errorMessage(err, t("api.applyProfileError")));
     }
   };
 
@@ -37,9 +39,9 @@ export function useProfilesSheet({ open, onOpenChange, onDiscardDraft }: Options
     try {
       await profiles.remove.mutateAsync(profile.id);
       setDeleting(null);
-      toast.success(`Perfil «${profile.name}» borrado.`);
+      toast.success(t("profiles.deletedSuccess", { name: profile.name }));
     } catch (err: unknown) {
-      toast.error(errorMessage(err, "No se pudo borrar el perfil."));
+      toast.error(errorMessage(err, t("api.deleteProfileError")));
     }
   };
 
@@ -47,7 +49,7 @@ export function useProfilesSheet({ open, onOpenChange, onDiscardDraft }: Options
     profiles.create.mutate(name, {
       onSuccess: () => {
         setSaveOpen(false);
-        toast.success(`Perfil «${name}» guardado.`);
+        toast.success(t("profiles.savedSuccess", { name }));
       },
     });
   };

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { QueryErrorState } from "@/core/components/query-error-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
 
@@ -29,18 +31,20 @@ interface ModelsPageTabsProps {
 }
 
 export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <Tabs value={props.activeTab} onValueChange={props.onTabChange} className="flex-col gap-6">
       <TabsList variant="line" className={SECTION_TABS_LIST}>
         <TabsTrigger value="models" className={SECTION_TABS_TRIGGER}>
-          Modelos
+          {t("page.tabs.models")}
         </TabsTrigger>
         <TabsTrigger value="credentials" className={SECTION_TABS_TRIGGER}>
-          Credenciales
+          {t("page.tabs.credentials")}
         </TabsTrigger>
         {props.isAdmin ? (
           <TabsTrigger value="platform" className={SECTION_TABS_TRIGGER}>
-            Plataforma
+            {t("page.tabs.platform")}
           </TabsTrigger>
         ) : null}
       </TabsList>
@@ -48,7 +52,7 @@ export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
         {props.adminLoading ? <ModelsTabSkeleton /> : null}
         {!props.adminLoading && props.adminError ? (
           <QueryErrorState
-            title="No se pudo cargar la configuración de modelos de la plataforma."
+            title={t("page.loadPlatformConfigError")}
             onRetry={props.onAdminRetry}
           />
         ) : null}

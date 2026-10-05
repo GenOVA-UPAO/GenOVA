@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ChainIconButton } from "./chain-icon-button";
 
 interface FallbackActionsProps {
@@ -16,12 +18,13 @@ export function FallbackActions({
   onMove,
   onRemove,
 }: Readonly<FallbackActionsProps>) {
-  const row = `respaldo ${String(index + 1)}`;
+  const { t } = useTranslation("llm-settings");
+  const row = `${t("tasks.fallbackSuffix")} ${String(index + 1)}`;
   return (
     <div className="flex shrink-0 items-center justify-end gap-1">
       <ChainIconButton
-        label="Subir"
-        ariaLabel={`Subir ${row}`}
+        label={t("tasks.moveUp")}
+        ariaLabel={t("tasks.moveUpAria", { row })}
         disabled={disabled || index === 0}
         icon="caret-up"
         onClick={() => {
@@ -29,8 +32,8 @@ export function FallbackActions({
         }}
       />
       <ChainIconButton
-        label="Bajar"
-        ariaLabel={`Bajar ${row}`}
+        label={t("tasks.moveDown")}
+        ariaLabel={t("tasks.moveDownAria", { row })}
         disabled={disabled || index === total - 1}
         icon="caret-down"
         onClick={() => {
@@ -38,8 +41,8 @@ export function FallbackActions({
         }}
       />
       <ChainIconButton
-        label="Quitar"
-        ariaLabel={`Quitar ${row}`}
+        label={t("tasks.remove")}
+        ariaLabel={t("tasks.removeAria", { row })}
         disabled={disabled}
         danger
         icon="trash"
@@ -48,3 +51,4 @@ export function FallbackActions({
     </div>
   );
 }
+

@@ -1,3 +1,5 @@
+import i18n, { t } from "i18next";
+
 import type { ModelTestResult } from "../api/model-tools.api";
 
 /** Qué pasó y qué hacer, para cada código de «Probar». */
@@ -8,82 +10,57 @@ export interface TestOutcome {
   hint: string;
 }
 
-const MODEL_OUTCOMES: Record<string, TestOutcome> = {
-  no_key: {
-    tone: "error",
-    title: "Falta la clave del proveedor",
-    hint: "Añádela en Credenciales y vuelve a probar.",
-  },
-  invalid_key: {
-    tone: "error",
-    title: "Clave no válida",
-    hint: "El proveedor la rechazó. Cámbiala en Credenciales: puede estar mal copiada, caducada o revocada.",
-  },
-  no_credit: {
-    tone: "error",
-    title: "Sin crédito",
-    hint: "La cuenta del proveedor no tiene saldo para este modelo. Recárgala o elige otro modelo.",
-  },
-  rate_limited: {
-    tone: "warning",
-    title: "Límite de peticiones",
-    hint: "El proveedor está limitando la cuenta. Espera un minuto y vuelve a probar, o elige otro modelo.",
-  },
-  model_not_found: {
-    tone: "error",
-    title: "El modelo no existe",
-    hint: "El proveedor no lo reconoce o lo retiró. Elige otro modelo del catálogo.",
-  },
-  timeout: {
-    tone: "warning",
-    title: "No respondió a tiempo",
-    hint: "Tardó más de 25 s. Puede estar saturado: prueba de nuevo o ponle un respaldo más rápido.",
-  },
-  unreachable: {
-    tone: "warning",
-    title: "Sin respuesta del proveedor",
-    hint: "El proveedor está caído o no se pudo conectar. Vuelve a probar en unos minutos.",
-  },
-  empty: {
-    tone: "warning",
-    title: "Respondió vacío",
-    hint: "El modelo gastó la respuesta en razonar y no devolvió texto. Úsalo solo con un respaldo.",
-  },
-  not_testable: {
-    tone: "warning",
-    title: "Este modelo no se prueba aquí",
-    hint: "Probarlo generaría un video de pago. Actívalo y revisa el primer OVA que genere.",
-  },
-};
-
-const UNKNOWN_OUTCOME: TestOutcome = {
-  tone: "error",
-  title: "El proveedor devolvió un error",
-  hint: "Vuelve a probar. Si se repite, elige otro modelo.",
+const OUTCOME_TONES: Record<string, "success" | "error" | "warning"> = {
+  empty: "warning",
+  invalid_key: "error",
+  model_not_found: "error",
+  no_credit: "error",
+  no_key: "error",
+  not_testable: "warning",
+  rate_limited: "warning",
+  timeout: "warning",
+  unreachable: "warning",
 };
 
 export function modelTestOutcome(result: ModelTestResult): TestOutcome {
   if (result.ok) {
-    return { tone: "success", title: result.image ? "Genera imágenes" : "Responde", hint: "" };
+    const title = result.image
+      ? t("llm-settings:testOutcome.successImages")
+      : t("llm-settings:testOutcome.successResponds");
+    return { tone: "success", title, hint: "" };
   }
-  return MODEL_OUTCOMES[result.code] ?? UNKNOWN_OUTCOME;
+  const tone = OUTCOME_TONES[result.code] ?? "error";
+  const keyBase = `llm-settings:testOutcome.${result.code}`;
+  if (i18n.exists(`${keyBase}.title`)) {
+    return {
+      tone,
+      title: t(`${keyBase}.title`),
+      hint: t(`${keyBase}.hint`),
+    };
+  }
+  return {
+    tone: "error",
+    title: t("llm-settings:testOutcome.unknown.title"),
+    hint: t("llm-settings:testOutcome.unknown.hint"),
+  };
 }
 
 /** «812 ms» o «2,4 s». */
 export function formatLatency(ms: number | null): string | null {
   if (ms === null) return null;
   if (ms < 1000) return `${String(Math.round(ms))} ms`;
-  return `${(ms / 1000).toLocaleString("es", { maximumFractionDigits: 1 })} s`;
+  const locale = i18n.language === "en" ? "en" : "es";
+  return `${(ms / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} s`;
 }
 
 export function keySourceText(source: ModelTestResult["key_source"]): string | null {
   switch (source) {
     case "platform":
-      return "Con la clave de la plataforma.";
+      return t("llm-settings:testOutcome.keySourcePlatform");
     case "server":
-      return "Con la clave del servidor.";
+      return t("llm-settings:testOutcome.keySourceServer");
     case "own":
-      return "Con tu clave.";
+      return t("llm-settings:testOutcome.keySourceOwn");
     default:
       return null;
   }

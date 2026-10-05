@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -15,10 +17,12 @@ export function UnsavedChangesBar({
   onDiscard,
   onSave,
 }: Readonly<UnsavedChangesBarProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div
       role="region"
-      aria-label="Cambios sin guardar"
+      aria-label={t("unsaved.ariaLabel")}
       // Sticky dentro del contenido: como `fixed` cruzaba la ventana entera y tapaba el
       // pie del menú lateral.
       className="sticky bottom-4 z-30 rounded-xl border border-border bg-card/95 px-4 py-3 shadow-xs backdrop-blur"
@@ -34,11 +38,11 @@ export function UnsavedChangesBar({
           ) : (
             <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-accent-brand sm:mt-0" />
           )}
-          {blockingMessage ?? "Tienes cambios sin guardar."}
+          {blockingMessage ?? t("unsaved.hint")}
         </p>
         <div className="flex shrink-0 items-center gap-2">
           <Button variant="ghost" className="max-sm:h-11 max-sm:flex-1" onClick={onDiscard}>
-            Descartar cambios
+            {t("unsaved.discard")}
           </Button>
           <Button
             className="max-sm:h-11 max-sm:flex-1"
@@ -46,7 +50,7 @@ export function UnsavedChangesBar({
             loading={saving}
             disabled={blockingMessage !== null}
           >
-            Guardar cambios
+            {t("unsaved.save")}
           </Button>
         </div>
       </div>

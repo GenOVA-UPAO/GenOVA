@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 
 interface ModelTaskCardChipsProps {
@@ -13,12 +15,14 @@ interface ModelTaskCardChipsProps {
  * símbolo de modalidad («Aa 1. …») sin título que dijera qué eran.
  */
 export function ModelTaskCardChips({ fallbacks, models }: Readonly<ModelTaskCardChipsProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium">Modelos de respaldo</p>
+      <p className="text-sm font-medium">{t("tasks.fallbackModelsTitle")}</p>
       {fallbacks.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Ninguno: si el principal falla, la tarea se detiene.
+          {t("tasks.noFallbacksDesc")}
         </p>
       ) : (
         <ol className="space-y-1 text-sm">

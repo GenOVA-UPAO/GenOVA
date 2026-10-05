@@ -1,14 +1,18 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 const TASKS = ["a", "b", "c", "d", "e", "f"];
 
 /** Esqueleto con la forma del maestro-detalle: lista de tareas y panel. */
 export function ModelsTabSkeleton() {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Cargando modelos"
+      aria-label={t("catalog.loadingModels")}
       className="grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-[260px_1fr]"
     >
       <div className="hidden space-y-2 border-r border-border p-2 md:block">

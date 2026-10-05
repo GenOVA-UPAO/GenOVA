@@ -1,14 +1,17 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 /** Filas con la forma de las de verdad: estrella, nombre y detalle, precios. */
 export function CatalogSkeleton() {
+  const { t } = useTranslation("llm-settings");
   return (
     <div
       className="flex-1 divide-y divide-border overflow-hidden px-5"
       role="status"
       aria-busy="true"
     >
-      <span className="sr-only">Cargando modelos…</span>
+      <span className="sr-only">{t("catalog.loadingModels")}</span>
       {Array.from({ length: 7 }, (_, i) => (
         <div key={i} className="flex items-center gap-3 py-3.5">
           <Skeleton className="size-7 rounded-full" />

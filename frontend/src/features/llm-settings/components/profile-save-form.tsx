@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -22,10 +23,11 @@ export function ProfileSaveForm({
   onSave,
   onClose,
 }: Readonly<ProfileSaveDialogProps>) {
+  const { t } = useTranslation("llm-settings");
   const [name, setName] = useState("");
   const [touched, setTouched] = useState(false);
   const trimmed = name.trim();
-  const localError = touched && trimmed === "" ? "Escribe un nombre para el perfil." : null;
+  const localError = touched && trimmed === "" ? t("profiles.nameRequired") : null;
   const error = localError ?? serverError;
 
   const submit = () => {
@@ -42,20 +44,19 @@ export function ProfileSaveForm({
       }}
     >
       <DialogHeader className="pr-8">
-        <DialogTitle>Guardar como perfil</DialogTitle>
+        <DialogTitle>{t("profiles.saveAsProfile")}</DialogTitle>
         <DialogDescription>
-          Guarda el modelo principal y los de respaldo de cada tarea con un nombre, para volver a
-          esta configuración en un clic.
+          {t("profiles.saveAsProfileDesc")}
         </DialogDescription>
       </DialogHeader>
       {dirty ? (
         <UnsavedNote>
-          Tus cambios sin guardar no entran en el perfil: guárdalos antes si quieres incluirlos.
+          {t("profiles.unsavedWarning")}
         </UnsavedNote>
       ) : null}
       <div className="grid gap-1.5">
         <label htmlFor="profile-name" className="text-sm font-medium">
-          Nombre del perfil
+          {t("profiles.nameLabel")}
         </label>
         <Input
           id="profile-name"
@@ -75,16 +76,16 @@ export function ProfileSaveForm({
           </p>
         ) : (
           <p id="profile-name-help" className="text-xs text-muted-foreground">
-            Por ejemplo: «Económico», «Máxima calidad» o «Solo Groq».
+            {t("profiles.namePlaceholder")}
           </p>
         )}
       </div>
       <DialogFooter>
         <Button variant="outline" className="max-sm:h-11" disabled={saving} onClick={onClose}>
-          Cancelar
+          {t("credentials.cancel")}
         </Button>
         <Button type="submit" className="max-sm:h-11" loading={saving}>
-          Guardar perfil
+          {t("tools.saveProfile")}
         </Button>
       </DialogFooter>
     </form>

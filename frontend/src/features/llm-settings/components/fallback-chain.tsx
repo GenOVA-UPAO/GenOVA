@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -35,6 +37,8 @@ export function FallbackChain({
   usageFor,
   onChange,
 }: Readonly<FallbackChainProps>) {
+  const { t } = useTranslation("llm-settings");
+
   function emit(patch: Partial<TaskDraft>) {
     onChange({ ...value, ...patch });
   }
@@ -43,7 +47,7 @@ export function FallbackChain({
     <div className="space-y-3">
       <div>
         <p className="text-sm font-medium">
-          Modelos de respaldo
+          {t("tasks.fallbackModelsTitle")}
           {fallbacks.length > 0 ? (
             <span className="ml-1.5 font-normal text-muted-foreground tabular-nums">
               ({fallbacks.length})
@@ -51,12 +55,12 @@ export function FallbackChain({
           ) : null}
         </p>
         <p className="text-xs text-muted-foreground">
-          Si el principal falla, se prueban en este orden.
+          {t("tasks.fallbackChainDesc")}
         </p>
       </div>
       {fallbacks.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-          Sin modelos de respaldo: si el principal falla, la tarea se detiene.
+          {t("tasks.noFallbacksChainDesc")}
         </p>
       ) : (
         <ol className="divide-y divide-border rounded-lg border border-border">
@@ -93,8 +97,9 @@ export function FallbackChain({
         }}
       >
         <Icon name="plus" size="text-sm" />
-        Añadir modelo de respaldo
+        {t("tasks.addFallback")}
       </Button>
     </div>
   );
 }
+
