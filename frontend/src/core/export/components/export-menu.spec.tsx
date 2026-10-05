@@ -29,7 +29,7 @@ describe("ExportMenu", () => {
       </ExportMenu>,
     );
     await userEvent.click(screen.getByRole("button", { name: "Abrir" }));
-    await userEvent.click(await screen.findByRole("menuitem", { name: new RegExp(label.replace(/[()]/g, "\\$&")) }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }));
     expect(onSelect).toHaveBeenCalledWith(id);
   });
 });

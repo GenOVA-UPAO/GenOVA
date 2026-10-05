@@ -25,7 +25,7 @@ EPUB_NS = "http://www.idpf.org/2007/ops"
 # Nombre XML sin prefijo (NCName, versión ASCII + letras Unicode).
 _NCNAME = re.compile(r"^[^\W\d.-][\w.-]*$")
 # Caracteres no permitidos en XML 1.0.
-_INVALID_XML_CHARS = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\ufffe\uffff]")
+_INVALID_XML_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ufffe\uffff]")
 _XML_DECLARATION = re.compile(r"^\s*<\?xml[^>]*\?>", re.IGNORECASE)
 
 # El parser HTML pasa a minúsculas etiquetas y atributos; SVG distingue mayúsculas.
