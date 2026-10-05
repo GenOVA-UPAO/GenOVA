@@ -20,6 +20,10 @@ class ResourceResult(NamedTuple):
     html: str
     defects: list[str]  # defectos estructurales restantes
     raw_json: dict | list | None  # datos JSON del recurso (o {"monologue": ...} para podcast)
+    # Datos estructurados de un recurso de plantilla para exportarlo como actividad
+    # editable: {"template", "phase", "resource_type", "data", "params"}. Quien guarda
+    # el HTML los persiste con `prometheus.engine.activity_store.record_activity`.
+    activity: dict | None = None
 
 
 def _gen_podcast(
@@ -68,6 +72,7 @@ def _gen_template(
     *,
     fake: bool,
 ) -> ResourceResult:
+    from ova_engine.html import engine_info
     from ova_engine.pipeline import generate_with_template
     from prometheus.engine.validate import resource_defects
 
@@ -83,7 +88,14 @@ def _gen_template(
         deadline=deadline,
         fake=fake,
     )
-    return ResourceResult(html, resource_defects(html, concept), data)
+    activity = {
+        "template": spec.key,
+        "phase": spec.phase,
+        "resource_type": spec.rt,
+        "data": data,
+        "params": engine_info(html).get("params") or {},
+    }
+    return ResourceResult(html, resource_defects(html, concept), data, activity)
 
 
 def generate_resource(

@@ -83,6 +83,7 @@ def resource_worker(payload: dict) -> dict:
     tras el join). Emite worker_signals para la revisión de creencias (F3.1)."""
     import time
 
+    from prometheus.engine.activity_store import record_activity
     from prometheus.plans.generate import generate_resource
     from prometheus.plans.plan_map import plan_for
 
@@ -132,6 +133,7 @@ def resource_worker(payload: dict) -> dict:
             ],
         }
 
+    record_activity(result.html, getattr(result, "activity", None))
     # F2.3 — el refinamiento (evaluator-optimizer) ya corrió dentro de
     # generate_resource como compuerta única; aquí solo leemos los defectos
     # estructurales restantes para el routing a repair.
