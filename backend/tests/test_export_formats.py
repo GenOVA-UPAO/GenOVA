@@ -448,3 +448,12 @@ def test_elpx_escapes_titles_containing_cdata_terminator():
     _, xml = _elpx(phases)
     root = etree.fromstring(xml.encode())  # bien formado pese al `]]>`
     assert root.find(f".//{ODE_NS}pageName").text == "a ]]> b"
+
+
+def test_manual_completion_without_scored_resources_reports_no_score():
+    from scorm.domain.templates.scripts import build_app_js
+
+    js = build_app_js()
+    body = js[js.index("function markComplete()") : js.index("function maybeComplete()")]
+    assert ": 100" not in body  # antes: sin notas se inventaba un 100
+    assert body.index("if (scores.length)") < body.index("cmi.core.score.raw")

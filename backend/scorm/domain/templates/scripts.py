@@ -259,10 +259,14 @@ def build_app_js() -> str:
     }
     window.GenovaScorm.setValue('cmi.core.lesson_status', 'completed')
     const scores = Object.values(completed)
-    const score = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 100
-    window.GenovaScorm.setValue('cmi.core.score.min', '0')
-    window.GenovaScorm.setValue('cmi.core.score.max', '100')
-    window.GenovaScorm.setValue('cmi.core.score.raw', score)
+    // Sin recursos puntuados solo se marca completado: un 100 inventado llegaría
+    // al libro de calificaciones (SCORM o AGS en LTI).
+    if (scores.length) {
+      const score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      window.GenovaScorm.setValue('cmi.core.score.min', '0')
+      window.GenovaScorm.setValue('cmi.core.score.max', '100')
+      window.GenovaScorm.setValue('cmi.core.score.raw', score)
+    }
     saveTime()
     window.GenovaScorm.commit()
     statusNode.textContent = 'Estado LMS: completado y guardado.'
