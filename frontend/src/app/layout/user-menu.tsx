@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
@@ -20,9 +19,9 @@ import { hasPermission, userInitials } from "./lib/layout-helpers";
 
 const THEME_ICON: Record<ThemeMode, string> = { light: "sun", dark: "moon", system: "monitor" };
 const THEME_LABEL: Record<ThemeMode, string> = {
-  get light() { return i18n.t("shell:modo_claro"); },
-  get dark() { return i18n.t("shell:modo_oscuro"); },
-  get system() { return i18n.t("shell:modo_del_sistema"); },
+  light: "shell:modo_claro",
+  dark: "shell:modo_oscuro",
+  system: "shell:modo_del_sistema",
 };
 
 interface UserMenuProps {
@@ -80,7 +79,7 @@ export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
             cycleTheme();
           }}
         >
-          <Icon name={THEME_ICON[mode]} size="text-base" /> {THEME_LABEL[mode]}
+          <Icon name={THEME_ICON[mode]} size="text-base" /> {t(THEME_LABEL[mode])}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={() => void logout()}>

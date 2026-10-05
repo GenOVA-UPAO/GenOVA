@@ -1,9 +1,9 @@
-import { useTranslation } from "react-i18next";
 // Iconos del shell: se asignan al registro al evaluar el módulo (antes del
 // primer render del layout), evitando el flash "?" en navbar/sidebar.
 import "@/core/components/icon-registry-shell";
 
 import { lazy, Suspense, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Outlet } from "react-router";
 
 import { useIsAdmin } from "@/core/auth/auth-store";

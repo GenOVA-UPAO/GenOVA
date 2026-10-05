@@ -35,8 +35,10 @@
   "cargando_pagina": "Cargando página",
   "hay_una_version_nueva": "Hay una versión nueva",
   "algo_salio_mal": "Algo salió mal",
-  "la_aplicacion_se_actualizo_mientras_la_tenias_0e0f82": "La aplicación se actualizó mientras la tenías abierta. Recarga para continuar.",
-  "ocurrio_un_error_inesperado_recarga_la_pagina_e90fa6": "Ocurrió un error inesperado. Recarga la página o vuelve al inicio.",
+  "routeError": {
+    "updateHint": "La aplicación se actualizó mientras la tenías abierta. Recarga para continuar.",
+    "unexpectedHint": "Ocurrió un error inesperado. Recarga la página o vuelve al inicio."
+  },
   "recargar": "Recargar",
   "volver_al_inicio": "Volver al inicio",
   "iniciar_sesion": "Iniciar sesión",

@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { useCurrentUser } from "@/core/auth/auth-store";
 import { cn } from "@/core/lib/cn";
 import { useTrashCount } from "@/features/ova-library/hooks/use-ova-library";
@@ -36,7 +37,7 @@ export function SidebarMenu({ collapsed = false, onNavigate }: Readonly<SidebarM
       >
         <NavSection title={t("shell:principal")} collapsed={collapsed}>
           {navigationLinks.map((l) => (
-            <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} {...common} />
+            <NavItem key={l.to} to={l.to} label={t(l.labelKey)} icon={l.icon} {...common} />
           ))}
           {canAnalytics && <NavItem to="/analytics" label={t("shell:analitica")} icon="chart" {...common} />}
           <NavItem to="/papelera" label={t("shell:papelera")} icon="trash" badge={trashCount} {...common} />
@@ -44,7 +45,7 @@ export function SidebarMenu({ collapsed = false, onNavigate }: Readonly<SidebarM
         {canModels && (
           <NavSection title={t("shell:configuracion")} collapsed={collapsed}>
             {configNavLinks.map((l) => (
-              <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} {...common} />
+              <NavItem key={l.to} to={l.to} label={t(l.labelKey)} icon={l.icon} {...common} />
             ))}
           </NavSection>
         )}
@@ -54,7 +55,7 @@ export function SidebarMenu({ collapsed = false, onNavigate }: Readonly<SidebarM
               <NavItem
                 key={l.to}
                 to={l.to}
-                label={l.label}
+                label={t(l.labelKey)}
                 icon={l.icon}
                 end={l.exact}
                 {...common}

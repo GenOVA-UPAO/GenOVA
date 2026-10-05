@@ -1,5 +1,4 @@
 import i18n from "i18next";
-import { useTranslation } from "react-i18next";
 import { Fragment } from "react";
 import {
   createBrowserRouter,
@@ -28,10 +27,10 @@ const page = (load: () => Loaded, name: string) => async () => ({
   Component: ((await load()) as Record<string, React.ComponentType>)[name],
 });
 
-const guest = (path: string, title: string, lazy: RouteObject["lazy"]): RouteObject => ({
+const guest = (path: string, titleKey: string, lazy: RouteObject["lazy"]): RouteObject => ({
   path,
   loader: requireGuest,
-  handle: { title } satisfies RouteHandle,
+  handle: { get title() { return i18n.t(titleKey); } } satisfies RouteHandle,
   lazy,
 });
 
@@ -53,16 +52,16 @@ export const routes: RouteObject[] = [
     HydrateFallback: AppSplash,
     errorElement: <RouteError />,
     children: [
-      guest("/login", i18n.t("shell:iniciar_sesion"), page(pageLoaders.login, "LoginPage")),
-      guest("/register", i18n.t("shell:crear_cuenta"), page(pageLoaders.register, "RegisterPage")),
+      guest("/login", "shell:iniciar_sesion", page(pageLoaders.login, "LoginPage")),
+      guest("/register", "shell:crear_cuenta", page(pageLoaders.register, "RegisterPage")),
       guest(
         "/forgot-password",
-        i18n.t("shell:recuperar_contrasena"),
+        "shell:recuperar_contrasena",
         page(pageLoaders.forgotPassword, "ForgotPasswordPage"),
       ),
       guest(
         "/reset-password",
-        i18n.t("shell:restablecer_contrasena"),
+        "shell:restablecer_contrasena",
         page(pageLoaders.resetPassword, "ResetPasswordPage"),
       ),
       {
