@@ -12,7 +12,7 @@ export function CancelGenerationModal({
   return (
     <ConfirmModal
       title={t("workspace:cancelar_la_generacion")}
-      message={t("workspace:los_recursos_que_aun_no_se_generaron_no_se_cr_091e54")}
+      message={t("workspace:generationCancelHint")}
       confirmLabel={t("workspace:cancelar_generacion")}
       loadingLabel={t("workspace:cancelando")}
       isLoading={cancel.isPending}

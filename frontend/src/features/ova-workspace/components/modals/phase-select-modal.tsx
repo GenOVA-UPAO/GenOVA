@@ -38,7 +38,7 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
     <WorkspaceModal
       title={t("workspace:configurar_recursos_5e")}
       size="xl"
-      description={t("workspace:elige_que_recursos_generara_la_ia_en_cada_fas_63f3f9")}
+      description={t("workspace:resourceSelectionHint")}
       onClose={onClose}
       footer={
         <PhaseSelectFooter

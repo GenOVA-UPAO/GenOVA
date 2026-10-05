@@ -6,7 +6,7 @@ export function ExplorePage() {
   return (
     <PhasePage
       phase="explore"
-      description={t("workspace:interactua_con_simuladores_y_laboratorios_par_5c512b")}
+      description={t("workspace:exploreDescription")}
     />
   );
 }

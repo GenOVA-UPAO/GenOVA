@@ -221,10 +221,10 @@ function sourcesLine(report: RegenRagReport): string | undefined {
     return i18n.t("workspace:material_consultado_value", { p0: list });
   }
   if (report.status === "error") {
-    return i18n.t("workspace:no_se_pudo_consultar_el_material_de_referenci_681a07");
+    return i18n.t("workspace:referenceMaterialError");
   }
   if (report.status === "no_matches" && !report.attachments?.length) {
-    return i18n.t("workspace:los_archivos_del_ova_no_tenian_nada_relevante_e8a84e");
+    return i18n.t("workspace:referenceMaterialNoMatches");
   }
   return undefined;
 }
@@ -258,7 +258,7 @@ export function finishChatPatch(
   }
   return {
     status: "error",
-    text: i18n.t("workspace:no_se_pudieron_aplicar_los_cambios_value_pued_f7a756", { p0: target }),
+    text: i18n.t("workspace:chatApplyError", { p0: target }),
     resourceLabels,
   };
 }

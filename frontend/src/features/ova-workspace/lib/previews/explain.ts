@@ -10,7 +10,7 @@ export const EXPLAIN_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "2": preview(
     "workspace:lectura_guiada",
-    "workspace:texto_didactico_con_secciones_y_preguntas_de__bbf184",
+    "workspace:guidedReadingDescription",
     "workspace:html_narrativo",
     ["workspace:secciones_claras", "workspace:ejemplos_intercalados", "workspace:chequeo_de_comprension"],
     "read",

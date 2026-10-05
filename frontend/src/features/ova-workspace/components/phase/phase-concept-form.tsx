@@ -37,7 +37,7 @@ export function PhaseConceptForm({
       >
         {t("workspace:generar_recurso")} </Button>
       {!resource && <p className="text-xs text-muted-foreground">{t("workspace:elige_primero_un_tipo_de_recurso_en_el_paso_1")}</p>}
-      {generation.isPending && <p role="status" className="text-sm text-muted-foreground">{t("workspace:la_ia_esta_generando_el_recurso_esto_puede_to_a78448")}</p>}
+      {generation.isPending && <p role="status" className="text-sm text-muted-foreground">{t("workspace:resourceGeneratingHint")}</p>}
       {generation.error && <p role="alert" className="text-sm text-destructive">{generation.error.message}</p>}
     </section>
   );

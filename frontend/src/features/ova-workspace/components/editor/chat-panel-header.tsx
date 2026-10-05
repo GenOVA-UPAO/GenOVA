@@ -32,7 +32,7 @@ export function ChatPanelHeader({ busy, onRegenAll }: Readonly<Props>) {
       {confirm && (
         <ConfirmModal
           title={t("workspace:regenerar_el_ova_completo")}
-          message={t("workspace:la_ia_volvera_a_crear_todos_los_recursos_desd_2f6395")}
+          message={t("workspace:regenerateAllHint")}
           confirmLabel={t("workspace:regenerar_ova")}
           danger={false}
           onConfirm={() => {

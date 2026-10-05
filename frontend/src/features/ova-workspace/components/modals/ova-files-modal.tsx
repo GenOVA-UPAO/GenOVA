@@ -22,7 +22,7 @@ export default function OvaFilesModal({
   return (
     <WorkspaceModal
       title={t("workspace:archivos_de_referencia")}
-      description={t("workspace:la_ia_usara_estos_archivos_como_contexto_al_g_d6d9d2")}
+      description={t("workspace:referenceFilesHint")}
       size="sm"
       onClose={onClose}
       footer={

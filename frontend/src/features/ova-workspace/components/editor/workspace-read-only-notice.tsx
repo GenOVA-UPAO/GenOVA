@@ -15,7 +15,7 @@ export function WorkspaceReadOnlyNotice() {
     >
       <Icon name="lock" className="mt-0.5 shrink-0 text-muted-foreground sm:mt-0" />
       <p className="min-w-0 text-muted-foreground">
-        <span className="font-medium text-foreground">{t("workspace:solo_lectura")}</span> {t("workspace:solo_quien_creo_este_ova_puede_modificarlo_pu_628163")} </p>
+        <span className="font-medium text-foreground">{t("workspace:solo_lectura")}</span> {t("workspace:readOnlyHint")} </p>
     </div>
   );
 }

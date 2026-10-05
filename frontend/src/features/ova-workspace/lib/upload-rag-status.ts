@@ -29,7 +29,7 @@ function indexedView(rag: RagStatus): UploadPhaseView {
 const BY_RAG_STATUS: Record<string, (rag: RagStatus) => UploadPhaseView> = {
   processing: () => ({ phase: "indexing", label: i18n.t("workspace:indexando") }),
   indexed: indexedView,
-  disabled: () => ({ phase: "disabled", label: i18n.t("workspace:no_se_usara"), detail: i18n.t("workspace:la_busqueda_en_archivos_esta_desactivada_en_e_c61378") }),
+  disabled: () => ({ phase: "disabled", label: i18n.t("workspace:no_se_usara"), detail: i18n.t("workspace:fileSearchDisabledHint") }),
 };
 
 function unusableView(rag: RagStatus): UploadPhaseView {

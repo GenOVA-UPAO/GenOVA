@@ -59,7 +59,7 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Rea
       {confirmClear && (
         <ConfirmModal
           title={t("workspace:limpiar_el_historial")}
-          message={t("workspace:se_borraran_value_de_este_hilo_el_ova_y_sus_v_4bc074", { p0: countLabel(messages.length) })}
+          message={t("workspace:chatClearHint", { p0: countLabel(messages.length) })}
           confirmLabel={t("workspace:limpiar_historial")}
           onConfirm={() => {
             onClear();

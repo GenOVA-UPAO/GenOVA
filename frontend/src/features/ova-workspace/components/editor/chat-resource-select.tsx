@@ -21,7 +21,7 @@ export function ChatResourceSelect({ id, phases, selected, onToggle, onSelectAll
       <legend className="float-left text-sm font-medium">{t("workspace:recursos_a_regenerar")}</legend>
       <Button variant="link" size="xs" className="float-right h-auto px-0" onClick={onSelectAll}>
         {t("workspace:seleccionar_todos")} </Button>
-      <p className="clear-both pt-0.5 text-xs text-muted-foreground">{t("workspace:la_instruccion_se_aplicara_solo_a_los_recurso_a42c77")}</p>
+      <p className="clear-both pt-0.5 text-xs text-muted-foreground">{t("workspace:selectedResourcesHint")}</p>
       <div className="mt-2 max-h-36 space-y-0.5 overflow-y-auto">
         {phases.map((phase) => (
           <label key={phase.id} className="flex min-h-9 cursor-pointer items-center gap-2 rounded-md px-1.5 text-sm hover:bg-muted">

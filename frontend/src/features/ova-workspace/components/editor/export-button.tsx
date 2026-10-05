@@ -27,7 +27,7 @@ export function ExportButton({ canExport, pending, format, onDownload }: Readonl
         loading={pending}
         disabled={!canExport}
         title={
-          canExport ? undefined : t("workspace:termina_o_elimina_los_recursos_con_error_para_cb9946")
+          canExport ? undefined : t("workspace:exportUnavailableHint")
         }
         className="rounded-r-none max-md:h-11 max-md:px-4"
         onClick={() => {

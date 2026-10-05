@@ -10,7 +10,7 @@ export function WorkspacePreviewEmpty() {
       <EmptyState
         icon="eye"
         title={t("workspace:este_ova_no_tiene_recursos")}
-        description={t("workspace:ve_a_editar_y_usa_anadir_recurso_en_una_fase__e7c683")}
+        description={t("workspace:emptyPreviewHint")}
       />
     </div>
   );

@@ -24,7 +24,7 @@ function helpText(prompt: string): string {
   const missing = missingPromptChars(prompt);
   if (prompt.trim().length > 0 && missing > 0)
     return i18n.t("workspace:faltan_value_caracteres_para_generar", { p0: String(missing) });
-  return i18n.t("workspace:incluye_el_tema_los_objetivos_de_aprendizaje__aefed8");
+  return i18n.t("workspace:promptHelp");
 }
 
 /** Campo principal de /crear: label visible, ayuda debajo y error solo tras interactuar. */
@@ -79,7 +79,7 @@ export function CreationPromptField({
           "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
           "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/40",
         )}
-        placeholder={t("workspace:ej_control_de_concurrencia_en_oracle_objetivo_51e6e2")}
+        placeholder={t("workspace:promptPlaceholder")}
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);

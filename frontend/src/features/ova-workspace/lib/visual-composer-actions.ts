@@ -91,7 +91,7 @@ function handleIntentResult(
       previousBlocks: ctx.currentBlocks,
     });
     ctx.setStatusMessage(i18n.t("workspace:confirmas_la_aplicacion_de_este_cambio_estructural"));
-    toast.info(i18n.t("workspace:esta_accion_requiere_tu_confirmacion_antes_de_b43b70"));
+    toast.info(i18n.t("workspace:structureConfirmationHint"));
     return;
   }
 
@@ -166,7 +166,7 @@ export async function executeComposerApply(
       throw new Error(res.message || i18n.t("workspace:no_se_pudo_guardar_la_version"));
     }
     const ver = res.version_number ? ` v${String(res.version_number)}` : "";
-    toast.success(i18n.t("workspace:nueva_versionvalue_guardada_exitosamente_en_e_021c70", { p0: ver }));
+    toast.success(i18n.t("workspace:versionSaved", { p0: ver }));
     return true;
   } catch (err: unknown) {
     const msg = extractErrorMessage(err);

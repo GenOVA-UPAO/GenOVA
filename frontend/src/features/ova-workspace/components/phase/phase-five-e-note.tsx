@@ -6,7 +6,7 @@ export function PhaseFiveENote() {
     <section className="rounded-xl border border-border bg-card p-5">
       <h2 className="text-sm font-semibold">{t("workspace:modelo_5e")}</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        {t("workspace:enganche_exploracion_explicacion_elaboracion__9bc575")} </p>
+        {t("workspace:fiveEPhases")} </p>
     </section>
   );
 }

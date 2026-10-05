@@ -22,7 +22,7 @@ export function ChatEmptyState({ onSelectPrompt }: Readonly<Props>) {
       <h3 className="mt-3 font-display text-base font-semibold text-foreground">
         {t("workspace:como_deseas_mejorar_este_ova")} </h3>
       <p className="mt-1 max-w-64 text-sm text-muted-foreground">
-        {t("workspace:escribe_abajo_que_quieres_cambiar_la_ia_lo_ap_43fee1")} </p>
+        {t("workspace:chatEmptyHint")} </p>
       {onSelectPrompt && (
         <div className="mt-5 flex w-full max-w-72 flex-col gap-1.5">
           <p className="text-xs font-medium text-muted-foreground">{t("workspace:prueba_con")}</p>

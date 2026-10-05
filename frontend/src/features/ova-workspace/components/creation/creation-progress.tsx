@@ -14,7 +14,7 @@ import { ProgressActions } from "./progress-actions";
 
 function subtitle(job: ReturnType<typeof useOvaJob>): string {
   if (!job.outcome.isTerminal) {
-    return i18n.t("workspace:puedes_salir_de_esta_pagina_la_generacion_con_6a269a");
+    return i18n.t("workspace:generationBackgroundHint");
   }
   if (!job.outcome.partialFail) return i18n.t("workspace:revisa_el_resultado_de_cada_recurso");
   const failed = failedCount(job.resources);
@@ -23,7 +23,7 @@ function subtitle(job: ReturnType<typeof useOvaJob>): string {
     failed === 1
       ? i18n.t("workspace:1_de_value_recursos_no_se_pudo_generar", { p0: total })
       : i18n.t("workspace:value_de_value_recursos_no_se_pudieron_generar", { p0: String(failed), p1: total });
-  return i18n.t("workspace:value_reintenta_los_fallidos_o_abre_el_ova_co_e9693b", { p0: lead });
+  return i18n.t("workspace:generationRetryHint", { p0: lead });
 }
 
 export function CreationProgress({
