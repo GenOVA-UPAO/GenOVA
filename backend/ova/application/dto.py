@@ -141,10 +141,19 @@ class PhaseVersionInput:
 
 @dataclass(frozen=True, slots=True)
 class PackageDownload:
-    kind: str
+    kind: str  # "url" | "file" | "redirect" | "bytes"
     filename: str
     url: str | None = None
     file_path: str | None = None
+    content: bytes | None = None  # kind == "bytes": paquete construido al vuelo
+    media_type: str = "application/zip"
+
+
+@dataclass(frozen=True, slots=True)
+class ExportOvaInput:
+    ova_id: str
+    actor: OvaActor
+    format: str
 
 
 @dataclass(frozen=True, slots=True)

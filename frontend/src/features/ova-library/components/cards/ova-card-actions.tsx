@@ -1,6 +1,8 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
-import { Tooltip } from "@/core/components/ui/tooltip";
+import { ExportMenu } from "@/core/export/components/export-menu";
+import type { ExportFormatId } from "@/core/export/lib/formats";
+import { useLastExportFormat } from "@/core/export/lib/use-last-export-format";
 
 import { OvaCardPrimaryAction } from "./ova-card-primary-action";
 
@@ -12,7 +14,7 @@ interface OvaCardActionsProps {
   isDownloading?: boolean;
   isDuplicating?: boolean;
   canEdit?: boolean;
-  onDownload: () => void;
+  onDownload: (format: ExportFormatId) => void;
   onResume?: (id: string) => void;
 }
 
@@ -30,6 +32,11 @@ export function OvaCardActions({
   onDownload,
   onResume,
 }: Readonly<OvaCardActionsProps>) {
+  const [format, rememberFormat] = useLastExportFormat();
+  const handleSelect = (next: ExportFormatId) => {
+    rememberFormat(next);
+    onDownload(next);
+  };
   return (
     <div className="flex flex-wrap items-center gap-2">
       <OvaCardPrimaryAction
@@ -41,18 +48,19 @@ export function OvaCardActions({
         onResume={onResume}
       />
       {isReady && (
-        <Tooltip label="Paquete SCORM (.zip) para tu aula virtual" side="top">
+        <ExportMenu selected={format} onSelect={handleSelect}>
           <Button
             variant="ghost"
             className={ACTION_CLASS}
+            aria-label="Descargar, elegir formato"
             loading={isDownloading}
             disabled={isDuplicating}
-            onClick={onDownload}
           >
             {!isDownloading && <Icon name="download-simple" size="text-base" />}
             {isDownloading ? "Descargando…" : "Descargar"}
+            {!isDownloading && <Icon name="caret-down" size="text-xs" />}
           </Button>
-        </Tooltip>
+        </ExportMenu>
       )}
     </div>
   );

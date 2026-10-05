@@ -44,6 +44,8 @@ dependencies = [
     "pyotp==2.10.0",
     # Parser JS (motor QuickJS) para detectar scripts rotos o truncados en los OVAs generados.
     "quickjs==1.19.4",
+    # Conversión HTML → XHTML para la exportación EPUB 3 (ya venía por python-docx).
+    "lxml==6.1.1",
 ]
 
 [project.optional-dependencies]
