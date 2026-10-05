@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 
+from core.educational_metadata import EducationalMetadata
 from scorm.domain.formats.elpx import build_elpx_bytes
 from scorm.domain.formats.epub import build_epub_bytes
 from scorm.domain.package import build_shell_zip_bytes
@@ -18,7 +19,7 @@ from scorm.domain.package import build_shell_zip_bytes
 DEFAULT_EXPORT_FORMAT = "scorm12"
 DEFAULT_MODULE_TITLE = "OVA Generado por GenOVA"
 
-PackageBuilder = Callable[[str, str, list[dict] | None], bytes]
+PackageBuilder = Callable[..., bytes]
 
 
 class UnknownExportFormat(ValueError):
@@ -40,8 +41,9 @@ class ExportFormat:
         course_title: str,
         phases: list[dict] | None,
         module_title: str = DEFAULT_MODULE_TITLE,
+        *, metadata: EducationalMetadata | None = None,
     ) -> bytes:
-        return self.builder(course_title, module_title, phases)
+        return self.builder(course_title, module_title, phases, metadata=metadata)
 
 
 EXPORT_FORMATS: dict[str, ExportFormat] = {
@@ -90,11 +92,12 @@ def build_export(
     course_title: str,
     phases: list[dict] | None,
     module_title: str = DEFAULT_MODULE_TITLE,
+    *, metadata: EducationalMetadata | None = None,
 ) -> bytes:
     fmt = get_export_format(format_id)
     if fmt is None:
         raise UnknownExportFormat(format_id)
-    return fmt.build(course_title, phases, module_title)
+    return fmt.build(course_title, phases, module_title, metadata=metadata)
 
 
 __all__ = [

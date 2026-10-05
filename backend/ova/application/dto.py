@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ova.domain.model import Ova, OvaActor, OvaPhase
 
@@ -13,6 +13,7 @@ class UpdateOvaMetadataInput:
     actor: OvaActor
     title: str
     description: str | None
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,6 +21,7 @@ class OvaMetadataResult:
     id: str
     title: str
     description: str | None
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +69,7 @@ class SaveOvaInput:
     prompt: str
     phases: tuple[OvaPhase, ...]
     upload_ids: tuple[str, ...]
+    author: str = ""
 
 
 @dataclass(frozen=True, slots=True)

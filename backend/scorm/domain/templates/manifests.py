@@ -7,6 +7,9 @@ todos los archivos del zip.
 
 from xml.sax.saxutils import escape as xml_escape
 
+from core.educational_metadata import EducationalMetadata
+from scorm.domain.templates.lom import build_lom
+
 # Archivos del shell comunes a todos los paquetes basados en `index.html`.
 SHELL_FILES = (
     "index.html",
@@ -21,7 +24,7 @@ def _file_tags(files: list[str]) -> str:
     return "\n".join(f'      <file href="{xml_escape(f, {chr(34): "&quot;"})}" />' for f in files)
 
 
-def build_manifest_2004(course_title: str, module_title: str, resource_files: list[str]) -> str:
+def build_manifest_2004(course_title: str, module_title: str, resource_files: list[str], metadata: EducationalMetadata | None = None) -> str:
     """Manifiesto SCORM 2004 4th Edition: un SCO (`adlcp:scormType="sco"`)."""
     files = _file_tags([*SHELL_FILES, *resource_files, "cmi5.xml"])
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -43,6 +46,7 @@ def build_manifest_2004(course_title: str, module_title: str, resource_files: li
   <metadata>
     <schema>ADL SCORM</schema>
     <schemaversion>2004 4th Edition</schemaversion>
+    {build_lom(course_title, metadata)}
   </metadata>
 
   <organizations default="ORG-DEFAULT">
@@ -63,7 +67,7 @@ def build_manifest_2004(course_title: str, module_title: str, resource_files: li
 """
 
 
-def build_ims_manifest(course_title: str, module_title: str, resource_files: list[str]) -> str:
+def build_ims_manifest(course_title: str, module_title: str, resource_files: list[str], metadata: EducationalMetadata | None = None) -> str:
     """Manifiesto IMS Content Packaging 1.1.4, sin extensiones ADL/SCORM."""
     files = _file_tags([*SHELL_FILES, *resource_files])
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -77,6 +81,7 @@ def build_ims_manifest(course_title: str, module_title: str, resource_files: lis
   <metadata>
     <schema>IMS Content</schema>
     <schemaversion>1.1.4</schemaversion>
+    {build_lom(course_title, metadata)}
   </metadata>
 
   <organizations default="ORG-DEFAULT">

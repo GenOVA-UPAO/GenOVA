@@ -27,6 +27,7 @@ from io import BytesIO
 from xml.sax.saxutils import escape as xml_escape
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
+from core.educational_metadata import EducationalMetadata
 from scorm.domain.resources import prepare_phase_resources
 
 ODE_NAMESPACE = "http://www.intef.es/xsd/ode"
@@ -166,14 +167,23 @@ def _nav_structure(ids: OdeIdFactory, order: int, label: str, src: str) -> str:
 
 
 def build_content_xml(
-    course_title: str, module_title: str, pages: list[tuple[str, str]], ids: OdeIdFactory
+    course_title: str, module_title: str, pages: list[tuple[str, str]], ids: OdeIdFactory,
+    metadata: EducationalMetadata | None = None,
 ) -> str:
     """`pages`: (etiqueta, ruta del recurso relativa a content/resources)."""
+    meta = metadata or EducationalMetadata(description=module_title)
     properties = [
         ("pp_title", course_title),
-        ("pp_description", module_title),
-        ("pp_lang", "es"),
-        ("pp_license", LICENSE),
+        ("pp_description", meta.description or ""),
+        ("pp_lang", meta.language),
+        ("pp_author", meta.author),
+        ("pp_keywords", ", ".join(meta.keywords)),
+        ("pp_license", meta.exe_license),
+        ("pp_licenseUrl", meta.license_url),
+        ("pp_category", meta.educational_level),
+        ("pp_extraHeadContent",
+         f'<meta name="audience" content="{html_escape(meta.audience, quote=True)}" />'
+         f'<meta name="typical-learning-time" content="{html_escape(meta.typical_learning_time, quote=True)}" />'),
         ("pp_theme", "base"),
         ("pp_addExeLink", "false"),
         ("pp_addPagination", "true"),
@@ -205,6 +215,7 @@ def build_elpx_bytes(
     module_title: str = "Objeto Virtual de Aprendizaje",
     phases: list[dict] | None = None,
     *,
+    metadata: EducationalMetadata | None = None,
     now: datetime | None = None,
     rng: random.Random | None = None,
 ) -> bytes:
@@ -222,5 +233,5 @@ def build_elpx_bytes(
                     compress_type=ZIP_STORED,
                 )
             pages.append((resource.label, rel))
-        zip_file.writestr("content.xml", build_content_xml(course_title, module_title, pages, ids))
+        zip_file.writestr("content.xml", build_content_xml(course_title, module_title, pages, ids, metadata))
     return buffer.getvalue()

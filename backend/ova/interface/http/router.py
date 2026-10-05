@@ -63,6 +63,7 @@ def save_ova(
     result = use_cases.save_ova.execute(
         SaveOvaInput(
             actor_id=str(current_user.id),
+            author=current_user.full_name or current_user.email,
             title=title,
             prompt=payload.prompt,
             phases=tuple(

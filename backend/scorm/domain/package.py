@@ -1,6 +1,7 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
+from core.educational_metadata import EducationalMetadata
 from scorm.domain.resources import DEFAULT_PHASES, prepare_phase_resources
 from scorm.domain.templates.html import build_index_html, build_manifest
 from scorm.domain.templates.manifests import build_ims_manifest, build_manifest_2004
@@ -26,6 +27,7 @@ def build_shell_zip_bytes(
     course_title: str = "OVA GenOVA",
     module_title: str = "Objeto Virtual de Aprendizaje",
     phases: list[dict] | None = None,
+    *, metadata: EducationalMetadata | None = None,
 ) -> bytes:
     """Zip con el shell `index.html` y un recurso HTML por fase en `resources/`.
 
@@ -51,9 +53,9 @@ def build_shell_zip_bytes(
         if manifest_builder is not None:
             resource_files = [r["file"] for r in resources] + media
             zip_file.writestr(
-                "imsmanifest.xml", manifest_builder(course_title, module_title, resource_files)
+                "imsmanifest.xml", manifest_builder(course_title, module_title, resource_files, metadata)
             )
-        zip_file.writestr("index.html", build_index_html(course_title, resources, package_label))
+        zip_file.writestr("index.html", build_index_html(course_title, resources, package_label, metadata))
         zip_file.writestr("resources/styles.css", build_styles_css())
         zip_file.writestr("resources/scorm.js", build_scorm_js(scorm_version))
         zip_file.writestr("resources/xapi.js", build_xapi_js())
@@ -70,8 +72,9 @@ def build_scorm_zip_bytes(
     course_title: str = "OVA GenOVA",
     module_title: str = "Objeto Virtual de Aprendizaje",
     phases: list[dict] | None = None,
+    *, metadata: EducationalMetadata | None = None,
 ) -> bytes:
     """Assemble a SCORM 1.2 package. Each phase becomes its own HTML resource
     file loaded in an iframe by the SCO shell — keeps full HTML documents
     (engage/explore AI output) isolated and renderable."""
-    return build_shell_zip_bytes("scorm12", course_title, module_title, phases)
+    return build_shell_zip_bytes("scorm12", course_title, module_title, phases, metadata=metadata)

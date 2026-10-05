@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from core.educational_metadata import metadata_from_ova
 from ova.application.dto import ExportOvaInput, ManageOvaInput, PackageDownload
 from ova.application.ports import ExportFormatSpec, OvaEditorRepository, OvaLifecycleRepository
 from ova.application.use_cases.export_scorm import ExportScorm
@@ -54,7 +55,7 @@ class ExportPackage:
             }
             for phase in self.editor.list_phases(active.id)
         ]
-        content = fmt.build(ova.title, phases)
+        content = fmt.build(ova.title, phases, metadata=metadata_from_ova(ova))
         filename = f"{scorm_filename_stem(ova.title)}_v{active.version_number}.{fmt.extension}"
         return PackageDownload(
             kind="bytes", filename=filename, content=content, media_type=fmt.media_type

@@ -1,6 +1,7 @@
 import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, apiJson } from "@/core/lib/http";
 
+import type { MetadataInput } from "../lib/metadata-schema";
 import type { OvaListItem } from "../lib/types";
 
 export interface OvaListParams {
@@ -57,7 +58,7 @@ export const ovaLibraryApi = {
     apiJson<{ message?: string; edit_url: string }>(`/api/ovas/${id}/duplicar`, {
       method: "POST",
     }),
-  updateMetadata: (id: string, payload: { title?: string; description?: string }) =>
+  updateMetadata: (id: string, payload: MetadataInput) =>
     apiJson(`/api/ovas/${id}/metadata`, { method: "PATCH", body: json(payload) }),
   async download(id: string, title = "ova"): Promise<void> {
     const res = await apiFetch(`/api/ovas/${id}/download`);

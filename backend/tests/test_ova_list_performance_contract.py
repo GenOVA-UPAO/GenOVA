@@ -29,6 +29,9 @@ CREATE TABLE users (
 );
 
 CREATE TABLE ovas (
+  license TEXT NOT NULL DEFAULT 'CC BY-SA 4.0', language TEXT NOT NULL DEFAULT 'es',
+  keywords JSON NOT NULL DEFAULT '[]', educational_level TEXT NOT NULL DEFAULT '',
+  audience TEXT NOT NULL DEFAULT '', typical_learning_time TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '',
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,

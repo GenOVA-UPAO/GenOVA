@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
-from models import Ova, OvaPhase, OvaVersion
+from models import Ova, OvaPhase, OvaVersion, User
 from ova.domain.model import OvaDuplicateSource
 from ova.domain.model import OvaPhase as DomainOvaPhase
 from rag import tie_uploads_to_ova
@@ -27,7 +27,9 @@ class SqlAlchemyOvaCreationRepository:
     def create_ova(
         self, owner_id: str, title: str, description: str | None, status: str
     ) -> str:
-        ova = Ova(user_id=owner_id, title=title, description=description, status=status)
+        owner = self._db.get(User, owner_id)
+        ova = Ova(user_id=owner_id, title=title, description=description, status=status,
+                  author=(owner.full_name or owner.email) if owner else "")
         self._db.add(ova)
         self._db.flush()
         self._ovas[str(ova.id)] = ova

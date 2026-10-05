@@ -20,6 +20,7 @@ from xml.sax.saxutils import escape as xml_escape
 from xml.sax.saxutils import quoteattr
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
+from core.educational_metadata import EducationalMetadata
 from scorm.domain.formats.xhtml import html_to_xhtml
 from scorm.domain.resources import prepare_phase_resources
 
@@ -67,6 +68,7 @@ def _package_opf(
     modified: datetime,
     manifest_items: list[dict],
     spine_ids: list[str],
+    metadata: EducationalMetadata | None = None,
 ) -> str:
     items = "\n".join(
         "    <item "
@@ -76,14 +78,21 @@ def _package_opf(
     )
     spine = "\n".join(f'    <itemref idref="{idref}" />' for idref in spine_ids)
     stamp = modified.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    meta = metadata or EducationalMetadata(description=module_title, author="GenOVA")
+    subjects = "".join(f"<dc:subject>{xml_escape(k)}</dc:subject>" for k in meta.keywords)
     return f"""<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="es">
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" prefix="schema: https://schema.org/" xml:lang={quoteattr(meta.language)}>
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="pub-id">{xml_escape(identifier)}</dc:identifier>
     <dc:title>{xml_escape(course_title)}</dc:title>
-    <dc:description>{xml_escape(module_title)}</dc:description>
-    <dc:creator>GenOVA</dc:creator>
-    <dc:language>es</dc:language>
+    <dc:description>{xml_escape(meta.description or "")}</dc:description>
+    <dc:creator>{xml_escape(meta.author)}</dc:creator>
+    <dc:language>{xml_escape(meta.language)}</dc:language>
+    <dc:rights>{xml_escape(meta.license)}</dc:rights>
+    {subjects}
+    <meta property="schema:educationalLevel">{xml_escape(meta.educational_level)}</meta>
+    <meta property="schema:audience">{xml_escape(meta.audience)}</meta>
+    <meta property="schema:timeRequired">{xml_escape(meta.typical_learning_time)}</meta>
     <meta property="dcterms:modified">{stamp}</meta>
   </metadata>
   <manifest>
@@ -101,6 +110,7 @@ def build_epub_bytes(
     module_title: str = "Objeto Virtual de Aprendizaje",
     phases: list[dict] | None = None,
     *,
+    metadata: EducationalMetadata | None = None,
     identifier: str | None = None,
     modified: datetime | None = None,
 ) -> bytes:
@@ -160,7 +170,7 @@ def build_epub_bytes(
         zip_file.writestr(
             f"{CONTENT_DIR}/package.opf",
             _package_opf(
-                course_title, module_title, identifier, modified, manifest_items, spine_ids
+                course_title, module_title, identifier, modified, manifest_items, spine_ids, metadata
             ),
         )
 
