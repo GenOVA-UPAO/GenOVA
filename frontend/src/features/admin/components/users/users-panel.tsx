@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { QueryErrorState } from "@/core/components/query-error-state";
 
 import type { AdminUser, Role, UsersHandlers } from "../../lib/types";
@@ -32,6 +34,8 @@ export function UsersPanel({
   onRetry,
   onClearFilters,
 }: Readonly<UsersPanelProps>) {
+  const { t } = useTranslation("admin");
+
   let content = (
     <UsersTable
       users={users}
@@ -46,7 +50,7 @@ export function UsersPanel({
   if (isLoading) {
     content = <UsersSkeleton />;
   } else if (error !== "") {
-    return <QueryErrorState title="No se pudieron cargar los usuarios" onRetry={onRetry} />;
+    return <QueryErrorState title={t("users.loadError")} onRetry={onRetry} />;
   } else if (users.length === 0) {
     return <UsersEmpty isFiltering={isFiltering} onClearFilters={onClearFilters} />;
   }

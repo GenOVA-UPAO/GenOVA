@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import { Textarea } from "@/core/components/ui/textarea";
@@ -22,10 +24,12 @@ export function RoleFormFields({
   onNameChange,
   onDescriptionChange,
 }: Readonly<RoleFormFieldsProps>) {
+  const { t } = useTranslation("admin");
+
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="role-name-input">Nombre del rol</Label>
+        <Label htmlFor="role-name-input">{t("roles.form.nameLabel")}</Label>
         <Input
           id="role-name-input"
           type="text"
@@ -48,13 +52,13 @@ export function RoleFormFields({
           </p>
         ) : (
           <p id="role-name-help" className="text-xs text-muted-foreground">
-            {nameLockReason ?? "Un nombre corto y único, por ejemplo «docente»."}
+            {nameLockReason ?? t("roles.form.nameHint")}
           </p>
         )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="role-description-input">Descripción (opcional)</Label>
+        <Label htmlFor="role-description-input">{t("roles.form.descriptionLabel")}</Label>
         <Textarea
           id="role-description-input"
           value={description}

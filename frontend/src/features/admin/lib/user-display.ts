@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import type { MeUser } from "@/core/auth/auth.service";
 
 import type { AdminUser, UsersPage } from "./types";
@@ -40,7 +42,9 @@ export function formatUniversityId(value: number | string | null | undefined): s
 /** Línea secundaria de la fila: código UPAO y teléfono, solo si existen. */
 export function userContactLine(user: AdminUser): string {
   const parts: string[] = [];
-  if (hasUniversityId(user)) parts.push(`Código ${formatUniversityId(user.university_id)}`);
+  if (hasUniversityId(user)) {
+    parts.push(`${t("admin:users.identity.code")} ${formatUniversityId(user.university_id)}`);
+  }
   if (hasPhone(user)) parts.push(user.phone_number ?? "");
   return parts.join(" · ");
 }
@@ -58,7 +62,7 @@ export function roleNameOf(user: AdminUser): string | undefined {
 }
 
 export function roleSelectLabel(user: AdminUser): string {
-  return `Rol de ${displayName(user) ?? user.email}`;
+  return t("admin:users.roleSelect.roleLabel", { name: displayName(user) ?? user.email });
 }
 
 export function usersPageSubtitle(
@@ -66,8 +70,7 @@ export function usersPageSubtitle(
   hasError: boolean,
   totalItems: number,
 ): string {
-  if (isLoading) return "Cargando usuarios…";
-  if (hasError) return "Cuentas registradas en la plataforma";
-  if (totalItems === 1) return "1 usuario registrado en la plataforma";
-  return `${String(totalItems)} usuarios registrados en la plataforma`;
+  if (isLoading) return t("admin:users.subtitleLoading");
+  if (hasError) return t("admin:users.subtitle");
+  return t("admin:users.subtitleCount", { count: totalItems });
 }

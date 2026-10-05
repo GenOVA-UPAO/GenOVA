@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { getPermissionLabel } from "../lib/permissions";
 
 interface RolePermissionsListProps {
@@ -5,12 +7,14 @@ interface RolePermissionsListProps {
 }
 
 export function RolePermissionsList({ permissions }: Readonly<RolePermissionsListProps>) {
+  const { t } = useTranslation("admin");
+
   if (permissions.length === 0) {
-    return <p className="text-sm text-muted-foreground italic">Sin permisos asignados</p>;
+    return <p className="text-sm text-muted-foreground italic">{t("roles.noPermissions")}</p>;
   }
 
   return (
-    <ul aria-label="Permisos" className="flex flex-wrap gap-1.5">
+    <ul aria-label={t("roles.permissionsLabel")} className="flex flex-wrap gap-1.5">
       {permissions.map((permission) => (
         <li
           key={permission}

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -12,12 +14,14 @@ export function UsersPagination({
   totalPages,
   onPageChange,
 }: Readonly<UsersPaginationProps>) {
+  const { t } = useTranslation("admin");
+
   if (totalPages <= 1) return null;
 
   return (
-    <nav aria-label="Paginación de usuarios" className="flex items-center justify-between gap-3">
+    <nav aria-label={t("users.pagination.ariaLabel")} className="flex items-center justify-between gap-3">
       <p className="text-sm text-muted-foreground tabular-nums">
-        Página {page} de {totalPages}
+        {t("users.pagination.page")} {page} {t("users.pagination.of")} {totalPages}
       </p>
       <div className="flex gap-2">
         <Button
@@ -28,7 +32,7 @@ export function UsersPagination({
             onPageChange(page - 1);
           }}
         >
-          <Icon name="caret-left" size="text-sm" /> Anterior
+          <Icon name="caret-left" size="text-sm" /> {t("users.pagination.previous")}
         </Button>
         <Button
           variant="outline"
@@ -38,7 +42,7 @@ export function UsersPagination({
             onPageChange(page + 1);
           }}
         >
-          Siguiente <Icon name="caret-right" size="text-sm" />
+          {t("users.pagination.next")} <Icon name="caret-right" size="text-sm" />
         </Button>
       </div>
     </nav>

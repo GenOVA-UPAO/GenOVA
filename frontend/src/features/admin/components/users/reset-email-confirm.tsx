@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ConfirmModal } from "@/core/components/confirm-modal";
 
 import type { AdminUser } from "../../lib/types";
@@ -11,12 +13,13 @@ interface ResetEmailConfirmProps {
 
 /** Escribir a un usuario no se deshace: se confirma a quién va antes de enviarlo. */
 export function ResetEmailConfirm({ user, onConfirm, onCancel }: Readonly<ResetEmailConfirmProps>) {
+  const { t } = useTranslation("admin");
   const name = displayName(user) ?? user.email;
   return (
     <ConfirmModal
-      title={`¿Enviar a ${name} un correo para restablecer su contraseña?`}
-      message={`Le llegará a ${user.email} un enlace para elegir una contraseña nueva, válido 24 horas. Su contraseña actual sigue funcionando hasta que la cambie.`}
-      confirmLabel="Enviar correo"
+      title={t("users.resetModal.title", { name })}
+      message={t("users.resetModal.description", { email: user.email })}
+      confirmLabel={t("users.resetModal.confirm")}
       danger={false}
       onConfirm={onConfirm}
       onCancel={onCancel}

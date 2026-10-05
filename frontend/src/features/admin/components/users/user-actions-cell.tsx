@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -23,6 +24,7 @@ export function UserActionsCell({
   handlers,
   className,
 }: Readonly<UserActionsCellProps>) {
+  const { t } = useTranslation("admin");
   const [confirmReset, setConfirmReset] = useState(false);
   if (lockReason !== null) {
     return (
@@ -34,7 +36,7 @@ export function UserActionsCell({
             variant="ghost"
             size="icon-sm"
             aria-disabled="true"
-            aria-label={`Acciones no disponibles. ${lockReason}`}
+            aria-label={`${t("users.actions.notAvailable")} ${lockReason}`}
             className="cursor-default text-muted-foreground hover:bg-transparent hover:text-muted-foreground max-md:size-11"
           >
             <Icon name="lock" size="text-base" />
