@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import i18n, { type TFunction } from "i18next";
 
 import type { RagStatus, UploadItem } from "./upload-types";
 
@@ -17,38 +17,38 @@ export interface UploadPhaseView {
 }
 
 
-function indexedView(rag: RagStatus): UploadPhaseView {
+function indexedView(rag: RagStatus, t: TFunction): UploadPhaseView {
   const chunks = rag.chunks ?? 0;
   return {
     phase: "ready",
-    label: chunks > 0 ? i18n.t("workspace:listo_value", { p0: i18n.t("workspace:fragments", { count: chunks }) }) : i18n.t("workspace:listo"),
+    label: chunks > 0 ? t("workspace:listo_value", { p0: t("workspace:fragments", { count: chunks }) }) : t("workspace:listo"),
     detail: rag.message,
   };
 }
 
-const BY_RAG_STATUS: Record<string, (rag: RagStatus) => UploadPhaseView> = {
-  processing: () => ({ phase: "indexing", label: i18n.t("workspace:indexando") }),
+const BY_RAG_STATUS: Record<string, (rag: RagStatus, t: TFunction) => UploadPhaseView> = {
+  processing: (_, t) => ({ phase: "indexing", label: t("workspace:indexando") }),
   indexed: indexedView,
-  disabled: () => ({ phase: "disabled", label: i18n.t("workspace:no_se_usara"), detail: i18n.t("workspace:fileSearchDisabledHint") }),
+  disabled: (_, t) => ({ phase: "disabled", label: t("workspace:no_se_usara"), detail: t("workspace:fileSearchDisabledHint") }),
 };
 
-function unusableView(rag: RagStatus): UploadPhaseView {
+function unusableView(rag: RagStatus, t: TFunction): UploadPhaseView {
   return {
     phase: "unusable",
-    label: i18n.t("workspace:no_se_podra_usar"),
-    detail: rag.message ?? i18n.t("workspace:el_archivo_no_pudo_indexarse_la_ia_no_lo_leera"),
+    label: t("workspace:no_se_podra_usar"),
+    detail: rag.message ?? t("workspace:el_archivo_no_pudo_indexarse_la_ia_no_lo_leera"),
   };
 }
 
-export function uploadPhase(file: UploadItem): UploadPhaseView {
-  if (file.status === "uploading") return { phase: "uploading", label: i18n.t("workspace:subiendo") };
+export function uploadPhase(file: UploadItem, t: TFunction = i18n.t): UploadPhaseView {
+  if (file.status === "uploading") return { phase: "uploading", label: t("workspace:subiendo") };
   if (file.status === "error") {
-    return { phase: "unusable", label: i18n.t("workspace:error_al_subir"), detail: file.message || undefined };
+    return { phase: "unusable", label: t("workspace:error_al_subir"), detail: file.message || undefined };
   }
   const rag = file.ragStatus;
   // Respuesta antigua sin estado RAG: no se promete nada.
-  if (!rag?.status) return { phase: "ready", label: i18n.t("workspace:subido") };
-  return (BY_RAG_STATUS[rag.status] ?? unusableView)(rag);
+  if (!rag?.status) return { phase: "ready", label: t("workspace:subido") };
+  return (BY_RAG_STATUS[rag.status] ?? unusableView)(rag, t);
 }
 
 export function isIndexing(files: readonly UploadItem[]): boolean {

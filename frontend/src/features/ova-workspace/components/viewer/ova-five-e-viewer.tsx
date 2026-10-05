@@ -23,11 +23,11 @@ export default function OvaFiveEViewer({ phases }: Readonly<{ phases: PhaseWithC
               setId(phase.id);
             }}
           >
-            {resourceLabel(phase)}
+            {resourceLabel(phase, t)}
           </Button>
         ))}
       </nav>
-      {active ? <HtmlPreviewFrame html={active.content} title={resourceLabel(active)} /> : <p>{t("workspace:no_hay_recursos_disponibles")}</p>}
+      {active ? <HtmlPreviewFrame html={active.content} title={resourceLabel(active, t)} /> : <p>{t("workspace:no_hay_recursos_disponibles")}</p>}
     </div>
   );
 }

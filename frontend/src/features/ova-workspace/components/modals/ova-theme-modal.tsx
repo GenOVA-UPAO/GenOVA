@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -16,11 +16,11 @@ interface Props {
   onClose: () => void;
 }
 
-function themeTitle(draft: OvaTheme): string {
-  if (draft.color === "custom" && draft.palette) return i18n.t("workspace:paleta_value", { p0: draft.palette.name });
-  if (draft.color === "upao" && draft.design === "upao") return i18n.t("workspace:marca_institucional_upao");
-  if (draft.color === "free" && draft.design === "free") return i18n.t("workspace:la_ia_elige_colores_y_diseno");
-  return i18n.t("workspace:combinado");
+function themeTitle(draft: OvaTheme, t: TFunction): string {
+  if (draft.color === "custom" && draft.palette) return t("workspace:paleta_value", { p0: draft.palette.name });
+  if (draft.color === "upao" && draft.design === "upao") return t("workspace:marca_institucional_upao");
+  if (draft.color === "free" && draft.design === "free") return t("workspace:la_ia_elige_colores_y_diseno");
+  return t("workspace:combinado");
 }
 
 export default function OvaThemeModal({ theme, onChange, onClose }: Readonly<Props>) {
@@ -29,7 +29,7 @@ export default function OvaThemeModal({ theme, onChange, onClose }: Readonly<Pro
   return (
     <WorkspaceModal
       title={t("workspace:tema_visual_del_ova")}
-      description={themeTitle(draft)}
+      description={themeTitle(draft, t)}
       size="md"
       onClose={onClose}
       footer={

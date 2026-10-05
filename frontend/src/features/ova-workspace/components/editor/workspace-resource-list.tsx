@@ -42,7 +42,7 @@ export function WorkspaceResourceList({
   const { t } = useTranslation();
   const drag = usePhaseDrag(phases, onReorder);
   const [adding, setAdding] = useState(false);
-  const label = phaseMeta(phaseType).label || phaseType;
+  const label = phaseMeta(phaseType, t).label || phaseType;
   const heading = `phase-section-${phaseType}`;
   const move = (index: number, offset: number) => {
     const to = index + offset;

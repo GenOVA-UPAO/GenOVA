@@ -67,7 +67,7 @@ export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin
       {active && (
         <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
           <span className={`shrink-0 rounded-full border px-2 py-0.5 font-medium ${phaseMeta(active.phase).badge}`}>
-            {t("workspace:fase")} {phaseMeta(active.phase).label || active.phase}
+            {t("workspace:fase")} {phaseMeta(active.phase, t).label || active.phase}
           </span>
           <span className="truncate">{active.label}</span>
         </div>

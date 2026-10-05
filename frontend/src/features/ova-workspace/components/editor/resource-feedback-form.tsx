@@ -50,7 +50,7 @@ export function ResourceFeedbackForm({
                 }}
                 className="size-4 accent-primary"
               />
-              {item.label}
+              {t(item.labelKey)}
             </label>
           ))}
         </div>

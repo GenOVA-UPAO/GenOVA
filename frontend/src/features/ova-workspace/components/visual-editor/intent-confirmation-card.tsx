@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
@@ -12,16 +11,16 @@ interface Props {
 }
 
 const ACTION_LABELS: Record<string, string> = {
-  get quitar() { return i18n.t("workspace:quitar"); },
-  get mover() { return i18n.t("workspace:mover"); },
-  get anadir() { return i18n.t("workspace:anadir"); },
-  get ninguna() { return i18n.t("workspace:sin_cambios_339"); },
+  quitar: "workspace:quitar",
+  mover: "workspace:mover",
+  anadir: "workspace:anadir",
+  ninguna: "workspace:sin_cambios_339",
 };
 
 export function IntentConfirmationCard({ intent, onConfirm, onCancel }: Props) {
   const { t } = useTranslation();
-  const actionLabel = ACTION_LABELS[intent.accion] ?? t("workspace:modificar");
-  const typeLabel = intent.bloque?.tipo ?? "bloque";
+  const actionLabel = t(ACTION_LABELS[intent.accion] ?? "workspace:modificar");
+  const typeLabel = intent.bloque?.tipo ?? t("workspace:bloque");
   const indexLabel = intent.bloque?.indice ? ` #${String(intent.bloque.indice)}` : "";
   const targetDesc = intent.bloque_descripcion ?? `${typeLabel}${indexLabel}`;
 

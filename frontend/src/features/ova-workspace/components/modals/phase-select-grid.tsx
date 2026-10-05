@@ -36,9 +36,9 @@ export function PhaseSelectGrid({ phase, items, isPending, isFetching, isError, 
     <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <section className="min-w-0 space-y-3" aria-labelledby="phase-select-heading">
         <div>
-          <h3 id="phase-select-heading" className="text-sm font-semibold">{phaseMeta(phase).label}</h3>
+          <h3 id="phase-select-heading" className="text-sm font-semibold">{phaseMeta(phase, t).label}</h3>
           <p className="text-xs text-muted-foreground">
-            {phaseCfg(phase)?.sub}{t("workspace:hasta")} {MAX_PER_PHASE} {t("workspace:recursos_por_fase")} </p>
+            {phaseCfg(phase, t)?.sub}{t("workspace:hasta")} {MAX_PER_PHASE} {t("workspace:recursos_por_fase")} </p>
         </div>
         {isPending && (
           <div role="status" aria-label={t("workspace:cargando_recursos")} className="grid gap-3 sm:grid-cols-2">

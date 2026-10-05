@@ -21,7 +21,7 @@ export function VersionDiffCell({
       </p>
     );
   }
-  const phaseName = phaseMeta(phase.phase_type).label || phase.phase_type;
+  const phaseName = phaseMeta(phase.phase_type, t).label || phase.phase_type;
   return (
     <figure className="min-w-0 space-y-1">
       <figcaption className="text-xs text-muted-foreground">

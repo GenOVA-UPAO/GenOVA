@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
@@ -6,10 +6,10 @@ import { Icon } from "@/core/components/icon";
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { ChatProgressBar } from "./chat-progress-bar";
 
-function runningTarget(labels: string[] | undefined): string {
-  if (!labels?.length) return i18n.t("workspace:el_ova");
+function runningTarget(labels: string[] | undefined, t: TFunction): string {
+  if (!labels?.length) return t("workspace:el_ova");
   if (labels.length === 1) return `«${labels[0]}»`;
-  return i18n.t("workspace:value_recursos", { p0: String(labels.length) });
+  return t("workspace:resources", { count: labels.length });
 }
 
 interface Props {
@@ -35,7 +35,7 @@ export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
         >
           <span className="flex min-w-0 items-center gap-2 text-foreground">
             <Icon name="spinner" className="size-4 shrink-0 animate-spin text-primary" />
-            <span className="truncate">{t("workspace:regenerando")} {runningTarget(regen.runningLabels)}…</span>
+            <span className="truncate">{t("workspace:regenerando")} {runningTarget(regen.runningLabels, t)}…</span>
           </span>
           <ChatProgressBar
             percentage={regen.progress.percentage}

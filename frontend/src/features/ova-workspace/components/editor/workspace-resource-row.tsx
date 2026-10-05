@@ -40,7 +40,7 @@ export function WorkspaceResourceRow({
   onRegenerate,
 }: Readonly<Props>) {
   const { t } = useTranslation();
-  const name = resourceLabel(phase);
+  const name = resourceLabel(phase, t);
   return (
     <li className={dragging ? "opacity-50" : undefined} {...dragProps}>
       <WorkspacePhaseItem

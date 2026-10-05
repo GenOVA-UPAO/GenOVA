@@ -34,7 +34,7 @@ export function HtmlPreview({ result }: Readonly<Props>) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {resourceDisplayName(result.tipo ?? "")}:{" "}
+            {resourceDisplayName(result.tipo ?? "", t)}:{" "}
             <span className="text-primary">{result.concepto}</span>
           </p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">

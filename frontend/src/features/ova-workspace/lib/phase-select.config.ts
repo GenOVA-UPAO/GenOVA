@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import i18n, { type TFunction } from "i18next";
 
 import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
@@ -13,12 +13,14 @@ export interface PhaseSelectCfg {
   /** Phosphor icon slug (without `ph-` prefix), single source of truth in `PHASE_ICON_BY_KEY`. */
   icon: string;
   sub: string;
+  subKey: string;
   color: string;
   bg: string;
 }
 
 const mk = (key: string, label: string, sub: string, color: string): PhaseSelectCfg => ({
   key,
+  subKey: sub,
   icon: (PHASE_ICON_BY_KEY[key] ?? "ph-circle").replace(/^ph-/, ""),
   get label() { return phaseMeta(key).label || label; },
   get sub() { return i18n.t(sub); },
@@ -41,8 +43,9 @@ export function emptyPicks(): PhaseResourceMap {
   return Object.fromEntries(PHASE_SELECT_CFG.map((p) => [p.key, []]));
 }
 
-export function phaseCfg(key: string): PhaseSelectCfg | undefined {
-  return PHASE_SELECT_CFG.find((p) => p.key === key);
+export function phaseCfg(key: string, t?: TFunction): PhaseSelectCfg | undefined {
+  const config = PHASE_SELECT_CFG.find((p) => p.key === key);
+  return config && t ? { ...config, label: phaseMeta(key, t).label, sub: t(config.subKey) } : config;
 }
 
 export function toggleSelection(list: Resource[], resource: Resource): Resource[] {

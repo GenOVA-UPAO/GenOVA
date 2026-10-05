@@ -22,7 +22,7 @@ export function ResourceCard({
   onConfigure,
 }: Readonly<Props>) {
   const { t } = useTranslation();
-  const title = resourceDisplayName(resource.tipo ?? String(resource.id));
+  const title = resourceDisplayName(resource.tipo ?? String(resource.id), t);
   return (
     <article
       className={`space-y-3 rounded-xl border p-4 ${selected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border bg-card"}`}

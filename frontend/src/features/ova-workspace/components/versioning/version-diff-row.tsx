@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -13,10 +14,10 @@ interface Props {
   after: { number: string; phase: VersionDiffPhase | undefined };
 }
 
-function rowTitle(phase: VersionDiffPhase | undefined, fallback: string): string {
+function rowTitle(phase: VersionDiffPhase | undefined, fallback: string, t: TFunction): string {
   if (!phase) return fallback;
-  const name = phase.title ? resourceDisplayName(phase.title) : "";
-  const phaseName = phaseMeta(phase.phase_type).label || phase.phase_type;
+  const name = phase.title ? resourceDisplayName(phase.title, t) : "";
+  const phaseName = phaseMeta(phase.phase_type, t).label || phase.phase_type;
   return name ? `${phaseName} · ${name}` : phaseName;
 }
 
@@ -31,7 +32,7 @@ export function VersionDiffRow({ before, after }: Readonly<Props>) {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <h4 className="text-sm font-medium">{rowTitle(after.phase ?? before.phase, t("diff.resource"))}</h4>
+        <h4 className="text-sm font-medium">{rowTitle(after.phase ?? before.phase, t("diff.resource"), t)}</h4>
         <span
           className={
             changed

@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -16,8 +16,8 @@ interface Props {
   onSelectPrompt?: (prompt: string) => void;
 }
 
-function countLabel(count: number): string {
-  return count === 1 ? i18n.t("workspace:1_mensaje") : i18n.t("workspace:value_mensajes", { p0: String(count) });
+function countLabel(count: number, t: TFunction): string {
+  return count === 1 ? t("workspace:1_mensaje") : t("workspace:value_mensajes", { p0: String(count) });
 }
 
 /** Hilo de instrucciones: lo más reciente abajo, como en cualquier chat. */
@@ -40,7 +40,7 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Rea
   return (
     <section aria-label={t("workspace:historial_de_chat")} className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-2">
-        <span className="text-xs text-muted-foreground">{countLabel(messages.length)}</span>
+        <span className="text-xs text-muted-foreground">{countLabel(messages.length, t)}</span>
         <Button
           variant="ghost"
           size="xs"
@@ -59,7 +59,7 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Rea
       {confirmClear && (
         <ConfirmModal
           title={t("workspace:limpiar_el_historial")}
-          message={t("workspace:chatClearHint", { p0: countLabel(messages.length) })}
+          message={t("workspace:chatClearHint", { p0: countLabel(messages.length, t) })}
           confirmLabel={t("workspace:limpiar_historial")}
           onConfirm={() => {
             onClear();

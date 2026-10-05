@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import i18n, { type TFunction } from "i18next";
 
 import { humanizeResourceType } from "./ova-job-view-model";
 import { phaseMeta } from "./phase-meta";
@@ -11,12 +11,12 @@ function asText(value: unknown): string {
 }
 
 /** Nombre legible del recurso para docentes (no jerga 5E en inglés). */
-export function resourceLabel(phase: Phase): string {
+export function resourceLabel(phase: Phase, t: TFunction = i18n.t): string {
   const title = asText(phase.title).trim();
-  if (title) return resourceDisplayName(title);
+  if (title) return resourceDisplayName(title, t);
   const type = humanizeResourceType(phase.resource_type as string | number | undefined);
-  if (type) return type;
-  return phaseMeta(asText(phase.phase_type)).label || i18n.t("workspace:recurso");
+  if (type) return resourceDisplayName(type, t);
+  return phaseMeta(asText(phase.phase_type), t).label || t("workspace:recurso");
 }
 
 const emptyPreview = () => i18n.t("workspace:sin_contenido_todavia");

@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
@@ -20,11 +20,11 @@ interface Props {
 
 const REASON_ID = "crear-generate-reason";
 
-function reasonText(prompt: string, phases: number, total: number, ready: boolean): string {
-  const blocker = generateBlocker(prompt, phases);
+function reasonText({ prompt, phases, total, ready }: Pick<Props, "prompt" | "phases" | "total" | "ready">, t: TFunction): string {
+  const blocker = generateBlocker(prompt, phases, t);
   if (blocker) return blocker;
-  if (!ready) return i18n.t("workspace:espera_a_que_termine_la_subida_de_archivos");
-  return i18n.t("workspace:listo_para_generar_value", { p0: selectionSummary(total, phases).toLowerCase() });
+  if (!ready) return t("workspace:espera_a_que_termine_la_subida_de_archivos");
+  return t("workspace:listo_para_generar_value", { p0: selectionSummary(total, phases, t).toLowerCase() });
 }
 
 /** Pie del formulario: explica junto al botón por qué aún no se puede generar. */
@@ -46,7 +46,7 @@ export function CreationSubmitBar({ prompt, phases, total, ready, attempted, err
             name={blocked ? "info" : "check-circle"}
             className={cn("mt-0.5 size-4 shrink-0", !blocked && "text-success")}
           />
-          <span>{reasonText(prompt, phases, total, ready)}</span>
+          <span>{reasonText({ prompt, phases, total, ready }, t)}</span>
         </p>
         <span id="tour-crear-ova-generar" className="inline-flex w-full shrink-0 sm:w-auto">
           <Button

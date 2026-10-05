@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
@@ -26,9 +25,9 @@ interface TabOption {
 }
 
 function getTabSubtitle(tab: OvaPanelTab): string {
-  if (tab === "preview") return i18n.t("workspace:asi_lo_veran_tus_estudiantes");
-  if (tab === "edit") return i18n.t("workspace:reordena_regenera_o_ajusta_cada_recurso");
-  return i18n.t("workspace:visualEditorTabHint");
+  if (tab === "preview") return "workspace:asi_lo_veran_tus_estudiantes";
+  if (tab === "edit") return "workspace:reordena_regenera_o_ajusta_cada_recurso";
+  return "workspace:visualEditorTabHint";
 }
 
 /** Barra del panel del OVA: «Vista previa» / «Editar» / «Editor visual» y qué se hace en cada una. */
@@ -74,7 +73,7 @@ export function WorkspaceOvaPanelTabs({ tab, onChange, readOnly = false }: Reado
         options={options}
       />
       <p className="hidden truncate text-xs text-muted-foreground lg:block">
-        {getTabSubtitle(tab)}
+        {t(getTabSubtitle(tab))}
       </p>
     </div>
   );

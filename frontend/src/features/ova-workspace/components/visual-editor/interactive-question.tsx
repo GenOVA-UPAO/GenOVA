@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -33,9 +33,9 @@ function feedbackClass(isCorrect: boolean): string {
     : "bg-rose-100 text-rose-900 dark:bg-rose-900/50 dark:text-rose-200";
 }
 
-function feedbackText(choice: Choice): string {
+function feedbackText(choice: Choice, t: TFunction): string {
   if (choice.feedback) return choice.feedback;
-  return choice.correct ? i18n.t("workspace:correcto") : i18n.t("workspace:opcion_incorrecta");
+  return choice.correct ? t("workspace:correcto") : t("workspace:opcion_incorrecta");
 }
 
 export function InteractiveQuestion({ id, prompt, choices = [], explanation }: Readonly<Props>) {
@@ -75,7 +75,7 @@ export function InteractiveQuestion({ id, prompt, choices = [], explanation }: R
           })}
           {selectedChoice && (
             <div className={cn("mt-2 rounded-lg p-2.5 text-xs font-medium", feedbackClass(selectedChoice.correct))}>
-              {feedbackText(selectedChoice)}
+              {feedbackText(selectedChoice, t)}
             </div>
           )}
         </div>

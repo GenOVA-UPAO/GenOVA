@@ -1,3 +1,5 @@
+import i18n, { type TFunction } from "i18next";
+
 import { localizedCatalogName } from "./resource-previews";
 
 function lowerWord(word: string): string {
@@ -12,8 +14,8 @@ function lowerWord(word: string): string {
  * cambia cómo se leen. Solo se tocan los nombres del catálogo: un título propio
  * («Ley de Ohm en circuitos») se deja tal cual para no romper nombres propios.
  */
-export function resourceDisplayName(name: string): string {
-  const localized = localizedCatalogName(name);
+export function resourceDisplayName(name: string, t: TFunction = i18n.t): string {
+  const localized = localizedCatalogName(name, t);
   if (!localized) return name;
   const [first = "", ...rest] = localized.split(" ");
   const tail = rest.map((word) => word.split("-").map(lowerWord).join("-"));

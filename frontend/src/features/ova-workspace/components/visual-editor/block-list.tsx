@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -15,20 +14,20 @@ interface Props {
 const MUTED_BADGE = "bg-muted text-muted-foreground";
 
 const BLOCK_META_MAP: Record<string, { label: string; icon: string; badgeClass: string }> = {
-  "upao-header": { get label() { return i18n.t("workspace:encabezado"); }, icon: "article", badgeClass: "bg-primary/10 text-primary" },
-  header: { get label() { return i18n.t("workspace:encabezado"); }, icon: "article", badgeClass: "bg-primary/10 text-primary" },
-  p: { get label() { return i18n.t("workspace:parrafo"); }, icon: "text-align-left", badgeClass: MUTED_BADGE },
-  paragraph: { get label() { return i18n.t("workspace:parrafo"); }, icon: "text-align-left", badgeClass: MUTED_BADGE },
-  "upao-example": { get label() { return i18n.t("workspace:ejemplo"); }, icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
-  example: { get label() { return i18n.t("workspace:ejemplo"); }, icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
-  "upao-question": { get label() { return i18n.t("workspace:pregunta"); }, icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
-  question: { get label() { return i18n.t("workspace:pregunta"); }, icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
-  "upao-summary": { get label() { return i18n.t("workspace:resumen"); }, icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
-  summary: { get label() { return i18n.t("workspace:resumen"); }, icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
-  "upao-comic-panel": { get label() { return i18n.t("workspace:comic"); }, icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
-  panel: { get label() { return i18n.t("workspace:comic"); }, icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
-  "upao-card": { get label() { return i18n.t("workspace:dba_panel"); }, icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
-  card: { get label() { return i18n.t("workspace:dba_panel"); }, icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
+  "upao-header": { label: "workspace:encabezado", icon: "article", badgeClass: "bg-primary/10 text-primary" },
+  header: { label: "workspace:encabezado", icon: "article", badgeClass: "bg-primary/10 text-primary" },
+  p: { label: "workspace:parrafo", icon: "text-align-left", badgeClass: MUTED_BADGE },
+  paragraph: { label: "workspace:parrafo", icon: "text-align-left", badgeClass: MUTED_BADGE },
+  "upao-example": { label: "workspace:ejemplo", icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
+  example: { label: "workspace:ejemplo", icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
+  "upao-question": { label: "workspace:pregunta", icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
+  question: { label: "workspace:pregunta", icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
+  "upao-summary": { label: "workspace:resumen", icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
+  summary: { label: "workspace:resumen", icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
+  "upao-comic-panel": { label: "workspace:comic", icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
+  panel: { label: "workspace:comic", icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
+  "upao-card": { label: "workspace:dba_panel", icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
+  card: { label: "workspace:dba_panel", icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
 };
 
 function blockMeta(tipo: string): { label: string; icon: string; badgeClass: string } {
@@ -96,7 +95,7 @@ export function BlockList({ blocks, isLoading = false }: Readonly<Props>) {
               <div key={block.id} className="flex items-start gap-2.5 px-2.5 py-2 text-xs">
                 <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-xs px-1.5 py-0.5 font-bold uppercase text-[10px]", meta.badgeClass)}>
                   <Icon name={meta.icon} className="size-3" />
-                  {meta.label}
+                   {meta.label.startsWith("workspace:") ? t(meta.label) : meta.label}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-foreground font-medium">
                   {blockSummary(block)}

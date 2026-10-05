@@ -22,19 +22,19 @@ function iconNameFor(extension: string): string {
   return "clipboard-text";
 }
 
-function formatSize(sizeBytes: number): string {
+function formatSize(sizeBytes: number, locale: string): string {
   if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) return "";
   const megabytes = sizeBytes / (1024 * 1024);
-  if (megabytes >= 1) return `${megabytes.toFixed(1)} MB`;
-  return `${String(Math.max(1, Math.round(sizeBytes / 1024)))} KB`;
+  if (megabytes >= 1) return `${megabytes.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`;
+  return `${Math.max(1, Math.round(sizeBytes / 1024)).toLocaleString(locale)} KB`;
 }
 
-function metaOf(file: UploadItem): string {
+function metaOf(file: UploadItem, locale: string): string {
   const extension = extensionOf(file.filename);
   const type = extension
     ? extension.toUpperCase()
     : (file.contentType.split("/").pop()?.toUpperCase() ?? "");
-  return [type, formatSize(file.sizeBytes)].filter(Boolean).join(" · ");
+  return [type, formatSize(file.sizeBytes, locale)].filter(Boolean).join(" · ");
 }
 
 const PHASE_STYLE: Record<
@@ -57,9 +57,9 @@ export function FileChip({
   file,
   onRemove,
 }: Readonly<{ file: UploadItem; onRemove: (id: string) => void }>) {
-  const { t } = useTranslation();
-  const meta = metaOf(file);
-  const state = uploadPhase(file);
+  const { t, i18n } = useTranslation();
+  const meta = metaOf(file, i18n.resolvedLanguage ?? i18n.language);
+  const state = uploadPhase(file, t);
   const style = PHASE_STYLE[state.phase];
   return (
     <li
