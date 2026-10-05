@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { authApi } from "@/core/auth/auth.service";
 import { authStore } from "@/core/auth/auth-store";
 
-import { ACCOUNT_DELETED_NOTICE, CONNECT_ERROR, SESSION_EXPIRED_NOTICE } from "../lib/auth-copy";
+import { accountDeletedNotice, connectError, sessionExpiredNotice } from "../lib/auth-copy";
 import { loginSchema } from "../lib/auth-schemas";
 import { applyLoginOutcome } from "../lib/login-outcome";
 import { onFormSubmit } from "../lib/on-form-submit";
@@ -60,7 +60,7 @@ export function LoginForm({ onUnverified, onTotp }: Readonly<LoginFormProps>) {
       }
       setServerError(result.error ?? "");
     } catch {
-      setServerError(CONNECT_ERROR);
+      setServerError(connectError());
     } finally {
       setSubmitting(false);
     }
@@ -80,7 +80,7 @@ export function LoginForm({ onUnverified, onTotp }: Readonly<LoginFormProps>) {
 }
 
 function arrivalNotice(params: URLSearchParams): string | null {
-  if (params.get("deleted") === "1") return ACCOUNT_DELETED_NOTICE;
-  if (params.get("expired") === "1") return SESSION_EXPIRED_NOTICE;
+  if (params.get("deleted") === "1") return accountDeletedNotice();
+  if (params.get("expired") === "1") return sessionExpiredNotice();
   return null;
 }
