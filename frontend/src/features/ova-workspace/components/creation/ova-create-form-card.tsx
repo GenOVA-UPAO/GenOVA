@@ -44,7 +44,7 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-6">
       <PageHeader
         title={t("workspace:crear_nuevo_ova")}
-        subtitle={t("workspace:describe_el_tema_y_elige_que_recursos_generar_71241b")}
+        subtitle={t("workspace:creationSubtitle")}
         actions={
           <Button variant="ghost" className="-ml-3 max-sm:h-11 sm:ml-0" onClick={props.onTour}>
             <Icon name="question" />

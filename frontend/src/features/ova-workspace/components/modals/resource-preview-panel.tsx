@@ -27,7 +27,7 @@ export function ResourcePreviewPanel({
         </span>
         <h3 className="font-display text-base font-semibold">{t("workspace:descubre_que_genera_cada_recurso")}</h3>
         <p className="max-w-xs text-sm text-muted-foreground">
-          {t("workspace:pasa_el_cursor_o_selecciona_un_recurso_para_v_d47d25")} </p>
+          {t("workspace:resourcePreviewHint")} </p>
       </aside>
     );
   if (!preview)
@@ -49,7 +49,7 @@ export function ResourcePreviewPanel({
       <figure className="space-y-2">
         <ResourceWireframe kind={preview.wire} phaseColor="var(--primary)" />
         <figcaption className="text-xs text-muted-foreground">
-          {t("workspace:esquema_ilustrativo_el_contenido_real_se_crea_cad35a")} </figcaption>
+          {t("workspace:resourceOutlineHint")} </figcaption>
       </figure>
       <dl className="space-y-3 text-sm">
         <div>

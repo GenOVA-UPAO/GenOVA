@@ -20,7 +20,7 @@ export function TotalFailurePanel({
         <h2 id="total-failure-title" className="font-semibold text-destructive">
           {t("workspace:no_se_pudo_generar_el_ova")} </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t("workspace:ningun_recurso_se_completo_asi_que_no_se_guar_026b51")} </p>
+          {t("workspace:generationFailedHint")} </p>
         {errorId && (
           <p className="mt-1 text-xs text-muted-foreground">
             {t("workspace:codigo_de_error")} <span className="font-mono">{errorId}</span>

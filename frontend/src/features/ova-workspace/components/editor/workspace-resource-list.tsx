@@ -62,7 +62,7 @@ export function WorkspaceResourceList({
       />
       {phases.length === 0 && (
         <p className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-          {t("workspace:esta_fase_no_tiene_recursos_anade_uno_con_tus_5ec0ae")} </p>
+          {t("workspace:emptyPhaseHint")} </p>
       )}
       <ul className="space-y-3">
         {phases.map((phase, index) => (

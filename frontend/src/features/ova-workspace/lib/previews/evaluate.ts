@@ -61,7 +61,7 @@ export const EVALUATE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "9": preview(
     "workspace:simulacion_evaluativa",
-    "workspace:escenario_simulado_que_evalua_decisiones_del__36c2fb",
+    "workspace:assessmentSimulatorDescription",
     HTML_JS,
     ["workspace:escenario_de_prueba", "workspace:decisiones_evaluadas", "workspace:puntaje_debrief"],
     "lab",

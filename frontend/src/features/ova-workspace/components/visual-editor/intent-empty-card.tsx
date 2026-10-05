@@ -16,7 +16,7 @@ export function IntentEmptyCard({ motivo, razon }: Props) {
         <div className="space-y-1">
           <p className="font-medium text-amber-900 dark:text-amber-200">{t("workspace:instruccion_ambigua_o_no_aplicable")}</p>
           <p className="text-xs text-amber-700 dark:text-amber-400">
-            {motivo ?? razon ?? t("workspace:no_se_detecto_ninguna_modificacion_sobre_los__1d54a0")}
+            {motivo ?? razon ?? t("workspace:noStructureChangesHint")}
           </p>
         </div>
       </div>

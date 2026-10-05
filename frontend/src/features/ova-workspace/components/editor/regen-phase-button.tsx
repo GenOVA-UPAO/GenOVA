@@ -33,7 +33,7 @@ export function RegenPhaseButton({ name, busy, onRegenerate }: Readonly<Props>) 
       {confirm && (
         <ConfirmModal
           title={t("workspace:regenerar_este_recurso")}
-          message={t("workspace:la_ia_volvera_a_crear_value_desde_cero_la_ver_e99a7f", { p0: name })}
+          message={t("workspace:regenerateResourceHint", { p0: name })}
           confirmLabel={t("workspace:regenerar_recurso")}
           danger={false}
           onConfirm={() => {

@@ -30,7 +30,7 @@ export function ProgressBanners({
       {isStalled && (
         <div className="rounded-lg border border-border bg-muted/50 p-3 text-sm">
           <p className="font-medium text-foreground">
-            {t("workspace:la_generacion_lleva_un_rato_sin_actividad_pue_6c2a54")} </p>
+            {t("workspace:generationInactiveHint")} </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
               variant="outline"
@@ -53,7 +53,7 @@ export function ProgressBanners({
       {showResume && (
         <div className="rounded-lg border border-border bg-muted/50 p-3 text-sm">
           <p className="font-medium text-foreground">
-            {t("workspace:la_generacion_se_interrumpio_a_mitad_quedan")} {resumableCount} {t("workspace:de")} {total} {t("workspace:por_generar_lo_ya_hecho_se_conserva_y_al_rean_dcc283")} </p>
+            {t("workspace:la_generacion_se_interrumpio_a_mitad_quedan")} {resumableCount} {t("workspace:de")} {total} {t("workspace:generationResumeHint")} </p>
           <div className="mt-2">
             <Button
               variant="outline"

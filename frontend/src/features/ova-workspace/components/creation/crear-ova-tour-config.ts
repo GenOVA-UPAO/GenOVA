@@ -6,7 +6,7 @@ const STEPS: DriveStep[] = [
     element: "#tour-crear-ova-prompt",
     popover: {
       get title() { return i18n.t("workspace:describe_tu_tema"); },
-      get description() { return i18n.t("workspace:escribe_el_tema_los_objetivos_y_el_nivel_si_q_4dcead"); },
+      get description() { return i18n.t("workspace:tourTopicHint"); },
       // En el primer paso no hay «Anterior»: un botón deshabilitado parecía roto.
       showButtons: ["next", "close"],
     },
@@ -15,14 +15,14 @@ const STEPS: DriveStep[] = [
     element: "#tour-crear-ova-config",
     popover: {
       get title() { return i18n.t("workspace:elige_recursos"); },
-      get description() { return i18n.t("workspace:pulsa_recursos_para_elegir_que_generara_la_ia_0370c6"); },
+      get description() { return i18n.t("workspace:tourResourcesHint"); },
     },
   },
   {
     element: "#tour-crear-ova-generar",
     popover: {
       get title() { return i18n.t("workspace:genera_el_ova"); },
-      get description() { return i18n.t("workspace:generar_ova_se_activa_cuando_la_descripcion_t_f760ac"); },
+      get description() { return i18n.t("workspace:tourGenerateHint"); },
     },
   },
 ];

@@ -28,7 +28,7 @@ interface TabOption {
 function getTabSubtitle(tab: OvaPanelTab): string {
   if (tab === "preview") return i18n.t("workspace:asi_lo_veran_tus_estudiantes");
   if (tab === "edit") return i18n.t("workspace:reordena_regenera_o_ajusta_cada_recurso");
-  return i18n.t("workspace:recompone_la_estructura_del_recurso_con_el_ed_0a2eff");
+  return i18n.t("workspace:visualEditorTabHint");
 }
 
 /** Barra del panel del OVA: «Vista previa» / «Editar» / «Editor visual» y qué se hace en cada una. */

@@ -35,7 +35,7 @@ function themeNote(theme: OvaTheme): string {
     return i18n.t("workspace:la_ia_decidira_lo_marcado_como_ia_elige");
   }
   if (theme.color === "custom" && theme.palette) {
-    return i18n.t("workspace:paleta_value_el_texto_se_oscurece_lo_necesari_7d0eb5", { p0: theme.palette.name });
+    return i18n.t("workspace:paletteReadabilityHint", { p0: theme.palette.name });
   }
   return i18n.t("workspace:marca_institucional_upao_azul_naranja_y_blanco");
 }

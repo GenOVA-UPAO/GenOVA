@@ -61,7 +61,7 @@ export function buildPhaseDemoContent(phaseName: string): OvaContent {
           {
             type: "paragraph",
             content:
-              i18n.t("workspace:vista_previa_estructurada_del_recurso_generad_0739a5"),
+              i18n.t("workspace:structuredPreviewHint"),
           },
           {
             type: "list",

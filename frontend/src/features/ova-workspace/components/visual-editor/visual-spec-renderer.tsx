@@ -81,7 +81,7 @@ export function VisualSpecRenderer({ spec, className }: Readonly<Props>) {
       <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border p-6 text-center text-muted-foreground">
         <Icon name="sparkle" className="size-8 text-muted-foreground/60" />
         <p className="text-sm font-medium">{t("workspace:sin_contenido_para_previsualizar")}</p>
-        <p className="text-xs">{t("workspace:escribe_una_instruccion_para_que_el_asistente_f9580e")}</p>
+        <p className="text-xs">{t("workspace:visualPreviewEmptyHint")}</p>
       </div>
     );
   }

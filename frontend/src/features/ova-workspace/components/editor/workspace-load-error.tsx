@@ -16,7 +16,7 @@ function copyFor(status: number, message: string): { title: string; description:
   if (status === 404) {
     return {
       title: i18n.t("workspace:no_encontramos_este_ova"),
-      description: i18n.t("workspace:puede_que_se_haya_movido_a_la_papelera_o_que__dddab2"),
+      description: i18n.t("workspace:ovaNotFoundHint"),
     };
   }
   if (status === 403) {

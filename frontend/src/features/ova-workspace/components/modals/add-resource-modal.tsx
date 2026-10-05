@@ -42,7 +42,7 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
   return (
     <WorkspaceModal
       title={t("workspace:anadir_recurso_a_value", { p0: phaseLabel })}
-      description={t("workspace:la_ia_creara_un_recurso_nuevo_con_tus_instruc_43edd9")}
+      description={t("workspace:addResourceHint")}
       size="md"
       onClose={onClose}
       footer={
@@ -67,7 +67,7 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
             id="add-resource-prompt"
             rows={4}
             className="block w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-base leading-relaxed placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-sm"
-            placeholder={t("workspace:ej_un_ejercicio_practico_sobre_el_sobreajuste_49764f")}
+            placeholder={t("workspace:addResourcePlaceholder")}
             value={prompt}
             disabled={addPhase.isPending}
             onChange={(event) => {

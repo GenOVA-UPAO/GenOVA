@@ -16,7 +16,7 @@ export function IntentOutOfScopeCard({ motivo }: Props) {
           <p className="font-semibold text-blue-950 dark:text-blue-200">{t("workspace:solo_puedo_editar_la_estructura")}</p>
           <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
             {motivo ??
-              t("workspace:solo_puedo_editar_la_estructura_de_este_recur_d29bf7")}
+              t("workspace:structureOnlyHint")}
           </p>
         </div>
       </div>

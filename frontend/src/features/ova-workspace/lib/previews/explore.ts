@@ -5,7 +5,7 @@ const INTERACTIVE_HTML = "workspace:html_js_interactivo";
 export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "1": preview(
     "workspace:simulador_virtual_lab",
-    "workspace:laboratorio_html_donde_se_manipulan_variables_b973eb",
+    "workspace:virtualLabDescription",
     INTERACTIVE_HTML,
     ["workspace:variables_controlables", "workspace:registro_de_resultados", "workspace:analisis_guiado"],
     "lab",
@@ -19,7 +19,7 @@ export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "3": preview(
     "workspace:juego_drag_drop",
-    "workspace:actividad_de_arrastrar_elementos_a_categorias_4166b5",
+    "workspace:dragDropDescription",
     INTERACTIVE_HTML,
     ["workspace:piezas_arrastrables", "workspace:zonas_de_destino", "workspace:feedback_al_soltar"],
     "dragdrop",
@@ -54,14 +54,14 @@ export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "8": preview(
     "workspace:juego_de_roles",
-    "workspace:simulacion_de_roles_para_explorar_el_concepto_5d7ac9",
+    "workspace:roleSimulationDescription",
     "workspace:html_decisiones",
     ["workspace:contexto_del_rol", "workspace:decisiones_del_estudiante", "workspace:debrief_del_rol"],
     "decisions",
   ),
   "9": preview(
     "workspace:mapa_mental",
-    "workspace:mapa_de_nodos_expandible_alrededor_del_concep_bcd919",
+    "workspace:mindMapDescription",
     "HTML + CSS/JS",
     ["workspace:nodo_central", "workspace:ramas_clicables", "workspace:detalle_por_nodo"],
     "matching",

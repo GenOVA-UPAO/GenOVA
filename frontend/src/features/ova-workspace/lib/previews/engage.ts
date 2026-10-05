@@ -12,14 +12,14 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "2": preview(
     "workspace:storyboard_de_video",
-    "workspace:guion_visual_por_escenas_prompt_listo_para_ge_9db05a",
+    "workspace:storyboardDescription",
     "workspace:guion_prompt_de_video",
     ["workspace:escenas_con_indicaciones", "workspace:dialogos_por_escena", "workspace:prompt_copiable_de_video"],
     "storyboard",
   ),
   "3": preview(
     "workspace:micro_podcast",
-    "workspace:audio_corto_o_guion_que_introduce_el_tema_en__a70eeb",
+    "workspace:podcastDescription",
     "workspace:audio_guion_narrado",
     ["workspace:hook_de_apertura", "workspace:explicacion_breve", "workspace:cierre_con_pregunta"],
     "audio",
@@ -40,7 +40,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "6": preview(
     "workspace:noticia_de_impacto",
-    "workspace:articulo_estilo_noticia_que_contextualiza_el__da75b9",
+    "workspace:newsDescription",
     "workspace:html_tipo_articulo",
     ["workspace:titular_impactante", "workspace:cuerpo_de_la_noticia", "workspace:conexion_con_el_concepto"],
     "read",
@@ -68,7 +68,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   ),
   "10": preview(
     "workspace:simulador_intuitivo",
-    "workspace:controles_simples_para_experimentar_el_concep_cadb5d",
+    "workspace:intuitiveSimulatorDescription",
     INTERACTIVE_HTML,
     ["workspace:controles_ajustables", "workspace:resultado_visual_inmediato", "workspace:insight_guiado"],
     "lab",

@@ -52,7 +52,7 @@ export function VisualPromptControls({
             onSubmit();
           }
         }}
-        placeholder={t("workspace:ej_pon_la_pregunta_al_inicio_quita_el_ejemplo_cd7844")}
+        placeholder={t("workspace:visualPromptPlaceholder")}
         className="w-full rounded-lg border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
         disabled={isProcessing}
       />

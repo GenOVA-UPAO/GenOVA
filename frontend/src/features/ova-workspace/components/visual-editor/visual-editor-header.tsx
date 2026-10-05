@@ -29,7 +29,7 @@ export function VisualEditorHeader({
             {t("workspace:fastapi_laya")} </span>
         </div>
         <p className="text-xs text-muted-foreground">
-          {t("workspace:recompone_la_estructura_del_recurso_con_decis_6baa1d")} </p>
+          {t("workspace:visualEditorSubtitle")} </p>
       </div>
 
       {phases.length > 1 && (
