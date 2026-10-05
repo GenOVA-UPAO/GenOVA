@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
+from core.educational_metadata import metadata_from_ova
 from core.ids import is_uuid
 from models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion
 from ova.domain.editor import (
@@ -166,6 +167,7 @@ class SqlAlchemyOvaEditorRepository:
         zip_bytes = build_scorm_zip_bytes(
             course_title=ova.title,
             module_title="OVA Generado por GenOVA",
+            metadata=metadata_from_ova(ova),
             phases=[
                 {"type": phase.phase_type, "order": phase.phase_order, "content": phase.content}
                 for phase in phases
