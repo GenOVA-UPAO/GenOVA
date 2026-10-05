@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import { toggleSidebar, useSidebarCollapsed } from "./lib/sidebar-state";

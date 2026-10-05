@@ -27,8 +27,8 @@ export function RouteError() {
       </h1>
       <p className="max-w-md text-sm text-muted-foreground">
         {chunk
-          ? t("shell:la_aplicacion_se_actualizo_mientras_la_tenias_0e0f82")
-          : t("shell:ocurrio_un_error_inesperado_recarga_la_pagina_e90fa6")}
+          ? t("shell:routeError.updateHint")
+          : t("shell:routeError.unexpectedHint")}
       </p>
       <div className="mt-2 flex flex-col gap-3 sm:flex-row">
         <Button

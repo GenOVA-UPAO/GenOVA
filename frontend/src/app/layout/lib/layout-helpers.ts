@@ -1,4 +1,5 @@
 import i18n from "i18next";
+
 import type { MeUser } from "@/core/auth/auth.service";
 import { firstNonBlank } from "@/core/lib/text";
 

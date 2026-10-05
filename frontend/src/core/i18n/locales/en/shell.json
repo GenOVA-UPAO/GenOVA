@@ -35,8 +35,10 @@
   "cargando_pagina": "Loading page",
   "hay_una_version_nueva": "A new version is available",
   "algo_salio_mal": "Something went wrong",
-  "la_aplicacion_se_actualizo_mientras_la_tenias_0e0f82": "The app was updated while you had it open. Reload to continue.",
-  "ocurrio_un_error_inesperado_recarga_la_pagina_e90fa6": "An unexpected error occurred. Reload the page or return to the dashboard.",
+  "routeError": {
+    "updateHint": "The app was updated while you had it open. Reload to continue.",
+    "unexpectedHint": "An unexpected error occurred. Reload the page or return to the dashboard."
+  },
   "recargar": "Reload",
   "volver_al_inicio": "Back to dashboard",
   "iniciar_sesion": "Sign in",
