@@ -49,4 +49,10 @@ RECURSOS_META = {
         "interactividad": "Alta",
         "emoji": "💡",
     },
+    11: {
+        "tipo": "Applet GeoGebra",
+        "duracion": "4–6 min",
+        "interactividad": "Alta",
+        "emoji": "📐",
+    },
 }

@@ -70,6 +70,7 @@ TABLE: dict[str, dict[int, Resource]] = {
         8: _r("Juego de Roles", "juego", 3, -0.10, {"etico": 0.2}),
         9: _r("Mapa Mental", "visual", 2, 0.30, {"historico": 0.4, "clasificacion": 0.3, "compara": 0.2, "componentes": 0.15, "abstracto": 0.1}),
         10: _r("Lab de Hipótesis", "simulacion", 4, 0.50, {"fallo": 0.2, "diagnostico": 0.2, "etico": 0.15, "codigo": 0.1, "abstracto": 0.1, "historico": -0.5}),
+        11: _r("Applet GeoGebra", "simulacion", 3, 0.05, {"matematico": 0.95, "abstracto": 0.2, "historico": -0.6}, req={"matematico": REQ_THRESHOLD}),
     },
     "explain": {
         1: _r("Video Teórico", "lectura", 1, 0.45, {"abstracto": 0.2}),
@@ -106,8 +107,9 @@ TABLE: dict[str, dict[int, Resource]] = {
         8: _r("Preguntas de Desarrollo", "reflexion", 4, 0.25, {"etico": 0.35, "compara": 0.15, "abstracto": 0.1, "avanzado": 0.3, "historico": 0.3}),
         9: _r("Simulación Evaluativa", "simulacion", 5, 0.35, {"fallo": 0.4, "diagnostico": 0.35, "tuning": 0.25, "codigo": 0.2, "procedimiento": 0.2, "historico": -0.8}),
         10: _r("Diploma de Logro", "juego", 1, -0.30, {}),
+        11: _r("Quiz Adaptativo", "evaluacion", 3, 0.35, {"avanzado": 0.2, "diagnostico": 0.25}),
     },
 }
 
 ATTRS = ("historico", "compara", "procedimiento", "etico", "tuning", "abstracto", "codigo",
-         "fallo", "componentes", "diagnostico", "clasificacion", "avanzado")
+         "fallo", "componentes", "diagnostico", "clasificacion", "matematico", "avanzado")

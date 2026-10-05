@@ -41,7 +41,7 @@ def generate_explore_resource(
     concept = payload.concept.strip()
 
     if n not in RECURSOS_META:
-        raise HTTPException(status_code=400, detail="resource_type debe estar entre 1 y 10.")
+        raise HTTPException(status_code=400, detail=f"resource_type debe estar entre 1 y {len(RECURSOS_META)}.")
     if len(concept) < 3:
         raise HTTPException(status_code=400, detail="El concepto debe tener al menos 3 caracteres.")
 

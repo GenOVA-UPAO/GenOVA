@@ -1,5 +1,8 @@
 import os
 
+os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+
 import pytest
 import requests
 from pytest_bdd import when
