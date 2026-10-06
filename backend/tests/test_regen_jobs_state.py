@@ -340,3 +340,67 @@ def test_el_recurso_nuevo_recibe_el_tema_del_resto_del_ova(db, engine, executor,
 
     assert seen["theme"] == {"from": "<html>v1</html>"}
     assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "success"
+
+
+# ── Cancelación (A2) ──────────────────────────────────────────────────────────
+
+
+def test_cancelar_en_cola_cierra_la_fila_y_libera_el_ova(db, engine):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+
+    assert regen_jobs.request_cancel(job_id, str(ova.id)) == "cancelled"
+    assert _ova_status(db, ova) == "listo"
+    assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "cancelled"
+    # Un reintento tardío de arq ya no la ejecuta.
+    assert regen_jobs.claim_regen(job_id) is None
+    assert regen_jobs.active_regen_id(str(ova.id)) is None
+
+
+def test_cancelar_en_marcha_solo_deja_la_marca(db, engine):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+    regen_jobs.claim_regen(job_id)
+
+    assert regen_jobs.active_regen_id(str(ova.id)) == job_id
+    assert regen_jobs.request_cancel(job_id, str(ova.id)) == "generating"
+    assert regen_jobs.is_cancel_requested(job_id)
+    assert _ova_status(db, ova) == "generando"  # lo libera el ejecutor
+    assert regen_jobs.request_cancel(job_id, str(uuid.uuid4())) is None
+
+
+def test_el_ejecutor_cancelado_descarta_lo_editado_y_no_crea_version(db, engine, executor):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+    executor["during_llm"] = lambda: regen_jobs.request_cancel(job_id, str(ova.id))
+    regen_service._finalize_edit(job_id, str(ova.id))
+
+    assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "cancelled"
+    assert _ova_status(db, ova) == "listo"
+    versions = db.execute(select(OvaVersion.version_number).where(OvaVersion.ova_id == ova.id))
+    assert sorted(versions.scalars()) == [1]
+
+
+def test_regen_phases_parallel_se_detiene_entre_recursos():
+    from generation.regen import regen_edit
+
+    class P:
+        def __init__(self, i):
+            self.id = i
+            self.content = "<html></html>"
+
+    calls = []
+
+    def fake(phase, *_a, **_k):
+        calls.append(phase.id)
+        return "<html>nuevo</html>"
+
+    orig = regen_edit._regen_one_phase
+    regen_edit._regen_one_phase = fake
+    try:
+        out = regen_edit.regen_phases_parallel(
+            [P(1), P(2)], "tema", "cambio", {}, should_stop=lambda: True
+        )
+    finally:
+        regen_edit._regen_one_phase = orig
+    assert out == {"1": None, "2": None} and calls == []

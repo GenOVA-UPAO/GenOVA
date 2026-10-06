@@ -88,3 +88,21 @@ def test_un_tercero_no_lee_el_chat():
     chat = EditorChat(editor=_FakeEditorRepo(), chat=_FakeChatRepo())
     with pytest.raises(OvaForbidden):
         chat.list(ChatAccessInput(ova_id="ova-1", actor=STRANGER))
+
+
+def test_el_editor_se_ve_mientras_se_regenera_pero_no_en_la_generacion_inicial():
+    from dataclasses import replace
+
+    from ova.domain.errors import OvaGenerating
+
+    repo = _FakeEditorRepo()
+    repo.ova = replace(repo.ova, status="generando")
+    repo.get_active_version = lambda ova_id: repo.version
+    view = EditView(repo=repo)
+    data = view.editor(VersionInput(ova_id="ova-1", version_id="", actor=OWNER))
+    assert data["status"] == "generando" and data["current_version"]["version_number"] == 1
+
+    # Generación inicial: aún no hay versión activa → sigue siendo 409.
+    repo.get_active_version = lambda ova_id: None
+    with pytest.raises(OvaGenerating):
+        view.editor(VersionInput(ova_id="ova-1", version_id="", actor=OWNER))

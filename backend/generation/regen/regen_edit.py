@@ -13,6 +13,7 @@ Dos modos:
 """
 
 import os
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
 import structlog
@@ -217,19 +218,24 @@ def regen_phases_parallel(
     image_settings: dict | None = None,
     contexto: str = "",
     fallback_theme: dict | None = None,
+    should_stop: Callable[[], bool] | None = None,
 ) -> dict[str, str | None]:
     """Edita/regenera `phases` en paralelo → {phase_id: html|None}.
 
     Cada tarea es una llamada LLM aislada (sin DB); el fallo de una fase da None
     para esa fase sin abortar el resto. El caller escribe las filas.
     `fallback_theme` = tema del OVA para los recursos nuevos, que aún no tienen
-    HTML del que deducirlo.
+    HTML del que deducirlo. `should_stop` (opcional) corta los recursos que aún
+    no han empezado: devuelven None.
     """
     if not phases:
         return {}
     workers = min(_regen_concurrency(), len(phases))
 
     def _one(phase) -> tuple[str, str | None]:
+        # Cancelación: se comprueba antes de cada recurso (una llamada ya en vuelo no se aborta).
+        if should_stop is not None and should_stop():
+            return str(phase.id), None
         try:
             return str(phase.id), _regen_one_phase(
                 phase,
