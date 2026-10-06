@@ -38,7 +38,7 @@ describe("themePayload", () => {
     expect(themePayload({ color: "custom", design: "free", palette: OCEANO })).toEqual({
       color: "custom",
       design: "free",
-      palette: { name: "Oceano", primary: "#164E63", accent: "#38BDF8" },
+      palette: { name: "Océano", primary: "#164E63", accent: "#38BDF8" },
     });
     expect(themePayload({ color: "upao", design: "upao", palette: OCEANO })).toEqual({
       color: "upao",
@@ -58,7 +58,7 @@ describe("themeSummary", () => {
   it("resume el tema para la barra", () => {
     expect(themeSummary({ color: "upao", design: "upao" })).toBe("UPAO");
     expect(themeSummary({ color: "free", design: "free" })).toBe("IA elige");
-    expect(themeSummary({ color: "custom", design: "upao", palette: OCEANO })).toBe("Paleta Oceano");
+    expect(themeSummary({ color: "custom", design: "upao", palette: OCEANO })).toBe("Paleta Océano");
     expect(themeSummary({ color: "upao", design: "free" })).toBe("Mixto");
   });
 });
