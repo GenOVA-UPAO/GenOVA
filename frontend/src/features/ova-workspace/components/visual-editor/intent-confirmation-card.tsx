@@ -33,7 +33,7 @@ export function IntentConfirmationCard({ intent, onConfirm, onCancel }: Props) {
             {t("workspace:quisiste_decir")} {actionLabel.toLowerCase()} {targetDesc}?
           </p>
           <p className="text-xs text-amber-800 dark:text-amber-300">
-            {intent.razon ?? t("workspace:confirma_para_aplicar_esta_modificacion_a_los_bloques")}
+            {t("workspace:confirma_para_aplicar_esta_modificacion_a_los_bloques")}
           </p>
         </div>
       </div>

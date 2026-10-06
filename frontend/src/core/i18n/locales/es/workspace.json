@@ -417,7 +417,6 @@
   "gracias_usaremos_tu_opinion_para_mejorar_los_recursos": "Gracias, usaremos tu opinión para mejorar los recursos.",
   "mensaje_eliminado": "Mensaje eliminado.",
   "error_al_subir_archivo": "Error al subir archivo.",
-  "intencion_confirmada_y_aplicada_en_value_ms_value": "Intención confirmada y aplicada en {{p0}} ms ({{p1}}).",
   "cambio_confirmado_y_aplicado_con_exito_value_conf": "Cambio confirmado y aplicado con éxito ({{p0}}% conf.).",
   "accion_cancelada": "Acción cancelada.",
   "no_hay_cambios_anteriores_para_deshacer": "No hay cambios anteriores para deshacer.",
@@ -849,7 +848,6 @@
   "instruccion_ambigua_o_no_aplicable_823": "Instrucción ambigua o no aplicable.",
   "confirmas_la_aplicacion_de_este_cambio_estructural": "¿Confirmas la aplicación de este cambio estructural?",
   "structureConfirmationHint": "Esta acción requiere tu confirmación antes de aplicarse.",
-  "intencion_aplicada_en_value_ms_value": "Intención aplicada en {{p0}} ms ({{p1}}).",
   "cambio_aplicado_con_exito_value_conf": "Cambio aplicado con éxito ({{p0}}% conf.).",
   "ingresa_una_instruccion_de_cambio": "Ingresa una instrucción de cambio.",
   "interpretando_intencion_con_backend_python": "Interpretando intención con backend Python...",
@@ -895,5 +893,7 @@
   "confirmAllAction": "Aplicar a todo el OVA",
   "quitar_seleccion": "Quitar selección",
   "applyingChanges": "Aplicando cambios…",
-  "applyingChangesHint": "El OVA se está regenerando; puedes verlo, pero no editarlo hasta que termine."
+  "applyingChangesHint": "El OVA se está regenerando; puedes verlo, pero no editarlo hasta que termine.",
+  "changeApplied": "Cambio aplicado: {{instruction}}",
+  "detalles_tecnicos": "Detalles técnicos"
 }

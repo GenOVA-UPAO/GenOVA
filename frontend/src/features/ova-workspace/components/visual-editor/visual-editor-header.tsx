@@ -25,8 +25,12 @@ export function VisualEditorHeader({
           </span>
           <h2 className="font-heading text-base font-bold text-foreground">
             {t("workspace:editor_visual_de_recursos_beta")} </h2>
-          <span className="rounded-full bg-accent-brand/15 px-2 py-0.5 text-[10px] font-bold text-accent-brand uppercase">
-            {t("workspace:fastapi_laya")} </span>
+          {/* Jerga interna: solo se ve al desarrollar. */}
+          {import.meta.env.DEV && (
+            <span className="rounded-full bg-accent-brand/15 px-2 py-0.5 text-[10px] font-bold text-accent-brand uppercase">
+              {t("workspace:fastapi_laya")}
+            </span>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">
           {t("workspace:visualEditorSubtitle")} </p>

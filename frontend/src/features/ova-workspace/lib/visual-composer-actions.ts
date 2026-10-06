@@ -98,7 +98,7 @@ function handleIntentResult(
   ctx.setHistory((prev) => [...prev, ctx.currentBlocks]);
   ctx.setEditedBlocks(newBlocks);
   ctx.setComposedSpec(buildInitialSpec(newBlocks));
-  ctx.setStatusMessage(i18n.t("workspace:intencion_aplicada_en_value_ms_value", { p0: trace.elapsedMs.toString(), p1: trace.backend }));
+  ctx.setStatusMessage(i18n.t("workspace:changeApplied", { instruction: ctx.prompt.trim() }));
   toast.success(i18n.t("workspace:cambio_aplicado_con_exito_value_conf", { p0: Math.round(intent.confianza * 100).toString() }));
 
   void recordEditorFeedback(ctx.ovaId, {

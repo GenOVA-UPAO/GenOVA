@@ -417,7 +417,6 @@
   "gracias_usaremos_tu_opinion_para_mejorar_los_recursos": "Thank you. We'll use your feedback to improve resources.",
   "mensaje_eliminado": "Message deleted.",
   "error_al_subir_archivo": "Could not upload the file.",
-  "intencion_confirmada_y_aplicada_en_value_ms_value": "Instruction confirmed and applied in {{p0}} ms ({{p1}}).",
   "cambio_confirmado_y_aplicado_con_exito_value_conf": "Change confirmed and applied successfully ({{p0}}% confidence).",
   "accion_cancelada": "Action canceled.",
   "no_hay_cambios_anteriores_para_deshacer": "No previous changes to undo.",
@@ -849,7 +848,6 @@
   "instruccion_ambigua_o_no_aplicable_823": "Ambiguous or unsupported instruction.",
   "confirmas_la_aplicacion_de_este_cambio_estructural": "Apply this structural change?",
   "structureConfirmationHint": "This action requires your confirmation before it can be applied.",
-  "intencion_aplicada_en_value_ms_value": "Instruction applied in {{p0}} ms ({{p1}}).",
   "cambio_aplicado_con_exito_value_conf": "Change applied successfully ({{p0}}% confidence).",
   "ingresa_una_instruccion_de_cambio": "Enter a change instruction.",
   "interpretando_intencion_con_backend_python": "Interpreting your instruction with the Python backend…",
@@ -895,5 +893,7 @@
   "confirmAllAction": "Apply to entire OVA",
   "quitar_seleccion": "Clear selection",
   "applyingChanges": "Applying changes…",
-  "applyingChangesHint": "The OVA is being regenerated; you can view it but not edit it until it finishes."
+  "applyingChangesHint": "The OVA is being regenerated; you can view it but not edit it until it finishes.",
+  "changeApplied": "Change applied: {{instruction}}",
+  "detalles_tecnicos": "Technical details"
 }
