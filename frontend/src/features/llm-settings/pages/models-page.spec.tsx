@@ -175,7 +175,7 @@ describe("ModelsPage", () => {
       server_keys: [],
     };
     renderPage();
-    expect(screen.getByText("2 de 4 proveedores conectados")).toBeTruthy();
+    expect(screen.getByText("0 de 4 proveedores conectados")).toBeTruthy();
     platformConfig.data = undefined;
   });
 

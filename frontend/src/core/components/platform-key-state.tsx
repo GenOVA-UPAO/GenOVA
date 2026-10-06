@@ -7,9 +7,9 @@ export function PlatformKeyState({
   const { t } = useTranslation();
   if (configured || serverKey) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-success-strong">
-        <span aria-hidden="true" className="size-1.5 rounded-full bg-success" />
-        {configured ? t("shared:conectado") : t("shared:conectado_con_la_clave_del_servidor")}
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span aria-hidden="true" className="size-1.5 rounded-full bg-muted-foreground" />
+        {t("shared:keyUnchecked")}
       </span>
     );
   }

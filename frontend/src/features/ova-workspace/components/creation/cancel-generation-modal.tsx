@@ -14,6 +14,7 @@ export function CancelGenerationModal({
       title={t("workspace:cancelar_la_generacion")}
       message={t("workspace:generationCancelHint")}
       confirmLabel={t("workspace:cancelar_generacion")}
+      cancelLabel={t("workspace:keepGenerating")}
       loadingLabel={t("workspace:cancelando")}
       isLoading={cancel.isPending}
       onConfirm={() => {

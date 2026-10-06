@@ -51,8 +51,9 @@ describe("catalog-status", () => {
       ],
       platform_config: { groq: "gsk_…abcd", openrouter: "sk-or-…wxyz", opencode: "" },
       server_keys: ["runware"],
+      checks: { groq: { code: "connected" }, openrouter: { code: "invalid_key" }, runware: { code: "unchecked" } },
     };
-    expect(platformKeyCount(config)).toEqual({ connected: 3, total: 8 });
+    expect(platformKeyCount(config)).toEqual({ connected: 1, total: 8 });
   });
 
   it("sin datos de plataforma no cuenta (se usa el estado del catálogo)", () => {

@@ -107,6 +107,7 @@ export function OvaCard({
           ovaId={ova.id}
           isGenerating={isGenerating}
           isReady={ova.status === "listo"}
+          needsRetry={ova.status === "error"}
           isInterrupted={job?.isInterrupted}
           isDownloading={isDownloading}
           isDuplicating={isDuplicating}

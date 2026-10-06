@@ -20,7 +20,13 @@ export function providerConnection(
   const entry = platform?.[provider];
   if (!entry) return "unknown";
   if (entry.configured === false) return "unconnected";
+  if (entry.credential_code) return verifiedConnection(entry.credential_code);
   return entry.ok ? "connected" : "down";
+}
+
+function verifiedConnection(code: string): ProviderConnection {
+  if (code === "invalid_key") return "invalid";
+  return code === "connected" ? "connected" : "unknown";
 }
 
 function ownConnection(entry: OwnCatalogStatusEntry): ProviderConnection {
@@ -33,7 +39,7 @@ export const CONNECTION_LABELS: Record<ProviderConnection, string> = new Proxy(
   {} as Record<ProviderConnection, string>,
   {
     get: (_, prop: string) => {
-      if (prop === "unknown") return "";
+      if (prop === "unknown") return t("shared:keyUnchecked");
       switch (prop) {
         case "connected":
           return t("llm-settings:credentials.connected");
