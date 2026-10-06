@@ -25,7 +25,7 @@ vi.mock("@/core/services/platform-settings.api", () => ({
   savePlatformConfigKey: (provider: string, key: string) => mocks.save(provider, key),
 }));
 
-function renderRow(props: { maskedValue?: string; serverKey?: boolean } = {}) {
+function renderRow(props: { maskedValue?: string; serverKey?: boolean; lastCheck?: ProviderCheckResult } = {}) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
@@ -41,6 +41,24 @@ describe("PlatformKeyRow · probar conexión", () => {
     mocks.check.mockReset();
     mocks.save.mockReset();
   });
+  it("no afirma conexión sin prueba y conserva el formulario y la clave anterior ante rechazo", async () => {
+    mocks.save.mockRejectedValue(new Error("Clave no válida. Se conserva la clave anterior."));
+    renderRow({ maskedValue: "••••••••1234" });
+    expect(screen.getByText("Sin verificar")).toBeVisible();
+    expect(screen.queryByText("Conectado")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Cambiar la clave de Groq" }));
+    await userEvent.type(screen.getByLabelText("Nueva clave de Groq"), "invalid-long-key");
+    await userEvent.click(screen.getByRole("button", { name: "Guardar clave" }));
+    expect(await screen.findByText("Clave no válida. Se conserva la clave anterior.")).toBeVisible();
+    expect(screen.getByLabelText("Nueva clave de Groq")).toHaveValue("invalid-long-key");
+    mocks.check.mockClear();
+  });
+
+  it("recupera la última prueba fallida al volver a la página", () => {
+    renderRow({ maskedValue: "••••••••1234", lastCheck: { provider: "groq", code: "invalid_key", models: null } });
+    expect(screen.getByText("Clave no válida")).toBeVisible();
+    expect(screen.queryByText("Conectado")).toBeNull();
+  });
 
   it("comprueba la clave guardada y dice cuántos modelos da", async () => {
     mocks.check.mockResolvedValue({ provider: "groq", code: "connected", models: 7 });
@@ -51,7 +69,7 @@ describe("PlatformKeyRow · probar conexión", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Conectado · 7 modelos");
   });
 
-  it("al guardar una clave la comprueba y, si no vale, dice qué hacer", async () => {
+  it("al guardar una clave validada cierra el borrador sin volver a llamar al proveedor", async () => {
     mocks.save.mockResolvedValue({ platform_config: { groq: "••••••••5678" } });
     mocks.check.mockResolvedValue({ provider: "groq", code: "invalid_key", models: null });
     renderRow();
@@ -60,9 +78,9 @@ describe("PlatformKeyRow · probar conexión", () => {
     await userEvent.type(screen.getByLabelText("Nueva clave de Groq"), "gsk_nueva_clave_5678");
     await userEvent.click(screen.getByRole("button", { name: "Guardar clave" }));
     expect(mocks.save).toHaveBeenCalledWith("groq", "gsk_nueva_clave_5678");
-    expect(await screen.findByText("Clave no válida")).toBeInTheDocument();
-    expect(screen.getByText(/mal copiada, caducada o revocada/)).toBeInTheDocument();
-    expect(mocks.check).toHaveBeenCalledWith("groq");
+    expect(await screen.findByRole("button", { name: "Añadir clave de Groq" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Nueva clave de Groq")).toBeNull();
+    expect(mocks.check).not.toHaveBeenCalled();
   });
 
   it("con la clave del servidor también se puede probar", async () => {

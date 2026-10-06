@@ -87,7 +87,7 @@ export function providerCheckText(result: ProviderCheckResult, t: TFunction = i1
     case "unchecked":
       return {
         tone: "neutral",
-        label: t("shared:guardada"),
+        label: t("shared:keyUnchecked"),
         hint: t("shared:providerCheck.unsupportedHint"),
       };
     case "unreachable":

@@ -7,6 +7,9 @@ export function RowStateHint({
   canPreview,
 }: Readonly<{ status: ResourceVM["status"]; canPreview: boolean }>) {
   const { t } = useTranslation();
+  if (status === "cancelado") {
+    return <span className="shrink-0 text-xs text-muted-foreground">{t("workspace:resourceCanceled")}</span>;
+  }
   if (status === "generando") {
     return <span className="shrink-0 text-xs text-primary">{t("workspace:generando_85")}</span>;
   }

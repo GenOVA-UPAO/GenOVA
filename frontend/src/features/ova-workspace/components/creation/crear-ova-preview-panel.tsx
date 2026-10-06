@@ -59,6 +59,7 @@ export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin
           loading={content.isPending}
           html={html}
           error={content.isError}
+          failed={viewModel.length > 0 && viewModel.every((r) => r.status === "X" || r.status === "cancelado")}
           onRetry={() => {
             void content.refetch();
           }}

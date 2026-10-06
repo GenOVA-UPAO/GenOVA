@@ -22,7 +22,6 @@ from generation.jobs.jobs_progress import (
     _finish_job,
     _has_done_resource,
     _persist_results,
-    _release_ova_from_generating,
     _safe_mark_error,
     _start_job,
 )
@@ -71,7 +70,7 @@ def _load_for_run(job_id: uuid.UUID) -> tuple[str, dict | None]:
     db = SessionLocal()
     try:
         job = db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one_or_none()
-        if job is None:
+        if job is None or job.status == "canceled":
             return "", None
         _start_job(db, job)
         params = dict(job.params or {})
@@ -116,18 +115,25 @@ def _finalize(
         job = db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one_or_none()
         if job is None:
             return
-        if job.status == "canceled":
-            _release_ova_from_generating(db, job)
-            return
         # Un reintento sobre un OVA ya creado (no atascado en «generando») no pasa
         # por la materialización: sus recursos recuperados se añaden aparte.
         ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
-        merge_into_ova = bool(only_resource_ids) and ova is not None and ova.status != "generando"
+        merge_into_ova = ova is not None and ova.current_version_id is not None and (
+            bool(only_resource_ids) or job.status == "canceled"
+        )
         _persist_results(db, job, results, errors)
         any_done = _has_done_resource(db, job.id)
         _finish_job(db, job, any_done)
+        # Cancelar puede materializar mientras el runner está reconciliando.
+        # Releer evita perder recursos tardíos en esa carrera.
+        if job.status == "canceled" and ova is not None:
+            db.refresh(ova)
+            merge_into_ova = ova.current_version_id is not None
         if merge_into_ova:
-            merge_resumed_resources(db, job, list(only_resource_ids or []))
+            from generation.jobs.jobs_service import list_resources
+
+            ids = only_resource_ids or [r.id for r in list_resources(db, job.id)]
+            merge_resumed_resources(db, job, list(ids))
     except Exception:
         logger.exception("Job runner crashed", job_id=job_id)
         _safe_mark_error(db, job_id)

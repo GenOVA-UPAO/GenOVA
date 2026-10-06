@@ -54,6 +54,7 @@ export function PlatformApiKeysList() {
               provider={p}
               maskedValue={config[p]}
               serverKey={serverKeys.has(p)}
+              lastCheck={data.checks?.[p]}
             />
           ))}
         </ul>

@@ -9,6 +9,7 @@ export interface CatalogStatusEntry {
    */
   configured?: boolean | null;
   last_success_at?: string;
+  credential_code?: string;
 }
 
 export type CatalogStatus = Record<string, CatalogStatusEntry>;
@@ -40,6 +41,7 @@ export interface PlatformKeysSnapshot {
   platform_config?: Record<string, string>;
   providers?: string[];
   server_keys?: string[];
+  checks?: Record<string, { code: string }>;
 }
 
 /**
@@ -53,9 +55,7 @@ export function platformKeyCount(
 ): { connected: number; total: number } | null {
   const providers = config?.providers ?? [];
   if (providers.length === 0) return null;
-  const saved = config?.platform_config ?? {};
-  const server = new Set(config?.server_keys ?? []);
-  const connected = providers.filter((p) => Boolean(saved[p]) || server.has(p)).length;
+  const connected = providers.filter((p) => config?.checks?.[p]?.code === "connected").length;
   return { connected, total: providers.length };
 }
 

@@ -12,7 +12,10 @@ import structlog
 from fastapi import APIRouter, Depends, Request
 
 from auth.dependencies import require_admin
+from core.database import get_db
 from core.rate_limit import limiter
+from llm.catalog.key_check_store import platform_checks, save_check
+from llm.clients.clients import _key_cache, _key_lock
 from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS, env_configured_providers
 from models import User
 from users.application.dto import SavePlatformKeysInput
@@ -22,6 +25,7 @@ from users.interface.http.admin_llm_probe_router import router as probe_router
 from users.interface.http.admin_llm_versions_router import apply_config
 from users.interface.http.admin_llm_versions_router import router as versions_router
 from users.interface.http.error_map import to_http_exception
+from users.interface.http.key_validation import validate_key_updates
 
 router = APIRouter(tags=["Admin · Plataforma"])
 logger = structlog.get_logger(__name__)
@@ -45,12 +49,14 @@ def _bg_catalog_refresh() -> None:
 def get_platform_config(
     _admin: None = Depends(require_admin),
     users: UsersUseCases = Depends(build_users),
+    db=Depends(get_db),
 ):
     """Return masked platform API key status for all providers (admin-only)."""
     return {
         "platform_config": users.get_platform_keys.execute(),
         "providers": list(ALL_PROVIDERS),
         "server_keys": env_configured_providers(),
+        "checks": platform_checks(db, ALL_PROVIDERS),
     }
 
 
@@ -61,23 +67,30 @@ def put_platform_config(
     payload: dict,
     _admin: None = Depends(require_admin),
     users: UsersUseCases = Depends(build_users),
+    db=Depends(get_db),
 ):
     """Upsert or delete platform API keys (admin-only).
 
     Pass `{provider: "key"}` to set, `{provider: ""}` to remove.
     """
     try:
+        checks = validate_key_updates(payload, ALL_PROVIDERS, source="platform")
         updates = users.save_platform_keys.execute(
             SavePlatformKeysInput(payload=payload, providers=ALL_PROVIDERS)
         )
     except UserError as err:
         raise to_http_exception(err) from None
 
+    for provider, result in checks.items():
+        save_check(db, provider, updates[provider].strip() or None, result)
+    with _key_lock:
+        _key_cache.clear()
+
     if any(p in TEXT_PROVIDERS for p in updates):
         threading.Thread(target=_bg_catalog_refresh, daemon=True).start()
         logger.info("catalog refresh triggered by platform key update", providers=list(updates))
 
-    return {"platform_config": users.get_platform_keys.execute()}
+    return {"platform_config": users.get_platform_keys.execute(), "checks": platform_checks(db, ALL_PROVIDERS)}
 
 
 @router.get("/llm-config", summary="Obtener la configuración global de LLM")

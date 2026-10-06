@@ -10,6 +10,8 @@ export function UserKeyState({ view }: Readonly<{ view: OwnKeyView }>) {
       return <span className="text-xs text-muted-foreground">{t("credentials.notConnected")}</span>;
     case "checking":
       return <span className="text-xs text-muted-foreground">{t("credentials.testing")}</span>;
+    case "saved":
+      return <span className="text-xs text-muted-foreground">{t("shared:keyUnchecked")}</span>;
     case "error":
       return (
         <span
@@ -27,7 +29,7 @@ export function UserKeyState({ view }: Readonly<{ view: OwnKeyView }>) {
                 : "size-1.5 rounded-full bg-muted-foreground"
             }
           />
-          {ownKeyErrorLabel(view.code)}
+          {view.code === "unreachable" ? t("shared:keyUnchecked") : ownKeyErrorLabel(view.code)}
         </span>
       );
     default:
@@ -35,7 +37,7 @@ export function UserKeyState({ view }: Readonly<{ view: OwnKeyView }>) {
         <span className="inline-flex items-center gap-1.5 text-xs text-success-strong">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-success" />
           {t("credentials.connected")}
-          {view.kind === "connected" && view.models !== null ? (
+          {view.models !== null ? (
             <span className="text-muted-foreground">· {t("credentials.modelsCount", { count: view.models })}</span>
           ) : null}
         </span>

@@ -10,7 +10,7 @@ import i18n, { type TFunction } from "i18next";
 import { phaseMeta } from "./phase-meta";
 import { resourceDisplayName } from "./resource-display-name";
 
-export type UiStatus = "pendiente" | "generando" | "check" | "X";
+export type UiStatus = "pendiente" | "generando" | "check" | "X" | "cancelado";
 
 export interface BackendResource {
   id: string | number;
@@ -23,6 +23,7 @@ export interface BackendResource {
   emoji?: string | null;
   status: string;
   error_id?: string | null;
+  error_code?: string | null;
 }
 
 export interface SelectionItem {
@@ -40,6 +41,7 @@ export interface ResourceVM {
   emoji: string;
   status: UiStatus;
   error_id: string | null;
+  error_code?: string | null;
   selectable: boolean;
 }
 
@@ -87,6 +89,7 @@ const STATUS_MAP: Record<string, UiStatus> = {
   // "pendiente" por defecto y se pintaría como si aún faltara por generar,
   // ocultando que salió defectuoso.
   degraded: "X",
+  canceled: "cancelado",
 };
 
 export function mapResourceStatus(backendStatus: string): UiStatus {
@@ -153,6 +156,7 @@ function resourceViewModel(
     emoji: selection.emoji ?? resource.emoji ?? "",
     status,
     error_id: resource.error_id ?? null,
+    error_code: resource.error_code,
     selectable: status === "X",
   };
 }
@@ -223,7 +227,7 @@ export const STALL_MS = 3 * 60 * 1000;
  * justo el caso que este botón existe para rescatar. Si se añade un estado
  * nuevo en `jobs_service.py`, hay que añadirlo aquí o el botón no aparecerá.
  */
-export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "running", "error", "degraded"]);
+export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "running", "error", "degraded", "canceled"]);
 
 export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
   if (!snapshot) return [];
