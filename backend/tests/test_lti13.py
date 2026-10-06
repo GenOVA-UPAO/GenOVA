@@ -307,6 +307,8 @@ def test_valid_resource_link_launch_opens_player_without_editor(env):
     index = client.get(path + "content/index.html")
     assert index.status_code == 200
     assert "resources/scorm.js" in index.text
+    # frame-ancestors mira todos los ancestros (reproductor y LMS): sin el LMS, el contenido no carga.
+    assert index.headers["content-security-policy"] == f"frame-ancestors 'self' {ISSUER}"
     assert client.get(path + "content/resources/scorm.js").status_code == 200
     assert "evaluate de Fotosíntesis" in client.get(path + "content/resources/recurso_2.html").text
     assert client.get(path + "content/../../etc/passwd").status_code == 404
