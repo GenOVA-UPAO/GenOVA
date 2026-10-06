@@ -89,6 +89,7 @@ class DuplicateOvaInput:
 class DuplicateOvaResult:
     id: str
     title: str
+    status: str = "borrador"
 
 
 @dataclass(frozen=True, slots=True)

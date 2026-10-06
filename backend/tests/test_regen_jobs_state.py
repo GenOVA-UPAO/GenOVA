@@ -404,3 +404,28 @@ def test_regen_phases_parallel_se_detiene_entre_recursos():
     finally:
         regen_edit._regen_one_phase = orig
     assert out == {"1": None, "2": None} and calls == []
+
+
+def test_un_ova_sin_generacion_propia_responde_vacio_y_no_404():
+    """M8: abrir el editor de un OVA duplicado lanzaba GET /api/jobs?ova_id= → 404."""
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from auth.dependencies import get_current_user
+    from generation.container import build_generation
+    from generation.domain.errors import JobNotFound
+    from generation.jobs.jobs_router import router
+
+    app = FastAPI()
+    app.include_router(router, prefix="/api/jobs")
+    use_cases = MagicMock()
+    use_cases.find_job_by_ova.execute.side_effect = JobNotFound("No hay generación para este OVA.")
+    app.dependency_overrides[build_generation] = lambda: use_cases
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=uuid.uuid4())
+    response = TestClient(app).get(f"/api/jobs?ova_id={uuid.uuid4()}")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["job_id"] is None and body["resources"] == []

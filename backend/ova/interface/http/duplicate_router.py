@@ -36,7 +36,7 @@ def duplicate_ova(
         content={
             "id": result.id,
             "title": result.title,
-            "status": "borrador",
+            "status": result.status,
             "message": "OVA duplicado correctamente.",
             "edit_url": f"/ova/{result.id}/workspace",
         },
