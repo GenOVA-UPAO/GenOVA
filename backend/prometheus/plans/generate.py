@@ -36,6 +36,7 @@ def _gen_podcast(
     deadline=None,
     *,
     fake: bool = False,
+    resource_config: dict | None = None,
 ) -> ResourceResult:
     from llm.podcast.podcast import build_podcast_html, plain_monologue, podcast_audio
     from prometheus.prompts.engage_prompts import prompt_texto
@@ -45,14 +46,26 @@ def _gen_podcast(
         audio = None
     else:
         from ova_engine.text import generate_plain
+        from ova_engine.word_fit import fit_words
 
-        mono = generate_plain(
-            prompt_texto(rt, concept, contexto),
-            llm_config=llm_config,
-            enabled_models=enabled_models,
-            deadline=deadline,
-        )
-        mono = plain_monologue(mono)
+        prompt = prompt_texto(rt, concept, contexto, resource_config)
+
+        def _ask(text: str) -> str:
+            return plain_monologue(
+                generate_plain(text, llm_config=llm_config, enabled_models=enabled_models, deadline=deadline)
+            )
+
+        mono = _ask(prompt)
+        target = (resource_config or {}).get("word_count")
+        if isinstance(target, int) and target > 0:
+            mono = fit_words(
+                mono,
+                target,
+                regenerate=lambda cur, n: _ask(
+                    f"{prompt}\n\nTu texto anterior tiene {len(cur.split())} palabras y debe tener unas {n}. "
+                    f"Reescríbelo con unas {n} palabras (±15 %), sin añadir encabezados:\n{cur}"
+                ),
+            )
         audio = podcast_audio(mono)
 
     html = build_podcast_html(concept, mono, *(audio or (None,)))
@@ -130,6 +143,7 @@ def generate_resource(
             enabled_models,
             deadline,
             fake=settings.llm_fake,
+            resource_config=resource_config,
         )
 
     spec = get_spec(phase, n)

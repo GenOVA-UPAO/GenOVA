@@ -141,6 +141,7 @@ export const RESOURCE_CONFIG_SCHEMA: Record<string, ConfigField[]> = {
   "evaluate:10": [
     N("num_competencias", "workspace:competencias", 2, 5, 3, "workspace:competencias_adquiridas_en_el_diploma"),
   ],
+  "evaluate:11": [N("max_questions", QUESTIONS, 4, 10, 6, "workspace:preguntas_maximas_del_quiz_adaptativo")],
 };
 
 export function getDefaultConfig(phaseKey: string, resourceId: string): Record<string, number> {

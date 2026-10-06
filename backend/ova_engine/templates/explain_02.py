@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -40,7 +41,7 @@ def schema(p: dict) -> dict:
             min_items=n,
             max_items=n,
         ),
-        aplicacion_dba=s(300),
+        aplicacion_practica=s(300),
         cierre=s(250),
     )
     sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
@@ -48,27 +49,28 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_sections"]
-    return f"""[ROL] Docente universitario y redactor académico de sistemas de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Redacta una lectura académica guiada, accesible y estructurada de nivel universitario sobre «{concept}», orientada a casos reales con el motor Oracle Database. La lectura debe evitar fórmulas matemáticas complejas y explicar los mecanismos mediante razonamiento técnico y analogías claras.
+    return f"""[ROL] {d.pick("Docente universitario y redactor académico de sistemas de bases de datos.", "Docente experto y redactor didáctico para " + d.audiencia + ".")}
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Redacta una lectura académica guiada, accesible y estructurada sobre «{concept}», {d.pick("de nivel universitario, orientada a casos reales con el motor Oracle Database", "adecuada para " + d.audiencia + ", orientada a casos reales y cotidianos del tema")}. La lectura debe evitar fórmulas matemáticas complejas y explicar los mecanismos mediante razonamiento técnico y analogías claras.
 - titulo: título académico claro y conciso de la lectura guiada (≤10 palabras).
-- introduccion: contextualización accesible del concepto mediante un caso o situación real en entornos Oracle (≤45 palabras).
+- introduccion: contextualización accesible del concepto mediante un caso o situación real {d.pick("en entornos Oracle", "propio del tema")} (≤45 palabras).
 - imagen (opcional): elemento visual estructurado según el concepto:
   * usa "foto" ÚNICAMENTE para objetos físicos concretos, hardware, servidores o datacenters tangibles (NUNCA para abstracciones o algoritmos).
   * usa "diagrama" para conceptos abstractos, procesos o estructuras, incluyendo el objeto `diagrama` (tipo: "flujo"|"arbol"|"capas"|"er"|"secuencia"|"comparacion", titulo, nodos, aristas).
-  * usa "logo" para marcas o tecnologías reconocidas (ej. Oracle).
+  * usa "logo" para marcas o tecnologías reconocidas (ej. {d.pick("Oracle", "una marca o institución del tema")}).
   * usa "escena" para ilustraciones pedagógicas de la situación.
   Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - secciones: exactamente {n} secciones temáticas estructuradas con progresión pedagógica. Cada sección contiene:
   * `subtitulo`: nombre conceptual de la sección o aspecto abordado (≤8 palabras).
   * `idea_central`: explicación teórica clara y rigurosa sin fórmulas complejas ni abstracciones excesivas (≤35 palabras).
-  * `ejemplo_razonado`: caso práctico y razonado en Oracle que ilustra el funcionamiento real (≤35 palabras).
+  * `ejemplo_razonado`: caso práctico y razonado {d.pick("en Oracle", "propio del tema")} que ilustra el funcionamiento real (≤35 palabras).
   * `pregunta_comprobacion`: pregunta formativa de autoevaluación para que el estudiante reflexione y compruebe su comprensión (≤25 palabras).
   * `respuesta_modelo`: respuesta explicativa modelo que argumenta la solución a la pregunta (≤30 palabras).
-- aplicacion_dba: aplicación concreta y operativa para el Administrador de Base de Datos (DBA), indicando sentencias SQL/PLSQL, parámetros o vistas del diccionario Oracle (p. ej. vistas V$ o DBA_*) y su relevancia operativa (≤45 palabras).
+- aplicacion_practica: {d.pick("aplicación concreta y operativa para el Administrador de Base de Datos (DBA), indicando sentencias SQL/PLSQL, parámetros o vistas del diccionario Oracle (p. ej. vistas V$ o DBA_*) y su relevancia operativa", "aplicación concreta del concepto en " + d.practica + ", con pasos o situaciones reales y por qué importa")} (≤45 palabras).
 - cierre: síntesis pedagógica final que consolida los aprendizajes clave de la lectura (≤35 palabras).
-[RESTRICCIONES] Sin fórmulas matemáticas complejas ni jerga críptica innecesaria. Cada sección debe tener rigor conceptual y conexión práctica con Oracle. No generes HTML ni menciones la especificación JSON Schema.
+[RESTRICCIONES] Sin fórmulas matemáticas complejas ni jerga críptica innecesaria. Cada sección debe tener rigor conceptual y conexión práctica {d.pick("con Oracle", "con el tema y el nivel indicados")}. No generes HTML ni menciones la especificación JSON Schema.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -304,6 +306,7 @@ _STYLE = """
 
 
 def render(data: dict, ctx: RenderContext) -> str:
+    d = domain_for(ctx.concept)
     sections = data["secciones"]
     n = len(sections)
 
@@ -321,7 +324,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'</div>'
             f'<div class="sec-card sec-ejemplo-card">'
             f'<div class="sec-card-header">'
-            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">🔍 Ejemplo Razonado (Oracle)</span>'
+            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">🔍 Ejemplo Razonado{d.pick(" (Oracle)", "")}</span>'
             f'</div>'
             f'<p class="sec-text">{esc(sec["ejemplo_razonado"])}</p>'
             f'</div>'
@@ -440,7 +443,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <div class="ova-reading-container">
   <upao-header eyebrow="LECTURA GUIADA" title="{esc(data["titulo"])}">
-    <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado en Oracle y comprueba tu comprensión técnica.</p>
+    <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado{d.pick(" en Oracle", "")} y comprueba tu comprensión.</p>
   </upao-header>
 
   <upao-progress id="prog" current="0" total="{n}" label="Progreso de la lectura" show-fraction></upao-progress>
@@ -470,15 +473,15 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div class="dba-header">
       <span class="dba-icon-badge" aria-hidden="true">🛠️</span>
       <div>
-        <span class="dba-eyebrow">EN PRODUCCIÓN · ROL DBA</span>
-        <h2 id="dba-panel-heading" class="dba-title">Aplicación Concreta para el DBA (Oracle)</h2>
+        <span class="dba-eyebrow">{d.pick("EN PRODUCCIÓN · ROL DBA", "EN LA PRÁCTICA")}</span>
+        <h2 id="dba-panel-heading" class="dba-title">{d.pick("Aplicación Concreta para el DBA (Oracle)", "Aplicación concreta en " + d.practica)}</h2>
       </div>
     </div>
     <div class="dba-body">
-      <p>{esc(data["aplicacion_dba"])}</p>
+      <p>{esc(data["aplicacion_practica"])}</p>
       <div class="dba-tip">
         <span class="dba-tip-icon" aria-hidden="true">💡</span>
-        <span><strong>Buenas prácticas del DBA:</strong> Consulta periódicamente el diccionario de datos y las vistas de rendimiento dinámico (<code>V$</code> y <code>DBA_*</code>) para auditar el impacto en memoria y almacenamiento.</span>
+        <span>{d.pick("<strong>Buenas prácticas del DBA:</strong> Consulta periódicamente el diccionario de datos y las vistas de rendimiento dinámico (<code>V$</code> y <code>DBA_*</code>) para auditar el impacto en memoria y almacenamiento.", "<strong>Consejo:</strong> repasa esta aplicación con tus propias palabras y busca un ejemplo nuevo en tu entorno.")}</span>
       </div>
     </div>
   </section>
@@ -579,7 +582,7 @@ def sample(concept: str, p: dict) -> dict:
             "consulta": f"{concept} database architecture",
         },
         "secciones": base_secciones[:n],
-        "aplicacion_dba": (
+        "aplicacion_practica": (
             f"El DBA supervisa {concept} mediante vistas como V$SQL, V$SESSION y V$SYSTEM_EVENT, analizando eventos de espera "
             "y ajustando parámetros con ALTER SYSTEM o recopilando estadísticas con DBMS_STATS para optimizar el rendimiento del motor."
         )[:300],

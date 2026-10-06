@@ -8,6 +8,7 @@ descubrir progresivamente los principios internos del concepto.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, b, i, obj, s
 
@@ -44,7 +45,9 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_turns"]
-    return f"""[ROL] Agente pedagógico socrático «DBGuide», DBA mentor experto — guías con agudeza, nunca revelas la respuesta directamente.
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Agente pedagógico socrático «DBGuide», DBA mentor experto — guías con agudeza, nunca revelas la respuesta directamente.
 [CURSO] Sistemas de Gestión de Base de Datos.
 [CONCEPTO] «{concept}».
 [TAREA] Diseña una sesión socrática interactiva de {n} turnos que guíe al estudiante a descubrir la idea central, arquitectura y comportamiento de «{concept}». En cada turno presentas evidencia empírica real de base de datos (salidas de vistas V$, fragmentos SQL/DDL/DML, trazas de eventos o planes de ejecución explain plan) y planteas una pregunta inductiva que lo incite a formular hipótesis.
@@ -58,6 +61,23 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `opciones`: entre 2 y 3 hipótesis formuladas por el estudiante. Exactamente UNA con `correcta: true`; cada una con `feedback` de DBGuide validando el acierto o aclarando constructivamente la imprecisión (≤25 palabras por feedback).
 - revelacion_final: síntesis integradora de DBGuide uniendo todas las pistas para confirmar el principio fundamental deducido sobre «{concept}» (≤45 palabras).
 [RESTRICCIONES] Nunca digas "la respuesta es". Tono de mentor curioso, analítico y cercano. Los datos mostrados deben representar situaciones técnicas creíbles en un motor relacional. No generes etiquetas HTML ni markdown en el JSON.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Agente pedagógico socrático «Guía», mentor experto en «{concept}» — guías con agudeza, nunca revelas la respuesta directamente.
+[CURSO] Nivel: {d.audiencia}.
+[CONCEPTO] «{concept}».
+[TAREA] Diseña una sesión socrática interactiva de {n} turnos que guíe al estudiante a descubrir la idea central, arquitectura y comportamiento de «{concept}». En cada turno presentas evidencia empírica real del tema (datos, mediciones, observaciones, fragmentos de texto, fórmulas o ejemplos concretos) y planteas una pregunta inductiva que lo incite a formular hipótesis.
+- titulo: título inspirador de la sesión de indagación (≤10 palabras).
+- intro: mensaje inicial de Guía saludando al estudiante y planteando el enigma técnico a resolver (≤25 palabras).
+- turnos: exactamente {n} turnos secuenciales con dificultad creciente (1 a {n}). Para cada turno:
+  * `turno`: número correlativo del turno (1 a {n}).
+  * `dato_mostrado`: evidencia real y concisa del tema (ej. una medición, una tabla pequeña, una observación o un ejemplo concreto) (≤35 palabras).
+  * `pregunta`: pregunta socrática inductiva sobre el dato mostrado, que guía al estudiante hacia la deducción sin revelar la respuesta (≤25 palabras).
+  * `pista`: orientación de apoyo de Guía para encauzar el razonamiento si el estudiante vacila (≤25 palabras).
+  * `opciones`: entre 2 y 3 hipótesis formuladas por el estudiante. Exactamente UNA con `correcta: true`; cada una con `feedback` de Guía validando el acierto o aclarando constructivamente la imprecisión (≤25 palabras por feedback).
+- revelacion_final: síntesis integradora de Guía uniendo todas las pistas para confirmar el principio fundamental deducido sobre «{concept}» (≤45 palabras).
+[RESTRICCIONES] Nunca digas "la respuesta es". Tono de mentor curioso, analítico y cercano. Los datos mostrados deben representar situaciones técnicas creíbles en un motor relacional. No generes etiquetas HTML ni markdown en el JSON.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -452,8 +472,8 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'    <div class="socratic-mentor-info">'
             f'      <span class="socratic-avatar" aria-hidden="true">🤖</span>'
             f"      <div>"
-            f'        <p class="socratic-mentor-name">DBGuide</p>'
-            f'        <p class="socratic-mentor-role">DBA Mentor</p>'
+            f'        <p class="socratic-mentor-name">Guía</p>'
+            f'        <p class="socratic-mentor-role">Mentor</p>'
             f"      </div>"
             f"    </div>"
             f'    <span class="socratic-turn-badge">Turno {num_turno} de {total_turns}</span>'
@@ -470,7 +490,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'    <p class="socratic-q-text">{pregunta}</p>'
             f"  </div>"
             f'  <div class="socratic-options-section">'
-            f'    <p class="socratic-options-label">Tu hipótesis como DBA:</p>'
+            f'    <p class="socratic-options-label">Tu hipótesis:</p>'
             f'    <div class="socratic-options-list" role="group" aria-label="Opciones del turno {t_idx}">'
             f'      {"".join(opts_html)}'
             f"    </div>"
@@ -479,7 +499,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'    <div class="socratic-bubble" id="bubble-{t_idx}">'
             f'      <div class="socratic-bubble-head">'
             f'        <span class="socratic-avatar" style="width:24px;height:24px;font-size:0.9rem;" aria-hidden="true">🤖</span>'
-            f'        <strong>DBGuide</strong>'
+            f'        <strong>Guía</strong>'
             f'        <span class="socratic-fb-badge" id="fb-badge-{t_idx}"></span>'
             f"      </div>"
             f'      <p class="socratic-fb-msg" id="fb-msg-{t_idx}"></p>'
@@ -499,20 +519,20 @@ def render(data: dict, ctx: RenderContext) -> str:
 <upao-progress id="prog" current="0" total="{total_turns}" label="Progreso de la indagación socrática" show-fraction></upao-progress>
 
 <div class="socratic-stack">
-  <div class="socratic-chat" role="log" aria-live="polite" aria-label="Diálogo socrático con DBGuide">
+  <div class="socratic-chat" role="log" aria-live="polite" aria-label="Diálogo socrático con Guía">
     {"".join(turnos_html)}
   </div>
 
   <section class="socratic-final-card" id="socratic-final" hidden aria-labelledby="final-title">
     <div class="socratic-final-head">
       <span class="socratic-final-badge">Revelación Final</span>
-      <h2 id="final-title">Síntesis del Mentor DBGuide</h2>
+      <h2 id="final-title">Síntesis del mentor</h2>
     </div>
     <p class="socratic-final-text">{esc(data.get("revelacion_final", ""))}</p>
   </section>
 
   <upao-summary title="Consolidación de la Indagación">
-    <p>Has completado todos los turnos de diálogo y análisis empírico con DBGuide, deduciendo la lógica interna y arquitectura del concepto.</p>
+    <p>Has completado todos los turnos de diálogo y análisis empírico con Guía, deduciendo la lógica interna del concepto.</p>
     <upao-complete slot="actions" label="Finalizar indagación" locked></upao-complete>
   </upao-summary>
 </div>
@@ -542,7 +562,7 @@ optionButtons.forEach(function (btn) {
     btn.setAttribute('aria-pressed', 'true');
     btn.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
 
-    // DBGuide response bubble
+    // Guía response bubble
     const respZone = document.getElementById('response-' + t);
     const bubble = document.getElementById('bubble-' + t);
     const badge = document.getElementById('fb-badge-' + t);
@@ -552,7 +572,7 @@ optionButtons.forEach(function (btn) {
     if (respZone && bubble && badge && msg && pistaCard) {
       respZone.removeAttribute('hidden');
       bubble.className = 'socratic-bubble ' + (isCorrect ? 'is-correct' : 'is-wrong');
-      badge.textContent = isCorrect ? '✓ Deducción acertada' : '💡 Guía de DBGuide';
+      badge.textContent = isCorrect ? '✓ Deducción acertada' : '💡 Guía de Guía';
       msg.textContent = feedback;
 
       if (!isCorrect && pista) {
@@ -721,8 +741,8 @@ def sample(concept: str, p: dict) -> dict:
         t["turno"] = idx
 
     return {
-        "titulo": f"Indagación de {concept} con DBGuide"[:70],
-        "intro": f"Hola, soy DBGuide. Revisaremos trazas del motor para deducir los principios de {concept}."[:160],
+        "titulo": f"Indagación de {concept} con Guía"[:70],
+        "intro": f"Hola, soy Guía. Revisaremos trazas del motor para deducir los principios de {concept}."[:160],
         "turnos": selected_turns,
         "revelacion_final": (
             f"¡Excelente trabajo deductivo! Has comprendido que «{concept}» organiza los datos para transformar "

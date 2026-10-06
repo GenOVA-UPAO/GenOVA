@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
 
@@ -39,20 +40,21 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_nodes"]
-    return f"""[ROL] Diseñador pedagógico de mapas conceptuales y redes semánticas para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña un mapa conceptual de relaciones clave estructuradas alrededor del concepto central «{concept}» con exactamente {n} nodos satélite directamente vinculados a él:
+    return f"""[ROL] Diseñador pedagógico de mapas conceptuales y redes semánticas para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Diseña un mapa conceptual de relaciones clave estructuradas alrededor del concepto central «{concept}» con exactamente {n} nodos satélite directamente vinculados a él:
 - titulo: título motivador y representativo del mapa conceptual (≤10 palabras).
 - nodo_central: término conciso y formal del concepto nuclear central (≤5 palabras, ej. «{concept}»).
 - nodos: exactamente {n} nodos satélite que representan componentes, estructuras o principios directamente relacionados con el nodo central. Para cada nodo:
   * `id`: identificador alfanumérico breve sin espacios (ej. "nodo-1", "nodo-2", ≤10 caracteres).
   * `etiqueta`: concepto o componente técnico directamente vinculado al centro (≤6 palabras).
   * `relacion`: proposición o verbo enlace breve que conecta el nodo central hacia este nodo (ej. "se almacena físicamente en", "garantiza la propiedad de", "es ejecutado por", ≤8 palabras).
-  * `explicacion`: justificación conceptual profunda de por qué existe este vínculo y cómo opera en la arquitectura del SGBD (≤30 palabras).
-  * `ejemplo`: caso práctico, sentencia SQL, parámetro de configuración o situación real en el SGBD donde se manifiesta esta relación (≤20 palabras).
+  * `explicacion`: justificación conceptual profunda de por qué existe este vínculo y cómo opera {d.pick("en la arquitectura del SGBD", "en el tema")} (≤30 palabras).
+  * `ejemplo`: {d.pick("caso práctico, sentencia SQL, parámetro de configuración o situación real en el SGBD", "caso práctico o situación real del tema")} donde se manifiesta esta relación (≤20 palabras).
 - sintesis: conclusión pedagógica que integre la red conceptual y consolide la comprensión global de «{concept}» (≤35 palabras).
-[RESTRICCIONES] Enfoque riguroso en relaciones causales y estructurales de bases de datos. Los verbos de enlace deben ser claros y directos. Sin repeticiones ni generalidades. No generes etiquetas HTML ni menciones al esquema JSON.
+[RESTRICCIONES] Enfoque riguroso en relaciones causales y estructurales {d.pick("de bases de datos", "propias del tema")}. Los verbos de enlace deben ser claros y directos. Sin repeticiones ni generalidades. No generes etiquetas HTML ni menciones al esquema JSON.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -563,6 +565,7 @@ _STYLE = """
 
 
 def render(data: dict, ctx: RenderContext) -> str:
+    d = domain_for(ctx.concept)
     nodos = data.get("nodos", [])
     total = len(nodos)
     central_name = data.get("nodo_central", ctx.concept)
@@ -701,7 +704,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <p>Explora las relaciones esenciales estructuradas alrededor del concepto central <strong>{esc(central_name)}</strong>.</p>
 </upao-header>
 
-<upao-objective>Al terminar podrás explicar las relaciones fundamentales de {esc(central_name)} y justificar la función de cada conexión en la arquitectura del SGBD.</upao-objective>
+<upao-objective>Al terminar podrás explicar las relaciones fundamentales de {esc(central_name)} y justificar la función de cada conexión {d.pick("en la arquitectura del SGBD", "en el tema")}.</upao-objective>
 
 <div class="mapa-controls">
   <div class="mapa-btns">
@@ -732,7 +735,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div class="detail-empty" id="detail-empty">
       <div class="detail-empty-icon" aria-hidden="true">🗺️</div>
       <h3 class="detail-empty-title">Explora las conexiones</h3>
-      <p class="detail-empty-desc">Haz clic en cualquier nodo del grafo o usa el botón <strong>Explorar todo</strong> para examinar cada relación, su explicación técnica y ejemplos en el SGBD.</p>
+      <p class="detail-empty-desc">Haz clic en cualquier nodo del grafo o usa el botón <strong>Explorar todo</strong> para examinar cada relación, su explicación técnica y ejemplos{d.pick(" en el SGBD", "")}.</p>
       <p class="detail-empty-hint">Al explorar los {total} nodos satélite se desbloqueará el cierre de la actividad.</p>
     </div>
     <div class="detail-content" id="detail-content" hidden>
@@ -750,7 +753,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         <p class="detail-exp" id="detail-exp"></p>
       </div>
       <div class="detail-block detail-block--example">
-        <span class="detail-kicker">Ejemplo en el SGBD:</span>
+        <span class="detail-kicker">{d.pick("Ejemplo en el SGBD:", "Ejemplo:")}</span>
         <p class="detail-ej" id="detail-ej"></p>
       </div>
       <div class="detail-nav-row">

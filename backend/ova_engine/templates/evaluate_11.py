@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS
+from ova_engine.templates._evaluate_common import EV_CSS, normalize_bank
 
 PARAMS = (
     Param("num_per_level", 3, min=2, max=4, help="Preguntas por nivel en el banco"),
-    Param("max_questions", 5, min=4, max=6, help="Máximo de preguntas evaluadas"),
+    Param("max_questions", 6, min=4, max=10, help="Número máximo de preguntas de la prueba"),
     Param("mastery_threshold", 2, min=2, max=3, help="Aciertos en nivel alto para dominar"),
 )
 
@@ -41,15 +42,20 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_per_level"]
     max_q = p["max_questions"]
-    return f"""[ROL] Diseñador de evaluaciones adaptativas universitarias.
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de evaluaciones adaptativas universitarias.", f"Diseñador de evaluaciones adaptativas para {d.audiencia}. {d.guia_nivel}")
+    basico = d.pick("recuerdo de conceptos clave, sintaxis fundamental, definiciones directas", "recuerdo de conceptos clave, vocabulario y definiciones directas")
+    medio = d.pick("aplicación práctica, análisis de consultas, comprensión de comportamientos", "aplicación práctica, interpretación de casos sencillos, comprensión de relaciones")
+    alto = d.pick("optimización crítica, diagnóstico de fallos complejos, casos límite", "análisis crítico, resolución de problemas complejos, casos límite")
+    return f"""[ROL] {rol}
 [CONCEPTO] «{concept}».
 [TAREA] Diseña un banco de preguntas adaptativo estructurado en 3 niveles de dificultad sobre «{concept}». La prueba inicia en nivel medio, sube tras acierto y baja tras fallo, terminando tras un máximo de {max_q} preguntas o al dominar el nivel alto.
 - titulo: título del quiz (≤10 palabras).
 - instrucciones: frase orientadora sobre la mecánica adaptativa multinivel (≤25 palabras).
 - banco:
-  * `bajo`: exactamente {n} preguntas de nivel básico (recuerdo de conceptos clave, sintaxis fundamental, definiciones directas).
-  * `medio`: exactamente {n} preguntas de nivel intermedio (aplicación práctica, análisis de consultas, comprensión de comportamientos).
-  * `alto`: exactamente {n} preguntas de nivel avanzado (optimización crítica, diagnóstico de fallos complejos, casos límite).
+  * `bajo`: exactamente {n} preguntas de nivel básico ({basico}).
+  * `medio`: exactamente {n} preguntas de nivel intermedio ({medio}).
+  * `alto`: exactamente {n} preguntas de nivel avanzado ({alto}).
   Cada pregunta con:
   - `id`: identificador corto único (ej: 'b1', 'm1', 'a1').
   - `enunciado`: pregunta directa y sin ambigüedad (≤40 palabras).
@@ -57,7 +63,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   - `feedback_correcto`: explicación concisa del fundamento de la respuesta correcta (≤20 palabras).
   - `feedback_incorrecto`: explicación del error común y corrección conceptual (≤20 palabras).
 - cierre: frase final de consolidación formativa (≤35 palabras).
-[RESTRICCIONES] Distractores verosímiles. Sin ambigüedad ni 'todas las anteriores'. Sin código HTML.
+[RESTRICCIONES] Distractores verosímiles. Sin ambigüedad ni 'todas las anteriores'. Sin código HTML. Mantente estrictamente en el tema y el nivel indicados.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -323,7 +329,7 @@ def _fix_correct(opts: list) -> list[dict]:
 
 def render(data: dict, ctx: RenderContext) -> str:
     p = ctx.params or {}
-    max_q = p.get("max_questions", 5)
+    max_q = p.get("max_questions", 6)
     mastery = p.get("mastery_threshold", 2)
 
     banco_raw = data.get("banco") or {}
@@ -343,6 +349,8 @@ def render(data: dict, ctx: RenderContext) -> str:
                 }
             )
         prepared_banco[lvl] = fixed_items
+    # El banco puede tener menos preguntas que el máximo pedido: el contador usa el real.
+    max_q = max(1, min(max_q, sum(len(v) for v in prepared_banco.values())))
 
     return f"""{EV_CSS}
 {ADAPTIVE_CSS}
@@ -464,4 +472,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=normalize_bank,
 )

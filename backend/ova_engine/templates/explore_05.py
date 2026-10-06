@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -56,8 +57,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_records"]
-    return f"""[ROL] Redactor de materiales de análisis exploratorio para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Redactor de materiales de análisis exploratorio para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Redacta una lectura intrigante de investigación de incidentes o auditoría técnica (≤120 palabras) acompañada de una tabla de datos ficticia pero plausible de exactamente {n} registros donde el estudiante descubra a simple vista un patrón claro y revelador sobre «{concept}».
 - titulo: titular periodístico o de reporte técnico sobre el caso (≤10 palabras).
 - lectura: relato intrigante (≤100 palabras) sobre una situación o anomalía observada en producción, contextualizando las métricas recopiladas sin desvelar la teoría ni usar jerga técnica avanzada prematuramente.
@@ -75,6 +78,28 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * tipo "escena" para ilustraciones pedagógicas de la situación.
   Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] El patrón debe ser identificable a simple vista mediante inspección visual y contraste de filas (p. ej. un incremento repentino, una correlación directa entre dos métricas o una repetición anómala). No uses la terminología técnica avanzada de «{concept}» en la lectura inicial. No incluyas etiquetas de formato ni código web.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Redactor de materiales de análisis exploratorio para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Redacta una lectura intrigante de investigación de un caso, un experimento o una observación real del tema (≤120 palabras) acompañada de una tabla de datos ficticia pero plausible de exactamente {n} registros donde el estudiante descubra a simple vista un patrón claro y revelador sobre «{concept}».
+- titulo: titular periodístico o de reporte técnico sobre el caso (≤10 palabras).
+- lectura: relato intrigante (≤100 palabras) sobre una situación o anomalía observada en producción, contextualizando las métricas recopiladas sin desvelar la teoría ni usar jerga técnica avanzada prematuramente.
+- columnas: lista de entre 2 y 4 nombres de columnas para la tabla de datos (ej. métricas observables como tiempos de respuesta, lecturas lógicas, identificadores de sesión o tablas).
+- filas: exactamente {n} registros. Cada registro contiene:
+  * `valores`: lista de strings con los datos correspondientes a cada columna (debe tener exactamente la misma cantidad de elementos que `columnas`).
+  * `observacion`: breve apunte o nota contextual que aclara el registro al inspeccionarlo (≤15 palabras).
+- pregunta_patron: pregunta desafiante que invita al estudiante a identificar el patrón evidente o la relación sistemática en los datos de la tabla (≤25 palabras).
+- opciones_patron: entre 2 y 4 opciones de respuesta para resolver el patrón. Exactamente UNA opción debe tener `correcta: true` y las demás `correcta: false`. Cada opción incluye `texto` (descripción del patrón, ≤15 palabras) y `feedback` explicativo que argumente por qué es correcta o por qué descarta la hipótesis (≤25 palabras).
+- revelacion: explicación pedagógica clara (≤50 palabras) que conecta el patrón descubierto en la tabla con el mecanismo y funcionamiento real de «{concept}».
+- imagen (opcional): recurso visual del incidente o análisis:
+  * tipo "foto" ÚNICAMENTE para hardware de servidores, salas de monitoreo (NOC) o infraestructura física real tangible.
+  * tipo "diagrama" para flujos del incidente o esquemas conceptuales (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "logo" para marcas o tecnologías analizadas.
+  * tipo "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
+[RESTRICCIONES] El patrón debe ser identificable a simple vista mediante inspección visual y contraste de filas (p. ej. un incremento repentino, una correlación directa entre dos métricas o una repetición anómala). No uses la terminología técnica avanzada de «{concept}» en la lectura inicial. No incluyas etiquetas de formato ni código web.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

@@ -10,11 +10,12 @@ y seguimiento del estado de los datos.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
-    Param("num_steps", 5, min=4, max=6, help="Número de pasos del proceso animado"),
+    Param("num_steps", 5, min=3, max=6, help="Número de pasos del proceso animado"),
 )
 
 
@@ -39,20 +40,21 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p.get("num_steps", 5)
-    return f"""[ROL] Diseñador de demostraciones didácticas de arquitectura de sistemas de bases de datos para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña una demostración animada y secuencial del flujo de un proceso interno del motor de base de datos relacionado con «{concept}» (por ejemplo: el ciclo de vida de una transacción pasando por parsing en Shared Pool -> búsqueda y modificación en Buffer Cache -> registro secuencial en Redo Log Buffer -> confirmación Commit y persistencia diferida por LGWR/DBWn). La secuencia debe tener exactamente {n} pasos cronológicos:
+    return f"""[ROL] Diseñador de demostraciones didácticas {d.pick("de arquitectura de sistemas de bases de datos", "sobre «" + concept + "»")} para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Diseña una demostración animada y secuencial del flujo de un proceso {d.pick("interno del motor de base de datos", "propio del tema")} relacionado con «{concept}»{d.pick(" (por ejemplo: el ciclo de vida de una transacción pasando por parsing en Shared Pool -> búsqueda y modificación en Buffer Cache -> registro secuencial en Redo Log Buffer -> confirmación Commit y persistencia diferida por LGWR/DBWn)", "")}. La secuencia debe tener exactamente {n} pasos cronológicos:
 - titulo: título representativo del proceso demostrado (≤10 palabras).
 - objetivo: meta formativa observable de lo que el estudiante comprenderá al presenciar la animación (≤25 palabras).
 - pasos: exactamente {n} etapas ordenadas cronológicamente. Por cada paso:
   * paso: número correlativo entero (1 a {n}).
   * titulo: nombre descriptivo y conciso de la etapa o acción técnica (≤7 palabras).
   * descripcion: explicación detallada de qué ocurre internamente, por qué se ejecuta esta acción y qué mecanismo interviene (≤30 palabras).
-  * componente_activo: estructura de memoria, proceso de fondo o almacenamiento protagonista de esta etapa (ej. 'Shared Pool', 'Buffer Cache', 'Redo Log Buffer', 'LGWR', 'DBWn', 'Datafiles', ≤5 palabras).
-  * estado_datos: estado transitorio y preciso de los datos o de la transacción en este instante (ej. 'Sentencia parseada en memoria', 'Bloque modificado (dirty buffer)', 'Transacción confirmada en disco', ≤15 palabras).
+  * componente_activo: estructura de memoria, proceso de fondo o almacenamiento protagonista de esta etapa {d.pick("(ej. 'Shared Pool', 'Buffer Cache', 'Redo Log Buffer', 'LGWR', 'DBWn', 'Datafiles', ≤5 palabras)", "(un órgano, actor, objeto o parte del sistema del tema, ≤5 palabras)")}.
+  * estado_datos: estado transitorio y preciso de los datos o de la transacción en este instante {d.pick("(ej. 'Sentencia parseada en memoria', 'Bloque modificado (dirty buffer)', 'Transacción confirmada en disco', ≤15 palabras)", "(ej. el estado de la sustancia, la cantidad o el objeto en ese instante, ≤15 palabras)")}.
 - sintesis: conclusión pedagógica que resuma la lógica y beneficio del flujo completo del proceso (≤35 palabras).
-[RESTRICCIONES] Proceso estrictamente cronológico y técnicamente verosímil para «{concept}». No generes código web ni etiquetas de formato. No menciones el esquema JSON.
+[RESTRICCIONES] TODOS los pasos deben pertenecer al proceso de «{concept}»; no cambies a otro proceso aunque sea del mismo curso. Proceso estrictamente cronológico y técnicamente verosímil para «{concept}». No generes código web ni etiquetas de formato. No menciones el esquema JSON.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -542,18 +544,48 @@ def _svg_text_lines(text: str, cx: float, max_chars: int = 14) -> str:
     )
 
 
+def _sublabel_lines(text: str, cx: float, max_chars: int = 22) -> str:
+    """Título del paso en hasta 2 líneas bajo el nodo (sin truncar a 18 caracteres)."""
+    words = text.split()
+    line1: list[str] = []
+    for w in words:
+        if len(" ".join([*line1, w])) <= max_chars or not line1:
+            line1.append(w)
+        else:
+            break
+    rest = " ".join(words[len(line1):])
+    if len(rest) > max_chars:
+        rest = rest[: max_chars - 1] + "…"
+    out = f'<tspan x="{cx:.1f}" dy="0">{esc(" ".join(line1))}</tspan>'
+    if rest:
+        out += f'<tspan x="{cx:.1f}" dy="13">{esc(rest)}</tspan>'
+    return out
+
+
+def normalize(data: dict, params: dict) -> dict:
+    """Deja exactamente `num_steps` pasos: recorta los sobrantes y renumera. Si el modelo
+    escribió menos, se conservan los reales (la UI usa el número real en barra y contador)."""
+    n = params.get("num_steps", 5)
+    pasos = list(data.get("pasos") or [])[:n]
+    for k, step in enumerate(pasos, 1):
+        step["paso"] = k
+    return {**data, "pasos": pasos}
+
+
 def render(data: dict, ctx: RenderContext) -> str:
+    d = domain_for(ctx.concept)
     pasos = data.get("pasos", [])
     n = len(pasos)
 
     view_w = 840
-    view_h = 220
+    view_h = 236
     margin_x = 75.0
     spacing = (view_w - 2 * margin_x) / max(1, n - 1) if n > 1 else 0
     bw = min(120.0, max(94.0, spacing * 0.72)) if n > 1 else 130.0
     bh = 76.0
     cy = 92.0
     by = cy - bh / 2
+    packet_y = by - 4  # el indicador viaja por encima de los nodos: no tapa su texto
 
     tracks_svg = []
     nodes_svg = []
@@ -567,11 +599,10 @@ def render(data: dict, ctx: RenderContext) -> str:
         bx = cx - bw / 2
         comp_text = step.get("componente_activo", "")
         title_text = step.get("titulo", "")
-        short_title = title_text[:18] + ("…" if len(title_text) > 18 else "")
 
         if k == 0:
             first_cx = cx
-            first_cy = cy
+            first_cy = packet_y
 
         # Conector con el siguiente nodo
         if k < n - 1:
@@ -591,13 +622,13 @@ def render(data: dict, ctx: RenderContext) -> str:
         tspans = _svg_text_lines(comp_text, cx)
         nodes_svg.append(
             f'<g class="node-group{" is-active" if k == 0 else ""}" id="node-{step_num}" '
-            f'data-step="{step_num}" data-cx="{cx:.1f}" data-cy="{cy:.1f}" tabindex="0" role="button" '
-            f'aria-label="Paso {step_num}: {esc(comp_text)}">'
+            f'data-step="{step_num}" data-cx="{cx:.1f}" data-cy="{packet_y:.1f}" tabindex="0" role="button" '
+            f'aria-label="Paso {step_num}: {esc(comp_text)}"><title>{esc(title_text)}</title>'
             f'<rect class="node-rect" x="{bx:.1f}" y="{by:.1f}" width="{bw:.1f}" height="{bh:.1f}" rx="12"/>'
             f'<circle class="node-badge" cx="{cx:.1f}" cy="{by + 18:.1f}" r="11"/>'
             f'<text class="node-badge-text" x="{cx:.1f}" y="{by + 19:.1f}" text-anchor="middle">{step_num}</text>'
             f'<text class="node-text" x="{cx:.1f}" y="{by + 48:.1f}" text-anchor="middle">{tspans}</text>'
-            f'<text class="node-sublabel" x="{cx:.1f}" y="{by + bh + 18:.1f}" text-anchor="middle">{esc(short_title)}</text>'
+            f'<text class="node-sublabel" x="{cx:.1f}" y="{by + bh + 18:.1f}" text-anchor="middle">{_sublabel_lines(title_text, cx)}</text>'
             f'</g>'
         )
 
@@ -659,7 +690,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       </div>
     </div>
 
-    <upao-figure class="demo-figure" caption="Diagrama reactivo de flujo entre componentes del motor de base de datos">
+    <upao-figure class="demo-figure" caption="Diagrama reactivo de flujo entre componentes {d.pick("del motor de base de datos", "del proceso")}">
       <div class="demo-svg-container">
         <svg class="demo-svg" viewBox="0 0 {view_w} {view_h}" role="group" aria-label="Diagrama del flujo de datos entre componentes">
           <defs>
@@ -675,8 +706,8 @@ def render(data: dict, ctx: RenderContext) -> str:
           {nodes_str}
 
           <g class="data-packet" id="data-packet" transform="translate({first_cx:.1f}, {first_cy:.1f})" style="transform: translate({first_cx:.1f}px, {first_cy:.1f}px);">
-            <circle class="packet-halo" r="16"/>
-            <circle class="packet-core" r="10"/>
+            <circle class="packet-halo" r="12"/>
+            <circle class="packet-core" r="8"/>
             <text class="packet-symbol" x="0" y="4" text-anchor="middle">⚡</text>
           </g>
         </svg>
@@ -943,4 +974,5 @@ SPEC = TemplateSpec(
     render=render,
     sample=sample,
     uses_images=False,
+    normalize=normalize,
 )

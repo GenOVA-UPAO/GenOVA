@@ -229,3 +229,15 @@ def test_quiz_adaptativo_adaptive_logic_simulation():
                 current_level -= 1
 
     assert path == [1, 0, 1, 0, 1], f"Camino oscilante esperado [1, 0, 1, 0, 1], obtenido {path}"
+
+
+def test_point_sobre_funcion_se_reescribe_como_coordenadas():
+    from ova_engine.templates.explore_11 import normalize_geogebra_commands
+
+    cmds = ["a = Deslizador(-3, 3, 0.1)", "f(x) = x^3 - 2*x", "P = Point(f, a)", "Q = Point(c, 2)"]
+    assert normalize_geogebra_commands(cmds) == [
+        "a = Slider(-3, 3, 0.1)",
+        "f(x) = x^3 - 2*x",
+        "P = (a, f(a))",
+        "Q = Point(c, 2)",  # `c` no es una función definida: se deja igual
+    ]

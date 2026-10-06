@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -36,19 +37,40 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_turns"]
-    return f"""[ROL] Diseñador de juegos de estrategia para administradores de bases de datos Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña una partida de {n} turnos donde el estudiante, como DBA, protege un sistema aplicando las reglas reales de «{concept}» (p. ej. ordenar transacciones concurrentes, planificar copias de seguridad, gestionar espacio).
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        """[ROL] Diseñador de juegos de estrategia para administradores de bases de datos Oracle.""",
+        f"""[ROL] Diseñador de juegos de estrategia para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Diseña una partida de {n} turnos donde el estudiante, como DBA, protege un sistema aplicando las reglas reales de «{concept}» (p. ej. ordenar transacciones concurrentes, planificar copias de seguridad, gestionar espacio).""",
+        f"""[TAREA] Diseña una partida de {n} turnos donde el estudiante toma decisiones para cuidar un sistema aplicando las reglas reales de «{concept}» en un contexto propio del área del tema.""",
+    )
+    _l3 = d.pick(
+        """- recurso: nombre del indicador de salud del sistema que se cuida (p. ej. «Estabilidad del sistema», «Disponibilidad»).""",
+        """- recurso: nombre del indicador de salud del sistema que se cuida (p. ej. «Equilibrio», «Progreso»).""",
+    )
+    _l4 = d.pick(
+        """[RESTRICCIONES] Las reglas deben ser fieles a Oracle; las opciones malas deben parecer tentadoras.""",
+        f"""[RESTRICCIONES] Las reglas deben ser fieles al concepto; las opciones malas deben parecer tentadoras. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del juego.
 - escenario: la situación inicial y la meta de la partida (≤45 palabras).
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás planificar…»).
-- recurso: nombre del indicador de salud del sistema que se cuida (p. ej. «Estabilidad del sistema», «Disponibilidad»).
+{_l3}
 - turnos: EXACTAMENTE {n}, en orden, cada turno con una nueva `situacion` que dependa del anterior (≤40 palabras) y EXACTAMENTE 3 `opciones`:
   * `texto`: la decisión (≤20 palabras).
   * `calidad`: entero 2 (decisión óptima según «{concept}»), 1 (aceptable pero con costo) o 0 (decisión que viola las reglas de «{concept}»). Cada turno debe tener UNA opción con 2, UNA con 1 y UNA con 0.
   * `consecuencia`: qué ocurre y POR QUÉ, citando la regla de «{concept}» (≤35 palabras).
 - cierre: estrategia general y cómo mejorar la próxima partida.
-[RESTRICCIONES] Las reglas deben ser fieles a Oracle; las opciones malas deben parecer tentadoras.
+{_l4}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -141,7 +163,7 @@ function finish() {
   $('ge-card').classList.add('k-hide'); $('ge-end').classList.remove('k-hide');
   const pct = Math.round(100 * pts / MAX);
   $('ge-rating').textContent = (stab <= 0 ? 'El sistema colapsó antes de terminar. ' : '') + 'Puntaje: ' + pts + ' de ' + MAX + ' (' + pct + ' %) — ' +
-    (pct >= 80 && stab > 0 ? 'DBA experto.' : pct >= 50 ? 'DBA competente: repasa las decisiones marcadas.' : 'DBA en formación: revisa las reglas y vuelve a intentarlo.');
+    (pct >= 80 && stab > 0 ? 'Estratega experto.' : pct >= 50 ? 'Buen nivel: repasa las decisiones marcadas.' : 'En formación: revisa las reglas y vuelve a intentarlo.');
   const rev = $('ge-rev'); rev.textContent = '';
   hist.forEach((h, k) => {
     if (!h) return; const t = D.t[k], best = t.o.find(o => o.q === 2) || t.o[0];

@@ -8,6 +8,7 @@ una red conceptual y revelando la arquitectura integrada del tema al completar t
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
 
@@ -44,8 +45,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_cards"]
-    return f"""[ROL] Facilitador de mapas mentales y esquemas cognitivos para el aprendizaje de sistemas de gestión de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Facilitador de mapas mentales y esquemas cognitivos para el aprendizaje de sistemas de gestión de bases de datos.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña una actividad interactiva de mapa mental basada en emparejamiento con exactamente {n} tarjetas que conecten intuiciones cotidianas con componentes o mecanismos técnicos reales de «{concept}» (relación 1:1).
 - titulo: título atractivo e intrigante del mapa mental o red conceptual (≤10 palabras).
 - intro: breve orientación motivadora (≤25 palabras) que invite al estudiante a vincular cada pista de la vida diaria con su equivalente en la arquitectura de datos.
@@ -57,6 +60,22 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `feedback_incorrecto`: pista constructiva sin desvelar la solución directa, orientando la reflexión del estudiante (≤20 palabras).
 - revelacion: síntesis conceptual integradora (≤60 palabras) en tono celebratorio que articule cómo todos estos nodos forman el mapa mental cohesivo del funcionamiento de «{concept}».
 [RESTRICCIONES] Las pistas cotidianas deben entenderse sin conocimientos técnicos previos. Cada pista debe asociarse de forma única e inequívoca con su nodo técnico. No generes etiquetas HTML ni formato web.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Facilitador de mapas mentales y esquemas cognitivos para el aprendizaje de «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña una actividad interactiva de mapa mental basada en emparejamiento con exactamente {n} tarjetas que conecten intuiciones cotidianas con componentes o mecanismos técnicos reales de «{concept}» (relación 1:1).
+- titulo: título atractivo e intrigante del mapa mental o red conceptual (≤10 palabras).
+- intro: breve orientación motivadora (≤25 palabras) que invite al estudiante a vincular cada pista de la vida diaria con su equivalente en la arquitectura de datos.
+- tarjetas: lista de exactamente {n} tarjetas de emparejamiento. Cada tarjeta contiene:
+  * `id`: identificador corto único sin espacios (ej. 'c1', 'c2', 'c3', ≤5 caracteres).
+  * `pista_cotidiana`: situación, objeto, analogía o metáfora cotidiana intuitiva sin jerga técnica (≤15 palabras).
+  * `nodo_tecnico`: término técnico, estructura, proceso o componente real de «{concept}» en el tema (≤8 palabras).
+  * `feedback_correcto`: explicación clara que valida la relación y aporta contexto técnico de su rol en «{concept}» (≤20 palabras).
+  * `feedback_incorrecto`: pista constructiva sin desvelar la solución directa, orientando la reflexión del estudiante (≤20 palabras).
+- revelacion: síntesis conceptual integradora (≤60 palabras) en tono celebratorio que articule cómo todos estos nodos forman el mapa mental cohesivo del funcionamiento de «{concept}».
+[RESTRICCIONES] Las pistas cotidianas deben entenderse sin conocimientos técnicos previos. Cada pista debe asociarse de forma única e inequívoca con su nodo técnico. No generes etiquetas HTML ni formato web.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

@@ -8,6 +8,7 @@ el prompt técnico en inglés para generadores de video AI y la síntesis concep
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, obj, s
 
@@ -44,10 +45,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_markers"]
-    return f"""[ROL] Guionista de video educativo y diseñador instruccional para EdTech universitario.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Storyboard explicativo del marco teórico fundamental del concepto «{concept}» con {n} marcadores cada 30 segundos, metáforas conceptuales fieles y rigurosas, y un guion continuo de narración.
+    return f"""[ROL] Guionista de video educativo y diseñador instruccional para EdTech de {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Storyboard explicativo del marco teórico fundamental del concepto «{concept}» con {n} marcadores cada 30 segundos, metáforas conceptuales fieles y rigurosas, y un guion continuo de narración.
 - titulo: título del video teórico (≤10 palabras).
 - introduccion: planteamiento introductorio que contextualice el marco teórico de «{concept}» (≤25 palabras).
 - marcadores: exactamente {n} marcadores temporales secuenciales cada 30 segundos ('0:00 - 0:30', '0:30 - 1:00', etc.). Por cada marcador:

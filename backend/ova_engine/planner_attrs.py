@@ -152,7 +152,7 @@ def profile_laya(concept: str, advanced: bool = False, timeout: float = 6.0, url
     if url:
         endpoint = f"{url.rstrip('/')}/v1/systemone"
     questions = {a: {"type": "noul", "instructions": q} for a, q in ATTRIBUTES.items()}
-    state = f"Tema de enseñanza de bases de datos Oracle: {concept}"
+    state = f"Tema de enseñanza: {concept}"
     try:
         r = httpx.post(endpoint, json={"state": state, "questions": questions, **extra}, headers=headers, timeout=timeout)
         r.raise_for_status()

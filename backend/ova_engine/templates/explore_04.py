@@ -8,6 +8,7 @@ un prompt de video técnico en inglés para generadores externos de video AI, y 
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, b, i, obj, s
 
@@ -15,8 +16,8 @@ PARAMS = (
     Param(
         "num_pauses",
         3,
-        min=2,
-        max=4,
+        min=1,
+        max=5,
         help="Número de pausas activas",
     ),
 )
@@ -59,10 +60,30 @@ def schema(p: dict) -> dict:
     )
 
 
+def normalize(data: dict, p: dict) -> dict:
+    """Ajusta pausas y segmentos al número pedido: recorta si sobran; si faltan, repite la última."""
+    n = p["num_pauses"]
+    out = dict(data)
+    pausas = list(out.get("pausas") or [])[:n]
+    while pausas and len(pausas) < n:
+        pausas.append(dict(pausas[-1]))
+    for k, pa in enumerate(pausas, 1):
+        pausas[k - 1] = {**pa, "numero": k}
+    segs = list(out.get("guion_segmentos") or [])
+    if len(segs) > n + 1:
+        segs = segs[:n] + [segs[-1]]
+    while segs and len(segs) < n + 1:
+        segs.append(dict(segs[-1]))
+    out["pausas"], out["guion_segmentos"] = pausas, segs
+    return out
+
+
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_pauses"]
-    return f"""[ROL] Diseñador instruccional y guionista de video educativo interactivo para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador instruccional y guionista de video educativo interactivo para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea un storyboard de video con {n} pausas activas para predicción que despierten curiosidad sin adelantar la solución sobre «{concept}». El video intercala {n + 1} segmentos de guion con {n} pausas interactivas en momentos clave de tensión o dilema.
 - titulo: título atractivo del video educativo (≤10 palabras).
 - gancho: introducción intrigante que invite a explorar el video y formular hipótesis (≤25 palabras).
@@ -78,6 +99,26 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo (Runway, Luma, Sora), describiendo la progresión visual y conceptual de «{concept}», estilo animación técnica moderna, sin texto en pantalla ni fórmulas.
 - sintesis: reflexión de cierre que consolida lo descubierto en las pausas y conecta las predicciones con el funcionamiento real de «{concept}» (≤35 palabras).
 [RESTRICCIONES] Las preguntas de pausa deben ser genuinamente predictivas: suscitar hipótesis sobre causa y efecto sin adelantar la solución de golpe. Sin jerga técnica pesada ni fórmulas en el guion. Tono estimulante y empático.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador instruccional y guionista de video educativo interactivo para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Crea un storyboard de video con {n} pausas activas para predicción que despierten curiosidad sin adelantar la solución sobre «{concept}». El video intercala {n + 1} segmentos de guion con {n} pausas interactivas en momentos clave de tensión o dilema.
+- titulo: título atractivo del video educativo (≤10 palabras).
+- gancho: introducción intrigante que invite a explorar el video y formular hipótesis (≤25 palabras).
+- guion_segmentos: exactamente {n + 1} segmentos secuenciales del video. Para cada segmento:
+  * `segundo`: intervalo de tiempo del segmento (ej. '0:00 - 0:20', '0:20 - 0:45').
+  * `visual`: descripción visual concreta de la escena, animación o analogía (≤30 palabras).
+  * `narracion`: locución o voz en off que acompaña la escena y prepara el siguiente momento (≤25 palabras).
+- pausas: exactamente {n} pausas activas intercaladas entre los segmentos (la pausa 1 tras el segmento 1, la pausa 2 tras el segmento 2, etc.). Para cada pausa:
+  * `numero`: número correlativo de la pausa (1 a {n}).
+  * `momento`: marca de tiempo exacta de la pausa (ej. 'En 0:20', 'En 0:45').
+  * `pregunta_prediccion`: pregunta desafiante que pide al estudiante predecir qué sucederá o cuál será la consecuencia inmediata antes de ver la continuación (≤25 palabras).
+  * `opciones`: lista de 2 a 3 opciones breves y plausibles. Exactamente UNA con `correcta: true`; cada una con `texto` (≤12 palabras) y `feedback` formativo que explique por qué esa predicción se cumple o no en la realidad (≤25 palabras).
+- prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo (Runway, Luma, Sora), describiendo la progresión visual y conceptual de «{concept}», estilo animación técnica moderna, sin texto en pantalla ni fórmulas.
+- sintesis: reflexión de cierre que consolida lo descubierto en las pausas y conecta las predicciones con el funcionamiento real de «{concept}» (≤35 palabras).
+[RESTRICCIONES] Las preguntas de pausa deben ser genuinamente predictivas: suscitar hipótesis sobre causa y efecto sin adelantar la solución de golpe. Sin jerga técnica pesada ni fórmulas en el guion. Tono estimulante y empático.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -318,7 +359,6 @@ _EXPLORE_JS = """
       }
       if (copyLabel) copyLabel.textContent = '¡Prompt copiado!';
       if (copyStatus) copyStatus.textContent = '✓ Copiado al portapapeles';
-      window.ovaMark('prompt');
     });
   }
 })();
@@ -330,7 +370,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     pausas = data.get("pausas", [])
     num_pauses = len(pausas)
     total_segments = len(segmentos)
-    total_progress = num_pauses + 1
+    total_progress = max(num_pauses, 1)
 
     steps_html = []
 
@@ -432,10 +472,10 @@ def render(data: dict, ctx: RenderContext) -> str:
         f"</div>"
         f"</div>"
         f"</div>"
-        f'<section class="ova-card ova-prompt-card">'
-        f"<h2>🎬 Prompt de video para IA</h2>"
+        f'<details class="ova-card ova-prompt-card">'
+        f'<summary>Para el docente: prompt de video para IA</summary>'
         f'<p class="ova-muted" style="font-size:0.875rem;margin-top:6px">'
-        f"Prompt técnico en inglés optimizado para generadores externos (Runway Gen-3, Luma Dream Machine, Sora, Pika):"
+        f"Prompt técnico en inglés para generadores externos de video (Runway, Luma, Sora, Pika). Es material del docente: no hace falta copiarlo para terminar."
         f"</p>"
         f'<pre class="ova-prompt-box"><code id="prompt-video-text">{esc(data.get("prompt_video", ""))}</code></pre>'
         f'<div class="ova-copy-bar">'
@@ -444,11 +484,11 @@ def render(data: dict, ctx: RenderContext) -> str:
         f"</button>"
         f'<span id="copy-status" aria-live="polite" class="ova-muted" style="font-size:0.875rem"></span>'
         f"</div>"
-        f"</section>"
+        f"</details>"
         f'<upao-summary title="Síntesis y Cierre">'
         f'<p>{esc(data.get("sintesis", ""))}</p>'
         f'<p class="ova-muted" style="font-size:0.875rem;margin-top:8px">'
-        f"Responde todas las pausas activas y copia el prompt de video para habilitar la finalización."
+        f"Responde todas las pausas activas para habilitar la finalización."
         f"</p>"
         f'<upao-complete slot="actions" label="Finalizar exploración" locked></upao-complete>'
         f"</upao-summary>"
@@ -550,4 +590,5 @@ SPEC = TemplateSpec(
     render=render,
     sample=sample,
     uses_images=False,
+    normalize=normalize,
 )

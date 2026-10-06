@@ -8,6 +8,7 @@ un candado y desbloquea el siguiente paso hasta abrir la puerta final.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, i, obj, s
 
@@ -45,8 +46,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_puzzles"]
-    return f"""[ROL] Diseñador de escape rooms educativas digitales para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de escape rooms educativas digitales para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un Escape Room Virtual con {n} acertijos lógicos encadenados cuya intuición y mecánica reflejen fielmente el concepto sin jerga técnica.
 - titulo: título temático e intrigante del escape room (≤10 palabras).
 - mision: premisa narrativa de la misión de escape y desafío inicial (≤30 palabras).
@@ -58,7 +61,24 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `respuesta_correcta`: 'A' o 'B'.
   * `explicacion_conexion`: breve explicación (≤30 palabras) que revela el paralelismo directo entre la lógica del acertijo y cómo funciona «{concept}».
 - epilogo: desenlace narrativo triunfal al abrir la compuerta final, resumiendo el valor del concepto (≤40 palabras).
-[RESTRICCIONES] Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+[RESTRICCIONES] Cada acertijo tiene UNA sola respuesta correcta defendible con lógica o con hechos del tema; nunca pidas ordenar o elegir por «importancia», «utilidad» u otro criterio subjetivo, y la opción incorrecta debe ser claramente errónea y explicable. Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de escape rooms educativas digitales para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un Escape Room Virtual con {n} acertijos lógicos encadenados cuya intuición y mecánica reflejen fielmente el concepto sin jerga técnica.
+- titulo: título temático e intrigante del escape room (≤10 palabras).
+- mision: premisa narrativa de la misión de escape y desafío inicial (≤30 palabras).
+- acertijos: exactamente {n} acertijos lógicos secuenciales donde descifrar cada uno abre un candado hacia la salida. Por cada acertijo:
+  * `numero`: índice del acertijo (1 a {n}).
+  * `escenario`: situación lógica o dilema cotidiano concreto (≤55 palabras).
+  * `opcion_A`: primera opción de respuesta (≤18 palabras).
+  * `opcion_B`: segunda opción de respuesta (≤18 palabras).
+  * `respuesta_correcta`: 'A' o 'B'.
+  * `explicacion_conexion`: breve explicación (≤30 palabras) que revela el paralelismo directo entre la lógica del acertijo y cómo funciona «{concept}».
+- epilogo: desenlace narrativo triunfal al abrir la compuerta final, resumiendo el valor del concepto (≤40 palabras).
+[RESTRICCIONES] Cada acertijo tiene UNA sola respuesta correcta defendible con lógica o con hechos del tema; nunca pidas ordenar o elegir por «importancia», «utilidad» u otro criterio subjetivo, y la opción incorrecta debe ser claramente errónea y explicable. Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

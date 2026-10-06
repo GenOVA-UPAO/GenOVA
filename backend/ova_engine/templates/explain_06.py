@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -19,7 +20,7 @@ from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summ
 QUIZ_ROUNDS = 3
 
 PARAMS = (
-    Param("num_terms", 8, min=5, max=10, help="Número de términos del glosario"),
+    Param("num_terms", 8, min=5, max=12, help="Número de términos del glosario"),
 )
 
 
@@ -46,14 +47,15 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_terms"]
-    return f"""[ROL] Lexicógrafo visual de sistemas de gestión de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Construye un glosario visual de exactamente {n} términos esenciales para comprender «{concept}», ordenados de lo más básico a lo más específico.
+    return f"""[ROL] Lexicógrafo visual {d.pick("de sistemas de gestión de bases de datos", "experto en «" + concept + "»")} para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Construye un glosario visual de exactamente {n} términos esenciales para comprender «{concept}», ordenados de lo más básico a lo más específico.
 - titulo: título corto del glosario.
 - intro: una frase que invite a explorar los términos.
 - imagen (opcional): elemento visual estructurado para el glosario:
-  * "logo" para marcas o tecnologías reconocidas (ej. Oracle, PostgreSQL).
+  * "logo" para marcas o tecnologías reconocidas (ej. {d.pick("Oracle, PostgreSQL", "una marca o institución del tema")}).
   * "diagrama" para conceptos, relaciones o procesos (con objeto `diagrama`: tipo, titulo, nodos, aristas).
   * "foto" ÚNICAMENTE si representa hardware, servidores o equipamiento físico real.
   * "escena" para ilustraciones pedagógicas.
@@ -63,9 +65,9 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `definicion`: definición autocontenida y precisa (≤50 palabras), sin usar el propio término para definirse.
   * `icono`: UN solo emoji distinto en cada término.
   * `icono_desc`: qué representa ese emoji respecto al término (≤15 palabras).
-  * `ejemplo`: ejemplo real razonado (≤30 palabras): una situación del DBA o la sentencia/vista Oracle donde aparece el término.
+  * `ejemplo`: ejemplo real razonado (≤30 palabras): {d.pick("una situación del DBA o la sentencia/vista Oracle", "una situación concreta del tema")} donde aparece el término.
 - cierre: frase que conecte los términos entre sí y con «{concept}».
-[RESTRICCIONES] Términos distintos entre sí, técnicamente correctos y sin tecnicismos sin definir.
+[RESTRICCIONES] Términos distintos entre sí, correctos y sin tecnicismos sin definir.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
