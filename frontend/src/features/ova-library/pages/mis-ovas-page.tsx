@@ -27,7 +27,7 @@ export function MisOvasPage() {
 
       <PageHeader
         title={t("ova-library:biblioteca_de_ovas")}
-        subtitle={t("ova-library:gestiona_edita_y_descarga_tus_recursos_educativos_generados")}
+        subtitle={t(p.scope === "all" ? "ova-library:ovas_de_la_plataforma" : "ova-library:gestiona_edita_y_descarga_tus_recursos_educativos_generados")}
       />
 
       <div ref={listTopRef} className="scroll-mt-4 space-y-3">
@@ -36,6 +36,8 @@ export function MisOvasPage() {
           onSearchChange={p.handleSearchChange}
           status={p.statusFilter}
           onStatusChange={p.handleStatusChange}
+          scope={p.scope}
+          onScopeChange={p.canSeeAll ? p.handleScopeChange : undefined}
         />
 
         {showContent && p.ovas.length > 0 && (

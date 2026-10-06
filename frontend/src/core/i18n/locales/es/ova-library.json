@@ -69,7 +69,7 @@
   "crea_revisa_y_exporta_tus_objetos_virtuales_de_aprendizaje": "Crea, revisa y exporta tus objetos virtuales de aprendizaje.",
   "crear_ova": "Crear OVA",
   "crea_tu_primer_ova": "Crea tu primer OVA",
-  "describe_un_tema_y_genova_generara_los_recursos_de_cada_fase_del_modelo_5e_luego_podras_re": "Describe un tema y GenOVA generará los recursos de cada fase del modelo 5E. Luego podrás revisarlos, ajustarlos y exportarlos a SCORM.",
+  "describe_un_tema_y_genova_generara_los_recursos_de_cada_fase_del_modelo_5e_luego_podras_re": "Describe un tema y GenOVA generará los recursos de cada fase del modelo 5E. Luego podrás revisarlos, ajustarlos y exportarlos a SCORM, EPUB, H5P y otros formatos.",
   "comenzar_ahora": "Comenzar ahora",
   "cargando_resumen": "Cargando resumen",
   "cargando_actividad_reciente": "Cargando actividad reciente",
@@ -168,5 +168,9 @@
   "paginacion_de_la_biblioteca": "Paginación de la biblioteca",
   "papelera": "Papelera",
   "ovas_movidos_a_la_papelera_restauralos_o_eliminalos_definitivamente": "OVAs movidos a la papelera. Restáuralos o elimínalos definitivamente.",
-  "paginacion_de_la_papelera": "Paginación de la papelera"
+  "paginacion_de_la_papelera": "Paginación de la papelera",
+  "alcance_de_la_biblioteca": "Alcance de la biblioteca",
+  "todos_los_usuarios": "Todos los usuarios",
+  "ovas_de_la_plataforma": "OVAs de la plataforma: los de todos los usuarios (vista de administrador).",
+  "mis_ovas": "Mis OVAs"
 }

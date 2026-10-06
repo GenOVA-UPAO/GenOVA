@@ -46,20 +46,23 @@ def list_ovas(
     limit: int = Query(default=10, ge=1, le=100),
     search: str = Query(default=""),
     status: str = Query(default=""),
+    scope: str = Query(default="mine", pattern="^(mine|all)$"),
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
     use_cases: OvaUseCases = Depends(build_ova),
 ):
     actor = _actor(current_user, db)
+    # `scope=all` solo lo respeta el administrador: para el resto equivale a «mine».
+    everyone = actor.is_admin and scope == "all"
     list_query = OvaListQuery(
-        actor=actor, page=page, limit=limit, search=search, status=status
+        actor=actor, page=page, limit=limit, search=search, status=status, all_users=everyone
     )
     # GN-03: barrer jobs zombis de esta página ANTES del listado. El SQL vive
     # en el catálogo; aquí solo se invoca generation desde interface.
     sweep_stale_jobs_for_ovas(db, list(use_cases.list_ovas.generating_ids(list_query)))
     result = use_cases.list_ovas.execute(list_query)
     return {
-        "ovas": [_ova_to_dict(item, include_owner=actor.is_admin) for item in result.ovas],
+        "ovas": [_ova_to_dict(item, include_owner=everyone) for item in result.ovas],
         **page_meta(result.total_items, result.page, result.limit),
     }
 
