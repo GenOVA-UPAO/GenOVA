@@ -148,5 +148,5 @@ def domain_for(concept: str, contexto: str = "") -> DomainContext:
         if line.startswith("Pedido del docente"):
             pedido = line
             break
-    level = detect_level(pedido or contexto)
+    level = detect_level(pedido or f"{concept}\n{contexto}")
     return DomainContext(topic=" ".join((concept or "").split()), level=level, is_db=is_db_text(f"{concept} {pedido}"))
