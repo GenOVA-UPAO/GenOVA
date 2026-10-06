@@ -769,6 +769,7 @@ ${s}
         btn.disabled = false;
         const hint = this.$('#hint');
         if (hint) hint.textContent = 'Actividad completada — ya puedes continuar';
+        this.emit('upao-unlocked');
       };
       const req = parseInt(this.getAttribute('require-progress') || '0', 10);
       if (req > 0) {
@@ -865,14 +866,26 @@ ${s}
 
   class UPAOSummary extends UE {
     static get observedAttributes() { return ['title']; }
-    connectedCallback() { this.render(); }
+    connectedCallback() {
+      // Si el cierre lleva un botón bloqueado, el logro («Misión cumplida…») no se muestra
+      // hasta que la actividad se completa y el botón se desbloquea.
+      const gate = this.querySelector('upao-complete[locked], upao-complete[require-progress]');
+      this.pending = !!gate;
+      this.render();
+      if (this.pending) {
+        this.addEventListener('upao-unlocked', () => { this.pending = false; this.render(); });
+      }
+    }
     attributeChangedCallback() { if (this.isConnected) this.render(); }
     render() {
+      const pending = !!this.pending;
       this.shadowRoot.innerHTML = this.css(PANEL_CSS + `
         .panel{border-top:3px solid ${T.accent};background:${T.surfTint}}
         .actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
         ::slotted([slot="actions"]){margin-top:16px;min-width:0;max-width:100%}
-      `) + `<section class="panel" aria-labelledby="heading"><h2 id="heading">${text(this.getAttribute('title') || 'Consolida lo aprendido')}</h2><div class="body"><slot></slot></div><div class="actions"><slot name="actions"></slot></div></section>`;
+        .panel.pending h2,.panel.pending .body{display:none}
+        .panel.pending ::slotted([slot="actions"]){margin-top:0}
+      `) + `<section class="panel${pending ? ' pending' : ''}" aria-labelledby="heading"><h2 id="heading">${text(this.getAttribute('title') || 'Consolida lo aprendido')}</h2><div class="body"><slot></slot></div><div class="actions"><slot name="actions"></slot></div></section>`;
     }
   }
 
