@@ -74,10 +74,10 @@ export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "lab",
   ),
   "11": preview(
-    "Applet GeoGebra",
-    "Construcción matemática o geométrica interactiva con GeoGebra y consignas guiadas.",
+    "workspace:geogebra.title",
+    "workspace:geogebra.description",
     INTERACTIVE_HTML,
-    ["Applet interactivo", "Consignas paso a paso", "Verificación de respuestas"],
+    ["workspace:geogebra.applet", "workspace:geogebra.instructions", "workspace:geogebra.answers"],
     "lab",
   ),
 };

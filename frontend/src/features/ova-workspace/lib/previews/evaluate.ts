@@ -74,10 +74,10 @@ export const EVALUATE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "diploma",
   ),
   "11": preview(
-    "Quiz Adaptativo",
-    "Cuestionario multinivel con ajuste dinámico de dificultad y reporte de dominio.",
-    "HTML + JS interactivo",
-    ["3 niveles de dificultad", "Ajuste dinámico", "Reporte final de dominio"],
+    "workspace:adaptiveQuiz.title",
+    "workspace:adaptiveQuiz.description",
+    "workspace:adaptiveQuiz.format",
+    ["workspace:adaptiveQuiz.levels", "workspace:adaptiveQuiz.adjustment", "workspace:adaptiveQuiz.report"],
     "quiz",
   ),
 };
