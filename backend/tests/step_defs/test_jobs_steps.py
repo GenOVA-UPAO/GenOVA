@@ -578,7 +578,7 @@ def job_ligado_ova(db, ctx):
     job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
     assert job.ova_id is not None
     ova = db.execute(select(Ova).where(Ova.id == job.ova_id)).scalar_one_or_none()
-    assert ova is not None and ova.status == "borrador"
+    assert ova is not None and ova.status == "listo"
     phases = db.execute(select(OvaPhase)).scalars().all()
     assert len(phases) >= 1
     ctx["ova_phases"] = phases

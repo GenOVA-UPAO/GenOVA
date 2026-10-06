@@ -22,7 +22,9 @@ import structlog
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from llm.auth_errors import is_provider_auth_error
 from prometheus.engine.budget import can_spend, deadline_at
+from prometheus.engine.job_control import job_stopped, persist_failure
 from prometheus.engine.job_trace import job_trace
 from prometheus.engine.runtime import _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
@@ -92,6 +94,8 @@ def resource_worker(payload: dict) -> dict:
     plan = item.get("plan_type") or plan_for(phase, rt)
     per_config = (payload.get("resource_configs") or {}).get(f"{phase}:{rt}", {})
     job_id = payload.get("job_id")
+    if job_stopped(job_id):
+        return {}
     started = time.monotonic()
     deadline = deadline_at(started)
     mark_running(job_id, phase, rt)
@@ -110,6 +114,11 @@ def resource_worker(payload: dict) -> dict:
             deadline=deadline,
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
+        auth = is_provider_auth_error(exc)
+        code = str(exc) if auth and str(exc) in ("provider_auth", "provider_auth_personal") else (
+            "provider_auth" if auth else "generation_failed"
+        )
+        persist_failure(job_id, phase, rt, code=code)
         logger.exception("workpool: resource failed", phase=phase, resource_type=rt)
         return {
             "errors": [
@@ -119,6 +128,8 @@ def resource_worker(payload: dict) -> dict:
                     "error": str(exc),
                     "plan": plan,
                     "deadline": deadline,
+                    "code": code,
+                    "exhausted": auth,
                 }
             ],
             "worker_signals": [

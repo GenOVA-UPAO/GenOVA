@@ -182,6 +182,8 @@ def test_otro_proveedor_mismo_prompt_usa_la_grabada(tmp_path):
 
 
 def test_record_guarda_respuestas_y_errores_sin_claves(tmp_path, monkeypatch):
+    from llm.auth_errors import ProviderAuthError
+    monkeypatch.delenv("OPENCODE_API_KEY", raising=False)
     respuestas = iter(
         [
             openai.AuthenticationError(
@@ -204,15 +206,19 @@ def test_record_guarda_respuestas_y_errores_sin_claves(tmp_path, monkeypatch):
     monkeypatch.setattr(router.time, "sleep", lambda *_a: None)  # backoff real en record
     path = tmp_path / "rec.json"
     with use_cassette(path, RECORD):
+        with pytest.raises(ProviderAuthError):
+            generar_texto("p", "texto")
         assert generar_texto("p", "texto") == "contenido real"
     raw = path.read_text(encoding="utf-8")
     assert "abcdef1234567890" not in raw
     entries = json.loads(raw)["entries"]
-    assert entries[0]["error"]["status"] == 401
+    assert entries[0]["error"]["kind"] == "provider_auth"
     assert entries[1]["response"] == {"content": "contenido real", "finish_reason": "stop"}
     # Y lo grabado se reproduce igual, sin proveedor.
     monkeypatch.setattr(router, "_provider_chat_once", lambda *a, **k: pytest.fail("red"))
     with use_cassette(path):
+        with pytest.raises(ProviderAuthError):
+            generar_texto("p", "texto")
         assert generar_texto("p", "texto") == "contenido real"
 
 
