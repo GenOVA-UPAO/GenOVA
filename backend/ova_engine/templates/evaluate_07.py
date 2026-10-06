@@ -6,12 +6,13 @@ import re
 import unicodedata
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS
+from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_terms", 6, min=5, max=8, help="Número de términos del crucigrama"),
+    Param("num_terms", 6, min=5, max=12, help="Número de términos del crucigrama"),
 )
 
 _CSS = """
@@ -47,14 +48,17 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Creador de crucigramas conceptuales para universitarios.", f"Creador de crucigramas conceptuales para {d.audiencia}. {d.guia_nivel}")
+    abrev = d.pick(" salvo SGA/PGA", "")
     n = p["num_terms"]
-    return f"""[ROL] Creador de crucigramas conceptuales para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea {n} entradas de crucigrama sobre «{concept}». El sistema arma la cuadrícula cruzando las palabras, así que elige términos que compartan letras entre sí (vocales y consonantes frecuentes: A, E, O, R, S, N, I).
 - titulo: título corto del crucigrama.
 - instrucciones: una frase (escribe en cada casilla, usa las pistas, pulsa «Comprobar»).
 - entradas: exactamente {n}. Cada una con:
-  * `respuesta`: término de UNA sola palabra, 4 a 12 letras, sin espacios, guiones ni números, sin abreviaturas salvo SGA/PGA. Tildes permitidas (se ignoran al validar).
+  * `respuesta`: término de UNA sola palabra, 4 a 12 letras, sin espacios, guiones ni números, sin abreviaturas{abrev}. Tildes permitidas (se ignoran al validar).
   * `pista`: definición justa que lleve a esa palabra sin contenerla (≤25 palabras).
 - cierre: frase que consolide los términos practicados.
 [RESTRICCIONES] Palabras distintas entre sí. Términos reales del dominio, no genéricos.
@@ -325,7 +329,7 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"Crucigrama: {concept}"[:70],
         "instrucciones": "Escribe cada palabra en su casilla; pulsa Comprobar para validar.",
-        "entradas": [{"respuesta": a, "pista": b} for a, b in base[:n]],
+        "entradas": [{"respuesta": base[k % len(base)][0] + "S" * (k // len(base)), "pista": base[k % len(base)][1]} for k in range(n)],
         "cierre": f"Los términos de {concept} ya forman parte de tu vocabulario.",
     }
 
@@ -339,4 +343,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("entradas", "num_terms"),
 )

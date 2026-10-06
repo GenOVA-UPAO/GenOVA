@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS
+from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_questions", 5, min=4, max=8, help="Número de preguntas del quiz"),
+    Param("num_questions", 5, min=4, max=10, help="Número de preguntas del quiz"),
 )
 
 
@@ -32,10 +33,13 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de quizzes universitarios.", f"Diseñador de quizzes para {d.audiencia}. {d.guia_nivel}")
+    aplic = d.pick("aplicación práctica con Oracle", "aplicación práctica con ejemplos propios del tema")
     n = p["num_questions"]
-    return f"""[ROL] Diseñador de quizzes universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña un quiz de {n} preguntas PROGRESIVAS (de teoría básica a aplicación práctica con Oracle) sobre «{concept}».
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un quiz de {n} preguntas PROGRESIVAS (de teoría básica a {aplic}) sobre «{concept}».
 - titulo: título corto del quiz.
 - instrucciones: una frase que explique cómo responder.
 - preguntas: exactamente {n}. Cada una con:
@@ -150,4 +154,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("preguntas", "num_questions"),
 )

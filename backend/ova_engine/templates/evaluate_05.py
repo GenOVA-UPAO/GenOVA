@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS
+from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_sentences", 5, min=4, max=8, help="Número de oraciones con hueco"),
+    Param("num_sentences", 5, min=4, max=12, help="Número de oraciones con hueco"),
     Param("word_bank", "si", choices=("si", "no"), help="Mostrar banco de palabras como ayuda"),
 )
 
@@ -39,15 +40,18 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de ejercicios de vocabulario técnico para universitarios.", f"Diseñador de ejercicios de vocabulario técnico para {d.audiencia}. {d.guia_nivel}")
+    abrev = d.pick(" salvo SGA/PGA", "")
     n = p["num_sentences"]
-    return f"""[ROL] Diseñador de ejercicios de vocabulario técnico para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña {n} oraciones sobre «{concept}», cada una con UN hueco que se completa con un término técnico.
 - titulo: título corto del ejercicio.
 - instrucciones: una frase que explique cómo completar (sin importar mayúsculas ni tildes).
 - oraciones: exactamente {n}. Cada una con:
   * `antes`: el texto que va ANTES del hueco (≤20 palabras).
-  * `respuesta`: el término exacto del hueco, UNA sola palabra o término corto sin espacios dobles (≤3 palabras); sin abreviaturas salvo SGA/PGA.
+  * `respuesta`: el término exacto del hueco, UNA sola palabra o término corto sin espacios dobles (≤3 palabras); sin abreviaturas{abrev}.
   * `despues`: el texto que va DESPUÉS del hueco (puede quedar muy corto, ≤20 palabras).
   * `explicacion`: por qué ese término es el correcto (≤25 palabras).
 - cierre: frase que consolide el vocabulario practicado.
@@ -164,9 +168,9 @@ def sample(concept: str, p: dict) -> dict:
         "instrucciones": "Escribe el término que falta; no importan mayúsculas ni tildes.",
         "oraciones": [
             {
-                "antes": base[k][0],
-                "respuesta": base[k][1],
-                "despues": base[k][2],
+                "antes": base[k % len(base)][0],
+                "respuesta": base[k % len(base)][1],
+                "despues": base[k % len(base)][2],
                 "explicacion": f"Es el término técnico exacto en {concept}.",
             }
             for k in range(n)
@@ -184,4 +188,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("oraciones", "num_sentences"),
 )

@@ -810,6 +810,7 @@
   "turnos_del_juego_de_estrategia": "Turns in the strategy game",
   "criterios": "Criteria",
   "criterios_de_diseno_del_reto": "Design criteria for the challenge",
+  "preguntas_maximas_del_quiz_adaptativo": "Maximum number of questions in the adaptive quiz",
   "preguntas_del_quiz_interactivo": "Questions in the interactive quiz",
   "criterios_de_la_rubrica_de_autoevaluacion": "Criteria in the self-assessment rubric",
   "preguntas_del_desafio_contrarreloj": "Questions in the timed challenge",
