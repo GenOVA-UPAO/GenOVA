@@ -14,7 +14,7 @@ materialization failure is logged and contained — the job state is unaffected.
 import uuid
 
 import structlog
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from core.educational_metadata import metadata_from_ova
@@ -82,10 +82,7 @@ def materialize_partial_ova(
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
     title = ova_title(prompt) or "OVA parcial"
-    total = db.execute(
-        select(func.count()).select_from(OvaJobResource).where(OvaJobResource.job_id == job.id)
-    ).scalar_one()
-    final_status = "listo" if total and len(resources) >= total else "borrador"
+    final_status = "listo"
 
     ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
     if ova is None:

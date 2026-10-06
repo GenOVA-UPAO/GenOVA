@@ -13,7 +13,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
 
+from llm.auth_errors import is_provider_auth_error
 from prometheus.engine.budget import can_spend
+from prometheus.engine.job_control import job_stopped, persist_failure
 from prometheus.engine.runtime import _concurrency, _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
@@ -80,6 +82,8 @@ def repair_node(state: OvaGenerationState) -> dict:
 
         plan = err.get("plan") or plan_for(phase, rt)
         deadline = err.get("deadline")
+        if job_stopped(job_id) or err.get("code", "").startswith("provider_auth"):
+            return err, err.get("html"), list(err.get("defects") or [])
         if not can_spend(deadline):
             logger.info(
                 "repair: skipped, resource budget exhausted",
@@ -106,6 +110,9 @@ def repair_node(state: OvaGenerationState) -> dict:
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento
             logger.warning("repair: failed again", phase=phase, resource_type=rt, error=str(exc))
             err_updated = dict(err)
+            if is_provider_auth_error(exc):
+                err_updated["code"] = "provider_auth_personal" if getattr(exc, "personal", False) else "provider_auth"
+            persist_failure(job_id, phase, rt, code=err_updated.get("code", "generation_failed"))
             msg = str(exc)
             if not msg.startswith("Revisar y reintentar"):
                 msg = f"Revisar y reintentar: no se pudo generar el recurso ({msg})"

@@ -8,6 +8,7 @@ interface OvaCardPrimaryActionProps {
   ovaId: string;
   isGenerating: boolean;
   isInterrupted: boolean;
+  needsRetry?: boolean;
   /** OVA ajeno (el admin): se abre para verlo, no para editarlo. */
   canEdit?: boolean;
   className?: string;
@@ -19,6 +20,7 @@ export function OvaCardPrimaryAction({
   ovaId,
   isGenerating,
   isInterrupted,
+  needsRetry = false,
   canEdit = true,
   className,
   onResume,
@@ -46,8 +48,8 @@ export function OvaCardPrimaryAction({
   return (
     <Button asChild variant="outline" className={className}>
       <Link to={workspaceUrl}>
-        <Icon name={openIcon(isGenerating, canEdit)} size="text-base" />
-        {t(openLabel(isGenerating, canEdit))}
+        <Icon name={needsRetry ? "arrow-clockwise" : openIcon(isGenerating, canEdit)} size="text-base" />
+        {t(needsRetry ? "workspace:reintentar_generacion" : openLabel(isGenerating, canEdit))}
       </Link>
     </Button>
   );

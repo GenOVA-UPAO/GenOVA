@@ -12,6 +12,7 @@ interface OvaCardActionsProps {
   ovaId: string;
   isGenerating: boolean;
   isReady: boolean;
+  needsRetry?: boolean;
   isInterrupted?: boolean;
   isDownloading?: boolean;
   isDuplicating?: boolean;
@@ -27,6 +28,7 @@ export function OvaCardActions({
   ovaId,
   isGenerating,
   isReady,
+  needsRetry,
   isInterrupted,
   isDownloading,
   isDuplicating,
@@ -45,6 +47,7 @@ export function OvaCardActions({
       <OvaCardPrimaryAction
         ovaId={ovaId}
         isGenerating={isGenerating}
+        needsRetry={needsRetry}
         isInterrupted={Boolean(isInterrupted)}
         canEdit={canEdit}
         className={ACTION_CLASS}

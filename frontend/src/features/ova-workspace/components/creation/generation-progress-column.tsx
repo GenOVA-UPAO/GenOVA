@@ -74,7 +74,7 @@ export function GenerationProgressColumn({
         <p role="status" className="text-sm text-muted-foreground">
           {t("workspace:iniciando_generacion")} </p>
       )}
-      {kind === "canceled" && <CanceledJobBanner />}
+      {kind === "canceled" && <CanceledJobBanner onRetry={onRetryAll} />}
       {kind === "totalFail" && (
         <TotalFailurePanel viewModel={job.resources} onRetryAll={onRetryAll} />
       )}

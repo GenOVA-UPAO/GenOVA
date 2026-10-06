@@ -1,6 +1,10 @@
 import { providerConnection } from "./provider-connection";
 
 describe("providerConnection", () => {
+  it("una lista pública disponible no verifica la clave guardada", () => {
+    expect(providerConnection({ openrouter: { ok: true, configured: true, credential_code: "unchecked" } }, null, "openrouter")).toBe("unknown");
+    expect(providerConnection({ openrouter: { ok: true, configured: true, credential_code: "invalid_key" } }, null, "openrouter")).toBe("invalid");
+  });
   const platform = {
     openrouter: { ok: true, configured: true },
     groq: { ok: false, configured: false },

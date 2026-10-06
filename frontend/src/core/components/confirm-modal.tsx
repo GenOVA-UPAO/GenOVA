@@ -18,6 +18,7 @@ interface ConfirmModalProps {
   title: string;
   message: string;
   confirmLabel: string;
+  cancelLabel?: string;
   isLoading?: boolean;
   /** Texto del botón mientras se procesa («Eliminando…»). */
   loadingLabel?: string;
@@ -33,6 +34,7 @@ export function ConfirmModal({
   title,
   message,
   confirmLabel,
+  cancelLabel,
   isLoading = false,
   loadingLabel,
   danger = true,
@@ -91,7 +93,7 @@ export function ConfirmModal({
           {/* `flex-1` solo en fila: en columna (móvil) su base 0 aplastaba los botones
           a ~22 px de alto. En móvil, altura táctil de 44 px. */}
           <AlertDialogCancel size="lg" className="max-sm:h-11 sm:flex-1" disabled={isLoading}>
-            {t("shared:cancelar")} </AlertDialogCancel>
+            {cancelLabel ?? t("shared:cancelar")} </AlertDialogCancel>
           <Button
             variant={danger ? "danger" : "default"}
             size="lg"

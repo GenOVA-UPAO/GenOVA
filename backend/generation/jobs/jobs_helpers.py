@@ -241,6 +241,9 @@ def resource_to_dict(resource: OvaJobResource) -> dict:
         "attempts": resource.attempts,
         "error_id": str(resource.error_id) if resource.error_id else None,
         "defect_reason": resource.defect_reason,
+        "error_code": resource.defect_reason if resource.defect_reason in (
+            "provider_auth", "provider_auth_personal"
+        ) else None,
     }
 
 
@@ -255,5 +258,9 @@ def job_to_dict(job: OvaJob, resources: list[OvaJobResource]) -> dict:
         "updated_at": job.updated_at.isoformat() if job.updated_at else None,
         "started_at": job.started_at.isoformat() if job.started_at else None,
         "finished_at": job.finished_at.isoformat() if job.finished_at else None,
-        "resources": [resource_to_dict(r) for r in resources],
+        "resources": [
+            {**resource_to_dict(r), "status": "canceled"}
+            if job.status == "canceled" and r.status in ("pending", "running")
+            else resource_to_dict(r) for r in resources
+        ],
     }

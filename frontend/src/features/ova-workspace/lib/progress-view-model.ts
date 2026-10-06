@@ -57,7 +57,8 @@ export function resourceStatusLabel(status: string, t: TFunction = i18n.t): stri
   if (status === "check") return t("workspace:generado");
   if (status === "X") return t("workspace:error");
   if (status === "generando") return t("workspace:generando_691");
-  return t("workspace:en_espera");
+  if (status === "cancelado") return t("workspace:resourceCanceled");
+  return t("workspace:en_cola");
 }
 
 const MARK_CLS: Record<string, string> = {
