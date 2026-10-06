@@ -24,7 +24,7 @@ _CSS = """
 .dp-paper{background:#fff;color:#1b2437;text-align:center;padding:var(--space-5,32px) var(--space-4,24px);border-radius:var(--radius,12px);border:6px double var(--primary,#0A3D91);box-shadow:var(--shadow,0 4px 16px rgba(10,61,145,.15))}
 .dp-paper.is-moderno{border:0;border-top:14px solid var(--primary,#0A3D91);border-bottom:14px solid var(--accent,#F47A20);border-radius:6px}
 .dp-seal{font-size:2.6rem;line-height:1}
-.dp-kicker{letter-spacing:.2em;text-transform:uppercase;font-size:.8rem;color:var(--text-muted,#5b6578);margin:0}
+.dp-kicker{letter-spacing:.2em;text-transform:uppercase;font-size:.8rem;color:#52617A;margin:0}
 .dp-title{font-size:clamp(1.3rem,4.5vw,2rem);color:var(--primary,#0A3D91);margin:8px 0;overflow-wrap:anywhere}
 .dp-name{display:inline-block;max-width:100%;font-size:clamp(1.5rem,6vw,2.4rem);font-weight:800;color:var(--primary,#0A3D91);border-bottom:3px solid var(--accent,#F47A20);padding:0 16px 4px;margin:12px 0;overflow-wrap:anywhere}
 .dp-name.is-empty{color:#8a93a6;font-weight:500}

@@ -12,7 +12,7 @@ PackageThemeId = Literal["original", "upao", "claro", "oscuro", "alto-contraste"
 ORIGINAL_THEME = "original"
 
 _BASE = {
-    "bg": "#F7F9FC", "surface": "#FFFFFF", "surface-tint": "#EAF0FB",
+    "bg": "#F7F9FC", "surface": "#FFFFFF", "surface-tint": "#EAF0FB", "surface-2": "#F8FAFC",
     "primary": "#0A3D91", "primary-hover": "#072C6B",
     "accent": "#F47A20", "accent-hover": "#D9650F", "accent-tint": "#FDEEE0",
     "action": "#B84B00", "action-hover": "#923B00",
@@ -45,6 +45,7 @@ PACKAGE_THEMES = {
     },
     "oscuro": {
         **_BASE, "bg": "#000000", "surface": "#000000", "surface-tint": "#000000",
+        "surface-2": "#000000",
         "primary": "#767676", "primary-hover": "#767676",
         "action": "#767676", "action-hover": "#767676",
         "text": "#FFFFFF", "text-muted": "#CCCCCC", "border": "#888888",
@@ -53,7 +54,7 @@ PACKAGE_THEMES = {
         "success-bg": "#000000", "danger-bg": "#000000",
     },
     "alto-contraste": {
-        **_BASE, "bg": "#FFFFFF", "surface-tint": "#FFFFFF", "accent-tint": "#FFFFFF",
+        **_BASE, "bg": "#FFFFFF", "surface-tint": "#FFFFFF", "surface-2": "#FFFFFF", "accent-tint": "#FFFFFF",
         "text": "#000000", "text-muted": "#000000", "primary": "#000000",
         "primary-hover": "#000000", "action": "#000000", "action-hover": "#000000",
         "accent": "#000000", "accent-hover": "#000000", "border": "#000000",
@@ -71,6 +72,9 @@ PACKAGE_THEMES = {
 for _tokens in PACKAGE_THEMES.values():
     _tokens["muted"] = _tokens["text-muted"]
     _tokens["focus"] = _tokens["primary"]
+    # Las plantillas del motor pintan el texto con --foreground (antes sin definir:
+    # en el tema Oscuro quedaba el literal #0f172a sobre negro).
+    _tokens["foreground"] = _tokens["text"]
 
 # Compatibilidad con la librería UPAO ya embebida en OVAs guardadas: sus fondos
 # de feedback y subtítulos eran literales. Solo se adapta su firma conocida,
@@ -87,6 +91,17 @@ RESOURCE_THEME_REPLACEMENTS = [
     ("success: [T.success, '#EAF7F1'", "success: [T.success, 'var(--success-bg,#EAF7F1)'"),
     ("error: [T.danger, '#FBEDED'", "error: [T.danger, 'var(--danger-bg,#FBEDED)'"),
     (".time.warn{color:${T.accent}}", ".time.warn{color:${T.action}}"),
+    # Sin fuente de emoji (Linux, algunos Android) el icono salía como un cuadro vacío.
+    (
+        '<span id="icon" aria-hidden="true">🏁</span>',
+        '<span id="icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1.1em" height="1.1em" '
+        'fill="currentColor" aria-hidden="true" focusable="false" style="vertical-align:-.15em">'
+        '<path d="M5 2h2v20H5zM8 3h12l-3 5 3 5H8z"/></svg></span>',
+    ),
+    # Puntuación: la etiqueta y el máximo con opacidad bajaban el contraste sobre
+    # el primario del tema Oscuro (3.3-3.6:1).
+    ("text-transform:uppercase;opacity:.8;white-space:nowrap}", "text-transform:uppercase;white-space:nowrap}"),
+    (".max{font-size:.85rem;font-weight:600;opacity:.75}", ".max{font-size:.85rem;font-weight:600}"),
 ]
 
 

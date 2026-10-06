@@ -250,7 +250,7 @@ _STYLE = """
 }
 .socratic-opt-btn.is-correct {
   border-color: var(--success, #146c49);
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
 }
 .socratic-opt-btn.is-wrong {
   border-color: var(--accent, #f47a20);
@@ -295,7 +295,7 @@ _STYLE = """
   gap: 8px;
 }
 .socratic-bubble.is-correct {
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
   border: 1px solid #bbf7d0;
   border-left: 4px solid var(--success, #146c49);
 }

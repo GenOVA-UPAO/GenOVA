@@ -98,7 +98,7 @@ _STYLE = """
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--success, #146c49);
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -160,7 +160,7 @@ _STYLE = """
 }
 .ova-opt-btn.is-correct {
   border-color: var(--success, #146c49);
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
   color: #14532d;
   font-weight: 600;
   opacity: 1;
@@ -186,7 +186,7 @@ _STYLE = """
   margin-top: 10px;
 }
 .ova-feedback.is-correct {
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
   border: 1px solid #86efac;
   color: #14532d;
 }

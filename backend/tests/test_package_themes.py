@@ -192,3 +192,19 @@ def test_crear_el_ova_en_generacion_fija_el_tema_de_paquete_segun_la_paleta(them
     )
     ovas = [call.args[0] for call in db.add.call_args_list if isinstance(call.args[0], Ova)]
     assert [ova.package_theme for ova in ovas] == [expected]
+
+
+def test_los_componentes_no_dependen_de_una_fuente_de_emoji():
+    """B6: sin fuente de emoji, 🏁/🏆/🎙️ salían como un cuadro vacío en «Continuar»."""
+    import re
+    from pathlib import Path
+
+    js = (Path(__file__).parents[1] / "llm" / "ova_components" / "upao_components.js").read_text(
+        encoding="utf-8"
+    )
+    assert not re.search("[\U0001F300-\U0001FAFF]", js)
+    assert "ICON.flag" in js
+
+    old = '<html><head></head><body><script>/* UPAO Components v1.0 */const x=`<span id="icon" aria-hidden="true">🏁</span>`</script></body></html>'
+    themed = inject_package_theme(old, "upao")
+    assert "🏁" not in themed and "<svg" in themed

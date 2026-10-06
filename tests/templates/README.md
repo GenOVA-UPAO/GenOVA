@@ -35,5 +35,10 @@ CI ejecuta cuatro shards independientes con cuatro workers cada uno, sube
 trazas, auditorías y reporte HTML siempre, y corta a los diez minutos. Los
 paths incluyen plantillas, fixtures, runtime UPAO, fuentes y cambios de la suite.
 
+`templates/themes.spec.js` audita con axe las 51 plantillas en cada tema de paquete
+(upao, claro, oscuro, alto contraste e infantil; 0 fallos serious/critical). Usa las copias
+`tests/.ova-rendered/<tema>/<recurso>.html` que genera `ova_engine_render.py` con el mismo
+`inject_package_theme` del exportador.
+
 Para hosts con poca memoria: añadir `--workers=1`. Los servidores lanzados por
 Playwright se cierran automáticamente al finalizar normalmente la ejecución.
