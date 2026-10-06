@@ -16,6 +16,7 @@ import structlog
 
 from ova_engine.contract import RenderContext, TemplateSpec
 from ova_engine.decision import decide, rules_decide
+from ova_engine.domain_context import domain_for
 from ova_engine.html import document
 from ova_engine.planner_attrs import normalize_topic
 from ova_engine.review import review_and_fix
@@ -98,6 +99,7 @@ def generate_with_template(
             llm_config=llm_config,
             enabled_models=enabled_models,
             deadline=deadline,
+            db_facts=domain_for(concept, prompt_ctx).is_db,
         )
     )
     t_text = time.monotonic()

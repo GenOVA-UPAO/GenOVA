@@ -23,6 +23,7 @@ import httpx
 import structlog
 
 from llm.utils.utils import parse_json
+from ova_engine.domain_context import is_db_text
 from ova_engine.schema import validate
 
 logger = structlog.get_logger(__name__)
@@ -48,15 +49,19 @@ ORACLE_FACTS = (
 )
 
 _SYSTEM_RULES = (
-    ORACLE_FACTS
-    + "Escribe SOLO el contenido textual en español neutro, preciso y fiel al concepto. "
+    "Escribe SOLO el contenido textual en español neutro, preciso y fiel al concepto. "
     "No escribas HTML, CSS, JavaScript ni markdown. Responde únicamente con un JSON "
     "válido que cumpla exactamente este JSON Schema:\n"
 )
 
 
-def _full_prompt(prompt: str, schema: dict) -> str:
-    return f"{prompt}\n\n{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
+def _full_prompt(prompt: str, schema: dict, db_facts: bool | None = None) -> str:
+    """Prompt + reglas del sistema. Los hechos de Oracle solo se añaden si el tema trata de
+    Oracle o de bases de datos (`db_facts`; por defecto se detecta en el prompt)."""
+    if db_facts is None:
+        db_facts = is_db_text(prompt)
+    facts = ORACLE_FACTS if db_facts else ""
+    return f"{prompt}\n\n{facts}{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
 
 
 def _local(
@@ -255,9 +260,10 @@ def generate_json(
     attempts: int = 2,
     timeout: float | None = None,
     model: str | None = None,
+    db_facts: bool | None = None,
 ) -> dict:
     backend = os.getenv("OVA_TEXT_BACKEND", "router").strip().lower()
-    full = _full_prompt(prompt, schema)
+    full = _full_prompt(prompt, schema, db_facts)
     models_to_try = _resolve_candidate_models(backend, llm_config, enabled_models)
 
     all_errors: list[str] = []
