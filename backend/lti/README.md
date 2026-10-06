@@ -23,13 +23,13 @@ En la app: **Administración → LTI** (`/admin/lti`).
 ## Configuración (backend)
 
 | Variable | Por defecto | Uso |
-| `LTI_PURGE_INTERVAL_HOURS` | `6` | cada cuántas horas se borran los `state`/`nonce` caducados y los launches caducados hace más de 7 días (también al arrancar) |
 |---|---|---|
 | `LTI_TOOL_URL` | (de la petición) | URL pública del backend que ve el LMS, sin barra final. **Obligatoria en producción** (detrás de un proxy la petición puede llegar como `http://`). |
 | `LTI_PRIVATE_KEY` | vacío | Par RSA de GenOVA en PEM (`\n` literales admitidos). Vacío: se genera una RSA-2048 y se guarda cifrada (Fernet, clave derivada de `JWT_SECRET`) en `lti_tool_keys`. |
 | `LTI_KEY_ID` | thumbprint RFC 7638 | `kid` de esa clave. |
 | `LTI_STATE_COOKIE_REQUIRED` | `1` | Exigir la cookie del `state` en `/lti/launch`. |
 | `LTI_SESSION_HOURS` | `8` | Vida de la sesión LTI (reproductor/selector). |
+| `LTI_PURGE_INTERVAL_HOURS` | `6` | Cada cuántas horas se borran los `state`/`nonce` caducados y los launches caducados hace más de 7 días (también al arrancar) |
 
 Rotar `JWT_SECRET` deja ilegible la clave guardada: se genera otra y el LMS la
 vuelve a leer del JWKS (las sesiones LTI abiertas caducan).
@@ -106,6 +106,6 @@ JWK URL; placement *Link Selection* con Deep Linking y scopes de AGS *score*).
 
 - El docente debe tener cuenta en GenOVA con el mismo correo que en el LMS.
 - La nota que se envía es la que calcula el runtime de la OVA (media de los recursos
-  completados; 100 si no hay recursos puntuables y se marca como completada).
+  puntuados). Si no hay recursos puntuados y se marca como completada, no se envía nota.
 - `target_link_uri` no se usa para elegir destino: siempre se valida en `/lti/launch`.
 - Sin soporte de NRPS (lista de participantes) ni de LTI 1.1.

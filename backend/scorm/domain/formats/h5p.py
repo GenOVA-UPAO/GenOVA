@@ -399,7 +399,9 @@ def build_h5p_json(course_title: str, used: set[str], metadata: EducationalMetad
         "embedTypes": ["iframe"],
         "license": licenses[meta.license],
         **({"licenseVersion": "4.0"} if meta.license.startswith("CC BY") else {}),
-        "authors": [{"name": meta.author, "role": "Author"}] if meta.author else [],
+        # Sin autor no se escribe la clave: el validador de Moodle trata `"authors": []`
+        # como un objeto sin `name`/`role` y rechaza todo el paquete.
+        **({"authors": [{"name": meta.author, "role": "Author"}]} if meta.author else {}),
         "preloadedDependencies": deps,
     }
 

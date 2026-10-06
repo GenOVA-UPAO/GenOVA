@@ -243,7 +243,7 @@ def play(token: str, request: Request, service: Service):
 @router.get("/play/{token}/content/{path:path}", include_in_schema=False)
 def play_content(token: str, path: str, service: Service):
     try:
-        launch_row, _platform = service.session_launch(token, SESSION_PLAY)
+        launch_row, platform = service.session_launch(token, SESSION_PLAY)
     except LtiError as error:
         return _error(error, origins=[])
     package = ova_content.build_player_package(service.db, str(launch_row.ova_id))
@@ -257,7 +257,12 @@ def play_content(token: str, path: str, service: Service):
         data,
         media_type=media_type,
         headers={
-            "Content-Security-Policy": "frame-ancestors 'self'",
+            # `frame-ancestors` se evalúa contra TODOS los ancestros: el paquete va dentro
+            # del reproductor, que a su vez va dentro del LMS. Sin el origen del LMS, el
+            # navegador bloquea el contenido aunque el reproductor sí cargue.
+            "Content-Security-Policy": " ".join(
+                ["frame-ancestors 'self'", *platform_origins(platform)]
+            ),
             "Cache-Control": "private, max-age=300",
         },
     )

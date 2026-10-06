@@ -218,7 +218,10 @@ def build_app_js() -> str:
   const frame = document.getElementById('res-frame')
   const tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'))
   const format = document.body.getAttribute('data-package-format')
-  const localMode = format === 'html' || format === 'ims'
+  // Web/IMS guardan el progreso en el navegador, salvo que haya una API de LMS: el
+  // reproductor LTI la expone para enviar la nota por AGS (sin ella la nota se perdería).
+  const lmsApi = Boolean(window.GenovaScorm && window.GenovaScorm.initialize())
+  const localMode = (format === 'html' || format === 'ims') && !lmsApi
   const storageKey = 'genova-progress-v1:' + document.body.getAttribute('data-progress-key')
   const resourceSources = tabs.map(function (tab) { return tab.getAttribute('data-src') })
   const localCompleted = new Set()
@@ -239,7 +242,7 @@ def build_app_js() -> str:
       pad(hours, 4) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(cs % 100, 2))
   }
 
-  const initialized = !localMode && window.GenovaScorm && window.GenovaScorm.initialize()
+  const initialized = lmsApi
   const xapi = localMode ? null : window.GenovaXapi || null
 
   function showLocalProgress() {
