@@ -886,5 +886,14 @@
   "html_guiado": "HTML guiado",
   "value_min_restantevalue": "≈ {{p0}} min restante{{p1}}",
   "value_listo": "{{p0}}: listo",
-  "value_generando": "{{p0}}: generando"
+  "value_generando": "{{p0}}: generando",
+  "regenCancelled": "Regeneración cancelada. No se aplicó ningún cambio: el OVA conserva su versión actual.",
+  "regenCancel": "Cancelar",
+  "regenCancelling": "Cancelando…",
+  "confirmAllTitle": "¿Aplicar a todo el OVA?",
+  "confirmAllMessage": "Esta instrucción se aplicará a los {{count}} recursos del OVA y puede tardar unos {{minutes}} min. Si solo querías cambiar algunos, cancela y márcalos en «Aplicar a».",
+  "confirmAllAction": "Aplicar a todo el OVA",
+  "quitar_seleccion": "Quitar selección",
+  "applyingChanges": "Aplicando cambios…",
+  "applyingChangesHint": "El OVA se está regenerando; puedes verlo, pero no editarlo hasta que termine."
 }

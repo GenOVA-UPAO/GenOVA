@@ -4,8 +4,9 @@ import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 import type { RegenChatMessage } from "../../lib/regen-chat";
+import type { RegenCancel } from "./cancel-regen-button";
 import { ChatDeleteButton } from "./chat-delete-button";
-import { ChatProgressBar } from "./chat-progress-bar";
+import { ChatRunningExtras } from "./chat-running-extras";
 
 const STATUS = {
   running: { icon: "spinner", tone: "text-primary", spin: true, label: "workspace:en_curso" },
@@ -17,10 +18,11 @@ const STATUS = {
 interface Props {
   message: RegenChatMessage;
   onRemove: (id: string) => void;
+  cancel?: RegenCancel;
 }
 
 /** Respuesta del sistema: alineada a la izquierda, sin burbuja, con icono de estado. */
-export function ChatAssistantMessage({ message, onRemove }: Readonly<Props>) {
+export function ChatAssistantMessage({ message, onRemove, cancel }: Readonly<Props>) {
   const { t } = useTranslation();
   const status = STATUS[message.status ?? "idle"];
   const running = message.status === "running";
@@ -43,9 +45,7 @@ export function ChatAssistantMessage({ message, onRemove }: Readonly<Props>) {
         >
           {message.text}
         </p>
-        {running && message.percentage !== undefined && (
-          <ChatProgressBar percentage={message.percentage} className="mt-1.5 max-w-60" />
-        )}
+        {running && <ChatRunningExtras percentage={message.percentage} cancel={cancel} />}
       </div>
       {!running && (
         <ChatDeleteButton

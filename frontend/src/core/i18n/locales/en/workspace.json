@@ -886,5 +886,14 @@
   "html_guiado": "Guided HTML",
   "value_min_restantevalue": "≈ {{p0}} min remaining{{p1}}",
   "value_listo": "{{p0}}: ready",
-  "value_generando": "{{p0}}: generating"
+  "value_generando": "{{p0}}: generating",
+  "regenCancelled": "Regeneration cancelled. No changes were applied: the OVA keeps its current version.",
+  "regenCancel": "Cancel",
+  "regenCancelling": "Cancelling…",
+  "confirmAllTitle": "Apply to the entire OVA?",
+  "confirmAllMessage": "This instruction will be applied to all {{count}} resources and may take about {{minutes}} min. If you only meant to change some, cancel and tick them under “Apply to”.",
+  "confirmAllAction": "Apply to entire OVA",
+  "quitar_seleccion": "Clear selection",
+  "applyingChanges": "Applying changes…",
+  "applyingChangesHint": "The OVA is being regenerated; you can view it but not edit it until it finishes."
 }

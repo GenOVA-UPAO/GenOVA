@@ -19,6 +19,10 @@ export function triggerOvaRegeneration(ovaId: string, request: RegenRequest = {}
   return apiJson(`/api/ovas/${ovaId}/regenerar`, { method: "POST", body: JSON.stringify({ prompt: request.prompt ?? null, fase_ids: request.phaseIds ?? [], ...(request.uploadIds?.length ? { upload_ids: request.uploadIds } : {}) }) });
 }
 export function fetchRegenerationProgress(ovaId: string, jobId: string): Promise<RegenProgressDto> { return apiJson(`/api/ovas/${ovaId}/regenerar/${jobId}/progress`); }
+/** Cancela la regeneración: lo ya editado se descarta y el OVA conserva su versión. */
+export function cancelOvaRegeneration(ovaId: string, jobId: string): Promise<{ status: string }> { return apiJson(`/api/ovas/${ovaId}/regenerar/${jobId}/cancelar`, { method: "POST" }); }
+/** Regeneración abierta del OVA (p. ej. empezada antes de recargar la página). */
+export function fetchActiveRegeneration(ovaId: string): Promise<{ job_id: string | null }> { return apiJson(`/api/ovas/${ovaId}/regenerar/activa`); }
 export function fetchOvaVersions(ovaId: string): Promise<unknown> { return apiJson(`/api/ovas/${ovaId}/versiones`); }
 export function fetchVersionDiff(ovaId: string, first: string | number, second: string | number): Promise<VersionDiffData> { return apiJson(`/api/ovas/${ovaId}/versiones/diff?v1=${String(first)}&v2=${String(second)}`); }
 export function revertOvaVersion(ovaId: string, versionId: string): Promise<unknown> { return apiJson(`/api/ovas/${ovaId}/versiones/${versionId}/revert`, { method: "POST" }); }
