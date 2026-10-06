@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
 from core.package_themes import default_package_theme
-from core.text import ova_title
+from core.text import ova_title, split_education_level
 from models import Ova, OvaJob, OvaJobResource
 
 logger = structlog.get_logger(__name__)
@@ -58,10 +58,15 @@ def create_job(
     """
     title = ova_title(prompt) or "OVA en generación"
     # Con paleta propia o «IA elige», el tema de paquete no debe pisarla (A4).
+    # La línea «Nivel educativo: …» sigue viajando en el prompt del job (el motor la
+    # necesita) y de la versión, pero la descripción visible queda limpia y el nivel
+    # va a su campo de metadatos.
+    description, level = split_education_level(prompt)
     ova = Ova(
         user_id=user_id,
         title=title,
-        description=prompt,
+        description=description,
+        educational_level=level,
         status="generando",
         package_theme=default_package_theme((params or {}).get("theme")),
     )

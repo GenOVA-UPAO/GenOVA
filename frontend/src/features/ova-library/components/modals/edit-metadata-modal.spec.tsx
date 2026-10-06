@@ -15,14 +15,14 @@ describe("metadatos educativos del OVA", () => {
     const onSave = vi.fn();
     render(<EditMetadataModal initial={{ title: "Curso", license: "Todos los derechos reservados", typical_learning_time: "incorrecto" }} onSave={onSave} onCancel={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Usa PT30M");
+    expect(screen.getByRole("alert")).toHaveTextContent("Escribe los minutos");
     await act(() => i18n.changeLanguage("en"));
     expect(i18n.t("metadata:licenses.reservedLabel")).toBe("All rights reserved");
     expect(screen.getByRole("dialog", { name: "Edit OVA metadata" })).toBeVisible();
     expect(screen.getByLabelText("License")).toHaveValue("Todos los derechos reservados");
     expect(screen.getByRole("option", { name: "All rights reserved" })).toBeVisible();
     expect(screen.getByText("Reuse requires permission from the rights holder.")).toBeVisible();
-    expect(screen.getByRole("alert")).toHaveTextContent("Use PT30M");
+    expect(screen.getByRole("alert")).toHaveTextContent("Type minutes");
     const duration = screen.getByLabelText("Typical learning time");
     await user.clear(duration);
     await user.type(duration, "PT30M");
@@ -61,14 +61,14 @@ describe("metadatos educativos del OVA", () => {
     const onSave = vi.fn();
     render(<EditMetadataModal initial={{ title: "Curso" }} onSave={onSave} onCancel={vi.fn()} />);
     const duration = screen.getByLabelText("Tiempo típico de aprendizaje");
-    await user.type(duration, "30 minutos");
+    await user.type(duration, "casi media hora");
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
     expect(onSave).not.toHaveBeenCalled();
     expect(duration).toHaveFocus();
     expect(duration).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByRole("alert")).toHaveTextContent("Usa PT30M");
+    expect(screen.getByRole("alert")).toHaveTextContent("Escribe los minutos");
     await user.clear(duration);
-    await user.type(duration, "PT1H30M");
+    await user.type(duration, "1 h 30 min");
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ typical_learning_time: "PT1H30M" }));
   });
@@ -90,5 +90,17 @@ describe("metadatos educativos del OVA", () => {
     expect(screen.getByRole("alertdialog")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Descartar cambios" }));
     expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it("acepta minutos sueltos y los guarda en ISO 8601; muestra el ISO guardado como minutos", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<EditMetadataModal initial={{ title: "Curso", typical_learning_time: "PT45M" }} onSave={onSave} onCancel={vi.fn()} />);
+    const duration = screen.getByLabelText("Tiempo típico de aprendizaje");
+    expect(duration).toHaveValue("45 min");
+    await user.clear(duration);
+    await user.type(duration, "90");
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ typical_learning_time: "PT1H30M" }));
   });
 });

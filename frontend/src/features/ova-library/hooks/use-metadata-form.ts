@@ -1,7 +1,7 @@
 import { type SyntheticEvent, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { EducationalMetadata } from "@/core/lib/educational-metadata";
+import { type EducationalMetadata, formatLearningTime } from "@/core/lib/educational-metadata";
 
 import { createMetadataSchema, type MetadataInput, metadataSchema } from "../lib/metadata-schema";
 
@@ -12,7 +12,7 @@ export function useMetadataForm(initial: EducationalMetadata & { title: string; 
     title: initial.title, description: initial.description ?? "", license: initial.license ?? "CC BY-SA 4.0",
     language: initial.language ?? "es", keywords: initial.keywords ?? [], author: initial.author ?? "",
     educational_level: initial.educational_level ?? "", audience: initial.audience ?? "",
-    typical_learning_time: initial.typical_learning_time ?? "",
+    typical_learning_time: formatLearningTime(initial.typical_learning_time),
     package_theme: metadataSchema.shape.package_theme.parse(initial.package_theme ?? "upao"),
   }));
   const [keywords, setKeywords] = useState((initial.keywords ?? []).join(", "));
