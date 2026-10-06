@@ -16,8 +16,8 @@ PARAMS = (
     Param(
         "num_pauses",
         3,
-        min=2,
-        max=4,
+        min=1,
+        max=5,
         help="Número de pausas activas",
     ),
 )
@@ -58,6 +58,24 @@ def schema(p: dict) -> dict:
         prompt_video=s(600),
         sintesis=s(250),
     )
+
+
+def normalize(data: dict, p: dict) -> dict:
+    """Ajusta pausas y segmentos al número pedido: recorta si sobran; si faltan, repite la última."""
+    n = p["num_pauses"]
+    out = dict(data)
+    pausas = list(out.get("pausas") or [])[:n]
+    while pausas and len(pausas) < n:
+        pausas.append(dict(pausas[-1]))
+    for k, pa in enumerate(pausas, 1):
+        pausas[k - 1] = {**pa, "numero": k}
+    segs = list(out.get("guion_segmentos") or [])
+    if len(segs) > n + 1:
+        segs = segs[:n] + [segs[-1]]
+    while segs and len(segs) < n + 1:
+        segs.append(dict(segs[-1]))
+    out["pausas"], out["guion_segmentos"] = pausas, segs
+    return out
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -341,7 +359,6 @@ _EXPLORE_JS = """
       }
       if (copyLabel) copyLabel.textContent = '¡Prompt copiado!';
       if (copyStatus) copyStatus.textContent = '✓ Copiado al portapapeles';
-      window.ovaMark('prompt');
     });
   }
 })();
@@ -353,7 +370,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     pausas = data.get("pausas", [])
     num_pauses = len(pausas)
     total_segments = len(segmentos)
-    total_progress = num_pauses + 1
+    total_progress = max(num_pauses, 1)
 
     steps_html = []
 
@@ -455,10 +472,10 @@ def render(data: dict, ctx: RenderContext) -> str:
         f"</div>"
         f"</div>"
         f"</div>"
-        f'<section class="ova-card ova-prompt-card">'
-        f"<h2>🎬 Prompt de video para IA</h2>"
+        f'<details class="ova-card ova-prompt-card">'
+        f'<summary>Para el docente: prompt de video para IA</summary>'
         f'<p class="ova-muted" style="font-size:0.875rem;margin-top:6px">'
-        f"Prompt técnico en inglés optimizado para generadores externos (Runway Gen-3, Luma Dream Machine, Sora, Pika):"
+        f"Prompt técnico en inglés para generadores externos de video (Runway, Luma, Sora, Pika). Es material del docente: no hace falta copiarlo para terminar."
         f"</p>"
         f'<pre class="ova-prompt-box"><code id="prompt-video-text">{esc(data.get("prompt_video", ""))}</code></pre>'
         f'<div class="ova-copy-bar">'
@@ -467,11 +484,11 @@ def render(data: dict, ctx: RenderContext) -> str:
         f"</button>"
         f'<span id="copy-status" aria-live="polite" class="ova-muted" style="font-size:0.875rem"></span>'
         f"</div>"
-        f"</section>"
+        f"</details>"
         f'<upao-summary title="Síntesis y Cierre">'
         f'<p>{esc(data.get("sintesis", ""))}</p>'
         f'<p class="ova-muted" style="font-size:0.875rem;margin-top:8px">'
-        f"Responde todas las pausas activas y copia el prompt de video para habilitar la finalización."
+        f"Responde todas las pausas activas para habilitar la finalización."
         f"</p>"
         f'<upao-complete slot="actions" label="Finalizar exploración" locked></upao-complete>'
         f"</upao-summary>"
@@ -573,4 +590,5 @@ SPEC = TemplateSpec(
     render=render,
     sample=sample,
     uses_images=False,
+    normalize=normalize,
 )
