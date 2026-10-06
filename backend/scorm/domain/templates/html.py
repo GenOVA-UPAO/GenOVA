@@ -140,6 +140,7 @@ def build_manifest(course_title: str, module_title: str, resource_files: list[st
 def build_index_html(
     course_title: str, resources: list[dict], package_label: str = "SCORM 1.2",
     metadata: EducationalMetadata | None = None,
+    *, package_format: str = "scorm12", progress_key: str = "",
 ) -> str:
     """SCO shell: tablist of resources + iframe panel. One SCO for the whole OVA.
 
@@ -171,6 +172,11 @@ def build_index_html(
     license_text = html_escape(meta.license)
     footer = (f'<a rel="license" href="{meta.license_url}">{license_text}</a>'
               if meta.license_url else license_text)
+    initial_status = (
+        f"Progreso local: 0 de {len(resources)} recursos completados."
+        if package_format in ("html", "ims")
+        else "Vista sin aula virtual: tu progreso no se enviará"
+    )
     return f"""<!doctype html>
 <html lang="{html_escape(meta.language, quote=True)}">
   <head>
@@ -181,7 +187,8 @@ def build_index_html(
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="resources/styles.css" />
   </head>
-  <body>
+  <body data-package-format="{html_escape(package_format, quote=True)}"
+        data-progress-key="{html_escape(progress_key, quote=True)}">
     <a class="skip-link" href="#res-frame">Saltar al contenido</a>
     <main class="container">
       <header>
@@ -207,7 +214,7 @@ def build_index_html(
       <section class="card" aria-labelledby="estado-titulo">
         <h2 id="estado-titulo" class="visually-hidden">Estado de progreso</h2>
         <p id="scorm-status" role="status" aria-live="polite">
-          Pendiente de inicialización...
+          {initial_status}
         </p>
         <button id="complete-btn" type="button">Marcar OVA como completado</button>
       </section>

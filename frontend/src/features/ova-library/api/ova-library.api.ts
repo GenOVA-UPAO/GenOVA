@@ -1,5 +1,4 @@
-import { triggerDownloadFromResponse } from "@/core/lib/download";
-import { apiFetch, apiJson } from "@/core/lib/http";
+import { apiJson } from "@/core/lib/http";
 
 import type { MetadataInput } from "../lib/metadata-schema";
 import type { OvaListItem } from "../lib/types";
@@ -60,12 +59,4 @@ export const ovaLibraryApi = {
     }),
   updateMetadata: (id: string, payload: MetadataInput) =>
     apiJson(`/api/ovas/${id}/metadata`, { method: "PATCH", body: json(payload) }),
-  async download(id: string, title = "ova"): Promise<void> {
-    const res = await apiFetch(`/api/ovas/${id}/download`);
-    if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(data.message ?? "No se pudo descargar el archivo.");
-    }
-    await triggerDownloadFromResponse(res, `${title}.zip`);
-  },
 };
