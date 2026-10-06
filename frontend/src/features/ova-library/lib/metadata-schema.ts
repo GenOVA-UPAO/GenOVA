@@ -17,7 +17,7 @@ export const createMetadataSchema = (t: TFunction) => z.object({
   audience: z.string().trim().max(255, { error: () => t("metadata:validation.audience") }).default(""),
   typical_learning_time: z.string().trim().max(40, { error: () => t("metadata:validation.learningTime") }).refine((value) => value === "" || (value !== "PT" && /^PT(\d+H)?(\d+M)?(\d+S)?$/.test(value)), { error: () => t("metadata:validation.learningTime") }).default(""),
   author: z.string().trim().max(255, { error: () => t("metadata:validation.author") }).default(""),
-  package_theme: z.enum(["upao", "claro", "oscuro", "alto-contraste", "infantil"], { error: () => t("metadata:validation.theme") }).optional(),
+  package_theme: z.enum(["original", "upao", "claro", "oscuro", "alto-contraste", "infantil"], { error: () => t("metadata:validation.theme") }).optional(),
 });
 
 export const metadataSchema = createMetadataSchema(i18n.t.bind(i18n));

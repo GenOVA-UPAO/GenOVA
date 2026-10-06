@@ -22,14 +22,14 @@ describe("PackageThemeSelector", () => {
     render(<PackageThemeSelector value="oscuro" onChange={vi.fn()} />);
     expect(screen.getByRole("option", { name: "Oscuro" })).toHaveValue("oscuro");
     await act(() => i18n.changeLanguage("en"));
-    expect(screen.getByRole("combobox", { name: "Visual theme" })).toHaveValue("oscuro");
+    expect(screen.getByRole("combobox", { name: "Package theme" })).toHaveValue("oscuro");
     expect(screen.getByRole("option", { name: "Dark" })).toHaveValue("oscuro");
     expect(screen.getByText("Learning together")).toBeVisible();
   });
   it("ofrece selección accesible y una muestra del tema guardado", () => {
     const change = vi.fn();
     const { rerender } = render(<PackageThemeSelector value="upao" onChange={change} />);
-    const select = screen.getByRole("combobox", { name: "Tema visual" });
+    const select = screen.getByRole("combobox", { name: "Tema del paquete" });
     expect(select).toHaveAccessibleDescription("Se aplica a la vista previa y a todos los formatos exportados.");
     fireEvent.change(select, { target: { value: "oscuro" } });
     expect(change).toHaveBeenCalledWith("oscuro");
@@ -38,8 +38,16 @@ describe("PackageThemeSelector", () => {
     expect(screen.getByText("Aprender juntos").parentElement).toHaveStyle({ background: "#000000", color: "#ffffff" });
   });
 
+  it("con «Paleta del OVA» explica que se conservan los colores y no pinta muestra", () => {
+    catalog.data.themes.push({ id: "original", label: "Paleta del OVA", tokens: { bg: "#ffffff" } as never, css: "" });
+    render(<PackageThemeSelector value="original" onChange={vi.fn()} />);
+    expect(screen.getByText(/Se conservan los colores con los que se generaron/)).toBeVisible();
+    expect(screen.queryByText("Aprender juntos")).not.toBeInTheDocument();
+    catalog.data.themes.pop();
+  });
+
   it("impide cambios mientras se guarda", () => {
     render(<PackageThemeSelector value="upao" onChange={vi.fn()} disabled />);
-    expect(screen.getByRole("combobox", { name: "Tema visual" })).toBeDisabled();
+    expect(screen.getByRole("combobox", { name: "Tema del paquete" })).toBeDisabled();
   });
 });

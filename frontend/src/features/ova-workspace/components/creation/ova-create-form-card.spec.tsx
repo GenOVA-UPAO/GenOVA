@@ -46,7 +46,7 @@ describe("OvaCreateFormCard", () => {
     for (const text of ["Describe", "Elige recursos", "Genera"])
       expect(screen.getByText(text)).toBeVisible();
     expect(screen.queryByText("1. Describe")).not.toBeInTheDocument();
-    for (const name of ["Configurar recursos 5E", "Archivos de referencia", "Tema visual"])
+    for (const name of ["Configurar recursos 5E", "Archivos de referencia", "Estilo de los recursos"])
       expect(screen.getByRole("button", { name })).toBeVisible();
   });
   it("uses the university DBMS (Oracle) example", () => {

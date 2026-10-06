@@ -31,7 +31,7 @@ export function PackageThemeSelector({ value, onChange, disabled = false }: Read
         {catalog.data?.themes.map((theme) => <option key={theme.id} value={theme.id}>{t(`package-themes:names.${theme.id}`, { defaultValue: theme.label })}</option>)}
         {!catalog.data && <option value={value}>{t("package-themes:loading")}</option>}
       </select>
-      {selected && (
+      {selected && selected.id !== "original" && (
         <div
           aria-hidden="true"
           className="flex min-h-11 flex-wrap items-center gap-3 border p-3"
@@ -42,7 +42,7 @@ export function PackageThemeSelector({ value, onChange, disabled = false }: Read
           <span className="rounded px-2 py-1 text-sm" style={{ background: selected.tokens.action, color: selected.tokens["on-action"] }}>{t("package-themes:continue")}</span>
         </div>
       )}
-      <p id={`${id}-help`} className="text-sm text-muted-foreground">{t("package-themes:help")}</p>
+      <p id={`${id}-help`} className="text-sm text-muted-foreground">{t("package-themes:help")}{value === "original" && ` ${t("package-themes:originalHint")}`}</p>
       {catalog.isError && <div role="alert" className="text-sm text-destructive">{t("package-themes:loadError")} <Button type="button" variant="outline" onClick={() => { void catalog.refetch(); }}>{t("package-themes:retry")}</Button></div>}
     </div>
   );

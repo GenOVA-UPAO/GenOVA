@@ -10,6 +10,7 @@ def build_styles_css(theme: str = "upao") -> str:
   --primary: #1746c0;      /* >=4.5:1 como texto y >=4.5:1 como fondo con #fff */
   --border: #94a3b8;
   --focus: #0b3bbd;
+  --font-body: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 
 * {

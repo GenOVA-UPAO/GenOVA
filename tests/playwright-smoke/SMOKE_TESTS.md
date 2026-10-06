@@ -375,7 +375,7 @@ L-1   playwright-cli goto /crear-ova
       heading "Crear nuevo OVA"
       textbox placeholder "Describe el tema, objetivos de aprendizaje y nivel educativo..."
       botón "Color: UPAO · Diseño: UPAO" (tema visual)
-      botones: "Configurar recursos 5E", "Archivos de referencia (0/5)", "Tema visual del OVA"
+      botones: "Configurar recursos 5E", "Archivos de referencia (0/5)", "Estilo de los recursos del OVA"
       botón "Generar OVA" disabled
 
 L-2   Escribir prompt ≥ 10 caracteres → botón "Generar OVA" permanece disabled
@@ -407,7 +407,7 @@ L-7   Confirmar selección → panel de recursos actualiza (muestra recursos sel
 L-8   Click "Archivos de referencia (0/5)" → permite subir archivos (PDF, imagen, audio)
       Contador actualiza al subir: "(1/5)"
 
-L-9   Click "Tema visual del OVA" → modal de selección de paleta/diseño
+L-9   Click "Estilo de los recursos del OVA" → modal de selección de paleta/diseño
       Opciones: Paleta UPAO, Diseño UPAO
 ```
 

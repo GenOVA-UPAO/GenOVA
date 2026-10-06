@@ -5,7 +5,11 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-PackageThemeId = Literal["upao", "claro", "oscuro", "alto-contraste", "infantil"]
+PackageThemeId = Literal["original", "upao", "claro", "oscuro", "alto-contraste", "infantil"]
+
+# Tema que NO inyecta variables: cada recurso conserva los colores con los que se
+# generó (la paleta elegida al crear el OVA, o la que eligió la IA).
+ORIGINAL_THEME = "original"
 
 _BASE = {
     "bg": "#F7F9FC", "surface": "#FFFFFF", "surface-tint": "#EAF0FB",
@@ -24,13 +28,15 @@ _BASE = {
 }
 
 THEME_LABELS = {
-    "upao": "UPAO", "claro": "Claro", "oscuro": "Oscuro",
+    "original": "Paleta del OVA", "upao": "UPAO", "claro": "Claro", "oscuro": "Oscuro",
     "alto-contraste": "Alto contraste", "infantil": "Infantil",
 }
 
 # --primary se usa tanto en texto como en fondos con letras blancas en recursos
 # antiguos. El gris del tema oscuro conserva AA en ambos usos sobre negro.
 PACKAGE_THEMES = {
+    # Sus tokens solo sirven de muestra en el selector; `theme_css` no los inyecta.
+    "original": dict(_BASE),
     "upao": dict(_BASE),
     "claro": {
         **_BASE, "bg": "#FFFFFF", "surface-tint": "#F1F5F9",
@@ -84,7 +90,16 @@ RESOURCE_THEME_REPLACEMENTS = [
 ]
 
 
+def default_package_theme(ova_theme: dict | None) -> str:
+    """Tema de paquete de un OVA nuevo: si se eligió una paleta (o «IA elige»),
+    el de paquete no la pisa; con el color UPAO de siempre, el tema UPAO."""
+    color = (ova_theme or {}).get("color", "upao")
+    return ORIGINAL_THEME if color in ("custom", "free") else "upao"
+
+
 def theme_css(theme: str = "upao") -> str:
+    if theme == ORIGINAL_THEME:
+        return ""
     tokens = PACKAGE_THEMES[theme]
     # Important solo en tokens: prevalece sobre :root generado, sin sustituir los
     # colores literales o estilos específicos de documentos antiguos.
@@ -138,7 +153,10 @@ def _upgrade_component_scripts(html: str) -> str:
 def inject_package_theme(html: str, theme: str = "upao") -> str:
     """Añade tokens al final del head, manteniendo scripts y markup originales."""
     html = _upgrade_component_scripts(_strip_previous_theme(html))
-    style = f'{THEME_START}<style id="genova-package-theme">{theme_css(theme)}</style>{THEME_END}'
+    css = theme_css(theme)
+    if not css:
+        return html
+    style = f'{THEME_START}<style id="genova-package-theme">{css}</style>{THEME_END}'
     close_head = re.search(r"</head\s*>", html, re.IGNORECASE)
     if close_head:
         return html[:close_head.start()] + style + html[close_head.start():]

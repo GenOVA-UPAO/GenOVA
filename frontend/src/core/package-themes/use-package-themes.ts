@@ -62,8 +62,10 @@ function upgradeResourceComponents(html: string, replacements: [string, string][
 
 export function applyPackageTheme(html: string, theme?: PackageTheme | string): string {
   const css = typeof theme === "string" ? theme : theme?.css;
-  if (!html || !css) return html;
+  if (!html || css === undefined) return html;
   let clean = stripPreviousTheme(html);
+  // «Paleta del OVA»: sin variables que inyectar, solo se quita el tema anterior.
+  if (!css) return clean;
   if (typeof theme !== "string") clean = upgradeResourceComponents(clean, theme?.replacements);
   const style = `${THEME_START}<style id="genova-package-theme">${css}</style>${THEME_END}`;
   if (/<\/head\s*>/i.test(clean)) return clean.replace(/<\/head\s*>/i, `${style}</head>`);
