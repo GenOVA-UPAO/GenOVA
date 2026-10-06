@@ -80,6 +80,10 @@ function inspectAttribute(node: ts.JsxAttribute, source: ts.SourceFile): Found |
 }
 
 function isProtocolLiteral(node: ts.StringLiteralLike | ts.TemplateLiteralLikeNode, source: ts.SourceFile): boolean {
+  // Identificador de licencia requerido por la API; la etiqueta visible se traduce.
+  if (node.text === "Todos los derechos reservados" && source.fileName.endsWith("/core/lib/educational-metadata.ts")) {
+    return ts.isPropertyAssignment(node.parent) && node.parent.name.getText(source) === "value";
+  }
   // `diseño` es un FeedbackReason de la API; su etiqueta se traduce aparte.
   return node.text === "diseño" && (ts.isLiteralTypeNode(node.parent) ||
     (ts.isPropertyAssignment(node.parent) && node.parent.name.getText(source) === "value"));

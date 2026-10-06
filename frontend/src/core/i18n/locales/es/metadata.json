@@ -1,0 +1,58 @@
+{
+  "title": "Editar metadatos del OVA",
+  "description": "Define cómo aparece y cómo se puede reutilizar tu material educativo.",
+  "descriptionLabel": "Descripción",
+  "optional": "(opcional)",
+  "descriptionHint": "Hasta 2000 caracteres.",
+  "exportHint": "Los cambios viajan al exportar en todos los formatos.",
+  "cancel": "Cancelar",
+  "saving": "Guardando…",
+  "save": "Guardar cambios",
+  "fieldset": "Licencia y datos educativos",
+  "license": "Licencia",
+  "licenseSummary": "Licencia: {{license}}",
+  "discardTitle": "¿Descartar los cambios?",
+  "discardDescription": "Los metadatos que modificaste aún no se han guardado.",
+  "keepEditing": "Seguir editando",
+  "discard": "Descartar cambios",
+  "fields": {
+    "author": { "label": "Autor", "hint": "Si lo dejas vacío, se usa el nombre del dueño." },
+    "language": { "label": "Idioma", "hint": "Código de idioma: es, es-PE, en…" },
+    "keywords": {
+      "label": "Palabras clave",
+      "hint": "Separadas por comas; hasta 30 palabras clave."
+    },
+    "educational_level": { "label": "Nivel educativo", "hint": "Por ejemplo: educación superior." },
+    "audience": {
+      "label": "Público destinatario",
+      "hint": "Por ejemplo: estudiantes de primer ciclo."
+    },
+    "typical_learning_time": {
+      "label": "Tiempo típico de aprendizaje",
+      "hint": "PT30M = 30 minutos; PT1H30M = una hora y media."
+    }
+  },
+  "licenses": {
+    "by": "Permite compartir y adaptar citando al autor.",
+    "bySa": "Permite compartir y adaptar citando al autor y manteniendo la misma licencia.",
+    "byNc": "Permite compartir y adaptar con atribución, sin uso comercial.",
+    "byNcSa": "Sin uso comercial; exige atribución y la misma licencia.",
+    "byNd": "Permite compartir con atribución, sin distribuir adaptaciones.",
+    "byNcNd": "Permite compartir con atribución, sin uso comercial ni adaptaciones.",
+    "cc0": "Dedicación al dominio público, sin condiciones de reutilización.",
+    "reservedLabel": "Todos los derechos reservados",
+    "reserved": "La reutilización requiere autorización del titular."
+  },
+  "validation": {
+    "description": "La descripción admite hasta 2000 caracteres.",
+    "license": "Selecciona una licencia válida.",
+    "language": "Usa un código de idioma como es o es-PE.",
+    "keyword": "Cada palabra clave admite entre 1 y 100 caracteres.",
+    "keywords": "Usa hasta 30 palabras clave.",
+    "educationalLevel": "El nivel educativo admite hasta 120 caracteres.",
+    "audience": "El público destinatario admite hasta 255 caracteres.",
+    "learningTime": "Usa PT30M para 30 minutos o PT1H30M para una hora y media.",
+    "author": "El autor admite hasta 255 caracteres.",
+    "theme": "Selecciona un tema válido."
+  }
+}

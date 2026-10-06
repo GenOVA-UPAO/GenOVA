@@ -4,6 +4,7 @@ import { useCurrentUser } from "@/core/auth/auth-store";
 import { Checkbox } from "@/core/components/ui/checkbox";
 import type { ExportFormatId } from "@/core/export/lib/formats";
 import { cn } from "@/core/lib/cn";
+import { licenseLabel } from "@/core/lib/educational-metadata";
 
 import type { OvaJobInfo } from "../../lib/job-types";
 import {
@@ -98,7 +99,7 @@ export function OvaCard({
           </p>
         )}
         <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova, undefined, t)} />
-        {ova.license && <p className="text-xs text-muted-foreground">Licencia: {ova.license}</p>}
+        {ova.license && <p className="text-xs text-muted-foreground">{t("metadata:licenseSummary", { license: licenseLabel(ova.license, t) })}</p>}
       </div>
 
       <div className="mt-4 border-t border-border pt-3">

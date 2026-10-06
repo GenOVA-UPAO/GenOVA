@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -10,16 +12,17 @@ interface Props {
 }
 
 export function MetadataDiscardDialog({ open, onOpenChange, onDiscard }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Descartar los cambios?</AlertDialogTitle>
-          <AlertDialogDescription>Los metadatos que modificaste aún no se han guardado.</AlertDialogDescription>
+          <AlertDialogTitle>{t("metadata:discardTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>{t("metadata:discardDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Seguir editando</AlertDialogCancel>
-          <AlertDialogAction onClick={onDiscard}>Descartar cambios</AlertDialogAction>
+          <AlertDialogCancel>{t("metadata:keepEditing")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onDiscard}>{t("metadata:discard")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
