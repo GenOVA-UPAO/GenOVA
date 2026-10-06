@@ -12,6 +12,7 @@ Dos modos:
   que el refinador: si el resultado se trunca o encoge demasiado, se descarta.
 """
 
+import json
 import os
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -58,6 +59,95 @@ def _material_block(contexto: str) -> str:
     return _MATERIAL_BLOCK.format(contexto=contexto.strip()) if contexto.strip() else ""
 
 
+# Edición por parches (M7). Reescribir el documento entero obliga al modelo a
+# devolver decenas de KB: con «thinking» (deepseek-v4-flash) cada edición tardaba
+# 1-4 min y a menudo terminaba en EmptyContentError (el razonamiento consume el
+# presupuesto de salida y `content` llega vacío). Pedir solo los fragmentos que
+# cambian cabe en una salida corta, por debajo de `_THINK_OFF_MAX` (6k): el
+# modelo responde sin «thinking», en segundos. Si el parche no es válido se
+# recurre a reescribir el documento, como antes.
+_PATCH_MAX_TOKENS = 4000
+_MAX_PATCH_EDITS = 12
+_PATCH_PROMPT = """[ROL] Editor de recursos educativos HTML5 interactivos.
+[TEMA DEL RECURSO] "{concept}"
+[TAREA] Aplica EXCLUSIVAMENTE este cambio pedido por el usuario sobre el HTML de abajo.
+[CAMBIO PEDIDO]
+{instruction}
+{material}[REGLAS]
+- NO devuelvas el documento. Devuelve SOLO un JSON con los fragmentos a sustituir:
+  {{"edits": [{{"old": "<fragmento EXACTO del HTML actual>", "new": "<fragmento ya editado>"}}]}}
+- Cada "old" debe copiarse literalmente del HTML (mismo espacio y comillas), ser lo más corto
+  posible y aparecer UNA sola vez en el documento.
+- No cambies nada que el cambio pedido no toque; conserva el tema, el título y la interactividad
+  (handlers JS reales, callbacks SCORM y cero dependencias externas).
+[HTML_ACTUAL]
+{html}
+[SALIDA] Solo el JSON, sin markdown ni comentarios."""
+
+
+def _parse_edits(raw: str) -> list[tuple[str, str]]:
+    """Pares (old, new) del JSON del modelo; vacío si no se entiende."""
+    text = (raw or "").strip()
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end <= start:
+        return []
+    try:
+        payload = json.loads(text[start : end + 1])
+    except ValueError:
+        return []
+    items = payload.get("edits") if isinstance(payload, dict) else None
+    if not isinstance(items, list) or not 0 < len(items) <= _MAX_PATCH_EDITS:
+        return []
+    pairs = []
+    for item in items:
+        old = item.get("old") if isinstance(item, dict) else None
+        new = item.get("new") if isinstance(item, dict) else None
+        if not isinstance(old, str) or not isinstance(new, str) or not old:
+            return []
+        pairs.append((old, new))
+    return pairs
+
+
+def apply_edits(html: str, edits: list[tuple[str, str]]) -> str | None:
+    """Aplica los parches; None si alguno no aparece exactamente una vez o no cambia nada."""
+    result = html
+    for old, new in edits:
+        if result.count(old) != 1:
+            return None
+        result = result.replace(old, new, 1)
+    if result == html or _looks_truncated(result):
+        return None
+    return result
+
+
+def _patch_edit(
+    concept: str,
+    instruction: str,
+    authored: str,
+    contexto: str,
+    llm_config: dict | None,
+    enabled_models: list | None,
+) -> str | None:
+    """HTML editado con fragmentos sustituidos, o None si el modelo no dio un parche válido."""
+    try:
+        raw = generar_texto(
+            _PATCH_PROMPT.format(
+                concept=concept,
+                instruction=instruction,
+                material=_material_block(contexto),
+                html=authored,
+            ),
+            "codigo",
+            _PATCH_MAX_TOKENS,
+            llm_config,
+            enabled_models,
+        )
+    except Exception:
+        logger.warning("patch edit failed; falling back to full rewrite", concept=concept[:60])
+        return None
+    return apply_edits(authored, _parse_edits(raw))
+
+
 def _looks_truncated(html: str) -> bool:
     return not html.rstrip().lower().endswith("</html>")
 
@@ -84,8 +174,14 @@ def edit_phase_content(
     # The model edits only the authored HTML; the shared runtime (~45 KB) is
     # stripped first and re-injected after, so it is never rewritten or cut.
     authored, had_css, had_components = strip_runtime(base_html)
+    local = getattr(settings, "ova_text_backend", None) == "local"
+    patched = None if local else _patch_edit(concept, instruction, authored, contexto, llm_config, enabled_models)
+    if patched is not None:
+        return inject_runtime(
+            patched, css=had_css, components=had_components, palette=runtime_palette(base_html)
+        )
     try:
-        if getattr(settings, "ova_text_backend", None) == "local":
+        if local:
             import httpx
 
             url = os.getenv("OVA_LOCAL_LLM_URL", "http://localhost:11435").rstrip("/")
