@@ -58,16 +58,18 @@ def podcast_audio_b64(text: str) -> str | None:
     return audio[0] if audio else None
 
 
+# Colores con los tokens del tema de paquete (fallback: UPAO accesible). Con colores fijos
+# el botón blanco sobre naranja daba 2.74:1 y el podcast ignoraba los temas (QA 2026-10-06).
 _STYLE = """<style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Georgia',serif;background:#F7F9FC;color:#1a1a2e;min-height:100vh;
+body{font-family:'Georgia',serif;background:var(--bg,#F7F9FC);color:var(--text,#1a1a2e);min-height:100vh;
 display:flex;align-items:center;justify-content:center;padding:20px}
-.card{background:#fff;border-radius:16px;padding:40px;max-width:620px;width:100%;
-box-shadow:0 4px 24px rgba(10,61,145,.1);border:1px solid #e1e8f7}
-.tag{font-size:.8rem;color:#0A3D91;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
-h2{font-size:1.8rem;margin-bottom:22px;color:#0A3D91}
+.card{background:var(--surface,#fff);border-radius:16px;padding:40px;max-width:620px;width:100%;
+box-shadow:0 4px 24px rgba(10,61,145,.1);border:1px solid var(--surface-tint,#e1e8f7)}
+.tag{font-size:.8rem;color:var(--primary,#0A3D91);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+h2{font-size:1.8rem;margin-bottom:22px;color:var(--primary,#0A3D91)}
 .wave{display:flex;align-items:center;justify-content:center;gap:5px;height:64px;margin:18px 0}
-.wave .bar{width:6px;border-radius:4px;background:#F47A20;height:14px;
+.wave .bar{width:6px;border-radius:4px;background:var(--accent,#F47A20);height:14px;
 animation:wave 1s ease-in-out infinite;animation-play-state:paused}
 .wave.on .bar{animation-play-state:running}
 .wave .bar:nth-child(2){animation-delay:.15s}.wave .bar:nth-child(3){animation-delay:.3s}
@@ -75,17 +77,17 @@ animation:wave 1s ease-in-out infinite;animation-play-state:paused}
 .wave .bar:nth-child(6){animation-delay:.75s}.wave .bar:nth-child(7){animation-delay:.9s}
 @keyframes wave{0%,100%{height:14px}50%{height:52px}}
 .controls{display:flex;gap:10px;justify-content:center;margin:8px 0}
-.btn{background:#F47A20;color:#fff;border:none;padding:12px 24px;border-radius:8px;
+.btn{background:var(--action,#B84B00);color:var(--on-action,#fff);border:none;padding:12px 24px;border-radius:8px;
 font-size:1rem;cursor:pointer;transition:background .2s;font-family:inherit}
-.btn:hover{background:#e06918}
-.btn.ghost{background:transparent;border:1px solid #F47A20;color:#F47A20}
-.btn.ghost:hover{background:rgba(244,122,32,.1)}
-.progress{height:6px;background:#e1e8f7;border-radius:3px;margin:14px 0 6px;cursor:pointer}
-.fill{height:100%;width:0;background:#F47A20;border-radius:3px}
-.monologue{font-size:1.05rem;line-height:1.85;color:#334155;border-left:3px solid #F47A20;
+.btn:hover{background:var(--action-hover,#923B00)}
+.btn.ghost{background:transparent;border:1px solid var(--action,#B84B00);color:var(--action,#B84B00)}
+.btn.ghost:hover{background:var(--accent-tint,rgba(244,122,32,.1))}
+.progress{height:6px;background:var(--surface-tint,#e1e8f7);border-radius:3px;margin:14px 0 6px;cursor:pointer}
+.fill{height:100%;width:0;background:var(--accent,#F47A20);border-radius:3px}
+.monologue{font-size:1.05rem;line-height:1.85;color:var(--text,#334155);border-left:3px solid var(--accent,#F47A20);
 padding-left:18px;margin:22px 0}
-.meta{color:#64748b;font-size:.85rem;text-align:center}
-#status{color:#0A3D91;font-size:.9rem;text-align:center;margin-top:12px;min-height:1.2em}
+.meta{color:var(--text-muted,#52617A);font-size:.85rem;text-align:center}
+#status{color:var(--primary,#0A3D91);font-size:.9rem;text-align:center;margin-top:12px;min-height:1.2em}
 </style>"""
 
 _WAVE = '<div class="wave" id="wave">' + '<div class="bar"></div>' * 7 + "</div>"
