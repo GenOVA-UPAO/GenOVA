@@ -34,7 +34,7 @@ from xml.sax.saxutils import escape as xml_escape
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 from core.educational_metadata import EducationalMetadata
-from ova.domain.package_themes import theme_css
+from core.package_themes import theme_css
 from scorm.domain.activities import Activity
 from scorm.domain.formats.exe_idevices import native_idevice
 from scorm.domain.resources import prepare_phase_resources
