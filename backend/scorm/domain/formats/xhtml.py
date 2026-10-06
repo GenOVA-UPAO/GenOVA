@@ -141,6 +141,33 @@ class XhtmlPage:
     xhtml: str
     scripted: bool  # tiene <script>, manejadores on* o formularios (EPUB "scripted")
     remote_resources: bool  # carga recursos remotos (EPUB "remote-resources")
+    svg: bool = False  # contiene SVG en línea (EPUB "svg")
+
+
+# Roles ARIA que XHTML/EPUB admite en <ul>/<ol>; cualquier otro rompe la validación.
+_LIST_ROLES = {
+    "group", "list", "listbox", "menu", "menubar", "none", "presentation",
+    "radiogroup", "tablist", "toolbar", "tree",
+}
+
+
+def _epub_conformance(head, body) -> None:
+    """Ajustes para epubcheck sin cambiar lo que ve el lector:
+    `<style>` del cuerpo al `<head>` (en XHTML solo vale ahí) y roles no
+    admitidos en listas (p. ej. `role="log"` en un `<ul>`; `aria-live` se conserva)."""
+    style_tag = f"{{{XHTML_NS}}}style"
+    for style in list(body.iter(style_tag)):
+        parent = style.getparent()
+        if style.tail:
+            _append_text(parent, style.getprevious(), style.tail)
+            style.tail = None
+        parent.remove(style)
+        head.append(style)
+    for tag in ("ul", "ol"):
+        for element in body.iter(f"{{{XHTML_NS}}}{tag}"):
+            role = (element.get("role") or "").strip()
+            if role and not set(role.split()) & _LIST_ROLES:
+                del element.attrib["role"]
 
 
 def html_to_xhtml(document: str, title: str, lang: str = "es") -> XhtmlPage:
@@ -173,12 +200,14 @@ def html_to_xhtml(document: str, title: str, lang: str = "es") -> XhtmlPage:
                 body.set(key, _clean(value) or "")
         body.text = _clean(body_src.text)
         _copy(body_src, body, XHTML_NS)
+    _epub_conformance(head, body)
 
     serialized = etree.tostring(root, encoding="unicode", method="xml")
     return XhtmlPage(
         xhtml=f'<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n{serialized}\n',
         scripted=_is_scripted(root),
         remote_resources=bool(_REMOTE_REF.search(serialized)),
+        svg=any(element.tag == f"{{{SVG_NS}}}svg" for element in root.iter()),
     )
 
 

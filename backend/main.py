@@ -1,4 +1,5 @@
 import asyncio
+import os
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -100,6 +101,32 @@ def _background_auth_purge() -> None:
         logger.exception("Auth startup cleanup failed (continuing).")
 
 
+def _lti_purge_once() -> None:
+    try:
+        from sqlalchemy.orm import Session
+
+        from lti.infrastructure.cleanup import purge_expired_lti
+
+        with Session(engine) as session:
+            removed = purge_expired_lti(session)
+            if any(removed.values()):
+                logger.info("Artefactos LTI caducados purgados", **removed)
+    except Exception:
+        logger.exception("LTI cleanup failed (continuing).")
+
+
+async def _periodic_lti_purge() -> None:
+    # Al arrancar y luego cada LTI_PURGE_INTERVAL_HOURS (6 por defecto): los states
+    # y launches crecen con cada lanzamiento desde el LMS.
+    try:
+        hours = max(0.1, float(os.getenv("LTI_PURGE_INTERVAL_HOURS", "6")))
+    except ValueError:
+        hours = 6.0
+    while True:
+        await asyncio.to_thread(_lti_purge_once)
+        await asyncio.sleep(hours * 3600)
+
+
 def _background_regen_recovery() -> None:
     # Regeneraciones cuyo ejecutor murió (latido caducado en regen_jobs): se
     # marcan interrumpidas y se libera el OVA. Las de otro proceso vivo no se tocan.
@@ -148,7 +175,9 @@ async def lifespan(_: FastAPI):
     asyncio.create_task(asyncio.to_thread(_background_regen_recovery))
     asyncio.create_task(asyncio.to_thread(_background_late_video_recovery))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
+    lti_purge = asyncio.create_task(_periodic_lti_purge())
     yield
+    lti_purge.cancel()
 
 
 app = FastAPI(

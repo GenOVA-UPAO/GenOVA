@@ -82,19 +82,28 @@ def _package_opf(
     stamp = modified.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     meta = metadata or EducationalMetadata(description=module_title, author="GenOVA")
     subjects = "".join(f"<dc:subject>{xml_escape(k)}</dc:subject>" for k in meta.keywords)
+    # epubcheck rechaza metadatos vacíos: solo se escriben los que tienen valor.
+    # `schema:` es un prefijo reservado de EPUB 3, no hace falta declararlo.
+    optional = "\n".join(
+        f"    <{tag}>{xml_escape(value)}</{tag.split(' ')[0]}>"
+        for tag, value in (
+            ("dc:description", meta.description or ""),
+            ("dc:creator", meta.author),
+            ('meta property="schema:educationalLevel"', meta.educational_level),
+            ('meta property="schema:audience"', meta.audience),
+            ('meta property="schema:timeRequired"', meta.typical_learning_time),
+        )
+        if value
+    )
     return f"""<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" prefix="schema: https://schema.org/" xml:lang={quoteattr(meta.language)}>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang={quoteattr(meta.language)}>
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="pub-id">{xml_escape(identifier)}</dc:identifier>
     <dc:title>{xml_escape(course_title)}</dc:title>
-    <dc:description>{xml_escape(meta.description or "")}</dc:description>
-    <dc:creator>{xml_escape(meta.author)}</dc:creator>
+{optional}
     <dc:language>{xml_escape(meta.language)}</dc:language>
     <dc:rights>{xml_escape(meta.license)}</dc:rights>
     {subjects}
-    <meta property="schema:educationalLevel">{xml_escape(meta.educational_level)}</meta>
-    <meta property="schema:audience">{xml_escape(meta.audience)}</meta>
-    <meta property="schema:timeRequired">{xml_escape(meta.typical_learning_time)}</meta>
     <meta property="dcterms:modified">{stamp}</meta>
   </metadata>
   <manifest>
@@ -146,6 +155,7 @@ def build_epub_bytes(
                 for prop, enabled in (
                     ("scripted", page.scripted),
                     ("remote-resources", page.remote_resources),
+                    ("svg", page.svg),
                 )
                 if enabled
             )
