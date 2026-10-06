@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import i18n from "i18next";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -36,6 +37,9 @@ export function useOvaCreation() {
   const [replay, setReplay] = useState(0);
   const uploads = useOvaUploads();
   const configs = useResourceConfigs();
+  // Lo último que confirmó el docente: la generación lo usa aunque el guardado
+  // en su perfil falle (antes un 400 dejaba la configuración anterior sin avisar).
+  const [pendingConfigs, setPendingConfigs] = useState<ResourceConfigs>();
   const start = useMutation({
     mutationFn: startOvaJob,
     onSuccess: (job) => {
@@ -59,7 +63,7 @@ export function useOvaCreation() {
     start.mutate({
       prompt: promptWithLevel(prompt, nivel),
       theme,
-      resourceConfigs: configs.data?.configs,
+      resourceConfigs: pendingConfigs ?? configs.data?.configs,
       uploadIds: uploads.uploadIds,
       resources: Object.entries(picks).flatMap(([phase, resources]) =>
         // La API exige el tipo como texto: enviarlo como número devolvía 422 y
@@ -73,13 +77,15 @@ export function useOvaCreation() {
   };
   const confirmSelections = (next: PhaseResourceMap, settings: ResourceConfigs) => {
     setPicks(next);
+    setPendingConfigs(settings);
     configs.save.mutate(settings);
     closeModal();
   };
   const replayTour = () => {
     setReplay((value) => value + 1);
   };
-  const error = start.error?.message ?? uploads.uploadError;
+  const configsError = configs.save.isError ? i18n.t("workspace:resourceConfigsSaveError") : undefined;
+  const error = start.error?.message ?? configsError ?? uploads.uploadError;
   return {
     closeModal,
     configs,

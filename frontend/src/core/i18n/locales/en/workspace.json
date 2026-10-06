@@ -887,5 +887,6 @@
   "html_guiado": "Guided HTML",
   "value_min_restantevalue": "≈ {{p0}} min remaining{{p1}}",
   "value_listo": "{{p0}}: ready",
-  "value_generando": "{{p0}}: generating"
+  "value_generando": "{{p0}}: generating",
+  "resourceConfigsSaveError": "Your resource settings could not be saved to your profile. This OVA will still use them, but you will need to set them again next time."
 }

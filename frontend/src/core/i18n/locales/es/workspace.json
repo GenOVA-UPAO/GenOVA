@@ -887,5 +887,6 @@
   "html_guiado": "HTML guiado",
   "value_min_restantevalue": "≈ {{p0}} min restante{{p1}}",
   "value_listo": "{{p0}}: listo",
-  "value_generando": "{{p0}}: generando"
+  "value_generando": "{{p0}}: generando",
+  "resourceConfigsSaveError": "No se pudo guardar la configuración de los recursos en tu perfil. Este OVA la usará igual, pero la próxima vez tendrás que volver a ajustarla."
 }
