@@ -108,3 +108,20 @@ def test_existing_upao_components_get_semantic_feedback_and_header_tokens():
     # Un script ajeno con esos mismos literales mantiene su contenido.
     custom = "<html><head></head><body><script>const css='color:#166534'</script></body></html>"
     assert "const css='color:#166534'" in inject_package_theme(custom, "oscuro")
+
+
+def test_inject_is_idempotent_and_handles_unusual_script_end_tags():
+    from core.package_themes import RESOURCE_THEME_REPLACEMENTS, THEME_START, inject_package_theme
+
+    old, new = RESOURCE_THEME_REPLACEMENTS[0]
+    html = (
+        "<html><head></head><body>"
+        f"<script>/* UPAO Components v1.0 */ {old}</SCRIPT\t>"
+        f"<script>{old}</script>"
+        "</body></html>"
+    )
+    once = inject_package_theme(html, "oscuro")
+    twice = inject_package_theme(once, "claro")
+    assert twice.count(THEME_START) == 1
+    assert f"/* UPAO Components v1.0 */ {new}" in twice
+    assert f"<script>{old}</script>" in twice  # solo se toca el script de componentes UPAO

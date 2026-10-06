@@ -97,24 +97,48 @@ def theme_css(theme: str = "upao") -> str:
     )
 
 
-def inject_package_theme(html: str, theme: str = "upao") -> str:
-    """Añade tokens al final del head, manteniendo scripts y markup originales."""
-    html = re.sub(
-        r'<style\b[^>]*\bid=[\'"]genova-package-theme[\'"][^>]*>.*?</style\s*>',
-        "", html, flags=re.IGNORECASE | re.DOTALL,
-    )
-    def upgrade_component_script(match: re.Match) -> str:
-        script = match.group(0)
+THEME_START = "<!--genova-package-theme-->"
+THEME_END = "<!--/genova-package-theme-->"
+
+
+def _strip_previous_theme(html: str) -> str:
+    """Quita un bloque de tema ya inyectado (delimitado por marcadores, no por regex de etiquetas)."""
+    start = html.find(THEME_START)
+    while start != -1:
+        end = html.find(THEME_END, start)
+        if end == -1:
+            break
+        html = html[:start] + html[end + len(THEME_END):]
+        start = html.find(THEME_START)
+    return html
+
+
+def _upgrade_component_scripts(html: str) -> str:
+    """Aplica los ajustes de tema solo dentro del script «UPAO Components v1.0».
+    Recorre los `<script>` por posición, como el tokenizador HTML: el cierre es
+    `</script` seguido de cualquier cosa hasta `>`."""
+    lower = html.lower()
+    out, pos = [], 0
+    while (open_at := lower.find("<script", pos)) != -1:
+        close_at = lower.find("</script", open_at)
+        if close_at == -1:
+            break
+        end = lower.find(">", close_at)
+        end = len(html) if end == -1 else end + 1
+        script = html[open_at:end]
         if "UPAO Components v1.0" in script:
             for old, new in RESOURCE_THEME_REPLACEMENTS:
                 script = script.replace(old, new)
-        return script
+        out += [html[pos:open_at], script]
+        pos = end
+    out.append(html[pos:])
+    return "".join(out)
 
-    html = re.sub(
-        r"<script\b[^>]*>.*?</script\s*>", upgrade_component_script, html,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    style = f'<style id="genova-package-theme">{theme_css(theme)}</style>'
+
+def inject_package_theme(html: str, theme: str = "upao") -> str:
+    """Añade tokens al final del head, manteniendo scripts y markup originales."""
+    html = _upgrade_component_scripts(_strip_previous_theme(html))
+    style = f'{THEME_START}<style id="genova-package-theme">{theme_css(theme)}</style>{THEME_END}'
     close_head = re.search(r"</head\s*>", html, re.IGNORECASE)
     if close_head:
         return html[:close_head.start()] + style + html[close_head.start():]

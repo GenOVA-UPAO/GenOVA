@@ -18,7 +18,7 @@ describe("applyPackageTheme", () => {
   });
 
   it("admite documentos antiguos sin head y deja vacíos sin contenido", () => {
-    expect(applyPackageTheme("<html><body>Hola</body></html>", css)).toContain(`<head><style id="genova-package-theme">${css}</style></head>`);
+    expect(applyPackageTheme("<html><body>Hola</body></html>", css)).toContain(`<head><!--genova-package-theme--><style id="genova-package-theme">${css}</style><!--/genova-package-theme--></head>`);
     expect(applyPackageTheme("<p>Hola</p>", css)).toContain("<p>Hola</p>");
     expect(applyPackageTheme("", css)).toBe("");
     expect(applyPackageTheme("<p>Hola</p>")).toBe("<p>Hola</p>");
@@ -33,5 +33,12 @@ describe("applyPackageTheme", () => {
     expect(themed).toContain("p{color:#166534}");
     expect(themed).toContain('const custom="color:#166534"');
     expect(themed).toContain('const status="color:var(--success,#166534)"');
+  });
+
+  it("no duplica el tema al aplicarlo dos veces y tolera cierres de script raros", () => {
+    const html = "<html><head></head><body><script>x</SCRIPT\t></body></html>";
+    const twice = applyPackageTheme(applyPackageTheme(html, css), css);
+    expect(twice.split("<!--genova-package-theme-->")).toHaveLength(2);
+    expect(twice).toContain("<script>x</SCRIPT\t>");
   });
 });
