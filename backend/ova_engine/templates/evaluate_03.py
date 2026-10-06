@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS
+from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_questions", 5, min=4, max=8, help="Número de preguntas del desafío"),
-    Param("time_seconds", 90, min=45, max=180, help="Tiempo total del desafío en segundos"),
+    Param("num_questions", 5, min=4, max=10, help="Número de preguntas del desafío"),
+    Param("time_seconds", 90, min=30, max=180, help="Tiempo total del desafío en segundos"),
 )
 
 
@@ -32,9 +33,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de desafíos de respuesta rápida para universitarios.", f"Diseñador de desafíos de respuesta rápida para {d.audiencia}. {d.guia_nivel}")
     n, t = p["num_questions"], p["time_seconds"]
-    return f"""[ROL] Diseñador de desafíos de respuesta rápida para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un desafío contrarreloj de {n} preguntas sobre «{concept}» que se responde en {t} segundos en total; hay bonus por velocidad, así que las preguntas deben poder resolverse en pocos segundos.
 - titulo: título corto y motivador.
 - reglas: una frase con las reglas (tiempo total, bonus por rapidez).
@@ -208,4 +211,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("preguntas", "num_questions"),
 )

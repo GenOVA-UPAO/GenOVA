@@ -10,16 +10,17 @@ import re
 
 from users.domain.errors import InvalidResourceConfigs
 
-_VALID_KEY = re.compile(r"^(engage|explore|explain|elaborate|evaluate):([1-9]|10)$")
+# Ids de 1 a 99: el catálogo ya tiene `explore:11` (GeoGebra) y `evaluate:11` (quiz adaptativo).
+_VALID_KEY = re.compile(r"^(engage|explore|explain|elaborate|evaluate):[1-9][0-9]?$")
 
-MAX_CONFIG_ENTRIES = 50
+MAX_CONFIG_ENTRIES = 100
 
 
 def validate_resource_configs(configs: dict) -> dict:
     if not isinstance(configs, dict):
         raise InvalidResourceConfigs("configs debe ser un objeto")
     if len(configs) > MAX_CONFIG_ENTRIES:
-        raise InvalidResourceConfigs("Máximo 50 entradas de configuración")
+        raise InvalidResourceConfigs(f"Máximo {MAX_CONFIG_ENTRIES} entradas de configuración")
     clean: dict = {}
     for k, v in configs.items():
         if not _VALID_KEY.match(k):

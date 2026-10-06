@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -40,8 +41,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     w = p["body_words"]
-    return f"""[ROL] Periodista tecnológico especializado en bases de datos e infraestructura crítica.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Periodista tecnológico especializado en bases de datos e infraestructura crítica.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Redacta una noticia periodística ficticia de impacto real de «{concept}» en una organización (p. ej. una caída crítica en producción evitada, una recuperación ante fallos imprevistos, una consulta masiva optimizada de horas a segundos, o una brecha de seguridad detectada a tiempo).
 - titular: titular periodístico de impacto, conciso e informativo (≤12 palabras).
 - subtitulo: bajada informativa que contextualiza la relevancia del suceso (≤22 palabras).
@@ -60,6 +63,29 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * tipo "logo" para la empresa o tecnología protagonista.
   Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] Sin términos ultra-técnicos incomprensibles. Tono de urgencia informativa y rigor periodístico. Genera admiración y curiosidad por el concepto, no miedo ni sensacionalismo alarmista.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Periodista divulgador especializado en «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Redacta una noticia periodística ficticia de impacto real de «{concept}» en una organización (p. ej. un problema real evitado, un hallazgo que cambió una práctica, un reto resuelto o una mejora medible lograda gracias al concepto).
+- titular: titular periodístico de impacto, conciso e informativo (≤12 palabras).
+- subtitulo: bajada informativa que contextualiza la relevancia del suceso (≤22 palabras).
+- organizacion: nombre de la empresa u organización ficticia involucrada (≤6 palabras).
+- cuerpo_noticia: cuerpo de la noticia en tono de crónica periodística (alrededor de {w} palabras), relatando el contexto, el incidente crítico y cómo la solución salvó la situación.
+- esquema_causal: desglose analítico en tres fases conectadas:
+  * causa: detonante operativo, error o sobrecarga que inició la crisis (≤20 palabras).
+  * mecanismo: cómo actúa o interviene «{concept}» para resolver la falla (≤25 palabras).
+  * efecto: resultado cuantificable y beneficio de alto impacto para la organización (≤20 palabras).
+- pregunta_cierre: interrogante o dilema periodístico final que invita al estudiante a reflexionar sobre su papel como futuro profesional o ciudadano informado (≤25 palabras).
+- analisis_cierre: análisis reflexivo conciso que responde a la pregunta de cierre, explicando el principio técnico subyacente y su lección esencial (≤50 palabras).
+- imagen (opcional): fotografía o gráfico estructurado de contexto periodístico sobre el tema:
+  * tipo "foto" ÚNICAMENTE para lugares, personas, objetos o infraestructura física reales relacionados con la noticia.
+  * tipo "diagrama" para esquemas causales o de flujo del incidente (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "escena" para ilustraciones editoriales o pedagógicas de la noticia.
+  * tipo "logo" para la empresa o tecnología protagonista.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
+[RESTRICCIONES] Sin términos ultra-técnicos incomprensibles. Tono de urgencia informativa y rigor periodístico. Genera admiración y curiosidad por el concepto, no miedo ni sensacionalismo alarmista.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

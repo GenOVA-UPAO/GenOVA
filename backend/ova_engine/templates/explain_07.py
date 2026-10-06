@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
 PARAMS = (
-    Param("num_milestones", 5, min=4, max=7, help="Número de hitos de la línea de tiempo"),
+    Param("num_milestones", 5, min=3, max=6, help="Número de hitos de la línea de tiempo"),
 )
 
 
@@ -33,10 +34,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_milestones"]
-    return f"""[ROL] Historiador de los sistemas de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Escribe una línea de tiempo con exactamente {n} hitos verificables sobre la evolución de «{concept}», en orden cronológico y conectados causalmente (cada hito nace de un problema del anterior).
+    return f"""[ROL] Historiador {d.pick("de los sistemas de bases de datos", "experto en «" + concept + "»")}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Escribe una línea de tiempo con exactamente {n} hitos verificables sobre la evolución de «{concept}», en orden cronológico y conectados causalmente (cada hito nace de un problema del anterior).
 - titulo: título corto de la línea de tiempo.
 - intro: una frase que presente el recorrido.
 - hitos: por cada hito:
@@ -44,7 +46,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `titulo`: nombre breve del hito (≤25 caracteres).
   * `descripcion`: crónica de lo ocurrido y por qué importó (≤45 palabras).
   * `dato_curioso`: una curiosidad verificable (≤25 palabras).
-  * `legado_actual`: cómo sigue vigente hoy en Oracle u otros motores (≤25 palabras).
+  * `legado_actual`: cómo sigue vigente hoy {d.pick("en Oracle u otros motores", "en el mundo actual")} (≤25 palabras).
 - cierre: frase que enlace la historia con el uso actual de «{concept}».
 [RESTRICCIONES] Sin mitos ni fechas inventadas; si una fecha es aproximada, usa el año más aceptado.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""

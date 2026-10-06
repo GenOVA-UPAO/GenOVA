@@ -7,6 +7,7 @@ inmediata para despertar la intuición técnica sobre el concepto central.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 
@@ -36,8 +37,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_rounds"]
-    return f"""[ROL] Diseñador de minijuegos educativos cronometrados para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de minijuegos educativos cronometrados para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un minijuego de {n} rondas secuenciales con cronómetro que despierte curiosidad inmediata y haga sentir la intuición técnica de «{concept}» a través de situaciones concretas cotidianas o de causa y efecto.
 - titulo: título dinámico del minijuego (≤10 palabras).
 - gancho: reto inicial breve que invite a superar el desafío (≤25 palabras).
@@ -50,6 +53,23 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * feedback_incorrecto: explicación constructiva que aclare el error sin desanimar (≤20 palabras).
 - cierre: reflexión final que conecte lo experimentado en el juego con la relevancia práctica de «{concept}» (≤30 palabras).
 [RESTRICCIONES] Sin jerga técnica pesada ni fórmulas en los enunciados. Analogías intuitivas y claras. Respuestas deducibles mediante lógica cotidiana y sentido común.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de minijuegos educativos cronometrados para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un minijuego de {n} rondas secuenciales con cronómetro que despierte curiosidad inmediata y haga sentir la intuición técnica de «{concept}» a través de situaciones concretas cotidianas o de causa y efecto.
+- titulo: título dinámico del minijuego (≤10 palabras).
+- gancho: reto inicial breve que invite a superar el desafío (≤25 palabras).
+- rondas: exactamente {n} rondas secuenciales con dificultad creciente (1 a {n}). Para cada ronda:
+  * ronda: número correlativo de la ronda (1 a {n}).
+  * enunciado: dilema o situación concreta donde el estudiante debe detectar la causa o elegir la mejor opción (≤30 palabras).
+  * items: lista de 3 a 5 opciones breves y verosímiles (≤12 palabras cada una).
+  * respuesta_correcta: texto exacto de la opción correcta, idéntico a uno de los elementos de `items`.
+  * feedback_correcto: explicación concisa de por qué esa opción es la adecuada (≤20 palabras).
+  * feedback_incorrecto: explicación constructiva que aclare el error sin desanimar (≤20 palabras).
+- cierre: reflexión final que conecte lo experimentado en el juego con la relevancia práctica de «{concept}» (≤30 palabras).
+[RESTRICCIONES] Sin jerga técnica pesada ni fórmulas en los enunciados. Analogías intuitivas y claras. Respuestas deducibles mediante lógica cotidiana y sentido común.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

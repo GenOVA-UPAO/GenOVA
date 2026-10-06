@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 
@@ -35,6 +37,76 @@ def is_safe_geogebra_command(cmd: str) -> bool:
         return False
     return not any(c in trimmed for c in ("`", "\\", "$"))
 
+# Nombres de comando en español que los modelos escriben aunque el prompt pida sintaxis
+# inglesa; el applet carga en inglés y rechaza los españoles («Undefined variable a»).
+_ES_EN = {
+    "deslizador": "Slider", "recta": "Line", "tangente": "Tangent", "punto": "Point",
+    "segmento": "Segment", "circunferencia": "Circle", "circulo": "Circle",
+    "interseca": "Intersect", "interseccion": "Intersect",
+    "derivada": "Derivative", "funcion": "Function", "poligono": "Polygon", "texto": "Text",
+    "mediatriz": "PerpendicularBisector", "perpendicular": "PerpendicularLine",
+    "paralela": "Line", "vector": "Vector", "angulo": "Angle", "elipse": "Ellipse",
+    "parabola": "Parabola", "hiperbola": "Hyperbola", "integral": "Integral", "raiz": "Root",
+    "extremo": "Extremum", "distancia": "Distance", "puntomedio": "Midpoint",
+    "pendiente": "Slope", "vertice": "Vertex", "centro": "Center", "radio": "Radius",
+    "longitud": "Length", "area": "Area", "perimetro": "Perimeter", "bisectriz": "AngularBisector",
+    "rotacion": "Rotate", "rota": "Rotate", "traslada": "Translate", "traslacion": "Translate",
+    "refleja": "Reflect", "reflexion": "Reflect", "dilata": "Dilate", "secuencia": "Sequence",
+    "foco": "Focus", "directriz": "Directrix", "asintota": "Asymptote", "puntoinflexion": "InflectionPoint",
+    "maximo": "Max", "minimo": "Min", "resolver": "Solve", "ecuacion": "Equation",
+    "curvatura": "Curvature", "limite": "Limit", "polinomio": "Polynomial",
+}
+_CMD_CALL = re.compile(r"(?<![\w.])([A-Za-zÁÉÍÓÚÜáéíóúüñÑ]+)(\s*)\(")
+
+
+def _fold(word: str) -> str:
+    return "".join(
+        c for c in unicodedata.normalize("NFD", word.lower()) if unicodedata.category(c) != "Mn"
+    )
+
+
+def translate_geogebra_command(cmd: str) -> str:
+    """Traduce nombres de comando españoles a ingleses conservando variables y argumentos.
+    Solo cambia identificadores seguidos de «(» que están en la tabla y empiezan con mayúscula
+    (una función del usuario como `f(x)` o `p(x)` no se toca)."""
+
+    def repl(m: re.Match) -> str:
+        word = m.group(1)
+        en = _ES_EN.get(_fold(word))
+        if en is None or not word[0].isupper() or word == en:
+            return m.group(0)
+        return f"{en}{m.group(2)}("
+
+    return _CMD_CALL.sub(repl, cmd)
+
+
+_FUNC_DEF = re.compile(r"^\s*([A-Za-z]\w*)\s*\(\s*x\s*\)\s*=")
+_POINT_ON_FUNC = re.compile(r"\bPoint\(\s*([A-Za-z]\w*)\s*,\s*([^,()]+?)\s*\)")
+
+
+def fix_point_on_function(cmds: list[str]) -> list[str]:
+    """`Point(f, a)` sobre una función es un punto «en el camino» con parámetro `a`, no el
+    punto de abscisa `a`: el QA (2026-10-06) vio P lejos del punto de tangencia. Si `f` es
+    una función definida como `f(x) = …`, se reescribe como `(a, f(a))`."""
+    funcs = {m.group(1) for c in cmds if (m := _FUNC_DEF.match(c))}
+
+    def repl(m: re.Match) -> str:
+        name, arg = m.group(1), m.group(2)
+        return f"({arg}, {name}({arg}))" if name in funcs else m.group(0)
+
+    return [_POINT_ON_FUNC.sub(repl, c) for c in cmds]
+
+
+def normalize_geogebra_commands(cmds: list) -> list:
+    out = [translate_geogebra_command(c) if isinstance(c, str) else c for c in cmds or []]
+    texts = [c for c in out if isinstance(c, str)]
+    fixed = iter(fix_point_on_function(texts))
+    return [next(fixed) if isinstance(c, str) else c for c in out]
+
+
+def normalize(data: dict, p: dict) -> dict:
+    return {**data, "comandos": normalize_geogebra_commands(data.get("comandos"))}
+
 
 def schema(p: dict) -> dict:
     n = p["num_steps"]
@@ -60,12 +132,14 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_steps"]
-    return f"""[ROL] Docente universitario experto en matemáticas, funciones, geometría y modelado computacional con GeoGebra.
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Docente universitario experto en matemáticas, funciones, geometría y modelado computacional con GeoGebra.
 [CONCEPTO] «{concept}».
 [TAREA] Diseña un applet interactivo con GeoGebra para explorar matemáticamente «{concept}».
 - titulo: título claro de la actividad (≤10 palabras).
 - objetivo: qué patrón o propiedad matemática descubrirá el alumno (≤25 palabras).
-- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). PROHIBIDO Execute, URLs, scripts o JS.
+- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). Un punto sobre la gráfica de f en x = a se escribe 'P = (a, f(a))', no 'Point(f, a)'. Usa SIEMPRE los nombres de comando en inglés (Slider, Line, Tangent, Point, Segment, Circle, Intersect, Derivative…), nunca en español. PROHIBIDO Execute, URLs, scripts o JS.
 - consignas: exactamente {n} consignas guiadas paso a paso. Por cada consigna:
   * `paso`: número secuencial (1 a {n}).
   * `indicacion`: qué slider o elemento mover en el applet (≤20 palabras).
@@ -75,6 +149,24 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `feedback_incorrecto`: pista que oriente a manipular el applet y verificar (≤20 palabras).
 - cierre: síntesis conceptual de lo descubierto (≤35 palabras).
 [RESTRICCIONES] Comandos matemáticos estándar de GeoGebra. Sin código HTML ni Markdown fuera del JSON.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Docente experto en matemáticas, funciones, geometría y modelado computacional con GeoGebra.
+[CONCEPTO] «{concept}».
+[TAREA] Diseña un applet interactivo con GeoGebra para explorar matemáticamente «{concept}».
+- titulo: título claro de la actividad (≤10 palabras).
+- objetivo: qué patrón o propiedad matemática descubrirá el alumno (≤25 palabras).
+- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). Un punto sobre la gráfica de f en x = a se escribe 'P = (a, f(a))', no 'Point(f, a)'. Usa SIEMPRE los nombres de comando en inglés (Slider, Line, Tangent, Point, Segment, Circle, Intersect, Derivative…), nunca en español. PROHIBIDO Execute, URLs, scripts o JS.
+- consignas: exactamente {n} consignas guiadas paso a paso. Por cada consigna:
+  * `paso`: número secuencial (1 a {n}).
+  * `indicacion`: qué slider o elemento mover en el applet (≤20 palabras).
+  * `pregunta`: qué valor, propiedad o cambio se observa (≤20 palabras).
+  * `respuesta_esperada`: respuesta concisa esperada (número, signo, fórmula o palabra clave, ≤6 palabras).
+  * `feedback_correcto`: explicación de por qué ocurre esa relación matemática (≤20 palabras).
+  * `feedback_incorrecto`: pista que oriente a manipular el applet y verificar (≤20 palabras).
+- cierre: síntesis conceptual de lo descubierto (≤35 palabras).
+[RESTRICCIONES] Comandos matemáticos estándar de GeoGebra. Sin código HTML ni Markdown fuera del JSON.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -82,6 +174,7 @@ GGB_CSS = """
 <style>
 .ggb-card{background:var(--surface,#fff);border:1px solid var(--border,#cbd5e1);border-radius:var(--radius,12px);padding:var(--space-3,16px);margin-bottom:var(--space-3,16px)}
 .ggb-offline-notice{background:var(--surface-tint,#eef2ff);border-left:4px solid var(--primary,#0A3D91);padding:12px 16px;border-radius:0 8px 8px 0;font-size:.9rem;color:var(--text,#1b2437);margin-bottom:16px}
+.ggb-warn{font-size:.8rem;color:var(--text-muted,#475569);margin:0}
 .ggb-fallback{background:#fff3cd;border:1px solid #ffeeba;border-radius:8px;padding:16px;color:#856404;font-weight:600;text-align:center;margin:12px 0}
 .ggb-wrapper{display:flex;flex-direction:column;gap:12px;align-items:center;background:var(--surface-tint,#eef2ff);border:1px solid var(--border,#cbd5e1);border-radius:var(--radius,12px);padding:12px;overflow-x:auto}
 .ggb-container{width:100%;max-width:760px;min-height:480px;border-radius:8px;overflow:hidden;background:#ffffff;box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -142,6 +235,8 @@ function initGgb() {
 function mountGgb() {
   const params = {
     appName: 'classic',
+    language: 'es',
+    showErrorDialogs: false,
     width: 760,
     height: 480,
     showToolBar: false,
@@ -151,13 +246,20 @@ function mountGgb() {
     enableShiftDragZoom: true,
     appletOnLoad: function (api) {
       const cmds = ggbData.comandos || [];
+      let failed = 0;
       cmds.forEach(function (cmd) {
         try {
-          api.evalCommand(cmd);
+          const ok = api.evalCommand(cmd);
+          if (ok === false) { failed += 1; console.warn('GeoGebra: comando no aplicado:', cmd); }
         } catch (err) {
-          console.warn('GeoGebra command error:', err);
+          failed += 1;
+          console.warn('GeoGebra command error:', cmd, err);
         }
       });
+      if (failed) {
+        const w = document.getElementById('ggb-warn');
+        if (w) w.hidden = false;
+      }
     }
   };
   try {
@@ -224,7 +326,7 @@ window.checkStep = function (k) {
 
 
 def render(data: dict, ctx: RenderContext) -> str:
-    raw_cmds = data.get("comandos") or []
+    raw_cmds = normalize_geogebra_commands(data.get("comandos") or [])
     safe_cmds = [c for c in raw_cmds if is_safe_geogebra_command(c)]
     if not safe_cmds:
         safe_cmds = ["f(x) = x^2"]
@@ -267,6 +369,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div id="ggb-fallback" class="ggb-fallback" hidden role="alert">
       Este recurso necesita conexión para cargar GeoGebra.
     </div>
+    <p id="ggb-warn" class="ggb-warn" role="status" hidden>Parte de la construcción no se pudo dibujar; puedes seguir con las preguntas.</p>
     <div id="ggb-element" class="ggb-container" role="region" aria-label="Construcción interactiva de GeoGebra"></div>
     <details class="ggb-commands-box">
       <summary>Ver comandos de la construcción GeoGebra ({len(safe_cmds)})</summary>
@@ -375,4 +478,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=normalize,
 )

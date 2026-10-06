@@ -98,3 +98,24 @@ describe("useOvaCreation", () => {
     expect(sentPayload()).toMatchObject({ prompt: stated });
   });
 });
+
+describe("useOvaCreation resource configs", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+  it("sends the just-confirmed configs even if the saved profile still has the old ones", async () => {
+    // QA 2026-10-06: el guardado del perfil falló (400) y el OVA salió con la configuración vieja.
+    const { result } = setup();
+    const settings = { "evaluate:11": { num_questions: 5 }, "engage:3": { word_count: 90 } };
+    act(() => {
+      result.current.setPrompt("Tema: la fotosíntesis");
+      result.current.confirmSelections(twoPhasePicks(), settings);
+    });
+    await act(async () => {
+      result.current.generate();
+      await Promise.resolve();
+    });
+    expect(sentPayload()).toMatchObject({ resourceConfigs: settings });
+  });
+});

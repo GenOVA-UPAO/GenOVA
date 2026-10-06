@@ -8,6 +8,7 @@ para generadores externos de video AI.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, obj, s
 
@@ -52,8 +53,10 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_scenes"]
     style = p["style"]
-    return f"""[ROL] Guionista audiovisual y diseñador de preproducción para EdTech universitario.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Guionista audiovisual y diseñador de preproducción para EdTech para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea un storyboard de preproducción para un video educativo de {n} escenas, estilo {style}, que despierte curiosidad inmediata sobre «{concept}». Usa una analogía visual cotidiana clara y cinematográfica que refleje fielmente cómo funciona «{concept}».
 - titulo: título atractivo del video educativo (≤10 palabras).
 - gancho: premisa intrigante que invite a explorar el guion (≤25 palabras).
@@ -66,6 +69,23 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - pregunta_reflexion: pregunta abierta intrigante que invite al estudiante a reflexionar sobre el reto planteado (≤25 palabras).
 - prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo, describiendo la progresión visual estilo {style}, sin texto en pantalla ni fórmulas.
 [RESTRICCIONES] Sin jerga técnica pesada ni fórmulas en el guion ni narración. Tono cinematográfico y empático. No describas ni propongas un reproductor ni simulación de video.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Guionista audiovisual y diseñador de preproducción para EdTech para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Crea un storyboard de preproducción para un video educativo de {n} escenas, estilo {style}, que despierte curiosidad inmediata sobre «{concept}». Usa una analogía visual cotidiana clara y cinematográfica que refleje fielmente cómo funciona «{concept}».
+- titulo: título atractivo del video educativo (≤10 palabras).
+- gancho: premisa intrigante que invite a explorar el guion (≤25 palabras).
+- escenas: exactamente {n} escenas secuenciales con marcadores de tiempo progresivos. Por cada escena:
+  * `tiempo`: marca temporal del segmento (ej. '0:00 - 0:10', '0:10 - 0:20').
+  * `titulo`: nombre breve de la escena (≤8 palabras).
+  * `descripcion_visual`: encuadre de cámara, analogía cotidiana y elementos visuales clave (≤35 palabras).
+  * `narracion`: locución de voz en off para este fragmento (≤25 palabras).
+- narracion_completa: texto continuo de la locución (voz en off fluida, ≤80 palabras) integrando todas las escenas y concluyendo con la pregunta reflexiva.
+- pregunta_reflexion: pregunta abierta intrigante que invite al estudiante a reflexionar sobre el reto planteado (≤25 palabras).
+- prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo, describiendo la progresión visual estilo {style}, sin texto en pantalla ni fórmulas.
+[RESTRICCIONES] Sin jerga técnica pesada ni fórmulas en el guion ni narración. Tono cinematográfico y empático. No describas ni propongas un reproductor ni simulación de video.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

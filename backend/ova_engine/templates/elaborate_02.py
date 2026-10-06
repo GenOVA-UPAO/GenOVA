@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -34,19 +35,56 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_steps"]
-    return f"""[ROL] Instructor de laboratorio Oracle de un curso universitario.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña un ejercicio guiado de laboratorio sobre «{concept}» con un enunciado concreto (p. ej. «user02 solo puede actualizar EMAIL de EMPLOYEES si DEPARTMENT_ID <> 60») resuelto en EXACTAMENTE {n} pasos incrementales, sin saltos lógicos.
-- titulo: título corto del laboratorio.
-- enunciado: el problema a resolver, con usuario, tabla/objeto y condición (≤40 palabras).
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        """[ROL] Instructor de laboratorio Oracle de un curso universitario.""",
+        f"""[ROL] {d.docente.capitalize()} que diseña ejercicios guiados para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Diseña un ejercicio guiado de laboratorio sobre «{concept}» con un enunciado concreto (p. ej. «user02 solo puede actualizar EMAIL de EMPLOYEES si DEPARTMENT_ID <> 60») resuelto en EXACTAMENTE {n} pasos incrementales, sin saltos lógicos.""",
+        f"""[TAREA] Diseña un ejercicio guiado sobre «{concept}» con un enunciado concreto y cotidiano para {d.audiencia}, resuelto en EXACTAMENTE {n} pasos incrementales, sin saltos lógicos.""",
+    )
+    _l3 = d.pick(
+        """- titulo: título corto del laboratorio.""",
+        """- titulo: título corto del ejercicio.""",
+    )
+    _l4 = d.pick(
+        """- enunciado: el problema a resolver, con usuario, tabla/objeto y condición (≤40 palabras).""",
+        """- enunciado: el problema a resolver, con datos y condición concretos (≤40 palabras).""",
+    )
+    _l5 = d.pick(
+        """  * `pista`: ayuda que orienta sin dar la sentencia (≤25 palabras).""",
+        """  * `pista`: ayuda que orienta sin dar el resultado (≤25 palabras).""",
+    )
+    _l6 = d.pick(
+        """  * `resultado_esperado`: la sentencia SQL/PL-SQL/comando Oracle correcta, en una o pocas líneas.""",
+        """  * `resultado_esperado`: el resultado correcto del paso (operación, expresión, respuesta o procedimiento), en una o pocas líneas.""",
+    )
+    _l7 = d.pick(
+        """  * `palabras_clave`: 2-5 palabras o símbolos que DEBE contener la respuesta del estudiante y que aparecen literalmente dentro de `resultado_esperado` (p. ej. «GRANT», «UPDATE», «EMPLOYEES»).""",
+        """  * `palabras_clave`: 2-5 palabras, números o símbolos que DEBE contener la respuesta del estudiante y que aparecen literalmente dentro de `resultado_esperado`.""",
+    )
+    _l8 = d.pick(
+        """[RESTRICCIONES] Cada paso depende del anterior. Sintaxis Oracle correcta. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado.""",
+        f"""[RESTRICCIONES] Cada paso depende del anterior. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
+{_l3}
+{_l4}
 - pasos: por cada paso:
   * `instruccion`: qué debe hacer el estudiante en este paso (≤35 palabras).
-  * `pista`: ayuda que orienta sin dar la sentencia (≤25 palabras).
-  * `resultado_esperado`: la sentencia SQL/PL-SQL/comando Oracle correcta, en una o pocas líneas.
+{_l5}
+{_l6}
   * `validacion`: cómo comprobar que se logró y POR QUÉ funciona (≤35 palabras).
-  * `palabras_clave`: 2-5 palabras o símbolos que DEBE contener la respuesta del estudiante y que aparecen literalmente dentro de `resultado_esperado` (p. ej. «GRANT», «UPDATE», «EMPLOYEES»).
+{_l7}
 - cierre: qué logró el estudiante y cómo se generaliza.
-[RESTRICCIONES] Cada paso depende del anterior. Sintaxis Oracle correcta. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado.
+{_l8}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -68,7 +106,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="eg-res k-hide" aria-live="polite"></div></section>'
         )
     return f"""
-{header("LABORATORIO GUIADO", data["titulo"])}
+{header(ctx.title.upper(), data["titulo"])}
 {KIT_CSS}
 <article class="k-panel tint"><p class="k-label">Enunciado</p><p>{esc(data["enunciado"])}</p></article>
 {progress(n, "Pasos completados")}

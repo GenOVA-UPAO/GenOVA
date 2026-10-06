@@ -9,6 +9,7 @@ upao-choice, retroalimentación formativa y acumulación de puntuación con upao
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, b, obj, s
 
@@ -52,8 +53,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_scenarios"]
-    return f"""[ROL] Diseñador de aprendizaje basado en roles para DBA junior.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de aprendizaje basado en roles para DBA junior.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña {n} escenarios variados de pequeñas o medianas empresas de distintos sectores (salud, educación, retail, turismo, finanzas, logística, etc.) donde un DBA junior debe tomar la mejor decisión técnica para resolver un problema operativo real aplicando «{concept}».
 - titulo: título atractivo del caso de simulación o juego de roles (≤10 palabras).
 - intro: introducción que contextualiza el rol del DBA junior y la misión de diagnosticar y actuar en cada empresa (≤25 palabras).
@@ -64,6 +67,21 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `opciones`: lista de entre 2 y 3 alternativas de acción para el DBA junior. Exactamente UNA opción debe tener `correcta: true` (la mejor decisión técnica) y las demás `correcta: false`. Cada opción incluye `texto` (acción propuesta, ≤15 palabras) y `feedback` (justificación técnica concisa de por qué la acción es adecuada o contraproducente, ≤25 palabras).
 - sintesis: conclusión pedagógica que sintetice el criterio común de decisión para «{concept}» en entornos de producción (≤35 palabras).
 [RESTRICCIONES] Problemas concretos y cotidianos sin lenguaje críptico inicial. Cada decisión correcta debe ser técnicamente sólida y defendible según las buenas prácticas de bases de datos. No generes HTML ni menciones el esquema JSON.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de aprendizaje basado en roles para especialistas junior en «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña {n} escenarios variados de pequeñas o medianas empresas de distintos sectores (salud, educación, retail, turismo, finanzas, logística, etc.) donde un profesional junior debe tomar la mejor decisión técnica para resolver un problema operativo real aplicando «{concept}».
+- titulo: título atractivo del caso de simulación o juego de roles (≤10 palabras).
+- intro: introducción que contextualiza el rol del profesional junior y la misión de diagnosticar y actuar en cada empresa (≤25 palabras).
+- escenarios: lista de exactamente {n} escenarios empresariales. Cada escenario contiene:
+  * `id`: identificador corto único (ej. 'esc-1', 'esc-2', ≤6 caracteres).
+  * `empresa`: nombre comercial y sector de la empresa (ej. 'Clínica San Pablo (Salud)', ≤8 palabras).
+  * `problema`: situación problemática concreta y cotidiana explicada con lenguaje claro donde la solución dependa de «{concept}» (≤35 palabras).
+  * `opciones`: lista de entre 2 y 3 alternativas de acción para el profesional junior. Exactamente UNA opción debe tener `correcta: true` (la mejor decisión técnica) y las demás `correcta: false`. Cada opción incluye `texto` (acción propuesta, ≤15 palabras) y `feedback` (justificación técnica concisa de por qué la acción es adecuada o contraproducente, ≤25 palabras).
+- sintesis: conclusión pedagógica que sintetice el criterio común de decisión para «{concept}» en entornos de producción (≤35 palabras).
+[RESTRICCIONES] Problemas concretos y cotidianos sin lenguaje críptico inicial. Cada decisión correcta debe ser técnicamente sólida y defendible según las buenas prácticas del área. No generes HTML ni menciones el esquema JSON.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -426,7 +444,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f' aria-labelledby="scenario-heading-{k}">'
             f'<div class="scenario-card">'
             f'<div class="scenario-meta">'
-            f'<span class="role-badge">DBA Junior</span>'
+            f'<span class="role-badge">Especialista junior</span>'
             f'<span class="company-tag">🏢 {esc(sc.get("empresa", ""))}</span>'
             f"</div>"
             f'<h2 id="scenario-heading-{k}" class="scenario-heading">Caso {k}: {esc(sc.get("empresa", ""))}</h2>'
@@ -436,7 +454,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f"</div>"
             f'<div class="decision-box">'
             f'<p class="decision-intro">Evalúa las alternativas técnicas y toma la mejor decisión para el negocio:</p>'
-            f'<upao-question number="{k}" prompt="¿Qué decisión técnica debe tomar el DBA junior?">'
+            f'<upao-question number="{k}" prompt="¿Qué decisión debe tomar el profesional junior?">'
             f"{choices_html}"
             f"</upao-question>"
             f"</div>"
@@ -468,9 +486,9 @@ def render(data: dict, ctx: RenderContext) -> str:
   <upao-nav id="nav" total="{total}" current="1" prev-label="← Caso anterior" next-label="Siguiente caso →"></upao-nav>
 </div>
 
-<upao-summary title="Síntesis de Decisiones del DBA">
+<upao-summary title="Síntesis de decisiones">
   <p>{esc(data["sintesis"])}</p>
-  <upao-complete slot="actions" label="Finalizar misión de DBA" locked></upao-complete>
+  <upao-complete slot="actions" label="Finalizar la misión" locked></upao-complete>
 </upao-summary>
 
 {script(PROGRESS_JS)}

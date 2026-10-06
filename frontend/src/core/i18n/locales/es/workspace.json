@@ -815,6 +815,7 @@
   "turnos_del_juego_de_estrategia": "Turnos del juego de estrategia",
   "criterios": "Criterios",
   "criterios_de_diseno_del_reto": "Criterios de diseño del reto",
+  "preguntas_maximas_del_quiz_adaptativo": "Número máximo de preguntas del quiz adaptativo",
   "preguntas_del_quiz_interactivo": "Preguntas del quiz interactivo",
   "criterios_de_la_rubrica_de_autoevaluacion": "Criterios de la rúbrica de autoevaluación",
   "preguntas_del_desafio_contrarreloj": "Preguntas del desafío contrarreloj",
@@ -901,5 +902,6 @@
   "applyingChanges": "Aplicando cambios…",
   "applyingChangesHint": "El OVA se está regenerando; puedes verlo, pero no editarlo hasta que termine.",
   "changeApplied": "Cambio aplicado: {{instruction}}",
-  "detalles_tecnicos": "Detalles técnicos"
+  "detalles_tecnicos": "Detalles técnicos",
+  "resourceConfigsSaveError": "No se pudo guardar la configuración de los recursos en tu perfil. Este OVA la usará igual, pero la próxima vez tendrás que volver a ajustarla."
 }

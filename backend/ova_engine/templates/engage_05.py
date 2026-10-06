@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -45,8 +46,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_options"]
-    return f"""[ROL] Redactor de casos de ética y responsabilidad profesional en la administración de bases de datos para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Redactor de casos de ética y responsabilidad profesional en la administración de bases de datos para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Escribe un caso narrativo verosímil de dilema ético profesional en una organización ficticia en producción. Una decisión técnica crítica del DBA relacionada con «{concept}» debe generar un conflicto tangible entre valores legítimos (como privacidad de datos personales, auditoría y trazabilidad, disponibilidad del servicio, o lealtad corporativa vs. seguridad ciudadana). Plantea {n} opciones de postura técnica con sus consecuencias reales y tensiones morales.
 - titulo: titular sobrio y periodístico del dilema (≤10 palabras).
 - caso_narrativo: relato concreto y verosímil (≤90 palabras) donde el DBA se encuentra ante una decisión urgente e incierta sobre «{concept}» que no admite una respuesta perfecta.
@@ -64,6 +67,28 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * tipo "logo" para tecnologías o plataformas involucradas.
   Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». Exactitud técnica: no atribuyas a «{concept}» efectos que no tiene en Oracle (p. ej., un índice, un plan de ejecución o un tablespace no otorgan ni quitan permisos: quién ve qué datos lo deciden los privilegios, roles, vistas o VPD). Si «{concept}» no afecta por sí mismo a la privacidad, plantea el dilema con otros valores reales (costo, disponibilidad, plazos, trazabilidad, carga de trabajo). No incluyas código HTML ni referencias al JSON Schema.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Redactor de casos de ética y responsabilidad profesional aplicados a «{concept}» para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Escribe un caso narrativo verosímil de dilema ético profesional en una organización ficticia en producción. Una decisión crítica de un profesional del área relacionada con «{concept}» debe generar un conflicto tangible entre valores legítimos (como privacidad de datos personales, auditoría y trazabilidad, disponibilidad del servicio, o lealtad corporativa vs. seguridad ciudadana). Plantea {n} opciones de postura técnica con sus consecuencias reales y tensiones morales.
+- titulo: titular sobrio y periodístico del dilema (≤10 palabras).
+- caso_narrativo: relato concreto y verosímil (≤90 palabras) donde un profesional del área se encuentra ante una decisión urgente e incierta sobre «{concept}» que no admite una respuesta perfecta.
+- pregunta_posicion: pregunta directa que interpela al estudiante en el rol del profesional para que elija una postura (≤25 palabras).
+- opciones: exactamente {n} posturas de acción técnica distintas y plausibles. Por cada opción:
+  * `id`: identificador breve (ej. 'opt-1', 'opt-2').
+  * `texto`: formulación clara de la postura o acción técnica a tomar (≤20 palabras).
+  * `consecuencia`: resultado práctico directo sobre los sistemas, usuarios o el negocio (≤30 palabras).
+  * `tension_etica`: principio ético comprometido o el costo de valor que implica esta elección (≤30 palabras).
+- reflexion_post_voto: síntesis reflexiva (≤60 palabras) que profundiza en la complejidad del dilema, destacando que en la práctica profesional toda decisión conlleva una carga ética inevitable, sin calificar ninguna opción como correcta o errónea.
+- imagen (opcional): contexto visual estructurado del dilema profesional:
+  * tipo "foto" ÚNICAMENTE para entornos físicos reales relacionados con el caso.
+  * tipo "diagrama" para flujos o esquemas del caso (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "escena" para ilustraciones narrativas o pedagógicas del dilema profesional.
+  * tipo "logo" para tecnologías, marcas u organizaciones involucradas.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
+[RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». Exactitud: no atribuyas a «{concept}» efectos que no tiene. Si «{concept}» no afecta por sí mismo a la privacidad, plantea el dilema con otros valores reales (costo, disponibilidad, plazos, trazabilidad, carga de trabajo). No incluyas código HTML ni referencias al JSON Schema.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS
+from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_pairs", 5, min=4, max=7, help="Número de pares definición-término"),
+    Param("num_pairs", 5, min=4, max=8, help="Número de pares definición-término"),
 )
 
 _CSS = """
@@ -42,9 +43,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de actividades de asociación para universitarios.", f"Diseñador de actividades de asociación para {d.audiencia}. {d.guia_nivel}")
     n = p["num_pairs"]
-    return f"""[ROL] Diseñador de actividades de asociación para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña {n} pares 1:1 definición-término relacionados con «{concept}» (procesos, estructuras, vistas, privilegios o sentencias).
 - titulo: título corto de la actividad.
 - instrucciones: una frase (arrastra cada término a su definición, o selecciónalo y pulsa «Colocar aquí»).
@@ -181,8 +184,8 @@ def sample(concept: str, p: dict) -> dict:
         "instrucciones": "Arrastra cada término a su definición, o selecciónalo y usa el botón.",
         "parejas": [
             {
-                "definicion": base[k][0],
-                "termino": base[k][1],
+                "definicion": base[k % len(base)][0],
+                "termino": base[k % len(base)][1],
                 "feedback_acierto": f"Correcto: encaja con {concept}.",
                 "feedback_error": "Piensa en el rol que cumple ese elemento; no es este término.",
             }
@@ -201,4 +204,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("parejas", "num_pairs"),
 )
