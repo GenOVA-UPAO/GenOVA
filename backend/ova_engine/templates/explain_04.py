@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, obj, s
 
@@ -11,7 +12,7 @@ PARAMS = (
         "num_questions",
         6,
         min=4,
-        max=8,
+        max=10,
         help="Número de preguntas frecuentes",
     ),
 )
@@ -38,10 +39,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p.get("num_questions", 6)
-    return f"""[ROL] Curador y docente especialista en didáctica universitaria.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña una sección de {n} Preguntas Frecuentes (FAQ interactivo) que responda a dudas genuinas, confusiones habituales y obstáculos reales que experimentan los estudiantes al aprender «{concept}». Cada respuesta debe usar una analogía cotidiana o técnica explicativa que clarifique el concepto y corrija errores comunes.
+    return f"""[ROL] Curador y docente especialista en didáctica para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Diseña una sección de {n} Preguntas Frecuentes (FAQ interactivo) que responda a dudas genuinas, confusiones habituales y obstáculos reales que experimentan los estudiantes al aprender «{concept}». Cada respuesta debe usar una analogía cotidiana o técnica explicativa que clarifique el concepto y corrija errores comunes.
 - titulo: título directo y motivador para la sección de FAQ (≤10 palabras).
 - intro: introducción empática que invite a explorar las dudas frecuentes antes de programar o administrar (≤25 palabras).
 - categorias: lista de 2 a 4 categorías temáticas distintas que agrupen las dudas (ej. 'Conceptos Básicos', 'Arquitectura Interna', 'Casos Prácticos', 'Optimización').

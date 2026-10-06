@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -16,7 +17,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, header, progress, summary
 
 PARAMS = (
-    Param("num_sections", 5, min=4, max=6, help="Número de secciones de la infografía"),
+    Param("num_sections", 5, min=4, max=8, help="Número de secciones de la infografía"),
 )
 
 
@@ -37,10 +38,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_sections"]
-    return f"""[ROL] Diseñador de infografías educativas de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Escribe el contenido de una infografía de «{concept}» con exactamente {n} secciones que se revelan en secuencia, de la idea general a la aplicación.
+    return f"""[ROL] Diseñador de infografías educativas {d.pick("de bases de datos", "sobre «" + concept + "» para " + d.audiencia)}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Escribe el contenido de una infografía de «{concept}» con exactamente {n} secciones que se revelan en secuencia, de la idea general a la aplicación.
 - titulo: título corto y atractivo.
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás integrar…»).
 - imagen (opcional): apoyo visual estructurado de la infografía:
@@ -49,7 +51,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * "logo" para tecnologías o marcas concretas.
   * "escena" para ilustraciones pedagógicas de la situación.
   Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
-- secciones: por cada una: `titulo` (≤5 palabras), `emoji` (un solo emoji), `dato` (el dato clave destacado en grande: una cifra, sigla, comando o frase muy corta ≤5 palabras, p. ej. «8 KB», «ROWID», «COMMIT»), `explicacion` (qué significa y cómo se aplica, ≤40 palabras) y `porque` (por qué ese dato importa o por qué es así, ≤30 palabras).
+- secciones: por cada una: `titulo` (≤5 palabras), `emoji` (un solo emoji), `dato` (el dato clave destacado en grande: una cifra, sigla, comando o frase muy corta ≤5 palabras, p. ej. {d.pick("«8 KB», «ROWID», «COMMIT»", "«100 °C», «6 pasos», «1789»")}), `explicacion` (qué significa y cómo se aplica, ≤40 palabras) y `porque` (por qué ese dato importa o por qué es así, ≤30 palabras).
 - sintesis: cierre que integre las {n} ideas.
 [RESTRICCIONES] Datos técnicamente correctos y verificables; cada sección aporta una idea distinta y las secciones forman una secuencia lógica.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
