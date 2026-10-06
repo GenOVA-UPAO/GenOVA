@@ -457,3 +457,29 @@ def test_manual_completion_without_scored_resources_reports_no_score():
     body = js[js.index("function markComplete()") : js.index("function maybeComplete()")]
     assert ": 100" not in body  # antes: sin notas se inventaba un 100
     assert body.index("if (scores.length)") < body.index("cmi.core.score.raw")
+
+
+def test_epub_chapters_pass_epubcheck_rules_for_styles_roles_svg_and_empty_metadata():
+    from core.educational_metadata import EducationalMetadata
+
+    html = (
+        "<!doctype html><html><head><title>t</title></head><body>"
+        "<style>.a{color:red}</style><p>Hola</p>"
+        '<ul role="log" aria-live="polite"><li>x</li></ul>'
+        '<svg viewBox="0 0 10 10"><rect width="5" height="5"/></svg>'
+        "</body></html>"
+    )
+    meta = EducationalMetadata(author="Docente", educational_level="", audience="")
+    data = build_export("epub", "Curso", [{"type": "engage", "order": 1, "content": html}], metadata=meta)
+    with ZipFile(BytesIO(data)) as zf:
+        chapter = next(n for n in zf.namelist() if n.endswith(".xhtml") and "nav" not in n)
+        xhtml = zf.read(chapter).decode()
+        opf = zf.read(next(n for n in zf.namelist() if n.endswith(".opf"))).decode()
+    head, body = xhtml.split("<body", 1)
+    assert "<style>.a{color:red}</style>" in head and "<style" not in body  # estilos solo en el head
+    assert 'role="log"' not in body and 'aria-live="polite"' in body
+    items = etree.fromstring(opf.encode()).iter("{http://www.idpf.org/2007/opf}item")
+    item = next(i for i in items if i.get("href") == chapter.rsplit("/", 1)[-1])
+    assert "svg" in item.get("properties", "").split()
+    assert "schema:educationalLevel" not in opf and "schema:audience" not in opf  # vacíos: se omiten
+    assert 'prefix="schema:' not in opf
