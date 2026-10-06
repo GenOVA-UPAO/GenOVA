@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 import {
   Select,
@@ -10,14 +12,6 @@ import {
 import { describedBy } from "../lib/described-by";
 import type { ProfileFormValues } from "../lib/types";
 import { FormField } from "./form-field";
-
-const PHONE_HINT = "Con prefijo de país, por ejemplo +51987285992.";
-
-const GENDER_OPTIONS = [
-  { value: "masculino", label: "Masculino" },
-  { value: "femenino", label: "Femenino" },
-  { value: "otro", label: "Otro o prefiero no decirlo" },
-];
 
 interface ProfileContactFieldsProps {
   values: ProfileFormValues;
@@ -34,11 +28,19 @@ export function ProfileContactFields({
   onBlur,
   disabled,
 }: Readonly<ProfileContactFieldsProps>) {
+  const { t } = useTranslation("profile");
   const phoneError = errorFor("phone_number");
+  const phoneHint = t("fields.phoneHint");
+
+  const genderOptions = [
+    { value: "masculino", label: t("fields.genderMale") },
+    { value: "femenino", label: t("fields.genderFemale") },
+    { value: "otro", label: t("fields.genderOther") },
+  ];
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-      <FormField id="gender" label="Sexo">
+      <FormField id="gender" label={t("fields.gender")}>
         <Select
           value={values.gender}
           disabled={disabled}
@@ -50,7 +52,7 @@ export function ProfileContactFields({
             <SelectValue />
           </SelectTrigger>
           <SelectContent position="popper">
-            {GENDER_OPTIONS.map((option) => (
+            {genderOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -59,7 +61,7 @@ export function ProfileContactFields({
         </Select>
       </FormField>
 
-      <FormField id="phoneNumber" label="Teléfono de contacto" hint={PHONE_HINT} error={phoneError}>
+      <FormField id="phoneNumber" label={t("fields.phone")} hint={phoneHint} error={phoneError}>
         <Input
           id="phoneNumber"
           type="tel"
@@ -67,7 +69,7 @@ export function ProfileContactFields({
           value={values.phone_number}
           disabled={disabled}
           aria-invalid={phoneError ? true : undefined}
-          aria-describedby={describedBy("phoneNumber", phoneError, PHONE_HINT)}
+          aria-describedby={describedBy("phoneNumber", phoneError, phoneHint)}
           onChange={(event) => {
             onChange("phone_number", event.target.value);
           }}

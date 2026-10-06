@@ -1,6 +1,6 @@
-import { catalogResourceNames } from "./resource-previews";
+import i18n, { type TFunction } from "i18next";
 
-const CATALOG = catalogResourceNames();
+import { localizedCatalogName } from "./resource-previews";
 
 function lowerWord(word: string): string {
   // Siglas (FAQ) se quedan como están; el resto en minúscula, también tras guion.
@@ -14,9 +14,10 @@ function lowerWord(word: string): string {
  * cambia cómo se leen. Solo se tocan los nombres del catálogo: un título propio
  * («Ley de Ohm en circuitos») se deja tal cual para no romper nombres propios.
  */
-export function resourceDisplayName(name: string): string {
-  if (!CATALOG.has(name)) return name;
-  const [first = "", ...rest] = name.split(" ");
+export function resourceDisplayName(name: string, t: TFunction = i18n.t): string {
+  const localized = localizedCatalogName(name, t);
+  if (!localized) return name;
+  const [first = "", ...rest] = localized.split(" ");
   const tail = rest.map((word) => word.split("-").map(lowerWord).join("-"));
   const head = first.split("-").map((part, index) => (index === 0 ? part : lowerWord(part))).join("-");
   return [head, ...tail].join(" ");

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { useNodesConfig } from "../hooks/use-nodes-config";
 import { hasUnsavedChanges } from "../lib/nodes-config-draft";
 import { NodesCardBody } from "./nodes-card-body";
@@ -5,6 +7,7 @@ import { PlatformSection } from "./platform-section";
 import { SaveCardButton } from "./save-card-button";
 
 export function PlatformNodesCard() {
+  const { t } = useTranslation("llm-settings");
   const nodes = useNodesConfig();
   const list = nodes.data.nodes ?? [];
   const configurable = list.filter((item) => item.configurable);
@@ -14,8 +17,8 @@ export function PlatformNodesCard() {
   return (
     <PlatformSection
       testId="platform-nodes"
-      title="Nodos del orquestador"
-      description="Activa o pausa los agentes que intervienen al generar un OVA. Los cambios tardan unos 30 segundos en aplicarse."
+      title={t("nodes.title")}
+      description={t("nodes.description")}
       action={
         <SaveCardButton
           disabled={!hasChanges}
@@ -24,7 +27,7 @@ export function PlatformNodesCard() {
             if (!nodes.draft) return;
             void nodes.save(
               { ...nodes.draft, ova_reflection_rounds: String(nodes.rounds) },
-              "Configuración de nodos guardada.",
+              t("nodes.saved"),
             );
           }}
         />

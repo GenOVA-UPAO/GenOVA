@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -30,8 +31,8 @@ describe("lti-platform-form", () => {
 
   it("explica cómo arreglar cada campo vacío o mal escrito", () => {
     const errors = validateLtiForm({ ...emptyLtiForm(), jwks_url: "certs.php" });
-    expect(errors.name).toMatch(/Escribe un nombre/);
-    expect(errors.deployment_ids).toBe("Indica al menos un Deployment ID.");
-    expect(errors.jwks_url).toBe("Pega la URL completa (https://…).");
+    expect(i18n.t(errors.name ?? "")).toMatch(/Escribe un nombre/);
+    expect(i18n.t(errors.deployment_ids ?? "")).toBe("Indica al menos un Deployment ID.");
+    expect(i18n.t(errors.jwks_url ?? "")).toBe("Pega la URL completa (https://…).");
   });
 });

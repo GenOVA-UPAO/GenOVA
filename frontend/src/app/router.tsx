@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { Fragment } from "react";
 import {
   createBrowserRouter,
@@ -26,10 +27,10 @@ const page = (load: () => Loaded, name: string) => async () => ({
   Component: ((await load()) as Record<string, React.ComponentType>)[name],
 });
 
-const guest = (path: string, title: string, lazy: RouteObject["lazy"]): RouteObject => ({
+const guest = (path: string, titleKey: string, lazy: RouteObject["lazy"]): RouteObject => ({
   path,
   loader: requireGuest,
-  handle: { title } satisfies RouteHandle,
+  handle: { get title() { return i18n.t(titleKey); } } satisfies RouteHandle,
   lazy,
 });
 
@@ -51,21 +52,21 @@ export const routes: RouteObject[] = [
     HydrateFallback: AppSplash,
     errorElement: <RouteError />,
     children: [
-      guest("/login", "Iniciar sesión", page(pageLoaders.login, "LoginPage")),
-      guest("/register", "Crear cuenta", page(pageLoaders.register, "RegisterPage")),
+      guest("/login", "shell:iniciar_sesion", page(pageLoaders.login, "LoginPage")),
+      guest("/register", "shell:crear_cuenta", page(pageLoaders.register, "RegisterPage")),
       guest(
         "/forgot-password",
-        "Recuperar contraseña",
+        "shell:recuperar_contrasena",
         page(pageLoaders.forgotPassword, "ForgotPasswordPage"),
       ),
       guest(
         "/reset-password",
-        "Restablecer contraseña",
+        "shell:restablecer_contrasena",
         page(pageLoaders.resetPassword, "ResetPasswordPage"),
       ),
       {
         path: "/verify-email",
-        handle: { title: "Verificar correo" } satisfies RouteHandle,
+        handle: { get title() { return i18n.t("shell:verificar_correo"); } } satisfies RouteHandle,
         lazy: page(pageLoaders.verifyEmail, "VerifyEmailPage"),
       },
       // Legacy Spanish URLs (emails already sent link here).
@@ -84,22 +85,22 @@ export const routes: RouteObject[] = [
           { index: true, Component: Fragment, loader: () => redirect("/dashboard") },
           {
             path: "dashboard",
-            handle: { title: "Dashboard" },
+            handle: { get title() { return i18n.t("shell:dashboard"); } },
             loader: dashboardLoader,
             lazy: page(pageLoaders.dashboard, "DashboardPage"),
           },
           {
             path: "mis-ovas",
-            handle: { title: "Biblioteca de OVAs" },
+            handle: { get title() { return i18n.t("shell:biblioteca_de_ovas"); } },
             lazy: page(pageLoaders.misOvas, "MisOvasPage"),
           },
           {
             path: "papelera",
-            handle: { title: "Papelera" },
+            handle: { get title() { return i18n.t("shell:papelera"); } },
             lazy: page(pageLoaders.papelera, "PapeleraPage"),
           },
           redirectRoute("crear-ova", "/crear"),
-          { path: "crear", handle: { title: "Crear OVA", fullBleed: true }, lazy: workspace },
+          { path: "crear", handle: { get title() { return i18n.t("shell:crear_ova"); }, fullBleed: true }, lazy: workspace },
           redirectRoute("ova/:id/workspace", ({ params }) => `/workspace/${String(params.id)}`),
           redirectRoute(
             "ova/job/:jobId/workspace",
@@ -107,43 +108,43 @@ export const routes: RouteObject[] = [
           ),
           {
             path: "workspace/:id",
-            handle: { title: "Editor de OVA", fullBleed: true },
+            handle: { get title() { return i18n.t("shell:editor_de_ova"); }, fullBleed: true },
             lazy: workspace,
           },
           {
             path: "profile",
-            handle: { title: "Mi perfil" },
+            handle: { get title() { return i18n.t("shell:mi_perfil"); } },
             lazy: page(pageLoaders.profile, "ProfilePage"),
           },
           {
             path: "analytics",
-            handle: { title: "Analítica" },
+            handle: { get title() { return i18n.t("shell:analitica"); } },
             lazy: page(pageLoaders.analytics, "AnalyticsPage"),
           },
           redirectRoute("modelos", "/models"),
           redirectRoute("fallback", "/models"),
           {
             path: "models",
-            handle: { title: "Modelos de IA" },
+            handle: { get title() { return i18n.t("shell:modelos_de_ia"); } },
             lazy: page(pageLoaders.models, "ModelsPage"),
           },
           {
             path: "admin",
             loader: requireAdmin,
-            handle: { title: "Usuarios" },
+            handle: { get title() { return i18n.t("shell:usuarios"); } },
             lazy: page(pageLoaders.adminUsers, "AdminUsersPage"),
           },
           redirectRoute("admin/users", "/admin"),
           {
             path: "admin/roles",
             loader: requireAdmin,
-            handle: { title: "Gestión de roles" },
+            handle: { get title() { return i18n.t("shell:gestion_de_roles"); } },
             lazy: page(pageLoaders.adminRoles, "AdminRolesPage"),
           },
           {
             path: "admin/lti",
             loader: requireAdmin,
-            handle: { title: "Integración LTI" },
+            handle: { get title() { return i18n.t("lti:title"); } },
             lazy: page(pageLoaders.adminLti, "AdminLtiPage"),
           },
           redirectRoute("admin/platform", "/models"),
@@ -152,18 +153,18 @@ export const routes: RouteObject[] = [
       {
         path: "/explore",
         loader: requireAuth,
-        handle: { title: "Fase Explore" } satisfies RouteHandle,
+        handle: { get title() { return i18n.t("shell:fase_explore"); } } satisfies RouteHandle,
         lazy: page(pageLoaders.explore, "ExplorePage"),
       },
       {
         path: "/engage/:id",
         loader: requireAuth,
-        handle: { title: "Fase Engage" } satisfies RouteHandle,
+        handle: { get title() { return i18n.t("shell:fase_engage"); } } satisfies RouteHandle,
         lazy: page(pageLoaders.engage, "EngagePage"),
       },
       {
         path: "*",
-        handle: { title: "Página no encontrada" } satisfies RouteHandle,
+        handle: { get title() { return i18n.t("shell:pagina_no_encontrada"); } } satisfies RouteHandle,
         lazy: page(pageLoaders.notFound, "NotFoundPage"),
       },
     ],

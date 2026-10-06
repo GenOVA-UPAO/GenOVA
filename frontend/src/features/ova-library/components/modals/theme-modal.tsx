@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { authStore } from "@/core/auth/auth-store";
 import { Button } from "@/core/components/ui/button";
@@ -45,7 +46,9 @@ function rememberTheme(theme: ThemeState) {
 
 /** Foco inicial en la opción marcada (no en la primera, que las flechas cambiarían sin querer). */
 function focusCheckedOption(event: Event) {
-  const checked = (event.target as HTMLElement).querySelector<HTMLInputElement>("input[type=radio]:checked");
+  const checked = (event.target as HTMLElement).querySelector<HTMLInputElement>(
+    "input[type=radio]:checked",
+  );
   if (!checked) return;
   event.preventDefault();
   checked.focus();
@@ -53,6 +56,7 @@ function focusCheckedOption(event: Event) {
 
 /** Modal «Estilo de mis OVAs»: colores y diseño con los que se generan los OVAs. */
 export function ThemeModal({ initialTheme, onClose, onSaved }: Readonly<ThemeModalProps>) {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<ThemeState>(() => resolveInitialTheme(initialTheme));
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -66,7 +70,7 @@ export function ThemeModal({ initialTheme, onClose, onSaved }: Readonly<ThemeMod
       onSaved?.(theme);
       onClose();
     } catch {
-      setSaveError("No se pudo guardar el estilo. Inténtalo de nuevo.");
+      setSaveError(t("ova-library:no_se_pudo_guardar_el_estilo_intentalo_de_nuevo"));
     } finally {
       setSaving(false);
     }
@@ -82,17 +86,21 @@ export function ThemeModal({ initialTheme, onClose, onSaved }: Readonly<ThemeMod
   };
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open && !saving) onClose(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !saving) onClose();
+      }}
+    >
       <DialogContent
         className="flex max-h-[min(90dvh,48rem)] flex-col gap-0 p-0 sm:max-w-2xl"
         showCloseButton={!saving}
         onOpenAutoFocus={focusCheckedOption}
       >
         <DialogHeader className="border-b border-border px-5 py-4 pr-12">
-          <DialogTitle>Estilo de mis OVAs</DialogTitle>
+          <DialogTitle>{t("ova-library:estilo_de_mis_ovas")}</DialogTitle>
           <DialogDescription>
-            Colores y diseño con los que empieza cada OVA nuevo. Al crearlo puedes cambiarlos
-            solo para ese OVA.
+            {t("ova-library:colores_y_diseno_con_los_que_empieza_cada_ova_nuevo_al_crearlo_puedes_cambiarlos_solo_para")}
           </DialogDescription>
         </DialogHeader>
 
@@ -119,10 +127,10 @@ export function ThemeModal({ initialTheme, onClose, onSaved }: Readonly<ThemeMod
             </p>
           )}
           <Button variant="outline" onClick={onClose} disabled={saving}>
-            Cancelar
+            {t("ova-library:cancelar")}{" "}
           </Button>
           <Button loading={saving} onClick={() => { void handleSave(); }}>
-            {saving ? "Guardando…" : "Guardar estilo"}
+            {saving ? t("ova-library:guardando") : t("ova-library:guardar_estilo")}
           </Button>
         </DialogFooter>
       </DialogContent>

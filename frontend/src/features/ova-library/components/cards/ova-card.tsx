@@ -1,7 +1,10 @@
+import { useTranslation } from "react-i18next";
+
 import { useCurrentUser } from "@/core/auth/auth-store";
 import { Checkbox } from "@/core/components/ui/checkbox";
 import type { ExportFormatId } from "@/core/export/lib/formats";
 import { cn } from "@/core/lib/cn";
+import { licenseLabel } from "@/core/lib/educational-metadata";
 
 import type { OvaJobInfo } from "../../lib/job-types";
 import {
@@ -48,8 +51,9 @@ export function OvaCard({
   onEditMetadata,
   onResume,
 }: Readonly<OvaCardProps>) {
+  const { t } = useTranslation();
   const isGenerating = ova.status === "generando";
-  const title = ova.title?.trim() ? ova.title : "Sin título";
+  const title = ova.title?.trim() ? ova.title : t("ova-library:sin_titulo");
   const description = meaningfulDescription(ova);
   const canEdit = isOwnOva(ova, useCurrentUser()?.id);
 
@@ -59,7 +63,9 @@ export function OvaCard({
       data-ova-id={ova.id}
       className={cn(
         "flex h-full flex-col rounded-xl border bg-card p-4 transition-[border-color,box-shadow] duration-200 hover:shadow-sm",
-        isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-foreground/20",
+        isSelected
+          ? "border-primary bg-primary/5 ring-1 ring-primary"
+          : "border-border hover:border-foreground/20",
         isMoving && "opacity-60",
       )}
     >
@@ -68,7 +74,7 @@ export function OvaCard({
           checked={isSelected}
           disabled={isGenerating}
           onCheckedChange={() => onToggleSelect?.(ova.id)}
-          aria-label={`Seleccionar ${title}`}
+          aria-label={t("ova-library:seleccionar_value", { p0: title })}
         />
         <div className="min-w-0 flex-1">
           <OvaCardBadges status={ova.status} version={visibleVersion(ova)} job={job} />
@@ -92,8 +98,8 @@ export function OvaCard({
             {description}
           </p>
         )}
-        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova)} />
-        {ova.license && <p className="text-xs text-muted-foreground">Licencia: {ova.license}</p>}
+        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova, undefined, t)} />
+        {ova.license && <p className="text-xs text-muted-foreground">{t("metadata:licenseSummary", { license: licenseLabel(ova.license, t) })}</p>}
       </div>
 
       <div className="mt-4 border-t border-border pt-3">

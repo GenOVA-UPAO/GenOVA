@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 /** «Guardar cambios» de una sección: solo aparece cuando hay algo que guardar. */
@@ -6,10 +8,12 @@ export function SaveCardButton({
   saving,
   onClick,
 }: Readonly<{ disabled: boolean; saving: boolean; onClick: () => void }>) {
+  const { t } = useTranslation("llm-settings");
   if (disabled && !saving) return null;
   return (
     <Button className="shrink-0 max-sm:h-11" loading={saving} onClick={onClick}>
-      Guardar cambios
+      {t("unsaved.save")}
     </Button>
   );
 }
+

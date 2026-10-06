@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/core/lib/cn";
 
@@ -24,6 +25,7 @@ function tabClass(active: boolean): string {
 
 /** Pestañas de recursos del visor: subrayado primario en la activa, scroll horizontal si no caben. */
 export function WorkspacePreviewTabs({ phases, labels, activeId, onSelect }: Readonly<Props>) {
+  const { t } = useTranslation();
   const strip = useRef<HTMLDivElement>(null);
   // Con «Anterior/Siguiente» la pestaña activa puede quedar fuera de la franja (móvil).
   useEffect(() => {
@@ -35,7 +37,7 @@ export function WorkspacePreviewTabs({ phases, labels, activeId, onSelect }: Rea
     else if (right > node.scrollLeft + node.clientWidth) node.scrollLeft = right - node.clientWidth;
   }, [activeId]);
   return (
-    <nav aria-label="Recursos del OVA" className="min-w-0 shrink-0 border-b border-border">
+    <nav aria-label={t("workspace:recursos_del_ova")} className="min-w-0 shrink-0 border-b border-border">
       <div
         ref={strip}
         className="relative flex overflow-x-auto overscroll-x-contain px-1 [scrollbar-width:thin]"

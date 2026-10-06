@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -119,9 +120,9 @@ async function saveAllChanges(
     if (store.dirty) await store.save();
     dismissPendingChangesToast();
     // Con la config de plataforma, el aviso dice qué cambió y ofrece «Deshacer».
-    announce("Cambios guardados.", historyOf(adminRes));
+    announce(t("llm-settings:page.savedChanges"), historyOf(adminRes));
   } catch (err) {
-    toast.error(errorMessage(err, "No se pudo guardar."));
+    toast.error(errorMessage(err, t("llm-settings:api.saveError")));
   }
 }
 

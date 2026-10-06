@@ -1,6 +1,7 @@
 import { XIcon } from "@phosphor-icons/react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { useReturnFocus } from "@/core/components/ui/return-focus";
@@ -50,6 +51,7 @@ function DialogContent({
     showCloseButton?: boolean;
   }
 >) {
+  const { t } = useTranslation();
   const focusHandlers = useReturnFocus({ onOpenAutoFocus, onCloseAutoFocus });
   return (
     <DialogPortal>
@@ -68,7 +70,7 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button variant="ghost" className="absolute top-3 right-3" size="icon-sm">
               <XIcon weight="bold" />
-              <span className="sr-only">Cerrar</span>
+              <span className="sr-only">{t("shared:cerrar")}</span>
             </Button>
           </DialogPrimitive.Close>
         )}
@@ -89,6 +91,7 @@ function DialogFooter({
   children,
   ...props
 }: Readonly<ComponentProps<"div"> & { showCloseButton?: boolean }>) {
+  const { t } = useTranslation();
   return (
     <div
       data-slot="dialog-footer"
@@ -101,7 +104,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Cerrar</Button>
+          <Button variant="outline">{t("shared:cerrar")}</Button>
         </DialogPrimitive.Close>
       )}
     </div>

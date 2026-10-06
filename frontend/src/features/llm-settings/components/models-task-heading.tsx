@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { isMediaTask } from "../lib/llm-config-draft";
 import { FlagSwitch } from "./flag-switch";
 import { TASK_DESCS } from "./llm-task-row.helpers";
@@ -21,6 +23,8 @@ export function ModelsTaskHeading({
   isAdmin,
   onToggleGeneration,
 }: Readonly<ModelsTaskHeadingProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
@@ -30,13 +34,13 @@ export function ModelsTaskHeading({
       {isMediaTask(task) ? (
         <div className="flex shrink-0 items-center gap-2">
           <span className="text-sm text-muted-foreground" aria-hidden="true">
-            {generationOn ? "Activada" : "Desactivada"}
+            {generationOn ? t("tasks.enabled") : t("tasks.disabled")}
           </span>
           <FlagSwitch
             size="md"
             checked={generationOn}
             disabled={adminSaving || !isAdmin}
-            label={`Generación de ${label}`}
+            label={t("tasks.generationOf", { label })}
             onToggle={onToggleGeneration}
           />
         </div>

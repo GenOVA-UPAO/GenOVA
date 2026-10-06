@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 import type { LtiToolConfig } from "../../api/admin-lti.api";
@@ -11,16 +13,17 @@ interface LtiToolCardProps {
 
 /** Datos de GenOVA que el administrador del LMS pega al registrar la herramienta. */
 export function LtiToolCard({ tool, isLoading, error }: Readonly<LtiToolCardProps>) {
+  const { t } = useTranslation();
   return (
     <section
       aria-labelledby="lti-tool-title"
       className="rounded-xl border border-border bg-card p-5"
     >
       <h2 id="lti-tool-title" className="font-display text-xl font-semibold">
-        Datos de GenOVA para el LMS
+        {t("lti:toolTitle")}
       </h2>
       <p className="mt-1 max-w-[68ch] text-sm text-pretty text-muted-foreground">
-        Pégalos al añadir GenOVA como herramienta externa LTI 1.3 en Moodle, Canvas o Blackboard.
+        {t("lti:toolDescription")}
       </p>
       {isLoading && <Skeleton className="mt-4 h-40 w-full" />}
       {error !== null && (
@@ -32,24 +35,23 @@ export function LtiToolCard({ tool, isLoading, error }: Readonly<LtiToolCardProp
         <>
           {!tool.tool_url_configured && (
             <p role="note" className="mt-4 rounded-lg bg-muted px-3 py-2 text-sm">
-              Estas URLs salen de la dirección con la que entraste. En producción, define
-              LTI_TOOL_URL en el backend con su dirección pública.
+              {t("lti:toolUrlHint")}
             </p>
           )}
           <dl className="mt-2 divide-y divide-border">
             <ToolRow
-              label="URL de inicio de sesión"
-              hint="Initiate login URL"
+              label={t("lti:loginUrl")}
+              hint={t("lti:loginUrlHint")}
               value={tool.login_url}
             />
             <ToolRow
-              label="URL de redirección y de la herramienta"
-              hint="Redirection URI, Tool URL y Deep Linking"
+              label={t("lti:launchUrl")}
+              hint={t("lti:launchUrlHint")}
               value={tool.launch_url}
             />
             <ToolRow
-              label="URL del conjunto de claves"
-              hint="Public keyset URL (JWKS)"
+              label={t("lti:jwksUrl")}
+              hint={t("lti:jwksUrlHint")}
               value={tool.jwks_url}
             />
           </dl>

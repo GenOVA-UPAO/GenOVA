@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import i18n from "i18next";
 import { describe, expect, it, vi } from "vitest";
 
 import { PackageThemeSelector } from "./package-theme-selector";
@@ -17,6 +18,14 @@ const catalog = vi.hoisted(() => ({
 vi.mock("./use-package-themes", () => ({ usePackageThemes: () => catalog }));
 
 describe("PackageThemeSelector", () => {
+  it("traduce nombres del catálogo de API sin cambiar el identificador seleccionado", async () => {
+    render(<PackageThemeSelector value="oscuro" onChange={vi.fn()} />);
+    expect(screen.getByRole("option", { name: "Oscuro" })).toHaveValue("oscuro");
+    await act(() => i18n.changeLanguage("en"));
+    expect(screen.getByRole("combobox", { name: "Visual theme" })).toHaveValue("oscuro");
+    expect(screen.getByRole("option", { name: "Dark" })).toHaveValue("oscuro");
+    expect(screen.getByText("Learning together")).toBeVisible();
+  });
   it("ofrece selección accesible y una muestra del tema guardado", () => {
     const change = vi.fn();
     const { rerender } = render(<PackageThemeSelector value="upao" onChange={change} />);

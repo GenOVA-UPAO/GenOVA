@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -19,16 +21,15 @@ interface PlatformKeyActionsProps {
 }
 
 export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
+  const { t } = useTranslation();
   const { editing, configured, saving, label } = props;
   if (editing) {
     return (
       <div className="flex gap-2 sm:self-end">
         <Button variant="outline" className="flex-1 sm:flex-none" onClick={props.onCancel}>
-          Cancelar
-        </Button>
+          {t("shared:cancelar")} </Button>
         <Button className="flex-1 sm:flex-none" onClick={props.onSave} loading={saving}>
-          Guardar clave
-        </Button>
+          {t("shared:guardar_clave")} </Button>
       </div>
     );
   }
@@ -43,10 +44,9 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
           onClick={props.onCheck}
           disabled={saving}
           loading={props.checking}
-          aria-label={`Probar conexión con ${label}`}
+          aria-label={t("shared:probar_conexion_con_value", { p0: label })}
         >
-          Probar conexión
-        </Button>
+          {t("shared:probar_conexion")} </Button>
       )}
       <Button
         variant="outline"
@@ -57,21 +57,21 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
         disabled={saving}
         aria-label={
           configured
-            ? `Cambiar la clave de ${label}`
-            : `${actionLabel(configured, props.serverKey)} de ${label}`
+            ? t("shared:cambiar_la_clave_de_value", { p0: label })
+            : t("shared:value_de_value", { p0: t(actionLabel(configured, props.serverKey)), p1: label })
         }
       >
-        {actionLabel(configured, props.serverKey)}
+        {t(actionLabel(configured, props.serverKey))}
       </Button>
       {configured && (
-        <Tooltip label="Eliminar clave" side="top">
+        <Tooltip label={t("shared:eliminar_clave")} side="top">
           <Button
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive max-sm:size-11"
             onClick={props.onDelete}
             disabled={saving}
-            aria-label={`Eliminar clave de ${label}`}
+            aria-label={t("shared:eliminar_clave_de_value", { p0: label })}
           >
             <Icon name="trash" size="text-base" />
           </Button>
@@ -82,6 +82,6 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
 }
 
 function actionLabel(configured: boolean, serverKey: boolean): string {
-  if (configured) return "Cambiar";
-  return serverKey ? "Usar otra clave" : "Añadir clave";
+  if (configured) return "shared:cambiar";
+  return serverKey ? "shared:usar_otra_clave" : "shared:anadir_clave";
 }

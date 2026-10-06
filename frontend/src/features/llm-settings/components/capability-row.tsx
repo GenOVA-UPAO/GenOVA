@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { EngineNode } from "../hooks/nodes-config.types";
 import {
   MEDIA_STATE_LABELS,
@@ -24,6 +26,7 @@ interface CapabilityRowProps {
 }
 
 export function CapabilityRow({ cap, active, saving, media, onToggle }: Readonly<CapabilityRowProps>) {
+  const { t } = useTranslation("llm-settings");
   const title = (
     <>
       {cap.name}
@@ -38,7 +41,7 @@ export function CapabilityRow({ cap, active, saving, media, onToggle }: Readonly
         description={cap.description}
         control={
           <span className={TONE_CLASS[mediaStateTone(state)]}>
-            {state ? MEDIA_STATE_LABELS[state] : "Sin datos"}
+            {state ? MEDIA_STATE_LABELS[state] : t("catalog.noData")}
           </span>
         }
       >

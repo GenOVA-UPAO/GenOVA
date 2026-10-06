@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 import { ovaStatusLabel } from "@/core/lib/ova-status";
 
@@ -14,6 +16,7 @@ interface OvaStatusBadgeProps {
 }
 
 export function OvaStatusBadge({ status, className }: Readonly<OvaStatusBadgeProps>) {
+  const { t } = useTranslation();
   return (
     <span
       className={cn(
@@ -29,7 +32,7 @@ export function OvaStatusBadge({ status, className }: Readonly<OvaStatusBadgePro
           status === "generando" && "motion-safe:animate-pulse",
         )}
       />
-      {ovaStatusLabel(status)}
+      {ovaStatusLabel(status, t)}
     </span>
   );
 }

@@ -1,0 +1,255 @@
+{
+  "api": {
+    "roles": {
+      "load": "Couldn't load roles.",
+      "duplicate": "A role with that name already exists.",
+      "updateUnexpected": "An unexpected error occurred while updating the role.",
+      "createUnexpected": "An unexpected error occurred while creating the role.",
+      "deleteUnexpected": "An unexpected error occurred while deleting the role."
+    },
+    "registrationMode": {
+      "load": "Couldn't load registration mode.",
+      "save": "Couldn't save registration mode."
+    },
+    "users": {
+      "list": "Couldn't load user list.",
+      "updateRole": "Error updating role.",
+      "updateProfile": "Error updating profile.",
+      "updateStatus": "Error updating status.",
+      "unlock": "Error unlocking user.",
+      "sendEmail": "Error sending email."
+    }
+  },
+  "permissions": {
+    "groups": {
+      "ovas": "OVAs",
+      "admin": "Administration",
+      "ai": "AI Models",
+      "links": "Teachers and students"
+    },
+    "items": {
+      "createOva": {
+        "label": "Create OVAs",
+        "desc": "Can start and generate new virtual learning objects."
+      },
+      "viewOva": {
+        "label": "View OVAs",
+        "desc": "Can browse and view accessible OVAs."
+      },
+      "exportOva": {
+        "label": "Export OVAs",
+        "desc": "Can download OVAs as a SCORM package for virtual classrooms."
+      },
+      "manageUsers": {
+        "label": "Manage users",
+        "desc": "Can list, edit, and administer user accounts."
+      },
+      "manageRoles": {
+        "label": "Manage roles",
+        "desc": "Can create and modify roles and their permissions."
+      },
+      "viewAnalytics": {
+        "label": "View analytics",
+        "desc": "Can consult metrics and usage reports."
+      },
+      "modelsSelf": {
+        "label": "Configure own models",
+        "desc": "Can choose and adjust their own AI models."
+      },
+      "fallbackSelf": {
+        "label": "Configure own fallback models",
+        "desc": "Can choose fallback models when the primary fails."
+      },
+      "modelsPlatform": {
+        "label": "Configure platform models",
+        "desc": "Can choose AI models used platform-wide."
+      },
+      "link": {
+        "label": "Link users",
+        "desc": "Can generate codes to link students to their account."
+      },
+      "linkAdmin": {
+        "label": "Manage links",
+        "desc": "Can manage teacher-student links."
+      }
+    }
+  },
+  "roles": {
+    "title": "Role management",
+    "subtitle": "Decide what each user profile can do in GenOVA.",
+    "newRole": "New role",
+    "loadError": "Couldn't load roles",
+    "emptyTitle": "No roles yet",
+    "emptyDescription": "Create a role to decide what each user profile can do in GenOVA.",
+    "loading": "Loading roles",
+    "listLabel": "Roles",
+    "systemBadge": "System",
+    "thesisHint": "Thesis mode assigns this to new accounts, so it cannot be deleted.",
+    "systemHint": "System roles cannot be edited or deleted.",
+    "editPermissions": "Edit permissions",
+    "delete": "Delete",
+    "noPermissions": "No permissions assigned",
+    "permissionsLabel": "Permissions",
+    "form": {
+      "createTitle": "New role",
+      "editTitle": "Edit role \"{{name}}\"",
+      "thesisHint": "Thesis mode assigns this role by name, so it cannot be changed.",
+      "createDescription": "Give it a name and select what its users will be able to do.",
+      "editDescription": "Adjust description or permissions. Users with this role will see changes upon reload.",
+      "nameLabel": "Role name",
+      "nameHint": "A short and unique name, for example \"teacher\".",
+      "descriptionLabel": "Description (optional)",
+      "nameRequired": "Enter a name for the role.",
+      "nameMaxLength": "The name cannot exceed 64 characters.",
+      "permissionsSection": "Permissions",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "create": "Create role",
+      "saving": "Saving…",
+      "creating": "Creating…"
+    },
+    "deleteModal": {
+      "title": "Delete role \"{{name}}\"?",
+      "zeroUsers": "No users have this role, so no one will lose access. This action cannot be undone.",
+      "hasUsers": "This role has {{count}} assigned users. Choose which role they will move to before deleting. This action cannot be undone.",
+      "targetLabel": "Move users to",
+      "placeholder": "Choose a role",
+      "selectTargetError": "Choose which role its users will move to.",
+      "cancel": "Cancel",
+      "confirm": "Delete role",
+      "deleting": "Deleting…",
+      "reassignAndConfirm": "Reassign and delete"
+    },
+    "toast": {
+      "created": "Role created successfully",
+      "updated": "Role updated successfully",
+      "deleted": "Role deleted successfully"
+    },
+    "connectError": "Couldn't connect to server. Try again.",
+    "utils": {
+      "noRole": "No role",
+      "noUsers": "No users",
+      "userCount_one": "1 user",
+      "userCount_other": "{{count}} users"
+    }
+  },
+  "thesis": {
+    "title": "Thesis mode",
+    "enabledDesc": "Enabled: registered accounts receive the \"Trial users\" role, designed for study participants. Their permissions can be adjusted in the role list.",
+    "disabledDesc": "Disabled: registered accounts receive the \"User\" role, with full access. Turn this on during the thesis study."
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Accounts registered on the platform",
+    "subtitleLoading": "Loading users…",
+    "subtitleCount_one": "1 user registered on the platform",
+    "subtitleCount_other": "{{count}} users registered on the platform",
+    "loadError": "Couldn't load users",
+    "loading": "Loading users",
+    "toolbar": {
+      "searchPlaceholder": "Search by name or email",
+      "filterRoleLabel": "Filter users by role",
+      "allRoles": "All roles"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "identity": {
+      "noName": "No name",
+      "you": "You",
+      "code": "Code"
+    },
+    "roleSelect": {
+      "noRole": "No role",
+      "roleLabel": "Role for {{name}}"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "locked": "Locked",
+      "lockedUntil": "Locked until {{date}}"
+    },
+    "row": {
+      "ownAccountHint": "Your own account cannot be modified from here",
+      "adminOnlyHint": "Only an administrator can modify this account"
+    },
+    "actions": {
+      "moreActions": "More actions",
+      "moreActionsFor": "More actions for {{name}}",
+      "editProfile": "Edit profile",
+      "resetPasswordEmail": "Reset via email",
+      "unlockAccount": "Unlock account",
+      "deactivateAccount": "Deactivate account",
+      "activateAccount": "Activate account",
+      "notAvailable": "Actions unavailable."
+    },
+    "empty": {
+      "filterTitle": "No results",
+      "filterDesc": "No matches found for that criteria.",
+      "clearFilters": "Clear filters",
+      "emptyTitle": "No users",
+      "emptyDesc": "When users register on the platform, they will appear here."
+    },
+    "pagination": {
+      "ariaLabel": "User pagination",
+      "page": "Page",
+      "of": "of",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "editModal": {
+      "title": "Edit profile",
+      "cancel": "Cancel",
+      "save": "Save changes"
+    },
+    "editFields": {
+      "fullName": "Full name",
+      "email": "Email address",
+      "universityId": "University ID (UPAO)",
+      "universityIdHint": "Numbers only, no spaces or hyphens.",
+      "gender": "Gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderOther": "Other or prefer not to say",
+      "phone": "Contact phone",
+      "phoneHint": "Include country code, for example +51987285992."
+    },
+    "resetModal": {
+      "title": "Send {{name}} an email to reset their password?",
+      "description": "A link to choose a new password, valid for 24 hours, will be sent to {{email}}.",
+      "cancel": "Cancel",
+      "confirm": "Send email"
+    },
+    "deactivateModal": {
+      "activateTitle": "Activate account for {{name}}?",
+      "activateDesc": "They will be able to log in again with their email and password.",
+      "activateConfirm": "Activate account",
+      "activating": "Activating…",
+      "deactivateTitle": "Deactivate account for {{name}}?",
+      "deactivateDesc": "They will not be able to log in until you reactivate it. Their OVAs and data will be kept.",
+      "deactivateConfirm": "Deactivate account",
+      "deactivating": "Deactivating…",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "roleUpdated": "User role updated.",
+      "profileUpdated": "Profile updated.",
+      "userActivated": "User activated.",
+      "userDeactivated": "User deactivated.",
+      "userUnlocked": "User unlocked.",
+      "resetEmailSent": "Reset email on its way.",
+      "loadError": "Error loading users."
+    },
+    "validation": {
+      "fullNameRequired": "Full name is required.",
+      "fullNameMin": "The name must be at least 3 characters long.",
+      "emailInvalid": "Enter a valid email address.",
+      "universityIdDigits": "The ID must contain numbers only.",
+      "universityIdMin": "The ID must be 1 or greater.",
+      "phoneFormat": "The phone number can only contain digits and the + sign."
+    }
+  }
+}

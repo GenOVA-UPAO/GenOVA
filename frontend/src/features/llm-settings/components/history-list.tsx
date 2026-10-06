@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
 
@@ -14,22 +16,23 @@ export function HistoryList({
   history: ReturnType<typeof useConfigHistory>;
   onRestore: (entry: HistoryEntry, undo: boolean) => void;
 }>) {
+  const { t } = useTranslation("llm-settings");
   if (history.loading) return <ModelsSheetSkeleton />;
   if (history.error) {
-    return <QueryErrorState title="No se pudo cargar el historial." onRetry={history.refetch} />;
+    return <QueryErrorState title={t("api.loadHistoryError")} onRetry={history.refetch} />;
   }
   if (history.entries.length === 0) {
     return (
       <EmptyState
         icon="clock-counter-clockwise"
-        title="Todavía no hay cambios"
-        description="Cuando guardes la configuración de modelos verás aquí quién la cambió, cuándo y qué modelos cambiaron."
+        title={t("history.emptyTitle")}
+        description={t("history.emptyDesc")}
         className="py-10"
       />
     );
   }
   return (
-    <ol className="divide-y divide-border" aria-label="Cambios, del más reciente al más antiguo">
+    <ol className="divide-y divide-border" aria-label={t("history.ariaList")}>
       {history.entries.map((entry, index) => (
         <HistoryEntryRow
           key={entry.id}

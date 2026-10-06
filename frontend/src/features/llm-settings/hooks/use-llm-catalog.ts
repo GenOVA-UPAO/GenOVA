@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -42,7 +43,7 @@ export function useLlmCatalog(enabled: boolean) {
     catalogFull: flattenCatalog(query.data?.pages),
     loading: query.isLoading,
     loadingMore: query.isFetchingNextPage,
-    error: query.error ? errorMessage(query.error, "No se pudo cargar la configuración.") : "",
+    error: query.error ? errorMessage(query.error, t("llm-settings:api.loadConfigError")) : "",
     refetch: () => {
       void query.refetch();
     },
@@ -89,13 +90,17 @@ async function retryCatalogRefresh(
     // Sin esto, si el proveedor seguía caído el aviso no cambiaba y parecía que
     // «Reintentar» no había hecho nada.
     const still = stillFailing(result);
-    if (still.length === 0) toast.success("Catálogo actualizado.");
+    if (still.length === 0) toast.success(t("llm-settings:catalog.refreshed"));
     else {
-      const verb = still.length === 1 ? "sigue" : "siguen";
-      toast.error(`${joinList(still.map(providerLabel))} ${verb} sin responder.`);
+      toast.error(
+        t("llm-settings:catalog.stillFailing", {
+          count: still.length,
+          providers: joinList(still.map(providerLabel)),
+        }),
+      );
     }
   } catch (err) {
-    toast.error(errorMessage(err, "No se pudo actualizar el catálogo."));
+    toast.error(errorMessage(err, t("llm-settings:api.refreshCatalogError")));
   } finally {
     setRefreshing(false);
   }

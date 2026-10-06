@@ -2,39 +2,39 @@ import type { LtiPlatformField } from "./lti-platform-form";
 
 export interface LtiFieldSpec {
   field: LtiPlatformField;
-  label: string;
+  labelKey: string;
   /** Nombre del campo en la pantalla del LMS (Moodle: «Detalles de configuración»). */
-  help: string;
+  helpKey: string;
   multiline?: boolean;
   type?: "text" | "url";
 }
 
 export const LTI_FIELDS: readonly LtiFieldSpec[] = [
-  { field: "name", label: "Nombre", help: "Para reconocerla aquí, por ejemplo «Moodle UPAO»." },
-  { field: "issuer", label: "Issuer", help: "En Moodle: «ID de la plataforma».", type: "url" },
-  { field: "client_id", label: "Client ID", help: "En Moodle: «ID de cliente»." },
+  { field: "name", labelKey: "lti:fields.name.label", helpKey: "lti:fields.name.help" },
+  { field: "issuer", labelKey: "lti:fields.issuer.label", helpKey: "lti:fields.issuer.help", type: "url" },
+  { field: "client_id", labelKey: "lti:fields.client_id.label", helpKey: "lti:fields.client_id.help" },
   {
     field: "deployment_ids",
-    label: "Deployment IDs",
-    help: "En Moodle: «ID de despliegue». Uno por línea si hay varios.",
+    labelKey: "lti:fields.deployment_ids.label",
+    helpKey: "lti:fields.deployment_ids.help",
     multiline: true,
   },
   {
     field: "auth_login_url",
-    label: "URL de autenticación",
-    help: "En Moodle: «URL de solicitud de autenticación».",
+    labelKey: "lti:fields.auth_login_url.label",
+    helpKey: "lti:fields.auth_login_url.help",
     type: "url",
   },
   {
     field: "auth_token_url",
-    label: "URL del token de acceso",
-    help: "En Moodle: «URL del token de acceso».",
+    labelKey: "lti:fields.auth_token_url.label",
+    helpKey: "lti:fields.auth_token_url.help",
     type: "url",
   },
   {
     field: "jwks_url",
-    label: "URL del conjunto de claves públicas",
-    help: "En Moodle: «URL del conjunto de claves públicas».",
+    labelKey: "lti:fields.jwks_url.label",
+    helpKey: "lti:fields.jwks_url.help",
     type: "url",
   },
 ];

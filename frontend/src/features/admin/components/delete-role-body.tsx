@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Label } from "@/core/components/ui/label";
 import {
   Select,
@@ -27,13 +29,13 @@ export function DeleteRoleBody({
   isDeleting,
   onReassignChange,
 }: Readonly<DeleteRoleBodyProps>) {
+  const { t } = useTranslation("admin");
   const userCount = role.user_count ?? 0;
 
   if (userCount === 0) {
     return (
       <p id="delete-role-desc" className="text-sm text-muted-foreground">
-        Ningún usuario tiene este rol, así que nadie perderá acceso. Esta acción no se puede
-        deshacer.
+        {t("roles.deleteModal.zeroUsers")}
       </p>
     );
   }
@@ -41,11 +43,10 @@ export function DeleteRoleBody({
   return (
     <div className="space-y-4">
       <p id="delete-role-desc" className="text-sm text-muted-foreground">
-        Este rol tiene {userCount === 1 ? "1 usuario asignado" : `${String(userCount)} usuarios asignados`}.
-        Elige a qué rol pasarán antes de eliminarlo. Esta acción no se puede deshacer.
+        {t("roles.deleteModal.hasUsers", { count: userCount })}
       </p>
       <div className="space-y-2">
-        <Label htmlFor="reassign-role-select">Pasar sus usuarios a</Label>
+        <Label htmlFor="reassign-role-select">{t("roles.deleteModal.targetLabel")}</Label>
         <Select
           value={reassignRoleId === "" ? undefined : reassignRoleId}
           disabled={isDeleting}
@@ -57,7 +58,7 @@ export function DeleteRoleBody({
             aria-invalid={reassignError === "" ? undefined : true}
             aria-describedby={reassignError === "" ? undefined : "reassign-role-error"}
           >
-            <SelectValue placeholder="Elige un rol" />
+            <SelectValue placeholder={t("roles.deleteModal.placeholder")} />
           </SelectTrigger>
           <SelectContent position="popper">
             {roles

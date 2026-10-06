@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { apiFetch, apiJson } from "@/core/lib/http";
 
 /** Plataforma LMS registrada para LTI 1.3 (Moodle, Canvas, Blackboard…). */
@@ -32,7 +34,7 @@ export function fetchLtiTool(): Promise<LtiToolConfig> {
   return apiJson<LtiToolConfig>(
     `${BASE}/tool`,
     {},
-    { fallbackMsg: "No se pudieron cargar los datos de GenOVA para el LMS." },
+    { fallbackMsg: i18n.t("lti:errors.tool") },
   );
 }
 
@@ -40,7 +42,7 @@ export function fetchLtiPlatforms(): Promise<LtiPlatform[]> {
   return apiJson<LtiPlatform[]>(
     `${BASE}/platforms`,
     {},
-    { fallbackMsg: "No se pudieron cargar las plataformas LTI." },
+    { fallbackMsg: i18n.t("lti:errors.platforms") },
   );
 }
 
@@ -51,12 +53,12 @@ export function saveLtiPlatform(
   return apiJson<LtiPlatform>(
     platformId ? `${BASE}/platforms/${platformId}` : `${BASE}/platforms`,
     { method: platformId ? "PUT" : "POST", body: JSON.stringify(payload) },
-    { fallbackMsg: "No se pudo guardar la plataforma." },
+    { fallbackMsg: i18n.t("lti:errors.save") },
   );
 }
 
 export async function deleteLtiPlatform(platformId: string): Promise<void> {
   const response = await apiFetch(`${BASE}/platforms/${platformId}`, { method: "DELETE" });
   if (response.status === 204) return;
-  throw new Error("No se pudo eliminar la plataforma.");
+  throw new Error(i18n.t("lti:errors.delete"));
 }

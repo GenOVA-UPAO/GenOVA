@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PlatformKeyActions } from "./platform-key-actions";
 import { PlatformKeyDeleteConfirm } from "./platform-key-delete-confirm";
@@ -22,6 +23,7 @@ export function PlatformKeyRow({
   maskedValue,
   serverKey = false,
 }: Readonly<PlatformKeyRowProps>) {
+  const { t } = useTranslation();
   const masked = maskedValue ?? "";
   const configured = masked !== "";
   const meta = providerMeta(provider);
@@ -59,7 +61,7 @@ export function PlatformKeyRow({
       {editing && (
         <div className="flex flex-col gap-2 sm:flex-row">
           <PlatformKeyInput
-            label={`Nueva clave de ${meta.label}`}
+            label={t("shared:nueva_clave_de_value", { p0: meta.label })}
             value={draft ?? ""}
             placeholder={meta.placeholder}
             ref={inputRef}

@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import i18n from "i18next";
 import { describe, expect, it, vi } from "vitest";
 
 import { EditMetadataModal } from "./edit-metadata-modal";
@@ -9,6 +10,25 @@ vi.mock("@/core/package-themes/use-package-themes", () => ({
 }));
 
 describe("metadatos educativos del OVA", () => {
+  it("traduce licencia, ayudas y errores ya visibles conservando los valores del API", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<EditMetadataModal initial={{ title: "Curso", license: "Todos los derechos reservados", typical_learning_time: "incorrecto" }} onSave={onSave} onCancel={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Usa PT30M");
+    await act(() => i18n.changeLanguage("en"));
+    expect(i18n.t("metadata:licenses.reservedLabel")).toBe("All rights reserved");
+    expect(screen.getByRole("dialog", { name: "Edit OVA metadata" })).toBeVisible();
+    expect(screen.getByLabelText("License")).toHaveValue("Todos los derechos reservados");
+    expect(screen.getByRole("option", { name: "All rights reserved" })).toBeVisible();
+    expect(screen.getByText("Reuse requires permission from the rights holder.")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("Use PT30M");
+    const duration = screen.getByLabelText("Typical learning time");
+    await user.clear(duration);
+    await user.type(duration, "PT30M");
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ license: "Todos los derechos reservados", typical_learning_time: "PT30M" }));
+  });
   it("carga los valores actuales y guarda licencia y datos educativos", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();

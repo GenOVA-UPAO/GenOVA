@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { exportOva } from "@/core/export/api/ova-export.api";
 import { apiFetch, apiJson, HttpError } from "@/core/lib/http";
 
@@ -33,7 +35,7 @@ export async function downloadOvaScorm(ovaId: string): Promise<Blob> {
   const response = await apiFetch(`/api/ovas/${ovaId}/export-scorm`);
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { message?: string; detail?: string } | null;
-    throw new HttpError(body?.message ?? body?.detail ?? "Error al exportar SCORM", { status: response.status, body });
+    throw new HttpError(body?.message ?? body?.detail ?? i18n.t("workspace:error_al_exportar_scorm"), { status: response.status, body });
   }
   return response.blob();
 }
@@ -88,7 +90,7 @@ export function confirmPhaseBlocks(
 ): Promise<ConfirmResponse> {
   return apiJson(`/api/ovas/${ovaId}/phases/${phaseId}/editor/confirm`, {
     method: "POST",
-    body: JSON.stringify({ instruction: instruction ?? "Edición en editor visual", blocks }),
+    body: JSON.stringify({ instruction: instruction ?? i18n.t("workspace:edicion_en_editor_visual"), blocks }),
   });
 }
 
@@ -101,4 +103,3 @@ export function recordEditorFeedback(
     body: JSON.stringify(payload),
   });
 }
-

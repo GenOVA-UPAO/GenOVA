@@ -1,5 +1,6 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import i18n from "i18next";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { LtiPlatform } from "../api/admin-lti.api";
@@ -72,6 +73,12 @@ describe("AdminLtiPage", () => {
     expect(saveMutate).not.toHaveBeenCalled();
     expect(within(dialog).getByLabelText("Nombre")).toHaveFocus();
     expect(within(dialog).getByText("Indica al menos un Deployment ID.")).toBeInTheDocument();
+    await act(() => i18n.changeLanguage("en"));
+    expect(screen.getByRole("dialog", { name: "Register LTI platform" })).toBeVisible();
+    expect(within(dialog).getByLabelText("Name")).toHaveFocus();
+    expect(within(dialog).getByText("Enter at least one Deployment ID.")).toBeVisible();
+    await user.type(within(dialog).getByLabelText("Issuer"), "https://moodle.upao.test");
+    expect(within(dialog).getByText("In Moodle: “Platform ID”.")).toBeVisible();
   });
 
   it("registra una plataforma con los datos normalizados", async () => {
@@ -109,5 +116,19 @@ describe("AdminLtiPage", () => {
     expect(screen.getByLabelText("Client ID")).toHaveValue("abc");
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
     expect(saveMutate.mock.calls[0][0]).toMatchObject({ id: "p1" });
+  });
+
+  it("traduce pantalla, contador y confirmación sin cambiar el nombre de la plataforma", async () => {
+    platformsQuery.data = [{ ...moodle, deployment_ids: ["1", "2"] }];
+    const user = userEvent.setup();
+    render(<AdminLtiPage />);
+    expect(screen.getByText(/2 despliegues/)).toBeVisible();
+    await act(() => i18n.changeLanguage("en"));
+    expect(screen.getByRole("heading", { name: "LTI integration" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Copy Login URL" })).toBeVisible();
+    expect(screen.getByText(/2 deployments/)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Delete Moodle UPAO" }));
+    expect(screen.getByRole("alertdialog", { name: "Delete “Moodle UPAO”?" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Delete platform" })).toBeDisabled();
   });
 });

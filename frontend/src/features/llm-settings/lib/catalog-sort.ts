@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { firstNonBlank } from "@/core/lib/text";
 
 import type { CatalogModel } from "./user-llm-settings.types";
@@ -23,17 +25,17 @@ export interface CatalogSortOption {
 }
 
 export const SORT_OPTIONS: CatalogSortOption[] = [
-  { key: "default", label: "Orden por defecto" },
-  { key: "price-asc", label: "Más baratos primero" },
-  { key: "price-desc", label: "Más caros primero" },
-  { key: "name-asc", label: "Nombre (A-Z)" },
-  { key: "context-desc", label: "Más contexto primero" },
+  { key: "default", get label() { return t("llm-settings:sort.default"); } },
+  { key: "price-asc", get label() { return t("llm-settings:sort.priceAsc"); } },
+  { key: "price-desc", get label() { return t("llm-settings:sort.priceDesc"); } },
+  { key: "name-asc", get label() { return t("llm-settings:sort.nameAsc"); } },
+  { key: "context-desc", get label() { return t("llm-settings:sort.contextDesc"); } },
 ];
 
 export const GROUP_OPTIONS: { key: "provider" | "type" | "modality"; label: string }[] = [
-  { key: "provider", label: "Por proveedor" },
-  { key: "type", label: "Por tipo de modelo" },
-  { key: "modality", label: "Por modalidad de entrada" },
+  { key: "provider", get label() { return t("llm-settings:groups.provider"); } },
+  { key: "type", get label() { return t("llm-settings:groups.type"); } },
+  { key: "modality", get label() { return t("llm-settings:groups.modality"); } },
 ];
 
 /**

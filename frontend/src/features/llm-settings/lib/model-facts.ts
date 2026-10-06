@@ -49,17 +49,15 @@ export interface ModelFacts {
   generates: "image" | "video" | null;
 }
 
-export const CAPABILITY_LABELS: Record<Capability, string> = {
-  vision: "Visión",
-  reasoning: "Razonamiento",
-  code: "Código",
-};
+import { t } from "i18next";
 
-export const CAPABILITY_HINTS: Record<Capability, string> = {
-  vision: "Entiende imágenes además de texto",
-  reasoning: "Piensa paso a paso antes de responder",
-  code: "Especializado en programar",
-};
+export const CAPABILITY_LABELS: Record<Capability, string> = new Proxy({} as Record<Capability, string>, {
+  get: (_, prop: string) => t(`llm-settings:facts.${prop}`),
+});
+
+export const CAPABILITY_HINTS: Record<Capability, string> = new Proxy({} as Record<Capability, string>, {
+  get: (_, prop: string) => t(`llm-settings:facts.${prop}Hint`),
+});
 
 export const CAPABILITY_ICONS: Record<Capability, string> = {
   vision: "eye",
@@ -183,13 +181,13 @@ export function priceSummary(facts: ModelFacts): string | null {
 
 /** Lo mismo, dicho entero para lectores de pantalla y títulos. */
 export function priceDescription(facts: ModelFacts): string {
-  if (facts.free) return "Gratis";
+  if (facts.free) return t("llm-settings:catalog.free");
   if (facts.media) return mediaPriceDescription(facts.media);
-  if (facts.variable) return "Precio variable según el modelo que elija el enrutador";
-  if (facts.input === null && facts.output === null) return "Precio no disponible";
-  const input = facts.input === null ? "desconocida" : formatUsd(facts.input);
-  const output = facts.output === null ? "desconocida" : formatUsd(facts.output);
-  return `Entrada ${input}, salida ${output} por millón de tokens`;
+  if (facts.variable) return t("llm-settings:facts.variablePricing");
+  if (facts.input === null && facts.output === null) return t("llm-settings:facts.unavailablePricing");
+  const input = facts.input === null ? t("llm-settings:facts.unknown") : formatUsd(facts.input);
+  const output = facts.output === null ? t("llm-settings:facts.unknown") : formatUsd(facts.output);
+  return t("llm-settings:facts.pricePerMillionTokens", { input, output });
 }
 
 /** Quita comas, puntos y espacios del final antes de poner «…». */

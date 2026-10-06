@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { z } from "zod";
 
 import type { AdminUser, UserEditPayload } from "./types";
@@ -43,19 +44,19 @@ export function validateUserForm(values: UserFormValues): UserFormErrors {
   const errors: UserFormErrors = {};
   // Mismos mensajes que el formulario de «Mi perfil».
   const fullName = values.full_name.trim();
-  if (fullName === "") errors.full_name = "El nombre completo es requerido.";
-  else if (fullName.length < 3) errors.full_name = "El nombre debe tener al menos 3 caracteres.";
+  if (fullName === "") errors.full_name = t("admin:users.validation.fullNameRequired");
+  else if (fullName.length < 3) errors.full_name = t("admin:users.validation.fullNameMin");
   if (!EMAIL_SCHEMA.safeParse(values.email.trim()).success) {
-    errors.email = "Ingresa un correo electrónico válido.";
+    errors.email = t("admin:users.validation.emailInvalid");
   }
   if (!/^\d*$/.test(values.university_id.trim())) {
-    errors.university_id = "El código solo debe contener números.";
+    errors.university_id = t("admin:users.validation.universityIdDigits");
   } else if (values.university_id.trim() !== "" && Number(values.university_id) < 1) {
-    errors.university_id = "El código debe ser mayor o igual a 1.";
+    errors.university_id = t("admin:users.validation.universityIdMin");
   }
   const phone = values.phone_number.trim();
   if (phone !== "" && !PHONE_RE.test(phone)) {
-    errors.phone_number = "El teléfono solo debe contener dígitos y el signo +.";
+    errors.phone_number = t("admin:users.validation.phoneFormat");
   }
   return errors;
 }

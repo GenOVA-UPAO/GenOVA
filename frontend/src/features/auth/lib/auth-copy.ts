@@ -1,10 +1,14 @@
+import { t } from "i18next";
+
 export const AUTH_LINK_CLASS =
   "rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
-export const BACK_TO_LOGIN = "Volver a iniciar sesión";
-export const CONNECT_ERROR = "No se pudo conectar con el servidor. Intenta de nuevo.";
-export const EMAIL_FORMAT_ERROR = "Ingresa un correo con formato válido.";
-export const EMAIL_VALID_ERROR = "Ingresa un correo electrónico válido.";
-export const LOGIN_FAILED = "No se pudo iniciar sesión.";
-export const ACCOUNT_DELETED_NOTICE = "Tu cuenta se eliminó. Puedes crear otra cuando quieras.";
-export const SESSION_EXPIRED_NOTICE = "Tu sesión ha expirado. Vuelve a iniciar sesión.";
-export const TOO_MANY_ATTEMPTS = "Demasiados intentos de inicio de sesión. Espera un minuto e inténtalo de nuevo.";
+
+// Textos como funciones: se resuelven al usarlos, así siguen el idioma activo.
+export const backToLogin = () => t("auth:common.backToLogin");
+export const connectError = () => t("auth:common.connectError");
+export const emailFormatError = () => t("auth:validation.emailFormat");
+export const emailValidError = () => t("auth:validation.emailValid");
+export const loginFailed = () => t("auth:login.failed");
+export const accountDeletedNotice = () => t("auth:login.accountDeleted");
+export const sessionExpiredNotice = () => t("auth:login.sessionExpired");
+export const tooManyAttempts = () => t("auth:login.tooManyAttempts");

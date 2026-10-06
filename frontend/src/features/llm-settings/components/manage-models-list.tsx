@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { CatalogBrowser } from "../hooks/use-catalog-browser";
 import { useFavoriteActions } from "../hooks/use-favorite-actions";
@@ -16,6 +17,7 @@ interface ManageModelsListProps {
  * resto al acercarse al final: con cientos de modelos abría con tirones.
  */
 export function ManageModelsList({ browser, usage }: Readonly<ManageModelsListProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   const favorites = useFavoriteActions();
   const sentinel = useRef<HTMLDivElement>(null);
@@ -44,12 +46,12 @@ export function ManageModelsList({ browser, usage }: Readonly<ManageModelsListPr
         aria-hidden="true"
         className="sticky top-0 z-10 hidden grid-cols-[1fr_5rem_5rem_4.5rem] gap-3 border-b border-border bg-popover py-2 pr-5 pl-[4.25rem] text-xs text-muted-foreground sm:grid"
       >
-        <span>Modelo</span>
-        <span className="text-right">Entrada</span>
-        <span className="text-right">Salida</span>
-        <span className="text-right">Contexto</span>
+        <span>{t("catalog.modelColumn")}</span>
+        <span className="text-right">{t("catalog.input")}</span>
+        <span className="text-right">{t("catalog.output")}</span>
+        <span className="text-right">{t("catalog.contextColumn")}</span>
       </div>
-      <ul className="divide-y divide-border" aria-label="Modelos del catálogo">
+      <ul className="divide-y divide-border" aria-label={t("catalog.catalogAriaList")}>
         {browser.visible.map((model) => {
           const key = `${model.provider}::${model.model_id}`;
           const base = store.isDefaultModel(model.provider, model.model_id);
@@ -73,3 +75,4 @@ export function ManageModelsList({ browser, usage }: Readonly<ManageModelsListPr
     </div>
   );
 }
+

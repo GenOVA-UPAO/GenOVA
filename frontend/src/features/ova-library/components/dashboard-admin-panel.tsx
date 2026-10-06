@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Icon } from "@/core/components/icon";
@@ -6,15 +7,16 @@ import { ADMIN_CARDS } from "../pages/dashboard-page.helpers";
 
 /** Accesos directos de administración en el dashboard. */
 export function DashboardAdminPanel() {
+  const { t } = useTranslation();
   return (
     <section aria-labelledby="accesos-admin">
       <h2 id="accesos-admin" className="mb-3 text-lg font-semibold tracking-tight">
-        Administración
+        {t("ova-library:administracion")}{" "}
       </h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {ADMIN_CARDS.map((card) => (
           <Link
-            key={card.title}
+            key={card.to}
             to={card.to}
             className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors outline-none hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-3 focus-visible:ring-ring/50"
           >
@@ -22,8 +24,8 @@ export function DashboardAdminPanel() {
               <Icon name={card.icon} size="text-xl" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold text-foreground">{card.title}</span>
-              <span className="block text-xs text-muted-foreground">{card.desc}</span>
+              <span className="block text-sm font-semibold text-foreground">{t(card.titleKey)}</span>
+              <span className="block text-xs text-muted-foreground">{t(card.descKey)}</span>
             </span>
             <Icon
               name="caret-right"

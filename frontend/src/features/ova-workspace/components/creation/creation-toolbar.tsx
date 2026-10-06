@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
@@ -44,52 +46,50 @@ export function CreationToolbar({
   theme,
   onOpen,
 }: Readonly<ToolbarProps>) {
+  const { t } = useTranslation();
   return (
     <div
       id="tour-crear-ova-config"
       className="relative flex flex-wrap items-center gap-2 border-t lg:flex-nowrap border-border px-4 py-3 sm:px-5"
     >
       <span id="crear-resources-summary" className="sr-only">
-        {selectionSummary(total, phases)}
+        {selectionSummary(total, phases, t)}
       </span>
       <Button
         variant="outline"
         className={cn(TOOL_CLASS, "max-sm:basis-full")}
-        aria-label="Configurar recursos 5E"
+        aria-label={t("workspace:configurar_recursos_5e")}
         aria-describedby="crear-resources-summary"
         onClick={() => {
           onOpen("resources");
         }}
       >
         <Icon name="squares-four" />
-        Recursos
-        {countBadge(total)}
+        {t("workspace:recursos")} {countBadge(total)}
       </Button>
       <Button
         variant="outline"
         className={TOOL_CLASS}
-        aria-label="Archivos de referencia"
+        aria-label={t("workspace:archivos_de_referencia")}
         onClick={() => {
           onOpen("files");
         }}
       >
         <Icon name="paperclip" />
-        Archivos
-        {countBadge(fileCount)}
+        {t("workspace:archivos")} {countBadge(fileCount)}
       </Button>
       <Button
         variant="outline"
         className={TOOL_CLASS}
-        aria-label="Tema visual"
+        aria-label={t("workspace:tema_visual")}
         aria-describedby="crear-theme-value"
         onClick={() => {
           onOpen("theme");
         }}
       >
         <Icon name="palette" />
-        Tema
-        <span id="crear-theme-value" className="font-normal text-muted-foreground">
-          {themeSummary(theme)}
+        {t("workspace:tema")} <span id="crear-theme-value" className="font-normal text-muted-foreground">
+          {themeSummary(theme, t)}
         </span>
       </Button>
       <CreationLevelSelect value={nivel} onChange={onNivelChange} />

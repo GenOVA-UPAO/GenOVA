@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import { Textarea } from "@/core/components/ui/textarea";
@@ -24,6 +26,7 @@ export function LtiPlatformFieldInput({
   disabled,
   onChange,
 }: Readonly<LtiPlatformFieldProps>) {
+  const { t } = useTranslation();
   const id = `lti-${spec.field}`;
   const error = errors[spec.field];
   const describedBy = error === undefined ? `${id}-help` : `${id}-error`;
@@ -38,7 +41,7 @@ export function LtiPlatformFieldInput({
   };
   return (
     <div className="space-y-2">
-      <Label htmlFor={id}>{spec.label}</Label>
+      <Label htmlFor={id}>{t(spec.labelKey)}</Label>
       {spec.multiline === true ? (
         <Textarea
           {...common}
@@ -60,11 +63,11 @@ export function LtiPlatformFieldInput({
       )}
       {error === undefined ? (
         <p id={`${id}-help`} className="text-xs text-muted-foreground">
-          {spec.help}
+          {t(spec.helpKey)}
         </p>
       ) : (
         <p id={`${id}-error`} className="text-xs text-destructive">
-          {error}
+          {t(error)}
         </p>
       )}
     </div>

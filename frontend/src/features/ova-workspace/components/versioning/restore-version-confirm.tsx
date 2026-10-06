@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ConfirmModal } from "@/core/components/confirm-modal";
 
 interface Props {
@@ -14,11 +16,12 @@ export function RestoreVersionConfirm({
   onConfirm,
   onCancel,
 }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   return (
     <ConfirmModal
-      title={`¿Restaurar la versión ${versionNumber}?`}
-      message={`El OVA volverá a tener el contenido de la versión ${versionNumber}.`}
-      confirmLabel="Restaurar versión"
+      title={t("confirm.title", { number: versionNumber })}
+      message={t("confirm.message", { number: versionNumber })}
+      confirmLabel={t("confirm.confirm")}
       danger={false}
       isLoading={isLoading}
       onConfirm={onConfirm}

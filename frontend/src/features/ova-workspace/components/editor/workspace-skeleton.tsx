@@ -1,9 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 /** Esqueleto con la forma del workspace: cabecera, chat y visor. */
 export function WorkspaceSkeleton() {
+  const { t } = useTranslation();
   return (
-    <div role="status" aria-label="Cargando OVA" className="flex h-full min-h-0 flex-col bg-background">
+    <div role="status" aria-label={t("workspace:cargando_ova")} className="flex h-full min-h-0 flex-col bg-background">
       <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4">
         <Skeleton className="h-8 w-24" />
         <Skeleton className="h-6 w-72 max-w-[50%]" />
@@ -21,7 +24,7 @@ export function WorkspaceSkeleton() {
           <Skeleton className="h-[60vh] w-full rounded-xl" />
         </div>
       </div>
-      <span className="sr-only">Cargando OVA…</span>
+      <span className="sr-only">{t("workspace:cargando_ova_222")}</span>
     </div>
   );
 }

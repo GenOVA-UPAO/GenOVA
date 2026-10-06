@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Select,
   SelectContent,
@@ -15,14 +17,14 @@ interface Props {
 
 /** Nivel educativo del OVA; en móvil, con la etiqueta encima y a lo ancho. */
 export function CreationLevelSelect({ value, onChange }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <div className="flex w-full min-w-0 flex-col gap-1.5 pt-1 sm:ml-auto sm:w-auto sm:flex-row sm:items-center sm:gap-2 sm:pt-0">
       <label
         htmlFor="ova-create-nivel"
         className="shrink-0 text-sm font-medium text-muted-foreground sm:text-xs"
       >
-        Nivel educativo
-      </label>
+        {t("workspace:nivel_educativo")} </label>
       <Select
         value={value}
         onValueChange={(next) => {
@@ -38,7 +40,7 @@ export function CreationLevelSelect({ value, onChange }: Readonly<Props>) {
         <SelectContent>
           {EDUCATION_LEVELS.map((level) => (
             <SelectItem key={level.id} value={level.id}>
-              {level.label}
+              {t(level.labelKey)}
             </SelectItem>
           ))}
         </SelectContent>

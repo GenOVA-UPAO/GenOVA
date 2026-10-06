@@ -1,4 +1,6 @@
+import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -42,11 +44,11 @@ interface Props {
 }
 
 /** En un job terminado con fallos, cuántos fallaron dice más que repetir el título. */
-function headline(status: string, failed: number): string {
-  if (!isTerminalStatus(status) || failed === 0) return statusLabel(status);
+function headline(status: string, failed: number, t: TFunction): string {
+  if (!isTerminalStatus(status) || failed === 0) return statusLabel(status, t);
   return failed === 1
-    ? "1 recurso no se pudo generar"
-    : `${String(failed)} recursos no se pudieron generar`;
+    ? t("workspace:1_recurso_no_se_pudo_generar")
+    : t("workspace:value_recursos_no_se_pudieron_generar", { p0: String(failed) });
 }
 
 /** Región aria-live: anuncia (sin robar el foco) cuando un recurso empieza, termina o falla. */
@@ -64,16 +66,17 @@ function useStatusAnnouncement(viewModel: ResourceVM[]): string {
 }
 
 export function ProgressPanel(props: Readonly<Props>) {
+  const { t } = useTranslation();
   const status = jobStatus(props.job);
   const terminal = isTerminalStatus(status);
   const done = doneCount(props.viewModel);
   const failed = failedCount(props.viewModel);
   const announcement = useStatusAnnouncement(props.viewModel);
-  const eta = terminal ? null : formatEta(props.job?.eta);
+  const eta = terminal ? null : formatEta(props.job?.eta, t);
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-xs sm:p-5">
       <ProgressHeader
-        headline={headline(status, failed)}
+        headline={headline(status, failed, t)}
         done={done}
         total={props.viewModel.length}
         pct={progressPct(props.viewModel)}
@@ -106,8 +109,7 @@ export function ProgressPanel(props: Readonly<Props>) {
       {failed > 0 && (props.allowBulkRetry ?? true) && (
         <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
           <Button variant="outline" size="sm" className="max-sm:h-11" onClick={props.onSelectAll}>
-            Seleccionar todos los fallidos
-          </Button>
+            {t("workspace:seleccionar_todos_los_fallidos")} </Button>
           <Button
             size="sm"
             className="max-sm:h-11"
@@ -115,12 +117,11 @@ export function ProgressPanel(props: Readonly<Props>) {
             disabled={props.selectedIds.length === 0}
             onClick={props.onRetrySelected}
           >
-            Reintentar seleccionados ({props.selectedIds.length})
+            {t("workspace:reintentar_seleccionados")}{props.selectedIds.length})
           </Button>
           {props.selectedIds.length === 0 && (
             <p id="retry-selected-hint" className="text-xs text-muted-foreground">
-              Marca los recursos que quieras reintentar.
-            </p>
+              {t("workspace:marca_los_recursos_que_quieras_reintentar")} </p>
           )}
         </div>
       )}

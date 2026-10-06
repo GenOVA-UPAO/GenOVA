@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ChangePasswordValues } from "../lib/types";
 import { PasswordField } from "./password-field";
 
@@ -16,11 +18,13 @@ export function PasswordChangeFields({
   onBlur,
   disabled,
 }: Readonly<PasswordChangeFieldsProps>) {
+  const { t } = useTranslation("profile");
+
   return (
     <div className="grid grid-cols-1 gap-5">
       <PasswordField
         id="currentPassword"
-        label="Contraseña actual"
+        label={t("password.current")}
         autoComplete="current-password"
         value={values.currentPassword}
         error={errorFor("currentPassword")}
@@ -34,11 +38,11 @@ export function PasswordChangeFields({
       />
       <PasswordField
         id="newPassword"
-        label="Nueva contraseña"
+        label={t("password.new")}
         autoComplete="new-password"
         value={values.newPassword}
         error={errorFor("newPassword")}
-        hint="Al menos 8 caracteres, con letras y números."
+        hint={t("password.newHint")}
         disabled={disabled}
         onChange={(value) => {
           onChange("newPassword", value);
@@ -49,7 +53,7 @@ export function PasswordChangeFields({
       />
       <PasswordField
         id="confirmPassword"
-        label="Confirma la nueva contraseña"
+        label={t("password.confirm")}
         autoComplete="new-password"
         value={values.confirmPassword}
         error={errorFor("confirmPassword")}

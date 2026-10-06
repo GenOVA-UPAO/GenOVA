@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { formatDateTime } from "@/core/i18n/format";
 
-import { formatShortDate } from "../../lib/format-date";
 import type { OvaVersionRow } from "../../lib/ova-versioning";
 
 interface Props {
@@ -14,10 +16,11 @@ interface Props {
 
 /** Versiones del OVA, de la más reciente a la más antigua, en un único contenedor. */
 export function VersionHistoryList({ versions, selected, onToggle, onRestore }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   if (versions.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-        Aún no hay versiones anteriores. Tras regenerar podrás comparar y restaurar.
+        {t("list.empty")}
       </p>
     );
   }
@@ -26,14 +29,14 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
     <ul className="divide-y divide-border rounded-xl border border-border">
       {versions.map((version) => {
         const inputId = `version-compare-${version.id}`;
-        const date = formatShortDate(version.created_at);
+        const date = version.created_at ? formatDateTime(version.created_at) : "";
         return (
           <li key={version.id} className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
             <input
               id={inputId}
               type="checkbox"
               className="size-4 shrink-0 accent-primary"
-              aria-label={`Seleccionar versión ${String(version.version_number)} para comparar`}
+              aria-label={t("list.selectLabel", { number: version.version_number })}
               checked={selected.includes(version.id)}
               disabled={selected.length === 2 && !selected.includes(version.id)}
               onChange={(event) => {
@@ -41,13 +44,13 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
               }}
             />
             <label htmlFor={inputId} className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 text-sm">
-              <span className="font-medium">Versión {version.version_number}</span>
+              <span className="font-medium">{t("list.version", { number: version.version_number })}</span>
               {date && <span className="text-xs text-muted-foreground">{date}</span>}
             </label>
             {version.is_active && (
               <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success-strong">
                 <Icon name="check" size="text-xs" />
-                Actual
+                {t("list.current")}
               </span>
             )}
             {!version.is_active && onRestore && (
@@ -58,7 +61,7 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
                   onRestore(version.id);
                 }}
               >
-                Restaurar
+                {t("list.restore")}
               </Button>
             )}
           </li>
@@ -67,8 +70,7 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
     </ul>
     {versions.length === 1 && (
       <p className="text-sm text-pretty text-muted-foreground">
-        Esta es la única versión. Cuando apliques cambios con la IA aparecerán aquí para que puedas
-        compararlas o volver a una anterior.
+        {t("list.onlyOne")}
       </p>
     )}
     </>

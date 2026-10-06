@@ -20,7 +20,7 @@ export function AuthCard({ title, children, subtitle }: Readonly<AuthCardProps>)
       <div className="flex min-h-full items-center justify-center px-5 py-10 sm:px-10">
         <div className="w-full max-w-[400px]">
           <p className="font-display text-xl font-semibold tracking-tight lg:hidden">
-            Gen<span className="text-primary">OVA</span>
+            {"Gen"}<span className="text-primary">{"OVA"}</span>
           </p>
           <h1 className="mt-8 font-display text-3xl font-semibold tracking-tight text-balance lg:mt-0">
             {title}

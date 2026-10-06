@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -14,6 +16,7 @@ interface ModelsTaskTabProps {
 }
 
 export function ModelsTaskTab({ task, selected, subtitle, shared = [], onSelect }: Readonly<ModelsTaskTabProps>) {
+  const { t } = useTranslation("llm-settings");
   const meta = taskMeta(task);
   return (
     <button
@@ -50,10 +53,10 @@ export function ModelsTaskTab({ task, selected, subtitle, shared = [], onSelect 
             {subtitle}
           </span>
           {shared.length > 0 ? (
-            <span className="inline-flex shrink-0" title={`Igual que ${joinList(shared)}`}>
+            <span className="inline-flex shrink-0" title={t("tasks.sameAs", { list: joinList(shared) })}>
               <Icon name="link" size="text-xs" />
               <span id={`task-tab-${task}-shared`} hidden>
-                Mismo modelo que {joinList(shared)}
+                {t("tasks.sameModelAsList", { list: joinList(shared) })}
               </span>
             </span>
           ) : null}

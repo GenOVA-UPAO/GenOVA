@@ -1,9 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 import { PhasePage } from "../components/phase/phase-page";
 export function ExplorePage() {
+  const { t } = useTranslation();
   return (
     <PhasePage
       phase="explore"
-      description="Interactúa con simuladores y laboratorios para construir tus propias hipótesis antes de ver la teoría formal."
+      description={t("workspace:exploreDescription")}
     />
   );
 }

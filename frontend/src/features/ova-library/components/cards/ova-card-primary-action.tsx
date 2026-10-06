@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { Icon } from "@/core/components/icon";
@@ -22,6 +23,7 @@ export function OvaCardPrimaryAction({
   className,
   onResume,
 }: Readonly<OvaCardPrimaryActionProps>) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const workspaceUrl = `/workspace/${ovaId}`;
 
@@ -36,7 +38,7 @@ export function OvaCardPrimaryAction({
         }}
       >
         <Icon name="arrow-clockwise" size="text-base" />
-        Reanudar generación
+        {t("ova-library:reanudar_generacion")}{" "}
       </Button>
     );
   }
@@ -45,15 +47,15 @@ export function OvaCardPrimaryAction({
     <Button asChild variant="outline" className={className}>
       <Link to={workspaceUrl}>
         <Icon name={openIcon(isGenerating, canEdit)} size="text-base" />
-        {openLabel(isGenerating, canEdit)}
+        {t(openLabel(isGenerating, canEdit))}
       </Link>
     </Button>
   );
 }
 
 function openLabel(isGenerating: boolean, canEdit: boolean): string {
-  if (isGenerating) return "Ver progreso";
-  return canEdit ? "Editar" : "Ver";
+  if (isGenerating) return "ova-library:ver_progreso";
+  return canEdit ? "ova-library:editar" : "ova-library:ver";
 }
 
 function openIcon(isGenerating: boolean, canEdit: boolean): string {

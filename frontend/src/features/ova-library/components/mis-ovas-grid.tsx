@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { QueryErrorState } from "@/core/components/query-error-state";
 import type { ExportFormatId } from "@/core/export/lib/formats";
 import { cn } from "@/core/lib/cn";
@@ -54,10 +56,16 @@ export function MisOvasGrid({
   onRetry,
   onClearFilters,
 }: Readonly<MisOvasGridProps>) {
+  const { t } = useTranslation();
   if (isLoading) return <OvaCardSkeletonGrid />;
 
   if (error) {
-    return <QueryErrorState title="No se pudo cargar la biblioteca de OVAs" onRetry={onRetry} />;
+    return (
+      <QueryErrorState
+        title={t("ova-library:no_se_pudo_cargar_la_biblioteca_de_ovas")}
+        onRetry={onRetry}
+      />
+    );
   }
 
   if (ovas.length === 0) {

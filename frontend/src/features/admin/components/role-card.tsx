@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/core/components/ui/badge";
 
 import { formatRoleDescription, formatRoleName, roleUserCountLabel } from "../lib/role-utils";
@@ -14,6 +16,7 @@ interface RoleCardProps {
 
 /** Fila de un rol dentro de la lista: nombre, alcance, permisos y acciones. */
 export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
+  const { t } = useTranslation("admin");
   const system = isSystemRole(role.name);
   const thesis = isThesisRole(role.name);
   const description = formatRoleDescription(role.description);
@@ -26,7 +29,7 @@ export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <h2 className="text-base font-semibold">{formatRoleName(role.name)}</h2>
-          {system && <Badge variant="secondary">Sistema</Badge>}
+          {system && <Badge variant="secondary">{t("roles.systemBadge")}</Badge>}
           <span className="text-sm text-muted-foreground tabular-nums">
             {roleUserCountLabel(role.user_count ?? 0)}
           </span>
@@ -37,7 +40,7 @@ export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
         <RolePermissionsList permissions={role.permissions ?? []} />
         {thesis && (
           <p className="text-xs text-muted-foreground">
-            El modo tesis lo asigna a las cuentas nuevas, así que no se puede eliminar ni renombrar.
+            {t("roles.thesisHint")}
           </p>
         )}
       </div>
@@ -45,7 +48,7 @@ export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
       ofrecer un formulario que siempre falla, se explica por qué no se edita. */}
       {system ? (
         <p className="text-sm text-muted-foreground md:max-w-52 md:text-right">
-          Los roles del sistema no se editan ni se eliminan.
+          {t("roles.systemHint")}
         </p>
       ) : (
         <RoleCardActions role={role} deletable={!thesis} onEdit={onEdit} onDelete={onDelete} />

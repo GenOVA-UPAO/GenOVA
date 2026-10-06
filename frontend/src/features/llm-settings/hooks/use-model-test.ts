@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { t } from "i18next";
 import { useState } from "react";
 
 import { useIsAdmin } from "@/core/auth/auth-store";
@@ -28,7 +29,7 @@ export function useModelTest(provider: string, modelId: string) {
       setState({
         target: `${vars.provider}/${vars.modelId}`,
         result: null,
-        error: errorMessage(err, "No se pudo probar el modelo."),
+        error: errorMessage(err, t("llm-settings:api.testModelError")),
       });
     },
   });

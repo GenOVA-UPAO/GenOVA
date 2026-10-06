@@ -1,12 +1,14 @@
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import { ModalActions } from "../shared/modal-actions";
 
-function compareStatus(count: number, compared: boolean): string {
-  if (compared)
-    return "Los cambios están debajo de la lista. Desmarca una versión para elegir otra.";
-  if (count === 2) return "2 versiones marcadas. Desmarca una para elegir otra.";
-  return `Marca 2 versiones para compararlas (${String(count)} de 2).`;
+function compareStatus(t: TFunction, count: number, compared: boolean): string {
+  if (compared) return t("footer.compareDone");
+  if (count === 2) return t("footer.compareTwo");
+  return t("footer.compareHint", { count });
 }
 
 interface Props {
@@ -27,14 +29,15 @@ export function VersionHistoryFooter({
   onCompare,
   onClose,
 }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   return (
-    <ModalActions status={canCompare && compareStatus(selectedCount, compared)}>
+    <ModalActions status={canCompare && compareStatus(t, selectedCount, compared)}>
       <Button variant="outline" onClick={onClose}>
-        Cerrar
+        {t("footer.close")}
       </Button>
       {canCompare && !compared && (
         <Button disabled={selectedCount !== 2} loading={comparing} onClick={onCompare}>
-          Comparar versiones
+          {t("footer.compare")}
         </Button>
       )}
     </ModalActions>

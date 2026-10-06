@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
 import { Button } from "@/core/components/ui/button";
@@ -9,16 +11,17 @@ import { RolesPanel } from "../components/roles-panel";
 import { useAdminRolesController } from "../hooks/use-admin-roles-controller";
 
 export function AdminRolesPage() {
+  const { t } = useTranslation("admin");
   const controller = useAdminRolesController();
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
-        title="Gestión de roles"
-        subtitle="Decide qué puede hacer cada perfil de usuario en GenOVA."
+        title={t("roles.title")}
+        subtitle={t("roles.subtitle")}
         actions={
           <Button onClick={controller.openCreate} className="max-md:h-11">
-            <Icon name="plus" size="text-base" /> Nuevo rol
+            <Icon name="plus" size="text-base" /> {t("roles.newRole")}
           </Button>
         }
       />

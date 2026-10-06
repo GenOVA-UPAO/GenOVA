@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { LtiPlatform, LtiPlatformPayload } from "../api/admin-lti.api";
 import { errorMessage } from "../lib/error-message";
@@ -13,6 +14,7 @@ import {
 type Editing = LtiPlatform | "new" | null;
 
 export function useAdminLtiController() {
+  const { t } = useTranslation();
   const tool = useLtiTool();
   const platforms = useLtiPlatforms();
   const save = useSaveLtiPlatform();
@@ -31,7 +33,7 @@ export function useAdminLtiController() {
     editing,
     deleting,
     isSaving: save.isPending,
-    saveError: save.error === null ? "" : errorMessage(save.error, "No se pudo guardar."),
+    saveError: save.error === null ? "" : errorMessage(save.error, t("lti:errors.save")),
     isDeleting: remove.isPending,
     openCreate: () => {
       setEditing("new");

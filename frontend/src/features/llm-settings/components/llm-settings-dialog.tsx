@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
@@ -21,10 +22,11 @@ interface LlmSettingsDialogProps {
 }
 
 export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDialogProps>) {
+  const { t } = useTranslation(["llm-settings", "common"]);
   const store = useLlmSettings();
   const showModelsLink = canAccessModels(useCurrentUser());
   const isAdmin = useIsAdmin();
-  const copy = dialogCopy(store.hasOwnLlmKey, isAdmin);
+  const copy = dialogCopy(store.hasOwnLlmKey, isAdmin, t);
 
   async function handleSave(): Promise<void> {
     const ok = await store.save();
@@ -35,7 +37,7 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg gap-5 sm:max-w-lg">
         <DialogHeader className="pr-8">
-          <DialogTitle>Configuración de IA</DialogTitle>
+          <DialogTitle>{t("dialog.aiSettings")}</DialogTitle>
           <DialogDescription>
             {copy.text}
             {showModelsLink ? (
@@ -49,7 +51,7 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
                     onOpenChange(false);
                   }}
                 >
-                  Modelos de IA
+                  {t("page.title")}
                 </Link>
                 .
               </>
@@ -67,7 +69,7 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
             }}
             disabled={store.saving}
           >
-            {store.hasOwnLlmKey ? "Cancelar" : "Cerrar"}
+            {store.hasOwnLlmKey ? t("common:actions.cancel") : t("common:actions.close")}
           </Button>
           {store.hasOwnLlmKey ? (
             <Button
@@ -75,7 +77,7 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
               loading={store.saving}
               disabled={store.loading || store.error !== ""}
             >
-              Guardar
+              {t("common:actions.save")}
             </Button>
           ) : null}
         </DialogFooter>
@@ -89,21 +91,25 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
  * enlace a Modelos de IA en un segundo aviso, y al propio administrador le
  * decía que los modelos «los elige el administrador».
  */
-function dialogCopy(hasOwnKey: boolean, isAdmin: boolean): { text: string; linkLead: string } {
+function dialogCopy(
+  hasOwnKey: boolean,
+  isAdmin: boolean,
+  t: (key: string) => string,
+): { text: string; linkLead: string } {
   if (hasOwnKey) {
     return {
-      text: "Modelo y tiempo máximo de espera de cada tarea al generar tus OVAs.",
-      linkLead: "Tienes más opciones en",
+      text: t("dialog.userDialogDesc1"),
+      linkLead: t("dialog.userDialogDesc2"),
     };
   }
   if (isAdmin) {
     return {
-      text: "Modelos que usa la plataforma para generar los OVAs.",
-      linkLead: "Se cambian en",
+      text: t("dialog.adminDialogDesc1"),
+      linkLead: t("dialog.adminDialogDesc2"),
     };
   }
   return {
-    text: "Modelos con los que la IA genera tus OVAs. Los elige el administrador.",
-    linkLead: "Con tu propia clave API puedes elegir otros en",
+    text: t("dialog.readOnlyDialogDesc1"),
+    linkLead: t("dialog.readOnlyDialogDesc2"),
   };
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useUndoableChatDelete } from "../../hooks/use-undoable-chat-delete";
@@ -16,13 +17,6 @@ import { ChatPanelHeader } from "./chat-panel-header";
 import { ChatResourceSelect } from "./chat-resource-select";
 import { ChatScopeToggle } from "./chat-scope-toggle";
 
-function composerPlaceholder(selecting: boolean, count: number): string {
-  if (selecting && count > 0) {
-    return `Cambio para ${String(count)} recurso${count !== 1 ? "s" : ""}…`;
-  }
-  return "Escribe un cambio o mejora para el OVA…";
-}
-
 function withToggledId(list: string[], id: string): string[] {
   return list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
 }
@@ -31,6 +25,7 @@ export function WorkspaceChatPanel({
   phases,
   regen,
 }: Readonly<{ phases: PhaseWithContent[]; regen: ChatRegeneration }>) {
+  const { t } = useTranslation();
   const [prompt, setPrompt] = useState("");
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -53,13 +48,13 @@ export function WorkspaceChatPanel({
 
   return (
     <aside
-      aria-label="Panel de instrucciones"
+      aria-label={t("workspace:panel_de_instrucciones")}
       className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r border-border bg-card"
     >
       <ChatPanelHeader
         busy={regen.busy || uploads.uploading || uploads.indexing}
         onRegenAll={() => {
-          submit(buttonRegenPayload(phases, "Regenerar OVA completo", [], chatAttachments(uploads.data)));
+          submit(buttonRegenPayload(phases, t("workspace:regenerar_ova_completo"), [], chatAttachments(uploads.data)));
         }}
       />
       <ChatHistory
@@ -82,7 +77,7 @@ export function WorkspaceChatPanel({
           }}
           busy={regen.busy}
           uploads={uploads}
-          placeholder={composerPlaceholder(selecting, live.length)}
+           placeholder={selecting && live.length > 0 ? t("workspace:chatPlaceholder", { count: live.length }) : t("workspace:escribe_un_cambio_o_mejora_para_el_ova")}
           scope={
             <ChatScopeToggle
               selecting={selecting}

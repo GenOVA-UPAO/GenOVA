@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
 import { QueryErrorState } from "@/core/components/query-error-state";
 
@@ -9,10 +11,11 @@ import { getUserFirstName } from "./dashboard-page.helpers";
 
 /** Página principal de bienvenida y resumen de la biblioteca de OVAs. */
 export function DashboardPage() {
+  const { t } = useTranslation();
   const user = useCurrentUser();
   const isAdmin = useIsAdmin();
   const { data, isLoading, error, refetch } = useOvaList({ page: 1 });
-  const firstName = getUserFirstName(user?.full_name);
+  const firstName = getUserFirstName(user?.full_name, t);
 
   let content = (
     <DashboardBody ovas={data?.ovas ?? []} total={data?.total_items ?? 0} isAdmin={isAdmin} />
@@ -22,7 +25,7 @@ export function DashboardPage() {
   } else if (error) {
     content = (
       <QueryErrorState
-        title="No se pudo cargar el resumen"
+        title={t("ova-library:no_se_pudo_cargar_el_resumen")}
         onRetry={() => {
           void refetch();
         }}

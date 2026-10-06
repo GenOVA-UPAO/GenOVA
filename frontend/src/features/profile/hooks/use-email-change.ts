@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { useState } from "react";
 
 import type { ProfileData, ProfileFormValues, ProfileSaveValues } from "../lib/types";
@@ -16,11 +17,11 @@ export function useEmailChange(profile: ProfileData | null, values: ProfileFormV
   /** `false` si falta la contraseña (y deja el error visible). */
   const validate = (): boolean => {
     if (emailChanged && currentPassword === "") {
-      setPasswordError("Ingresa tu contraseña actual para cambiar el correo.");
+      setPasswordError(t("profile:emailChange.passwordRequired"));
       return false;
     }
     if (emailChanged && profile?.totp_enabled && !/^\d{6}$/.test(totpCode)) {
-      setPasswordError("Ingresa el código TOTP de 6 dígitos.");
+      setPasswordError(t("profile:emailChange.totpRequired"));
       return false;
     }
     setPasswordError(undefined);

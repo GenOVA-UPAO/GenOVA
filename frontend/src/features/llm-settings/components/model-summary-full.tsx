@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import {
@@ -23,11 +24,12 @@ interface ModelSummaryFullProps {
 
 /** Ficha bajo el modelo principal: proveedor y su estado, precios, contexto y capacidades. */
 export function ModelSummaryFull({ id, model, connection }: Readonly<ModelSummaryFullProps>) {
+  const { t } = useTranslation("llm-settings");
   const facts = modelFacts(model);
   const context = formatContext(facts.context);
   const hint = CONNECTION_HINTS[connection];
   const provider = {
-    label: "Proveedor",
+    label: t("facts.provider"),
     value: (
       <>
         <span className="mr-1.5">{PROVIDER_LABELS[model.provider] ?? model.provider}</span>
@@ -38,12 +40,12 @@ export function ModelSummaryFull({ id, model, connection }: Readonly<ModelSummar
   // Imagen y video no cobran por tokens ni tienen contexto: su precio es por
   // imagen o por segundo, y ocupa el hueco de entrada y salida.
   const items: { label: string; value: ReactNode }[] = facts.media
-    ? [provider, { label: "Precio", value: mediaValue(facts) }]
+    ? [provider, { label: t("facts.price"), value: mediaValue(facts, t) }]
     : [
         provider,
-        { label: "Entrada", value: priceValue(facts, facts.input) },
-        { label: "Salida", value: priceValue(facts, facts.output) },
-        { label: "Contexto", value: context ? `${context} tokens` : "Sin dato" },
+        { label: t("catalog.input"), value: priceValue(facts, facts.input, t) },
+        { label: t("catalog.output"), value: priceValue(facts, facts.output, t) },
+        { label: t("catalog.contextColumn"), value: context ? t("facts.tokens", { count: context }) : t("catalog.noData") },
       ];
   return (
     <div id={id} className="space-y-2 rounded-lg bg-muted/50 px-3.5 py-3 dark:bg-muted/30">
@@ -61,7 +63,7 @@ export function ModelSummaryFull({ id, model, connection }: Readonly<ModelSummar
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <ModelCapabilities capabilities={facts.capabilities} />
-          {facts.media ? null : <span>Precios por millón de tokens</span>}
+          {facts.media ? null : <span>{t("facts.pricingPerMillionTokens")}</span>}
         </p>
         <ModelFavoriteToggle provider={model.provider} modelId={model.model_id} />
       </div>
@@ -69,15 +71,16 @@ export function ModelSummaryFull({ id, model, connection }: Readonly<ModelSummar
   );
 }
 
-function mediaValue(facts: ModelFacts): ReactNode {
-  if (facts.free) return <span className="text-success-strong">Gratis</span>;
+function mediaValue(facts: ModelFacts, t: (key: string, opts?: Record<string, unknown>) => string): ReactNode {
+  if (facts.free) return <span className="text-success-strong">{t("catalog.free")}</span>;
   return <span title={priceDescription(facts)}>{priceSummary(facts)}</span>;
 }
 
-function priceValue(facts: ModelFacts, value: number | null): ReactNode {
-  if (facts.free) return <span className="text-success-strong">Gratis</span>;
+function priceValue(facts: ModelFacts, value: number | null, t: (key: string, opts?: Record<string, unknown>) => string): ReactNode {
+  if (facts.free) return <span className="text-success-strong">{t("catalog.free")}</span>;
   if (facts.variable)
-    return <span title="Depende del modelo que elija el enrutador">Variable</span>;
-  if (value === null) return <>Sin dato</>;
+    return <span title={t("facts.variableHint")}>{t("facts.variable")}</span>;
+  if (value === null) return <>{t("catalog.noData")}</>;
   return <>{formatUsd(value)}</>;
 }
+

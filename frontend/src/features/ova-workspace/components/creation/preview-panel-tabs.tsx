@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
@@ -20,8 +22,9 @@ function tabClass(active: boolean): string {
 
 /** Mismo estilo que las pestañas del visor; los recursos aún en cola se ven atenuados. */
 export function PreviewPanelTabs({ done, pending, activeId, onSelect }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
-    <nav aria-label="Recursos generados" className="flex shrink-0 overflow-x-auto border-b border-border px-1 [scrollbar-width:thin]">
+    <nav aria-label={t("workspace:recursos_generados")} className="flex shrink-0 overflow-x-auto border-b border-border px-1 [scrollbar-width:thin]">
       {done.map((resource) => (
         <button
           key={resource.id}
@@ -38,7 +41,7 @@ export function PreviewPanelTabs({ done, pending, activeId, onSelect }: Readonly
       {pending.map((resource) => (
         <span key={resource.id} className="inline-flex h-11 shrink-0 items-center px-3 text-sm whitespace-nowrap text-muted-foreground/60">
           {resource.label || resource.phase}
-          <span className="sr-only"> (generando)</span>
+          <span className="sr-only"> {t("workspace:generando")}</span>
         </span>
       ))}
     </nav>

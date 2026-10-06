@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { HttpError } from "@/core/lib/http";
 
@@ -29,11 +30,12 @@ function isExportable(status: string | undefined): boolean {
 }
 
 export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
+  const { t } = useTranslation();
   const workspace = useOvaWorkspace(ovaId);
   const regen = useChatRegeneration(ovaId);
   const [awaitingReady, setAwaitingReady] = useState(false);
   const phases = (workspace.data?.current_version?.phases ?? []) as PhaseWithContent[];
-  const title = workspace.data?.title ?? "Mi OVA";
+  const title = workspace.data?.title ?? t("workspace:mi_ova");
   if (showsGeneration(workspace.error, awaitingReady, workspace.isPending))
     return (
       <OvaGeneratingPanel

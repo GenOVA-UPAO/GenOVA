@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
@@ -14,6 +15,7 @@ import { ovaNoun } from "../lib/ova-count";
 
 /** Página de gestión de la biblioteca de OVAs con búsqueda, filtros y acciones. */
 export function MisOvasPage() {
+  const { t } = useTranslation();
   const p = useMisOvasPage();
   const listTopRef = useRef<HTMLDivElement>(null);
   const showContent = !p.isLoading && !p.error;
@@ -24,8 +26,8 @@ export function MisOvasPage() {
       <MisOvasModals page={p} />
 
       <PageHeader
-        title="Biblioteca de OVAs"
-        subtitle="Gestiona, edita y descarga tus recursos educativos generados."
+        title={t("ova-library:biblioteca_de_ovas")}
+        subtitle={t("ova-library:gestiona_edita_y_descarga_tus_recursos_educativos_generados")}
       />
 
       <div ref={listTopRef} className="scroll-mt-4 space-y-3">
@@ -47,10 +49,12 @@ export function MisOvasPage() {
             actions={
               <Button
                 variant="destructive"
-                onClick={() => { p.setShowBulkModal(true); }}
+                onClick={() => {
+                  p.setShowBulkModal(true);
+                }}
               >
                 <Icon name="trash" size="text-base" />
-                Mover a la papelera
+                {t("ova-library:mover_a_la_papelera")}{" "}
               </Button>
             }
           />
@@ -81,7 +85,7 @@ export function MisOvasPage() {
 
       {showContent && (
         <OvaListPagination
-          label="Paginación de la biblioteca"
+          label={t("ova-library:paginacion_de_la_biblioteca")}
           currentPage={p.page}
           totalPages={p.totalPages}
           onPageChange={(page) => {

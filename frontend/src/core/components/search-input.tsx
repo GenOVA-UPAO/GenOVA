@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Input } from "@/core/components/ui/input";
 import { cn } from "@/core/lib/cn";
@@ -19,11 +21,12 @@ interface SearchInputProps {
 export function SearchInput({
   value,
   onValueChange,
-  placeholder = "Buscar…",
-  ariaLabel = "Buscar",
+  placeholder,
+  ariaLabel,
   inputClassName,
   className,
 }: Readonly<SearchInputProps>) {
+  const { t } = useTranslation();
   return (
     <div className={cn("relative", className)}>
       <Icon
@@ -34,8 +37,8 @@ export function SearchInput({
       <Input
         type="search"
         value={value}
-        placeholder={placeholder}
-        aria-label={ariaLabel}
+        placeholder={placeholder ?? t("shared:buscar")}
+        aria-label={ariaLabel ?? t("shared:buscar_77")}
         onChange={(e) => {
           onValueChange(e.target.value);
         }}
@@ -50,7 +53,7 @@ export function SearchInput({
           onClick={() => {
             onValueChange("");
           }}
-          aria-label="Limpiar búsqueda"
+          aria-label={t("shared:limpiar_busqueda")}
           className="absolute top-1/2 right-2.5 z-10 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <Icon name="x" size="text-base" />

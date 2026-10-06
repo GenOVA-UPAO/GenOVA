@@ -1,3 +1,6 @@
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import type { IntentTrace, InterpretedIntent } from "../../lib/visual-editor.types";
@@ -17,31 +20,31 @@ interface Props {
 
 const ACTION_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
   quitar: {
-    label: "Quitar",
+    label: "workspace:quitar",
     color: "text-rose-700 dark:text-rose-300",
     bg: "bg-rose-50 dark:bg-rose-950/40",
     border: "border-rose-200 dark:border-rose-800",
   },
   mover: {
-    label: "Mover",
+    label: "workspace:mover",
     color: "text-indigo-700 dark:text-indigo-300",
     bg: "bg-indigo-50 dark:bg-indigo-950/40",
     border: "border-indigo-200 dark:border-indigo-800",
   },
   anadir: {
-    label: "Añadir",
+    label: "workspace:anadir",
     color: "text-emerald-700 dark:text-emerald-300",
     bg: "bg-emerald-50 dark:bg-emerald-950/40",
     border: "border-emerald-200 dark:border-emerald-800",
   },
   reemplazar: {
-    label: "Reemplazar",
+    label: "workspace:reemplazar",
     color: "text-amber-700 dark:text-amber-300",
     bg: "bg-amber-50 dark:bg-amber-950/40",
     border: "border-amber-200 dark:border-amber-800",
   },
   ninguna: {
-    label: "Sin cambios",
+    label: "workspace:sin_cambios_349",
     color: "text-muted-foreground",
     bg: "bg-muted/50",
     border: "border-border",
@@ -49,15 +52,15 @@ const ACTION_CONFIG: Record<string, { label: string; color: string; bg: string; 
 };
 
 const TYPE_NAMES: Record<string, string> = {
-  example: "Ejemplo",
-  question: "Pregunta",
-  paragraph: "Párrafo",
-  summary: "Resumen",
-  panel: "Viñeta",
-  header: "Encabezado",
-  objective: "Objetivo",
-  steps: "Pasos",
-  card: "Tarjeta",
+  example: "workspace:ejemplo",
+  question: "workspace:pregunta",
+  paragraph: "workspace:parrafo",
+  summary: "workspace:resumen",
+  panel: "workspace:vineta",
+  header: "workspace:encabezado",
+  objective: "workspace:objetivo",
+  steps: "workspace:pasos",
+  card: "workspace:tarjeta",
 };
 
 function getConfidenceBadgeClass(confPct: number): string {
@@ -66,26 +69,26 @@ function getConfidenceBadgeClass(confPct: number): string {
   return "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300";
 }
 
-function formatDestinoLabel(intent: InterpretedIntent): string {
+function formatDestinoLabel(intent: InterpretedIntent, t: TFunction): string {
   const pos = intent.destino?.posicion;
   if (!pos) return "";
-  if (pos === "inicio") return " → Al inicio";
-  if (pos === "final") return " → Al final";
+  if (pos === "inicio") return t("workspace:al_inicio");
+  if (pos === "final") return t("workspace:al_final");
   const refType = intent.destino?.referencia?.tipo ? ` (${intent.destino.referencia.tipo})` : "";
-  if (pos === "despues") return ` → Después de${refType}`;
-  return ` → Antes de${refType}`;
+  if (pos === "despues") return t("workspace:despues_devalue", { p0: refType });
+  return t("workspace:antes_devalue", { p0: refType });
 }
 
-function formatIndexLabel(indice?: number | "ultimo" | "penultimo" | null): string {
-  if (indice === "ultimo") return " (Último)";
-  if (indice === "penultimo") return " (Penúltimo)";
+function formatIndexLabel(indice: number | "ultimo" | "penultimo" | null | undefined, t: TFunction): string {
+  if (indice === "ultimo") return t("workspace:ultimo");
+  if (indice === "penultimo") return t("workspace:penultimo");
   if (typeof indice === "number") return ` #${indice.toString()}`;
   return "";
 }
 
-function formatTypeLabel(rawType?: string | null): string {
-  if (!rawType) return "Bloque";
-  return TYPE_NAMES[rawType] ?? rawType;
+function formatTypeLabel(rawType: string | null | undefined, t: TFunction): string {
+  if (!rawType) return t("workspace:bloque");
+  return Object.hasOwn(TYPE_NAMES, rawType) ? t(TYPE_NAMES[rawType]) : rawType;
 }
 
 function renderSpecialState(
@@ -115,15 +118,16 @@ export function IntentPreviewCard({
   onConfirm,
   onCancel,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   if (!intent) return null;
 
   const special = renderSpecialState(intent, isPendingConfirmation, onConfirm, onCancel);
   if (special) return special;
 
   const meta = ACTION_CONFIG[intent.accion] ?? ACTION_CONFIG.ninguna;
-  const typeLabel = formatTypeLabel(intent.bloque?.tipo);
-  const indexLabel = formatIndexLabel(intent.bloque?.indice);
-  const destinoLabel = formatDestinoLabel(intent);
+  const typeLabel = formatTypeLabel(intent.bloque?.tipo, t);
+  const indexLabel = formatIndexLabel(intent.bloque?.indice, t);
+  const destinoLabel = formatDestinoLabel(intent, t);
   const confPct = Math.round(intent.confianza * 100);
 
   return (
@@ -132,11 +136,10 @@ export function IntentPreviewCard({
         <div className="flex items-center gap-2">
           <span className={`inline-flex items-center gap-1 font-semibold text-sm ${meta.color}`}>
             <Icon name="check-circle" className="size-4" weight="fill" />
-            {meta.label} → {typeLabel}{indexLabel}{destinoLabel}
+            {t(meta.label)} → {typeLabel}{indexLabel}{destinoLabel}
           </span>
           <span className={`rounded-full px-2 py-0.5 font-mono text-[11px] font-semibold ${getConfidenceBadgeClass(confPct)}`}>
-            {confPct.toString()}% conf.
-          </span>
+            {confPct.toString()}{t("workspace:conf")} </span>
         </div>
 
         {canUndo ? (
@@ -146,17 +149,15 @@ export function IntentPreviewCard({
             className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Icon name="arrow-counter-clockwise" className="size-3.5 text-muted-foreground" />
-            Deshacer
-          </button>
+            {t("workspace:deshacer")} </button>
         ) : null}
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{intent.razon ?? "Operación de 1 solo paso aplicada determinísticamente"}</span>
+        <span>{intent.razon ?? t("workspace:operacion_de_1_solo_paso_aplicada_deterministicamente")}</span>
         {trace ? (
           <span className="font-mono text-[11px]">
-            {trace.backend.toUpperCase()} • {trace.elapsedMs.toString()} ms
-          </span>
+            {trace.backend.toUpperCase()} • {trace.elapsedMs.toString()} {t("workspace:ms")} </span>
         ) : null}
       </div>
     </div>

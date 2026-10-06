@@ -1,9 +1,13 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 /** Esqueleto con la forma final: pestañas y panel de datos personales. */
 export function ProfileSkeleton() {
+  const { t } = useTranslation("profile");
+
   return (
-    <div className="space-y-6" role="status" aria-busy="true" aria-label="Cargando perfil">
+    <div className="space-y-6" role="status" aria-busy="true" aria-label={t("skeleton.loading")}>
       <Skeleton className="h-11 w-full rounded-none" />
       <div className="max-w-3xl space-y-5 rounded-xl border border-border bg-card p-6">
         <Skeleton className="h-5 w-40" />

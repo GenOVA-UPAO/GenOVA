@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { contentPlainPreview } from "../../lib/resource-label";
 
@@ -23,6 +24,7 @@ function previewWithoutName(saved: string, name: string): string {
 
 /** Cabecera de un recurso en edición: nombre y resumen, o aviso de cambios sin guardar. */
 export function WorkspacePhaseItemHeader({ name, saved, dirty, reorder }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <header className="flex min-h-12 items-center gap-2 py-1.5 pr-1.5 pl-3">
       <div className="min-w-0 flex-1">
@@ -31,7 +33,7 @@ export function WorkspacePhaseItemHeader({ name, saved, dirty, reorder }: Readon
         </h3>
         <p className="truncate text-xs text-muted-foreground">
           {dirty ? (
-            <span className="font-medium text-foreground">Cambios sin guardar en el HTML</span>
+            <span className="font-medium text-foreground">{t("workspace:cambios_sin_guardar_en_el_html")}</span>
           ) : (
             previewWithoutName(saved, name)
           )}

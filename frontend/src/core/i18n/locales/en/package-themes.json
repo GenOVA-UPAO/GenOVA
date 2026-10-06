@@ -1,0 +1,19 @@
+{
+  "label": "Visual theme",
+  "loading": "Loading themes…",
+  "previewTitle": "Learning together",
+  "continue": "Continue",
+  "help": "Applies to the preview and all export formats.",
+  "loadError": "Could not load themes.",
+  "retry": "Retry",
+  "updated": "Visual theme updated",
+  "saveError": "Could not save the visual theme. Please try again.",
+  "saving": "Saving…",
+  "names": {
+    "upao": "UPAO",
+    "claro": "Light",
+    "oscuro": "Dark",
+    "alto-contraste": "High contrast",
+    "infantil": "Children"
+  }
+}

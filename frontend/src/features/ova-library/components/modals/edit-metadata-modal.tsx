@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -41,6 +43,7 @@ export function EditMetadataModal({
   onCancel,
   onCloseAutoFocus,
 }: Readonly<EditMetadataModalProps>) {
+  const { t } = useTranslation();
   const f = useMetadataForm(initial, onSave, onCancel);
 
   return (
@@ -51,8 +54,8 @@ export function EditMetadataModal({
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader className="pr-8">
-          <DialogTitle>Editar metadatos del OVA</DialogTitle>
-          <DialogDescription>Define cómo aparece y cómo se puede reutilizar tu material educativo.</DialogDescription>
+          <DialogTitle>{t("metadata:title")}</DialogTitle>
+          <DialogDescription>{t("metadata:description")}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={f.handleSubmit} noValidate className="grid gap-5">
@@ -66,7 +69,7 @@ export function EditMetadataModal({
 
           <div className="grid gap-2">
             <Label htmlFor="metadata-description">
-              Descripción <span className="font-normal text-muted-foreground">(opcional)</span>
+              {t("metadata:descriptionLabel")} <span className="font-normal text-muted-foreground">{t("metadata:optional")}</span>
             </Label>
             <Textarea
               id="metadata-description"
@@ -79,20 +82,20 @@ export function EditMetadataModal({
               aria-invalid={Boolean(f.errors.description)}
               aria-describedby="metadata-description-hint"
             />
-            <p id="metadata-description-hint" className="text-xs text-muted-foreground">{f.errors.description ?? "Hasta 2000 caracteres."}</p>
+            <p id="metadata-description-hint" className="text-xs text-muted-foreground">{f.errors.description ?? t("metadata:descriptionHint")}</p>
           </div>
 
           <EducationalMetadataFields values={f.values} keywords={f.keywords} disabled={isLoading} errors={f.errors} onChange={f.onChange} />
-          <p className="text-xs text-muted-foreground">Los cambios viajan al exportar en todos los formatos.</p>
+          <p className="text-xs text-muted-foreground">{t("metadata:exportHint")}</p>
           {f.error && <p role="alert" className="text-sm text-destructive">{f.error}</p>}
           <PackageThemeSelector value={f.values.package_theme ?? "upao"} onChange={(value) => { f.onChange("package_theme", value); }} disabled={isLoading} />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={f.requestCancel} disabled={isLoading}>
-              Cancelar
+              {t("metadata:cancel")}
             </Button>
             <Button type="submit" loading={isLoading}>
-              {isLoading ? "Guardando…" : "Guardar cambios"}
+              {isLoading ? t("metadata:saving") : t("metadata:save")}
             </Button>
           </DialogFooter>
         </form>

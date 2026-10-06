@@ -1,5 +1,8 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { formatNumber } from "@/core/i18n/format";
 import { cn } from "@/core/lib/cn";
 
 interface OvaListPaginationProps {
@@ -20,16 +23,18 @@ export function OvaListPagination({
   currentPage,
   totalPages,
   onPageChange,
-  label = "Paginación",
+  label,
   className,
 }: Readonly<OvaListPaginationProps>) {
+  const { t, i18n } = useTranslation();
   if (totalPages <= 1) return null;
 
   return (
-    <nav aria-label={label} className={cn("flex items-center justify-between gap-3", className)}>
+    <nav aria-label={label ?? t("ova-library:paginacion")} className={cn("flex items-center justify-between gap-3", className)}>
       <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
-        Página <span className="font-medium text-foreground">{currentPage}</span> de{" "}
-        <span className="font-medium text-foreground">{totalPages}</span>
+        {t("ova-library:pagina")}{" "}
+        <span className="font-medium text-foreground">{formatNumber(currentPage, undefined, i18n.language)}</span>{" "}
+        {t("ova-library:de")} <span className="font-medium text-foreground">{formatNumber(totalPages, undefined, i18n.language)}</span>
       </p>
       <div className="flex gap-2">
         <Button
@@ -39,10 +44,10 @@ export function OvaListPagination({
             onPageChange(currentPage - 1);
           }}
           disabled={currentPage <= 1}
-          aria-label="Página anterior"
+          aria-label={t("ova-library:pagina_anterior")}
         >
           <Icon name="caret-left" size="text-base" />
-          <span className="max-sm:hidden">Anterior</span>
+          <span className="max-sm:hidden">{t("ova-library:anterior")}</span>
         </Button>
         <Button
           variant="outline"
@@ -51,9 +56,9 @@ export function OvaListPagination({
             onPageChange(currentPage + 1);
           }}
           disabled={currentPage >= totalPages}
-          aria-label="Página siguiente"
+          aria-label={t("ova-library:pagina_siguiente")}
         >
-          <span className="max-sm:hidden">Siguiente</span>
+          <span className="max-sm:hidden">{t("ova-library:siguiente")}</span>
           <Icon name="caret-right" size="text-base" />
         </Button>
       </div>

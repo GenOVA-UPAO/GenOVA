@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
@@ -21,10 +22,11 @@ export function ProfileRenameForm({
   onSave,
   onCancel,
 }: Readonly<ProfileRenameFormProps>) {
+  const { t } = useTranslation("llm-settings");
   const [name, setName] = useState(initial);
   const [touched, setTouched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const localError = touched && name.trim() === "" ? "Escribe un nombre para el perfil." : null;
+  const localError = touched && name.trim() === "" ? t("profiles.nameRequired") : null;
   const shown = localError ?? error;
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export function ProfileRenameForm({
       }}
     >
       <label htmlFor={id} className="text-xs text-muted-foreground">
-        Nuevo nombre
+        {t("profiles.newName")}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input
@@ -80,10 +82,10 @@ export function ProfileRenameForm({
             disabled={saving}
             onClick={onCancel}
           >
-            Cancelar
+            {t("credentials.cancel")}
           </Button>
           <Button type="submit" className="max-sm:h-11 max-sm:flex-1" loading={saving}>
-            Guardar
+            {t("profiles.save")}
           </Button>
         </div>
       </div>

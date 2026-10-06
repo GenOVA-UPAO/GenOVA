@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { apiJson } from "@/core/lib/http";
 
 import { type AdminUser, ALL_ROLE_FILTER, type UserEditPayload, type UsersListParams, type UsersPage } from "../lib/types";
@@ -17,7 +19,7 @@ export async function fetchUsers({
   const data = await apiJson<Partial<UsersPage>>(
     `/api/users?${qs.toString()}`,
     {},
-    { fallbackMsg: "No se pudo cargar la lista de usuarios." },
+    { fallbackMsg: t("admin:api.users.list") },
   );
   return {
     users: data.users ?? [],
@@ -30,7 +32,7 @@ export function updateUserRole(userId: string, roleId: string): Promise<void> {
   return apiJson(
     `/api/users/${userId}/role`,
     { method: "PATCH", body: json({ role_id: roleId }) },
-    { fallbackMsg: "Error al actualizar el rol." },
+    { fallbackMsg: t("admin:api.users.updateRole") },
   ).then(() => undefined);
 }
 
@@ -38,7 +40,7 @@ export function updateUser(userId: string, fields: UserEditPayload): Promise<Adm
   return apiJson<AdminUser>(
     `/api/users/${userId}`,
     { method: "PATCH", body: json(fields) },
-    { fallbackMsg: "Error al actualizar el perfil." },
+    { fallbackMsg: t("admin:api.users.updateProfile") },
   );
 }
 
@@ -46,7 +48,7 @@ export function updateUserStatus(userId: string, isActive: boolean): Promise<voi
   return apiJson(
     `/api/users/${userId}/status`,
     { method: "PATCH", body: json({ is_active: isActive }) },
-    { fallbackMsg: "Error al actualizar el estado." },
+    { fallbackMsg: t("admin:api.users.updateStatus") },
   ).then(() => undefined);
 }
 
@@ -54,7 +56,7 @@ export function unlockUser(userId: string): Promise<void> {
   return apiJson(
     `/api/users/${userId}/unlock`,
     { method: "POST" },
-    { fallbackMsg: "Error al desbloquear al usuario." },
+    { fallbackMsg: t("admin:api.users.unlock") },
   ).then(() => undefined);
 }
 
@@ -62,6 +64,6 @@ export function sendUserResetEmail(userId: string): Promise<void> {
   return apiJson(
     `/api/users/${userId}/reset-password-email`,
     { method: "POST" },
-    { fallbackMsg: "Error al enviar el correo." },
+    { fallbackMsg: t("admin:api.users.sendEmail") },
   ).then(() => undefined);
 }
