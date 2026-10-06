@@ -1,3 +1,7 @@
+/**
+ * Único mapa de iconos por recurso (modal de recursos, lista de creación y
+ * progreso de generación). Todo icono que use debe estar en icon-registry-lazy.
+ */
 /** Phosphor icon class (without `ph ` prefix) for a resource `tipo` label. */
 const BOOK_ICON = "ph-book-open";
 const FLASK_ICON = "ph-flask";
@@ -64,10 +68,14 @@ const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   "Quiz Adaptativo": "ph-exam",
 };
 
+const ICON_BY_LOWERCASE_TIPO = new Map(
+  Object.entries(RESOURCE_ICON_BY_TIPO).map(([tipo, icon]) => [tipo.toLowerCase(), icon]),
+);
+
 const KEYWORD_FALLBACKS: [RegExp, string][] = [
   [/geogebra|matem/i, "ph-function"],
   [/adaptativo/i, "ph-exam"],
-  [/podcast|audio|mic/i, "ph-microphone"],
+  [/podcast|audio|micr[oó]fono/i, "ph-microphone"],
   [/video|film|storyboard/i, "ph-film-strip"],
   [/cómic|comic|lectura|libro|book/i, "ph-book-open"],
   [/juego|game|gamif/i, "ph-game-controller"],
@@ -91,7 +99,8 @@ const DEFAULT_RESOURCE_ICON = "ph-squares-four";
 export function resourceIconClass(tipo: string | undefined | null): string {
   const name = (tipo ?? "").trim();
   if (!name) return `ph ${DEFAULT_RESOURCE_ICON}`;
-  const exact = RESOURCE_ICON_BY_TIPO[name];
+  // El mismo nombre llega en Title Case (catálogo) o en mayúscula de oración («Cómic interactivo»).
+  const exact = ICON_BY_LOWERCASE_TIPO.get(name.toLowerCase());
   if (exact) return `ph ${exact}`;
   for (const [re, icon] of KEYWORD_FALLBACKS) {
     if (re.test(name)) return `ph ${icon}`;

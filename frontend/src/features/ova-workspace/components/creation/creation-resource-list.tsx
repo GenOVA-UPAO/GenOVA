@@ -1,7 +1,7 @@
 import { Icon } from "@/core/components/icon";
+import { phaseIconName } from "@/core/lib/resource-icons";
 
 import { type PhaseGroup } from "../../lib/ova-job-view-model";
-import { phaseIconName } from "../../lib/resource-icons";
 import { CreationResourceRow } from "./creation-resource-row";
 
 interface Props {

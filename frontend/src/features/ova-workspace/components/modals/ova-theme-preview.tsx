@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 
+import { readableTextOn } from "../../lib/ova-theme";
 import type { OvaTheme } from "../../lib/types";
 
 const UPAO_DOTS = ["#F47A20", "#FFFFFF", "#F47A20"] as const;
@@ -13,12 +14,6 @@ function previewColors(draft: OvaTheme): { primary: string; accent: string } {
   }
   if (draft.color === "upao") return { primary: "#0A3D91", accent: "#F47A20" };
   return { primary: "#6D28D9", accent: "#A78BFA" };
-}
-
-/** Texto legible sobre `hex`: los acentos claros (menta, lavanda) llevan texto oscuro. */
-function textOn(hex: string): string {
-  const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
-  return 0.299 * r + 0.587 * g + 0.114 * b > 140 ? "#15233B" : "#FFFFFF";
 }
 
 /** Miniatura aproximada de cómo se verá el tema en un recurso. */
@@ -81,7 +76,7 @@ export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
             className="mt-1.5 rounded-md py-1.5 text-center transition-colors duration-300"
             style={{ background: accent }}
           >
-            <p className="text-[8px] font-bold" style={{ color: textOn(accent) }}>
+            <p className="text-[8px] font-bold" style={{ color: readableTextOn(accent) }}>
               {t("workspace:continuar")} </p>
           </div>
         </div>

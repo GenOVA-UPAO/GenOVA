@@ -27,7 +27,7 @@
   "deleting": "Eliminando…",
   "toolTitle": "Datos de GenOVA para el LMS",
   "toolDescription": "Pégalos al añadir GenOVA como herramienta externa LTI 1.3 en Moodle, Canvas o Blackboard.",
-  "toolUrlHint": "Estas URLs salen de la dirección con la que entraste. En producción, define LTI_TOOL_URL en el backend con su dirección pública.",
+  "toolUrlHint": "Estas URLs salen de la dirección con la que el backend recibe las peticiones: en desarrollo es la del servidor local (p. ej. http://127.0.0.1:8000), no la de esta página, y un LMS que corra en otra máquina no la alcanzará. En producción define LTI_TOOL_URL en el backend con su dirección pública.",
   "loginUrl": "URL de inicio de sesión",
   "loginUrlHint": "Initiate login URL",
   "launchUrl": "URL de redirección y de la herramienta",

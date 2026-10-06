@@ -50,11 +50,30 @@ function stripHtmlTags(html: string): string {
   return result;
 }
 
+const NAMED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+
+/** Decodifica entidades HTML (también las doblemente codificadas, «&amp;amp;»). */
+export function decodeHtmlEntities(text: string): string {
+  let current = text;
+  for (let pass = 0; pass < 3; pass++) {
+    const next = current.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code: string) => {
+      if (code.startsWith("#")) {
+        const point = code[1].toLowerCase() === "x" ? Number.parseInt(code.slice(2), 16) : Number.parseInt(code.slice(1), 10);
+        return Number.isFinite(point) && point > 0 && point <= 0x10ffff ? String.fromCodePoint(point) : match;
+      }
+      return NAMED_ENTITIES[code.toLowerCase()] ?? match;
+    });
+    if (next === current) break;
+    current = next;
+  }
+  return current;
+}
+
 /** Texto plano completo extraído del HTML del recurso. */
 export function contentPlainText(html: string | undefined | null): string {
   const raw = (html ?? "").trim();
   if (!raw) return emptyPreview();
-  const text = stripHtmlTags(removeElementContent(removeElementContent(raw, "style"), "script"))
+  const text = decodeHtmlEntities(stripHtmlTags(removeElementContent(removeElementContent(raw, "style"), "script")))
     .replace(/\s+/g, " ")
     .trim();
   return text || noTextPreview();
@@ -71,4 +90,22 @@ export function isContentPreviewTruncated(html: string | undefined | null, max =
   const text = contentPlainText(html);
   if (text === emptyPreview() || text === noTextPreview()) return false;
   return text.length > max;
+}
+
+/**
+ * Resumen del recurso sin los títulos con que suele empezar su HTML (el del OVA y
+ * el del propio recurso, p. ej. «Mapa conceptual: …»), para que cada extracto
+ * muestre contenido y no repita lo que ya dice la cabecera.
+ */
+export function previewWithoutTitles(html: string | undefined | null, titles: string[], max = 120): string {
+  const full = contentPlainText(html);
+  if (full === emptyPreview() || full === noTextPreview()) return full;
+  let text = full;
+  for (const title of titles) {
+    const prefix = title.trim().toLowerCase();
+    if (!prefix || !text.toLowerCase().startsWith(prefix)) continue;
+    const rest = text.slice(prefix.length).replace(/^\s*[:\-–—|·]\s*/, "").trim();
+    if (rest) text = rest;
+  }
+  return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
 }

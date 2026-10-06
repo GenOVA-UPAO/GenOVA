@@ -10,7 +10,7 @@ describe("paletas traducidas", () => {
   it("conserva la selección guardada en español al cambiar a inglés", async () => {
     const saved = { ...PALETTES[1] };
     render(<PaletteSwatches name="palette" selected={saved} onSelect={vi.fn()} />);
-    expect(screen.getByRole("radio", { name: "Oceano" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Océano" })).toBeChecked();
     await act(() => i18n.changeLanguage("en"));
     expect(screen.getByRole("radio", { name: "Ocean" })).toBeChecked();
     expect(knownPalette(saved)?.p).toBe(saved.p);

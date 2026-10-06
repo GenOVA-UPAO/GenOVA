@@ -4,9 +4,9 @@ import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { cn } from "@/core/lib/cn";
+import { resourceIconName } from "@/core/lib/resource-icons";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
-import { resourceIconName } from "../../lib/resource-icons";
 import { CreationStatusBadge } from "./creation-status-badge";
 import { RowStateHint } from "./row-state-hint";
 
