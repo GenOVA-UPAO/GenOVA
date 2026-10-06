@@ -10,6 +10,7 @@ export interface PlatformConfigResponse {
   providers?: string[];
   /** Proveedores con clave en una variable de entorno del servidor. Se usa si no hay clave guardada. */
   server_keys?: string[];
+  checks?: Record<string, { provider: string; code: string; models: number | null; key_source?: string }>;
 }
 
 export function getPlatformConfig(): Promise<PlatformConfigResponse> {

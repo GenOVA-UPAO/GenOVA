@@ -126,6 +126,10 @@ def _scrub(message: str) -> str:
 
 def error_entry(exc: BaseException) -> dict:
     """Error de proveedor → dict grabable (sin claves ni cabeceras)."""
+    from llm.auth_errors import ProviderAuthError
+
+    if isinstance(exc, ProviderAuthError):
+        return {"kind": "provider_auth", "personal": exc.personal, "message": str(exc)}
     if isinstance(exc, EmptyContentError):
         return {"kind": "empty", "message": _scrub(str(exc))}
     status = getattr(exc, "status_code", None)
@@ -147,6 +151,10 @@ _STATUS_ERRORS = {
 def build_error(err: dict, provider: str, model_id: str) -> Exception:
     """dict grabado → la excepción del SDK que lanzaría el proveedor."""
     kind, msg = err.get("kind", "status"), err.get("message") or f"{provider}/{model_id} falló"
+    if kind == "provider_auth":
+        from llm.auth_errors import ProviderAuthError
+
+        return ProviderAuthError(provider, personal=err.get("personal", False))
     request = httpx.Request("POST", f"https://cassette.invalid/{provider}/chat/completions")
     if kind == "empty":
         return EmptyContentError(msg)
@@ -328,7 +336,9 @@ def use_cassette(
 
 
 def _record_error(c: Cassette, provider, model_id, msgs, max_tokens, exc: Exception) -> None:
-    if isinstance(exc, _RECOVERABLE_ERRORS):
+    from llm.auth_errors import ProviderAuthError
+
+    if isinstance(exc, (*_RECOVERABLE_ERRORS, ProviderAuthError)):
         c.add(provider, model_id, msgs, max_tokens, error=error_entry(exc))
         c.save()
 

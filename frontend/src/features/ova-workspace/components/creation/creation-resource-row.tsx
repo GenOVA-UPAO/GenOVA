@@ -18,6 +18,7 @@ interface Props {
   onToggle: () => void;
   onRetry: () => void;
   onPreview?: () => void;
+  retryAllowed?: boolean;
 }
 
 export function CreationResourceRow({
@@ -28,6 +29,7 @@ export function CreationResourceRow({
   onToggle,
   onRetry,
   onPreview,
+  retryAllowed,
 }: Readonly<Props>) {
   const { t } = useTranslation();
   const icon = <Icon name={resourceIconName(resource.label)} className="shrink-0" size="text-sm" />;
@@ -63,7 +65,7 @@ export function CreationResourceRow({
         )}
         <RowStateHint status={resource.status} canPreview={Boolean(onPreview)} />
         {resource.status === "X" && (
-          <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry}>
+          <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry} disabled={retryAllowed === false}>
             {t("workspace:reintentar")} </Button>
         )}
       </div>
@@ -74,7 +76,7 @@ export function CreationResourceRow({
             selectable ? "pl-[3.75rem]" : "pl-[2.125rem]",
           )}
         >
-          {t("workspace:no_se_pudo_generar_este_recurso")} {resource.error_id && (
+          {t(resourceFailureKey(resource.error_code))} {resource.error_id && (
             <span className="block text-muted-foreground">
               {t("workspace:codigo_de_error")} <span className="font-mono">{resource.error_id}</span>
             </span>
@@ -83,4 +85,9 @@ export function CreationResourceRow({
       )}
     </li>
   );
+}
+
+function resourceFailureKey(code?: string | null): string {
+  if (code === "provider_auth") return "workspace:providerAuth";
+  return code === "provider_auth_personal" ? "workspace:providerAuthPersonal" : "workspace:no_se_pudo_generar_este_recurso";
 }

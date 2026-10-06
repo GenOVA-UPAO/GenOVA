@@ -12,16 +12,17 @@ interface Props {
   html: string;
   /** La carga del contenido falló: sin esto el panel quedaba en blanco sin explicación. */
   error?: boolean;
+  failed?: boolean;
   onRetry?: () => void;
 }
 
-export function PreviewPanelBody({ active, loading, html, error, onRetry }: Readonly<Props>) {
+export function PreviewPanelBody({ active, loading, html, error, failed, onRetry }: Readonly<Props>) {
   const { t } = useTranslation();
   if (!active) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 px-6 text-center">
         <p className="font-display text-base font-semibold">{t("workspace:vista_previa_del_ova")}</p>
-        <p className="max-w-xs text-sm text-muted-foreground">{t("workspace:los_recursos_apareceran_aqui_a_medida_que_se_generen")}</p>
+        <p className="max-w-xs text-sm text-muted-foreground">{t(failed ? "workspace:previewFailed" : "workspace:los_recursos_apareceran_aqui_a_medida_que_se_generen")}</p>
       </div>
     );
   }

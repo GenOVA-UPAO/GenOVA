@@ -218,6 +218,10 @@ def _run_model_attempts(
                 deadline,
             )
         except Exception as call_err:
+            from llm.auth_errors import is_provider_auth_error
+
+            if is_provider_auth_error(call_err):
+                raise
             logger.warning(
                 "ova text model call failed",
                 error=str(call_err)[:200],

@@ -51,6 +51,14 @@ function headline(status: string, failed: number, t: TFunction): string {
     : t("workspace:value_recursos_no_se_pudieron_generar", { p0: String(failed) });
 }
 
+function etaLabel(failed: number, job: Props["job"], t: TFunction): string | null {
+  return isTerminalStatus(jobStatus(job)) || failed > 0 ? null : formatEta(job?.eta, t);
+}
+
+function allowsBulkRetry(props: Props, terminal: boolean, failed: number): boolean {
+  return terminal && failed > 0 && (props.allowBulkRetry ?? true);
+}
+
 /** Región aria-live: anuncia (sin robar el foco) cuando un recurso empieza, termina o falla. */
 function useStatusAnnouncement(viewModel: ResourceVM[]): string {
   const previous = useRef<Record<string, string> | null>(null);
@@ -72,7 +80,7 @@ export function ProgressPanel(props: Readonly<Props>) {
   const done = doneCount(props.viewModel);
   const failed = failedCount(props.viewModel);
   const announcement = useStatusAnnouncement(props.viewModel);
-  const eta = terminal ? null : formatEta(props.job?.eta, t);
+  const eta = etaLabel(failed, props.job, t);
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-xs sm:p-5">
       <ProgressHeader
@@ -105,8 +113,9 @@ export function ProgressPanel(props: Readonly<Props>) {
         onRetryOne={props.onRetryOne}
         onPreview={props.onPreview}
         selectable={props.allowBulkRetry ?? true}
+        retryAllowed={terminal}
       />
-      {failed > 0 && (props.allowBulkRetry ?? true) && (
+      {allowsBulkRetry(props, terminal, failed) && (
         <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
           <Button variant="outline" size="sm" className="max-sm:h-11" onClick={props.onSelectAll}>
             {t("workspace:seleccionar_todos_los_fallidos")} </Button>

@@ -37,6 +37,12 @@ class _FakeEditorRepo:
     def get_or_create_active_version(self, ova: EditorOva) -> EditorVersion:
         return self.version
 
+    def get_active_version(self, ova_id: str) -> EditorVersion:
+        return self.version
+
+    def get_version(self, version_id: str, ova_id: str, with_phases=False) -> EditorVersion:
+        return self.version
+
     def list_versions(self, ova_id: str) -> list[EditorVersion]:
         return [self.version]
 

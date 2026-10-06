@@ -17,12 +17,21 @@ from sqlalchemy.orm import Session  # noqa: E402
 
 from core.security import hash_password  # noqa: E402
 from core.database import engine  # noqa: E402
-from models import Ova, OvaPhase, OvaVersion, User  # noqa: E402
+from models import Ova, OvaPhase, OvaVersion, Role, User, UserRole  # noqa: E402
 from ova_engine.pipeline import render_resource  # noqa: E402
 from ova_engine.registry import all_specs  # noqa: E402
 
 EMAIL = "docente@example.invalid"
 TITLE = "OVA LTI CI: índices B-tree"
+
+
+def ensure_teacher_role(db: Session, user: User) -> None:
+    role = db.query(Role).filter(Role.name == "profesor").one()
+    assignment = db.get(UserRole, (user.id, role.id))
+    if assignment is None:
+        db.add(UserRole(user_id=user.id, role_id=role.id, is_primary=True))
+    else:
+        assignment.is_primary = True
 
 
 def main() -> None:
@@ -33,6 +42,7 @@ def main() -> None:
                         full_name="Docente GenOVA", is_active=True, email_verified=True)
             db.add(user)
             db.flush()
+        ensure_teacher_role(db, user)
         ova = db.query(Ova).filter(Ova.user_id == user.id, Ova.title == TITLE, Ova.deleted_at.is_(None)).one_or_none()
         if ova is None:
             ova = Ova(user_id=user.id, title=TITLE, status="listo", author="Docente GenOVA")

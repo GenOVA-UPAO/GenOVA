@@ -184,16 +184,17 @@ def mark_job_resuming(db: Session, job: OvaJob) -> None:
     """Flip a finished/interrupted job back to running before relaunching (R7)."""
     job.status = "running"
     job.finished_at = None
+    for resource in list_resources(db, job.id):
+        if resource.defect_reason in ("provider_auth", "provider_auth_personal"):
+            resource.defect_reason = None
     commit_or_500(db, op="mark_job_resuming")
 
 
 def cancel_job(db: Session, job: OvaJob) -> None:
     """Mark a queued/running job as canceled and release the Ova placeholder.
 
-    The background thread checks status in `_finalize` and skips persisting
-    results if it finds 'canceled' (R1). Without releasing the Ova here, the
-    row stayed at 'generando' forever because `_finalize` returns early and
-    `_sweep_if_stale` ignored terminal jobs.
+    Workers stop before starting new resources; in-flight results are conserved
+    by `_finalize`. Already completed resources become usable immediately.
     """
     job.status = "canceled"
     job.finished_at = _now()

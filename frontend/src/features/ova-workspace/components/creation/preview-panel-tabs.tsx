@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/core/lib/cn";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
+import { resourceStatusLabel } from "../../lib/progress-view-model";
 
 interface Props {
   done: ResourceVM[];
@@ -41,7 +42,7 @@ export function PreviewPanelTabs({ done, pending, activeId, onSelect }: Readonly
       {pending.map((resource) => (
         <span key={resource.id} className="inline-flex h-11 shrink-0 items-center px-3 text-sm whitespace-nowrap text-muted-foreground/60">
           {resource.label || resource.phase}
-          <span className="sr-only"> {t("workspace:generando")}</span>
+          <span className="sr-only"> ({resourceStatusLabel(resource.status, t)})</span>
         </span>
       ))}
     </nav>
