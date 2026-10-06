@@ -27,6 +27,8 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 1,
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
+    // La interfaz detecta el idioma del navegador y los escenarios están en español.
+    locale: 'es-PE',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     // Cada escenario deja su grabación en tests/test-results/<escenario>/video.webm:
