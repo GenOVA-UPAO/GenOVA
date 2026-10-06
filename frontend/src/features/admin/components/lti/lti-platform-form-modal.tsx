@@ -1,4 +1,6 @@
+import type { TFunction } from "i18next";
 import { type SyntheticEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -32,9 +34,9 @@ interface LtiPlatformFormModalProps {
   onClose: () => void;
 }
 
-function submitLabel(isEdit: boolean, isSubmitting: boolean): string {
-  if (isSubmitting) return "Guardando…";
-  return isEdit ? "Guardar cambios" : "Registrar plataforma";
+function submitLabel(isEdit: boolean, isSubmitting: boolean, t: TFunction): string {
+  if (isSubmitting) return t("lti:saving");
+  return isEdit ? t("lti:save") : t("lti:register");
 }
 
 export function LtiPlatformFormModal({
@@ -44,6 +46,7 @@ export function LtiPlatformFormModal({
   onSubmit,
   onClose,
 }: Readonly<LtiPlatformFormModalProps>) {
+  const { t } = useTranslation();
   const [form, setForm] = useState(() =>
     platform === null ? emptyLtiForm() : formFromPlatform(platform),
   );
@@ -76,10 +79,10 @@ export function LtiPlatformFormModal({
       <DialogContent className="max-h-[92dvh] overflow-y-auto overscroll-contain sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {platform === null ? "Registrar plataforma LTI" : `Editar «${platform.name}»`}
+            {platform === null ? t("lti:registerTitle") : t("lti:editTitle", { name: platform.name })}
           </DialogTitle>
           <DialogDescription>
-            Copia estos datos de la configuración de la herramienta en tu LMS.
+            {t("lti:formHelp")}
           </DialogDescription>
         </DialogHeader>
         <form noValidate onSubmit={handleSubmit} className="space-y-4">
@@ -102,15 +105,15 @@ export function LtiPlatformFormModal({
                 setForm((current) => ({ ...current, is_active: checked }));
               }}
             />
-            <Label htmlFor="lti-is-active">Activa (acepta lanzamientos desde este LMS)</Label>
+            <Label htmlFor="lti-is-active">{t("lti:activeHelp")}</Label>
           </div>
           <FormErrorAlert message={serverError} />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" disabled={isSubmitting} onClick={onClose}>
-              Cancelar
+              {t("lti:cancel")}
             </Button>
             <Button type="submit" loading={isSubmitting}>
-              {submitLabel(platform !== null, isSubmitting)}
+              {submitLabel(platform !== null, isSubmitting, t)}
             </Button>
           </div>
         </form>

@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Icon } from "@/core/components/icon";
@@ -5,8 +7,8 @@ import { Button } from "@/core/components/ui/button";
 
 function copy(label: string, value: string): void {
   navigator.clipboard.writeText(value).then(
-    () => toast.success(`${label} copiado`),
-    () => toast.error("No se pudo copiar. Selecciona el texto y cópialo a mano."),
+    () => toast.success(i18n.t("lti:copied", { label })),
+    () => toast.error(i18n.t("lti:copyError")),
   );
 }
 
@@ -15,6 +17,7 @@ export function ToolRow({
   hint,
   value,
 }: Readonly<{ label: string; hint: string; value: string }>) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
@@ -26,12 +29,12 @@ export function ToolRow({
         variant="outline"
         size="sm"
         className="max-md:h-11 sm:shrink-0"
-        aria-label={`Copiar ${label}`}
+        aria-label={t("lti:copyLabel", { label })}
         onClick={() => {
           copy(label, value);
         }}
       >
-        <Icon name="copy" /> Copiar
+        <Icon name="copy" /> {t("lti:copy")}
       </Button>
     </div>
   );

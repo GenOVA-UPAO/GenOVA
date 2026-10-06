@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ConfirmModal } from "@/core/components/confirm-modal";
 import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
@@ -9,23 +11,24 @@ import { LtiToolCard } from "../components/lti/lti-tool-card";
 import { useAdminLtiController } from "../hooks/use-admin-lti-controller";
 
 export function AdminLtiPage() {
+  const { t } = useTranslation();
   const c = useAdminLtiController();
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
-        title="Integración LTI"
-        subtitle="Conecta GenOVA con el aula virtual: los docentes eligen sus OVAs dentro del curso y las notas vuelven al LMS."
+        title={t("lti:title")}
+        subtitle={t("lti:subtitle")}
         actions={
           <Button onClick={c.openCreate} className="max-md:h-11">
-            <Icon name="plus" size="text-base" /> Registrar plataforma
+            <Icon name="plus" size="text-base" /> {t("lti:register")}
           </Button>
         }
       />
       <LtiToolCard tool={c.tool.data} isLoading={c.tool.isLoading} error={c.tool.error} />
       <section aria-labelledby="lti-platforms-title" className="space-y-3">
         <h2 id="lti-platforms-title" className="font-display text-xl font-semibold">
-          Plataformas registradas
+          {t("lti:platformsTitle")}
         </h2>
         <LtiPlatformList
           platforms={c.platforms.data ?? []}
@@ -48,10 +51,10 @@ export function AdminLtiPage() {
       )}
       {c.deleting !== null && (
         <ConfirmModal
-          title={`¿Eliminar «${c.deleting.name}»?`}
-          message="Las actividades de GenOVA en ese LMS dejarán de abrirse y las notas ya no se enviarán. Escribe el nombre para confirmar."
-          confirmLabel="Eliminar plataforma"
-          loadingLabel="Eliminando…"
+          title={t("lti:deleteTitle", { name: c.deleting.name })}
+          message={t("lti:deleteDescription")}
+          confirmLabel={t("lti:deleteConfirm")}
+          loadingLabel={t("lti:deleting")}
           confirmPhrase={c.deleting.name}
           isLoading={c.isDeleting}
           onConfirm={c.confirmDelete}

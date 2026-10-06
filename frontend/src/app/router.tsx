@@ -144,7 +144,7 @@ export const routes: RouteObject[] = [
           {
             path: "admin/lti",
             loader: requireAdmin,
-            handle: { title: "Integración LTI" },
+            handle: { get title() { return i18n.t("lti:title"); } },
             lazy: page(pageLoaders.adminLti, "AdminLtiPage"),
           },
           redirectRoute("admin/platform", "/models"),

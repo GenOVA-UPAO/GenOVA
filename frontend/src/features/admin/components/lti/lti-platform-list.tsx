@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
 import { Button } from "@/core/components/ui/button";
@@ -17,18 +19,19 @@ interface LtiPlatformListProps {
 }
 
 export function LtiPlatformList(props: Readonly<LtiPlatformListProps>) {
+  const { t } = useTranslation();
   const { platforms, isLoading, error, onRetry, onCreate, onEdit, onDelete } = props;
   if (isLoading) return <Skeleton className="h-32 w-full" />;
   if (error !== null) {
-    return <QueryErrorState title="No se pudieron cargar las plataformas" onRetry={onRetry} />;
+    return <QueryErrorState title={t("lti:loadPlatforms")} onRetry={onRetry} />;
   }
   if (platforms.length === 0) {
     return (
       <EmptyState
         icon="link"
-        title="Aún no hay plataformas"
-        description="Registra tu LMS para que los docentes añadan OVAs de GenOVA a sus cursos."
-        action={<Button onClick={onCreate}>Registrar plataforma</Button>}
+        title={t("lti:emptyTitle")}
+        description={t("lti:emptyDescription")}
+        action={<Button onClick={onCreate}>{t("lti:register")}</Button>}
       />
     );
   }

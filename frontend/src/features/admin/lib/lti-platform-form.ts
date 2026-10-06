@@ -53,13 +53,13 @@ function isHttpUrl(value: string): boolean {
 
 export function validateLtiForm(form: LtiPlatformForm): LtiPlatformErrors {
   const errors: LtiPlatformErrors = {};
-  if (form.name.trim() === "") errors.name = "Escribe un nombre, por ejemplo «Moodle UPAO».";
-  if (form.client_id.trim() === "") errors.client_id = "Copia el Client ID que muestra el LMS.";
+  if (form.name.trim() === "") errors.name = "lti:validation.name";
+  if (form.client_id.trim() === "") errors.client_id = "lti:validation.clientId";
   if (parseDeploymentIds(form.deployment_ids).length === 0) {
-    errors.deployment_ids = "Indica al menos un Deployment ID.";
+    errors.deployment_ids = "lti:validation.deployments";
   }
   for (const field of URL_FIELDS) {
-    if (!isHttpUrl(form[field].trim())) errors[field] = "Pega la URL completa (https://…).";
+    if (!isHttpUrl(form[field].trim())) errors[field] = "lti:validation.url";
   }
   return errors;
 }
