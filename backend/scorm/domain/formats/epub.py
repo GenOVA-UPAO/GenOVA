@@ -21,6 +21,7 @@ from xml.sax.saxutils import quoteattr
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from core.educational_metadata import EducationalMetadata
+from core.package_themes import inject_package_theme
 from scorm.domain.formats.xhtml import html_to_xhtml
 from scorm.domain.resources import prepare_phase_resources
 
@@ -48,6 +49,7 @@ def _nav_xhtml(course_title: str, chapters: list[tuple[str, str]]) -> str:
   <head>
     <meta charset="UTF-8" />
     <title>{title}</title>
+    <style>body{{background:var(--bg);color:var(--text)}}a{{color:var(--primary)}}</style>
   </head>
   <body>
     <nav epub:type="toc" id="toc">
@@ -111,6 +113,7 @@ def build_epub_bytes(
     phases: list[dict] | None = None,
     *,
     metadata: EducationalMetadata | None = None,
+    theme: str = "upao",
     identifier: str | None = None,
     modified: datetime | None = None,
 ) -> bytes:
@@ -134,7 +137,7 @@ def build_epub_bytes(
         zip_file.writestr(ZipInfo("mimetype"), EPUB_MIMETYPE, compress_type=ZIP_STORED)
         zip_file.writestr("META-INF/container.xml", _CONTAINER_XML)
 
-        for resource in prepare_phase_resources(phases):
+        for resource in prepare_phase_resources(phases, theme):
             page = html_to_xhtml(resource.html, resource.label)
             href = f"{resource.basename}.xhtml"
             zip_file.writestr(f"{CONTENT_DIR}/{href}", page.xhtml)
@@ -166,7 +169,10 @@ def build_epub_bytes(
                     }
                 )
 
-        zip_file.writestr(f"{CONTENT_DIR}/nav.xhtml", _nav_xhtml(course_title, chapters))
+        zip_file.writestr(
+            f"{CONTENT_DIR}/nav.xhtml",
+            inject_package_theme(_nav_xhtml(course_title, chapters), theme),
+        )
         zip_file.writestr(
             f"{CONTENT_DIR}/package.opf",
             _package_opf(

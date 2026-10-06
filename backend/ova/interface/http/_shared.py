@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from core.educational_metadata import EducationalMetadata, InvalidEducationalMetadata, License
+from core.package_themes import PackageThemeId
 from ova.application.access import _is_admin as _is_admin
 
 
@@ -13,6 +14,7 @@ class UpdateOvaMetadataRequest(BaseModel):
 
     title: str
     description: str | None = Field(default=None, max_length=2000)
+    package_theme: PackageThemeId | None = None
     license: License = "CC BY-SA 4.0"
     language: str = "es"
     keywords: list[str] = Field(default_factory=list)
@@ -25,7 +27,7 @@ class UpdateOvaMetadataRequest(BaseModel):
     def _metadata_contract(self) -> "UpdateOvaMetadataRequest":
         # La validación vive en core (dataclass pura); aquí solo se traduce a 422.
         try:
-            EducationalMetadata(**self.model_dump(exclude={"title", "description"}))
+            EducationalMetadata(**self.model_dump(exclude={"title", "description", "package_theme"}))
         except InvalidEducationalMetadata as error:
             raise ValueError(str(error)) from error
         return self

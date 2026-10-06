@@ -23,6 +23,8 @@ class EditView:
         return {
             "ova_id": ova.id,
             "title": ova.title,
+            "description": ova.description,
+            "package_theme": ova.package_theme,
             "status": ova.status,
             # El editor se muestra en solo lectura a quien no es el autor (el admin).
             "can_edit": can_edit_ova(ova.owner_id, data.actor),

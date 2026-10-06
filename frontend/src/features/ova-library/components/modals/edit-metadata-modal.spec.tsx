@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { EditMetadataModal } from "./edit-metadata-modal";
 
+vi.mock("@/core/package-themes/use-package-themes", () => ({
+  usePackageThemes: () => ({ data: { themes: [] }, isError: false }),
+}));
+
 describe("metadatos educativos del OVA", () => {
   it("carga los valores actuales y guarda licencia y datos educativos", async () => {
     const user = userEvent.setup();
@@ -27,7 +31,7 @@ describe("metadatos educativos del OVA", () => {
     render(<EditMetadataModal initial={{ title: "Curso" }} onSave={onSave} onCancel={vi.fn()} />);
     expect(screen.getByLabelText("Licencia")).toHaveValue("CC BY-SA 4.0");
     expect(screen.getByLabelText("Idioma")).toHaveValue("es");
-    expect(screen.getByText(/SCORM 1.2 guardado se actualiza al regenerar/)).toBeVisible();
+    expect(screen.getByText(/Los cambios viajan al exportar en todos los formatos/)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ license: "CC BY-SA 4.0", language: "es", keywords: [] }));
   });

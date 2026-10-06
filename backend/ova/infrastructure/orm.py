@@ -46,6 +46,7 @@ class Ova(Base):
     audience = Column(String(255), nullable=False, default="", server_default="")
     typical_learning_time = Column(String(40), nullable=False, default="", server_default="")
     author = Column(String(255), nullable=False, default="", server_default="")
+    package_theme = Column(String(24), nullable=False, default="upao", server_default="upao")
     status = Column(String(20), nullable=False, default="borrador", server_default="borrador")
     file_path = Column(Text)
     storage_key = Column(Text)  # Supabase Storage object key (new persistence path)

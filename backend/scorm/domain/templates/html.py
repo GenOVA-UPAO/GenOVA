@@ -74,13 +74,13 @@ def wrap_resource_html(content: str, title: str) -> str:
       body {{
         margin: 0;
         padding: 24px;
-        font-family: Arial, Helvetica, sans-serif;
-        color: #0f172a;
-        background: #ffffff;
+        font-family: var(--font-body, Arial, sans-serif);
+        color: var(--text, #0f172a);
+        background: var(--surface, #ffffff);
         line-height: 1.6;
       }}
-      h1 {{ color: #1746c0; font-size: 1.5rem; }}
-      :focus-visible {{ outline: 3px solid #1746c0; outline-offset: 2px; }}
+      h1 {{ color: var(--primary, #1746c0); font-size: 1.5rem; }}
+      :focus-visible {{ outline: 3px solid var(--focus, #1746c0); outline-offset: 2px; }}
     </style>
   </head>
   <body>

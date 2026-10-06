@@ -41,9 +41,11 @@ class ExportFormat:
         course_title: str,
         phases: list[dict] | None,
         module_title: str = DEFAULT_MODULE_TITLE,
-        *, metadata: EducationalMetadata | None = None,
+        *,
+        metadata: EducationalMetadata | None = None,
+        theme: str = "upao",
     ) -> bytes:
-        return self.builder(course_title, module_title, phases, metadata=metadata)
+        return self.builder(course_title, module_title, phases, metadata=metadata, theme=theme)
 
 
 EXPORT_FORMATS: dict[str, ExportFormat] = {
@@ -92,12 +94,14 @@ def build_export(
     course_title: str,
     phases: list[dict] | None,
     module_title: str = DEFAULT_MODULE_TITLE,
-    *, metadata: EducationalMetadata | None = None,
+    *,
+    metadata: EducationalMetadata | None = None,
+    theme: str = "upao",
 ) -> bytes:
     fmt = get_export_format(format_id)
     if fmt is None:
         raise UnknownExportFormat(format_id)
-    return fmt.build(course_title, phases, module_title, metadata=metadata)
+    return fmt.build(course_title, phases, module_title, metadata=metadata, theme=theme)
 
 
 __all__ = [

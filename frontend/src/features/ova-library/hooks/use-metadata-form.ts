@@ -4,12 +4,13 @@ import type { EducationalMetadata } from "@/core/lib/educational-metadata";
 
 import { type MetadataInput, metadataSchema } from "../lib/metadata-schema";
 
-export function useMetadataForm(initial: EducationalMetadata & { title: string; description?: string }, onSave: (data: MetadataInput) => void, onCancel: () => void) {
+export function useMetadataForm(initial: EducationalMetadata & { title: string; description?: string; package_theme?: string }, onSave: (data: MetadataInput) => void, onCancel: () => void) {
   const [values, setValues] = useState<MetadataInput>(() => ({
     title: initial.title, description: initial.description ?? "", license: initial.license ?? "CC BY-SA 4.0",
     language: initial.language ?? "es", keywords: initial.keywords ?? [], author: initial.author ?? "",
     educational_level: initial.educational_level ?? "", audience: initial.audience ?? "",
     typical_learning_time: initial.typical_learning_time ?? "",
+    package_theme: metadataSchema.shape.package_theme.parse(initial.package_theme ?? "upao"),
   }));
   const [keywords, setKeywords] = useState((initial.keywords ?? []).join(", "));
   const [errors, setErrors] = useState<Partial<Record<keyof MetadataInput, string>>>({});

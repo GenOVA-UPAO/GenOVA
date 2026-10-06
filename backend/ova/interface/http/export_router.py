@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from auth.dependencies import require_permission
-from ova.application.dto import ExportOvaInput, ManageOvaInput, PackageDownload
+from ova.application.dto import ExportOvaInput, PackageDownload
 from ova.container import OvaUseCases, build_ova
 from ova.domain.errors import OvaError
 from ova.domain.model import OvaActor
@@ -56,8 +56,8 @@ def export_scorm(
     use_cases: OvaUseCases = Depends(build_ova),
 ):
     try:
-        result = use_cases.export_scorm.execute(
-            ManageOvaInput(ova_id=ova_id, actor=_actor(current_user))
+        result = use_cases.export_package.execute(
+            ExportOvaInput(ova_id=ova_id, actor=_actor(current_user), format="scorm12")
         )
     except OvaError as error:
         return ova_error_to_response(error)

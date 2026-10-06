@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 
 import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Icon } from "@/core/components/icon";
+import { applyPackageTheme, usePackageTheme } from "@/core/package-themes/use-package-themes";
 
 import { humanizeResourceType } from "../../lib/ova-job-view-model";
 import { phaseMeta } from "../../lib/phase-meta";
@@ -74,11 +75,13 @@ function feedbackSlot(
 interface PreviewProps {
   phases: PhaseWithContent[];
   ovaId: string;
+  packageTheme?: string;
   /** Solo vista: quien no es dueño del OVA no valora sus recursos. */
   readOnly?: boolean;
 }
 
-export default function WorkspaceHtmlPreview({ phases, ovaId, readOnly = false }: Readonly<PreviewProps>) {
+export default function WorkspaceHtmlPreview({ phases, ovaId, packageTheme, readOnly = false }: Readonly<PreviewProps>) {
+  const theme = usePackageTheme(packageTheme);
   const [selection, setSelection] = useState<Selection | null>(null);
   const active = pickActive(phases, selection);
   const labels = uniqueLabels(phases);
@@ -101,7 +104,7 @@ export default function WorkspaceHtmlPreview({ phases, ovaId, readOnly = false }
         />
         <div className="relative min-h-0 flex-1 overflow-hidden bg-background">
           <HtmlPreviewFrame
-            html={active?.content ?? ""}
+            html={applyPackageTheme(active?.content ?? "", theme)}
             className="peer block h-full min-h-0 w-full border-0"
             height={null}
             title={active?.title ?? "Vista previa del recurso"}

@@ -47,6 +47,7 @@ class SqlAlchemyOvaEditorRepository:
             title=row.title,
             description=row.description,
             status=row.status,
+            package_theme=row.package_theme,
         )
 
     def get_or_create_active_version(self, ova: EditorOva) -> EditorVersion:
@@ -165,6 +166,7 @@ class SqlAlchemyOvaEditorRepository:
         from scorm import build_scorm_zip_bytes
 
         zip_bytes = build_scorm_zip_bytes(
+            theme=ova.package_theme,
             course_title=ova.title,
             module_title="OVA Generado por GenOVA",
             metadata=metadata_from_ova(ova),
