@@ -82,6 +82,15 @@ def test_h5p_package_has_only_h5p_json_and_content():
     assert sorted(z.namelist()) == ["content/content.json", "h5p.json"]
 
 
+def test_h5p_without_author_omits_authors_key():
+    # Moodle rechaza el paquete si `authors` es una lista vacía (lo valida como objeto).
+    with ZipFile(BytesIO(build_export("h5p", "Biología", PHASES, metadata=EducationalMetadata(author="")))) as z:
+        manifest = json.loads(z.read("h5p.json"))
+        content = json.loads(z.read("content/content.json"))
+    assert "authors" not in manifest
+    assert all("authors" not in item["content"]["metadata"] for item in content["content"])
+
+
 @pytest.mark.parametrize("license,code,version", [
     ("CC BY 4.0", "CC BY", "4.0"),
     ("CC BY-SA 4.0", "CC BY-SA", "4.0"),
