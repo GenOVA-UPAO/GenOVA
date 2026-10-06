@@ -131,7 +131,7 @@ def test_shell_declares_format_and_accessible_initial_status(format_id):
 @pytest.mark.parametrize("format_id", ["html", "ims"])
 def test_local_progress_resumes_without_counting_visits_or_calling_lms(format_id):
     first, resumed, completed = _run(format_id, [
-        {"api": True, "actions": [
+        {"actions": [
             {"type": "resource", "foreign": True, "score": 100},
             {"type": "resource"},
             {"type": "resource"},  # completar dos veces no duplica el contador
@@ -150,6 +150,23 @@ def test_local_progress_resumes_without_counting_visits_or_calling_lms(format_id
     assert completed["statuses"] == ["Progreso local: 2 de 2 recursos completados."]
     assert first["calls"] == resumed["calls"] == completed["calls"] == []
     assert "LMS" not in " ".join(first["statuses"] + resumed["statuses"])
+
+
+@pytest.mark.parametrize("format_id", ["html", "ims"])
+def test_web_and_ims_report_to_an_lms_api_when_present(format_id):
+    # El reproductor LTI sirve el paquete Web y expone `window.API` para enviar la nota
+    # por AGS: si hay API de LMS, el shell la usa en lugar del progreso local.
+    (session,) = _run(format_id, [{"api": True, "actions": [
+        {"type": "resource", "score": 80},
+        {"type": "select", "index": 1},
+        {"type": "resource", "score": 100},
+    ]}])
+    sets = {call[1]: call[2] for call in session["calls"] if call[0] == "set"}
+    assert ["initialize"] in session["calls"]
+    assert sets["cmi.core.lesson_status"] == "completed"
+    assert str(sets["cmi.core.score.raw"]) == "90"
+    assert not session["storage"]  # sin progreso local
+    assert session["statuses"][-1] == "Estado LMS: completado y guardado."
 
 
 @pytest.mark.parametrize("format_id", ["html", "ims"])
