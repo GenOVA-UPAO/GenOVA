@@ -102,6 +102,8 @@ def generate_with_template(
             db_facts=domain_for(concept, prompt_ctx).is_db,
         )
     )
+    if spec.normalize is not None:
+        data = spec.normalize(data, params)
     t_text = time.monotonic()
     data, review = _review_step(spec, concept, params, data, fake, llm_config, enabled_models, deadline)
     t_review = time.monotonic()
