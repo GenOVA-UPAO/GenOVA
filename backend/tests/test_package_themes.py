@@ -42,7 +42,7 @@ def test_complete_tokens_and_accessible_text(theme):
 
 
 @pytest.mark.parametrize("theme", PACKAGE_THEMES)
-@pytest.mark.parametrize("fmt", EXPORT_FORMATS)
+@pytest.mark.parametrize("fmt", [fmt for fmt in EXPORT_FORMATS if fmt != "h5p"])
 def test_every_export_contains_selected_tokens(theme, fmt):
     original = "<html><head><style>p{color:#123456}</style></head><body><p>Hola</p><script>window.x=1</script></body></html>"
     phases = [{"type": "engage", "order": 1, "content": original}]

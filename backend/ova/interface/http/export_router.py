@@ -15,7 +15,7 @@ from ova.interface.http.error_map import ova_error_to_response
 
 router = APIRouter(tags=["SCORM y descargas"])
 
-EXPORT_FORMAT_IDS = "scorm12 | scorm2004 | ims | html | epub | elpx"
+EXPORT_FORMAT_IDS = "scorm12 | scorm2004 | ims | html | epub | elpx | h5p"
 
 
 def _actor(current_user) -> OvaActor:

@@ -74,6 +74,7 @@ def repair_node(state: OvaGenerationState) -> dict:
     def _retry(err: dict):
         phase, rt = err["phase"], err["resource_type"]
         per_config = resource_configs.get(f"{phase}:{rt}", {})
+        from prometheus.engine.activity_store import record_activity
         from prometheus.plans.generate import generate_resource
         from prometheus.plans.plan_map import plan_for
 
@@ -100,6 +101,7 @@ def repair_node(state: OvaGenerationState) -> dict:
                 contexto=contexto,
                 deadline=deadline,
             )
+            record_activity(result.html, getattr(result, "activity", None))
             return err, result.html, result.defects
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento
             logger.warning("repair: failed again", phase=phase, resource_type=rt, error=str(exc))

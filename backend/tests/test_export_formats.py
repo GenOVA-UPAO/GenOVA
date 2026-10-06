@@ -67,6 +67,7 @@ def test_registry_has_contract_ids_extensions_and_media_types():
         "html": ("zip", "application/zip"),
         "epub": ("epub", "application/epub+zip"),
         "elpx": ("elpx", "application/zip"),
+        "h5p": ("h5p", "application/zip"),
     }
     assert {k: (v.extension, v.media_type) for k, v in EXPORT_FORMATS.items()} == expected
 

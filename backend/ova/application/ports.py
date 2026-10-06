@@ -156,6 +156,14 @@ class ExportFormatSpec(Protocol):
     ) -> bytes: ...
 
 
+class ResourceActivityRepository(Protocol):
+    """Datos estructurados de recursos generados por plantilla, por huella del HTML."""
+
+    def find_by_hashes(self, hashes: tuple[str, ...]) -> dict[str, dict]:
+        """Huella → {"template", "data", "params"} de las huellas que tengan datos."""
+        ...
+
+
 class ChatRepository(Protocol):
     def list_messages(self, ova_id: str, limit: int = 200) -> tuple[ChatMessage, ...]: ...
 

@@ -9,9 +9,14 @@ Reglas del formato (doc oficial de eXeLearning, `doc/elpx-format/ai-generation.m
 - `htmlView` y `jsonProperties` siempre en CDATA, partiendo `]]>`.
 - Recursos en `content/resources/…`, referenciados como `{{context_path}}/…`.
 
-Cada fase es una página con un bloque y un iDevice `text` que incrusta, en un
-iframe, el HTML de la fase guardado en `content/resources/genova/recurso_N.html`
-(el JS de la IA sigue funcionando aislado, como en el SCORM).
+Cada fase es una página con un bloque y un iDevice:
+
+- Si la fase tiene una actividad editable sincronizada (opción múltiple, completar,
+  relacionar, crucigrama, verdadero/falso), el iDevice nativo de eXe equivalente
+  (`formats/exe_idevices.py`), que el docente puede seguir editando en eXe.
+- Si no, un iDevice `text` que incrusta, en un iframe, el HTML de la fase guardado
+  en `content/resources/genova/recurso_N.html` (el JS sigue funcionando aislado,
+  como en el SCORM).
 
 No se empaquetan `content.dtd`, temas ni librerías de eXe (licencia AGPL): el
 importador de eXe reconstruye el proyecto a partir de `content.xml`.
@@ -21,6 +26,7 @@ from __future__ import annotations
 
 import json
 import random
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from html import escape as html_escape
 from io import BytesIO
@@ -28,6 +34,9 @@ from xml.sax.saxutils import escape as xml_escape
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 from core.educational_metadata import EducationalMetadata
+from core.package_themes import theme_css
+from scorm.domain.activities import Activity
+from scorm.domain.formats.exe_idevices import native_idevice
 from scorm.domain.resources import prepare_phase_resources
 
 ODE_NAMESPACE = "http://www.intef.es/xsd/ode"
@@ -81,6 +90,47 @@ def _iframe_html(src: str, label: str) -> str:
     )
 
 
+@dataclass(frozen=True, slots=True)
+class ElpxPage:
+    """Una página del proyecto: su recurso HTML (iframe) o su actividad nativa."""
+
+    label: str
+    src: str | None = None  # ruta relativa a content/resources (iDevice `text`)
+    activity: Activity | None = None
+
+
+def _component(
+    page_id: str,
+    block_id: str,
+    idevice_id: str,
+    type_name: str,
+    html_view: str,
+    json_properties: dict,
+) -> str:
+    # Como eXe: `<jsonProperties>` vacío si el iDevice guarda todo en `htmlView`.
+    json_view = (
+        f"<jsonProperties>{cdata(json.dumps(json_properties, ensure_ascii=False))}</jsonProperties>"
+        if json_properties
+        else "<jsonProperties></jsonProperties>"
+    )
+    props = _key_values(
+        "odeComponentsProperties",
+        "odeComponentsProperty",
+        [("visibility", "true"), ("teacherOnly", "false"), ("cssClass", "")],
+        "              ",
+    )
+    return f"""            <odeComponent>
+              <odePageId>{page_id}</odePageId>
+              <odeBlockId>{block_id}</odeBlockId>
+              <odeIdeviceId>{idevice_id}</odeIdeviceId>
+              <odeIdeviceTypeName>{type_name}</odeIdeviceTypeName>
+              <htmlView>{cdata(html_view)}</htmlView>
+              {json_view}
+              <odeComponentsOrder>1</odeComponentsOrder>
+{props}
+            </odeComponent>"""
+
+
 def _text_idevice(ids: OdeIdFactory, page_id: str, block_id: str, src: str, label: str) -> str:
     idevice_id = ids.new()
     inner = _iframe_html(src, label)
@@ -88,32 +138,29 @@ def _text_idevice(ids: OdeIdFactory, page_id: str, block_id: str, src: str, labe
         '<div class="exe-text-template"><div class="textIdeviceContent">'
         f'<div class="exe-text-activity"><div>{inner}</div></div></div></div>'
     )
-    json_properties = json.dumps(
-        {
-            "ideviceId": idevice_id,
-            "textTextarea": inner,
-            "textFeedbackInput": "Mostrar retroalimentación",
-            "textFeedbackTextarea": "",
-            "textInfoDurationInput": "",
-            "textInfoDurationTextInput": "Duración",
-            "textInfoParticipantsInput": "",
-            "textInfoParticipantsTextInput": "Agrupamiento",
-        },
-        ensure_ascii=False,
+    json_properties = {
+        "ideviceId": idevice_id,
+        "textTextarea": inner,
+        "textFeedbackInput": "Mostrar retroalimentación",
+        "textFeedbackTextarea": "",
+        "textInfoDurationInput": "",
+        "textInfoDurationTextInput": "Duración",
+        "textInfoParticipantsInput": "",
+        "textInfoParticipantsTextInput": "Agrupamiento",
+    }
+    return _component(page_id, block_id, idevice_id, "text", html_view, json_properties)
+
+
+def _native_idevice(ids: OdeIdFactory, page_id: str, block_id: str, activity: Activity) -> str:
+    idevice_id = ids.new()
+    native = native_idevice(activity, idevice_id)
+    return _component(
+        page_id, block_id, idevice_id, native.type_name, native.html_view, native.json_properties
     )
-    return f"""            <odeComponent>
-              <odePageId>{page_id}</odePageId>
-              <odeBlockId>{block_id}</odeBlockId>
-              <odeIdeviceId>{idevice_id}</odeIdeviceId>
-              <odeIdeviceTypeName>text</odeIdeviceTypeName>
-              <htmlView>{cdata(html_view)}</htmlView>
-              <jsonProperties>{cdata(json_properties)}</jsonProperties>
-              <odeComponentsOrder>1</odeComponentsOrder>
-{_key_values("odeComponentsProperties", "odeComponentsProperty", [("visibility", "true")], "              ")}
-            </odeComponent>"""
 
 
-def _nav_structure(ids: OdeIdFactory, order: int, label: str, src: str) -> str:
+def _nav_structure(ids: OdeIdFactory, order: int, page: ElpxPage) -> str:
+    label = page.label
     page_id = ids.new()
     block_id = ids.new()
     safe_label = xml_escape(label)
@@ -144,6 +191,10 @@ def _nav_structure(ids: OdeIdFactory, order: int, label: str, src: str) -> str:
         ],
         "    ",
     )
+    if page.activity is not None:
+        component = _native_idevice(ids, page_id, block_id, page.activity)
+    else:
+        component = _text_idevice(ids, page_id, block_id, f"{CONTEXT_PATH}/{page.src}", label)
     return f"""  <odeNavStructure>
     <odePageId>{page_id}</odePageId>
     <odeParentPageId></odeParentPageId>
@@ -159,7 +210,7 @@ def _nav_structure(ids: OdeIdFactory, order: int, label: str, src: str) -> str:
         <odePagStructureOrder>1</odePagStructureOrder>
 {block_props}
         <odeComponents>
-{_text_idevice(ids, page_id, block_id, src, label)}
+{component}
         </odeComponents>
       </odePagStructure>
     </odePagStructures>
@@ -167,10 +218,10 @@ def _nav_structure(ids: OdeIdFactory, order: int, label: str, src: str) -> str:
 
 
 def build_content_xml(
-    course_title: str, module_title: str, pages: list[tuple[str, str]], ids: OdeIdFactory,
+    course_title: str, module_title: str, pages: list[ElpxPage], ids: OdeIdFactory,
     metadata: EducationalMetadata | None = None,
+    theme: str = "upao",
 ) -> str:
-    """`pages`: (etiqueta, ruta del recurso relativa a content/resources)."""
     meta = metadata or EducationalMetadata(description=module_title)
     properties = [
         ("pp_title", course_title),
@@ -183,7 +234,8 @@ def build_content_xml(
         ("pp_category", meta.educational_level),
         ("pp_extraHeadContent",
          f'<meta name="audience" content="{html_escape(meta.audience, quote=True)}" />'
-         f'<meta name="typical-learning-time" content="{html_escape(meta.typical_learning_time, quote=True)}" />'),
+         f'<meta name="typical-learning-time" content="{html_escape(meta.typical_learning_time, quote=True)}" />'
+         f'<style id="genova-package-theme">{theme_css(theme)}</style>'),
         ("pp_theme", "base"),
         ("pp_addExeLink", "false"),
         ("pp_addPagination", "true"),
@@ -193,10 +245,7 @@ def build_content_xml(
         ("exportSource", "true"),
     ]
     resources = [("odeId", ids.new()), ("odeVersionId", ids.new()), ("exe_version", EXE_VERSION)]
-    nav = "\n".join(
-        _nav_structure(ids, order, label, f"{CONTEXT_PATH}/{path}")
-        for order, (label, path) in enumerate(pages, start=1)
-    )
+    nav = "\n".join(_nav_structure(ids, order, page) for order, page in enumerate(pages, start=1))
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ode SYSTEM "content.dtd">
 <ode xmlns="{ODE_NAMESPACE}" version="2.0">
@@ -221,10 +270,13 @@ def build_elpx_bytes(
     rng: random.Random | None = None,
 ) -> bytes:
     ids = OdeIdFactory(now, rng)
-    pages: list[tuple[str, str]] = []
+    pages: list[ElpxPage] = []
     buffer = BytesIO()
     with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
         for resource in prepare_phase_resources(phases, theme):
+            if resource.activity is not None:
+                pages.append(ElpxPage(resource.label, activity=resource.activity))
+                continue
             rel = f"{GENOVA_FOLDER}/{resource.basename}.html"
             zip_file.writestr(f"{RESOURCES_DIR}/{rel}", resource.html)
             for item in resource.media:
@@ -233,6 +285,6 @@ def build_elpx_bytes(
                     item.data,
                     compress_type=ZIP_STORED,
                 )
-            pages.append((resource.label, rel))
-        zip_file.writestr("content.xml", build_content_xml(course_title, module_title, pages, ids, metadata))
+            pages.append(ElpxPage(resource.label, src=rel))
+        zip_file.writestr("content.xml", build_content_xml(course_title, module_title, pages, ids, metadata, theme))
     return buffer.getvalue()

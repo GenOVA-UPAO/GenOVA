@@ -35,6 +35,7 @@ from ova.application.use_cases import (
     UpdateOvaMetadata,
 )
 from ova.infrastructure.scorm_package_cleaner import ProjectScormPackageCleaner
+from ova.infrastructure.sqlalchemy_activity_repository import SqlAlchemyResourceActivityRepository
 from ova.infrastructure.sqlalchemy_catalog_repository import SqlAlchemyOvaCatalogRepository
 from ova.infrastructure.sqlalchemy_chat_repository import SqlAlchemyChatRepository
 from ova.infrastructure.sqlalchemy_creation_repository import SqlAlchemyOvaCreationRepository
@@ -101,7 +102,13 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         add_phase=AddPhase(editor),
         edit_view=EditView(editor),
         export_scorm=export_scorm,
-        export_package=ExportPackage(lifecycle, editor, export_scorm, get_export_format),
+        export_package=ExportPackage(
+            lifecycle,
+            editor,
+            export_scorm,
+            get_export_format,
+            SqlAlchemyResourceActivityRepository(db),
+        ),
         editor_chat=EditorChat(editor, chat),
         list_ovas=ListOvas(catalog),
         download_ova=DownloadOva(lifecycle, downloads),

@@ -36,6 +36,12 @@ export const EXPORT_FORMATS = [
     extension: "elpx",
     description: "Para seguir editando en eXeLearning",
   },
+  {
+    id: "h5p",
+    label: "H5P",
+    extension: "h5p",
+    description: "Actividades editables para Moodle, WordPress o Lumi",
+  },
 ] as const;
 
 export type ExportFormatId = (typeof EXPORT_FORMATS)[number]["id"];
