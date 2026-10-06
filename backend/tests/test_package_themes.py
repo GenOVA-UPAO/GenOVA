@@ -14,7 +14,6 @@ from core.package_themes import (
 )
 from scorm import EXPORT_FORMATS, build_export
 
-
 # «original» no inyecta variables (conserva la paleta del OVA): no tiene tokens que probar.
 STYLED_THEMES = [theme for theme in PACKAGE_THEMES if theme != "original"]
 
