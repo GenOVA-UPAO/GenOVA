@@ -38,6 +38,7 @@ export function useRegenerationProgress(
       },
       onTerminal: () => { if (timer.current) clearTimeout(timer.current); },
       onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ovaWorkspaceKey(ovaId) }); void queryClient.invalidateQueries({ queryKey: ["ova"] }); },
+      onCancelled: () => { void queryClient.invalidateQueries({ queryKey: ovaWorkspaceKey(ovaId) }); },
       onError: (message) => { setFailure({ jobId: id, message }); },
       schedule,
       fetchProgress: (id) => fetchRegenerationProgress(ovaId, id),

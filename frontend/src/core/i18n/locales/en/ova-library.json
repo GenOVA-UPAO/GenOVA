@@ -69,7 +69,7 @@
   "crea_revisa_y_exporta_tus_objetos_virtuales_de_aprendizaje": "Create, review and export your virtual learning objects.",
   "crear_ova": "Create OVA",
   "crea_tu_primer_ova": "Create your first OVA",
-  "describe_un_tema_y_genova_generara_los_recursos_de_cada_fase_del_modelo_5e_luego_podras_re": "Describe a topic and GenOVA will generate resources for each phase of the 5E model. You can then review, refine and export them to SCORM.",
+  "describe_un_tema_y_genova_generara_los_recursos_de_cada_fase_del_modelo_5e_luego_podras_re": "Describe a topic and GenOVA will generate resources for each phase of the 5E model. You can then review, refine and export them to SCORM, EPUB, H5P and other formats.",
   "comenzar_ahora": "Get started",
   "cargando_resumen": "Loading summary",
   "cargando_actividad_reciente": "Loading recent activity",
@@ -168,5 +168,9 @@
   "paginacion_de_la_biblioteca": "Library pagination",
   "papelera": "Trash",
   "ovas_movidos_a_la_papelera_restauralos_o_eliminalos_definitivamente": "OVAs moved to trash. Restore them or delete them permanently.",
-  "paginacion_de_la_papelera": "Trash pagination"
+  "paginacion_de_la_papelera": "Trash pagination",
+  "alcance_de_la_biblioteca": "Library scope",
+  "todos_los_usuarios": "All users",
+  "ovas_de_la_plataforma": "Platform OVAs: those of every user (administrator view).",
+  "mis_ovas": "My OVAs"
 }

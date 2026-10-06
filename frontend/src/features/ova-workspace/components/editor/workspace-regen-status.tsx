@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "@/core/components/icon";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
+import { CancelRegenButton } from "./cancel-regen-button";
 import { ChatProgressBar } from "./chat-progress-bar";
 
 function runningTarget(labels: string[] | undefined, t: TFunction): string {
@@ -41,6 +42,7 @@ export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
             percentage={regen.progress.percentage}
             className="min-w-32 flex-1 sm:max-w-56"
           />
+          <CancelRegenButton cancel={regen.cancel} />
         </div>
       )}
       {/* En escritorio el hilo de la izquierda ya lo muestra: aquí solo se anuncia. En móvil el hilo queda en la otra vista. */}

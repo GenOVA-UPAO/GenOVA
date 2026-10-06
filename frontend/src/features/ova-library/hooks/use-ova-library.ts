@@ -13,8 +13,8 @@ import { ovaLibraryApi,type OvaListParams } from "../api/ova-library.api";
 // misma petición se repetiría entre pantallas. 
 export const ovaKeys = {
   all: ["ova"] as const,
-  list: ({ page, search = "", status = "" }: OvaListParams) =>
-    ["ova", "list", { page, search, status }] as const,
+  list: ({ page, search = "", status = "", scope = "mine" }: OvaListParams) =>
+    ["ova", "list", { page, search, status, scope }] as const,
   trash: (page: number) => ["ova", "trash", page] as const,
   trashCount: ["ova", "trash-count"] as const,
 };

@@ -104,7 +104,7 @@ function renderSpecialState(
     return <IntentConfirmationCard intent={intent} onConfirm={onConfirm} onCancel={onCancel} />;
   }
   if (intent.accion === "ninguna") {
-    return <IntentEmptyCard motivo={intent.motivo} razon={intent.razon} />;
+    return <IntentEmptyCard motivo={intent.motivo} />;
   }
   return null;
 }
@@ -153,13 +153,15 @@ export function IntentPreviewCard({
         ) : null}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{intent.razon ?? t("workspace:operacion_de_1_solo_paso_aplicada_deterministicamente")}</span>
+      <details className="text-xs text-muted-foreground">
+        <summary className="cursor-pointer select-none">{t("workspace:detalles_tecnicos")}</summary>
+        <p className="mt-1">{intent.razon ?? t("workspace:operacion_de_1_solo_paso_aplicada_deterministicamente")}</p>
         {trace ? (
-          <span className="font-mono text-[11px]">
-            {trace.backend.toUpperCase()} • {trace.elapsedMs.toString()} {t("workspace:ms")} </span>
+          <p className="mt-0.5 font-mono text-[11px]">
+            {trace.backend.toUpperCase()} • {Math.round(trace.elapsedMs).toString()} {t("workspace:ms")}
+          </p>
         ) : null}
-      </div>
+      </details>
     </div>
   );
 }

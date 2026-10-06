@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
+import { useChatScope } from "../../hooks/use-chat-scope";
 import { useUndoableChatDelete } from "../../hooks/use-undoable-chat-delete";
 import { useOvaUploads } from "../../hooks/use-uploads";
+import { CONFIRM_ALL_THRESHOLD } from "../../lib/regen-cancel";
 import {
   buttonRegenPayload,
   chatAttachments,
@@ -12,14 +14,11 @@ import {
 } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
 import { ChatComposer } from "./chat-composer";
+import { ChatConfirmAll } from "./chat-confirm-all";
 import { ChatHistory } from "./chat-history";
 import { ChatPanelHeader } from "./chat-panel-header";
 import { ChatResourceSelect } from "./chat-resource-select";
 import { ChatScopeToggle } from "./chat-scope-toggle";
-
-function withToggledId(list: string[], id: string): string[] {
-  return list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
-}
 
 export function WorkspaceChatPanel({
   phases,
@@ -27,17 +26,13 @@ export function WorkspaceChatPanel({
 }: Readonly<{ phases: PhaseWithContent[]; regen: ChatRegeneration }>) {
   const { t } = useTranslation();
   const [prompt, setPrompt] = useState("");
-  const [selecting, setSelecting] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
+  const scope = useChatScope(phases);
   // Adjuntos del chat de ESTE OVA (no se mezclan con los de «Crear OVA»).
   const uploads = useOvaUploads(regen.ovaId);
   const removal = useUndoableChatDelete((id) => {
     regen.chat.remove.mutate(id);
   });
-  // Regenerar crea una versión nueva con ids nuevos: la selección solo cuenta
-  // los recursos que siguen existiendo. Al cerrar el selector, vuelve al OVA entero.
-  const live = selected.filter((id) => phases.some((phase) => phase.id === id));
-  const scopeIds = selecting ? live : [];
+  const [confirmAll, setConfirmAll] = useState<RegenPayload>();
   const submit = (payload: RegenPayload, onSent?: () => void) => {
     if (regen.busy) return;
     // Tras enviarlos, el backend ya los ligó al OVA: salen de la lista del chat.
@@ -64,6 +59,7 @@ export function WorkspaceChatPanel({
           regen.chat.clear.mutate();
         }}
         onSelectPrompt={setPrompt}
+        cancel={regen.cancel}
       />
       <div className="shrink-0 space-y-2 border-t border-border bg-background/60 p-3 sm:p-4">
         <ChatComposer
@@ -71,39 +67,39 @@ export function WorkspaceChatPanel({
           prompt={prompt}
           onPrompt={setPrompt}
           onSubmit={() => {
-            submit(messageRegenPayload(phases, prompt, scopeIds, chatAttachments(uploads.data)), () => {
-              setPrompt("");
-            });
+            const payload = messageRegenPayload(phases, prompt, scope.live, chatAttachments(uploads.data));
+            // Una instrucción a todo el OVA con muchos recursos es lenta y cara: se confirma.
+            if (scope.live.length === 0 && phases.length > CONFIRM_ALL_THRESHOLD) setConfirmAll(payload);
+            else submit(payload, () => { setPrompt(""); });
           }}
           busy={regen.busy}
           uploads={uploads}
-           placeholder={selecting && live.length > 0 ? t("workspace:chatPlaceholder", { count: live.length }) : t("workspace:escribe_un_cambio_o_mejora_para_el_ova")}
+           placeholder={scope.live.length > 0 ? t("workspace:chatPlaceholder", { count: scope.live.length }) : t("workspace:escribe_un_cambio_o_mejora_para_el_ova")}
           scope={
-            <ChatScopeToggle
-              selecting={selecting}
-              count={live.length}
-              onToggle={() => {
-                setSelecting(!selecting);
-              }}
-            />
+            <ChatScopeToggle selecting={scope.selecting} count={scope.live.length} onClear={scope.clear} onToggle={scope.toggleOpen} />
           }
           picker={
-            selecting && (
+            scope.selecting && (
               <ChatResourceSelect
                 id="chat-resource-select"
                 phases={phases}
-                selected={live}
-                onToggle={(id) => {
-                  setSelected(withToggledId(live, id));
-                }}
-                onSelectAll={() => {
-                  setSelected(phases.map((p) => p.id));
-                }}
+                selected={scope.live}
+                onToggle={scope.toggle}
+                onSelectAll={scope.selectAll}
               />
             )
           }
         />
       </div>
+      <ChatConfirmAll
+        payload={confirmAll}
+        count={phases.length}
+        onConfirm={(payload) => {
+          setConfirmAll(undefined);
+          submit(payload, () => { setPrompt(""); });
+        }}
+        onCancel={() => { setConfirmAll(undefined); }}
+      />
     </aside>
   );
 }

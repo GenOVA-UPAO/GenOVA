@@ -49,6 +49,8 @@ class OvaDuplicateSource:
     status: str
     prompt: str
     phases: tuple[OvaPhase, ...]
+    # Ajustes que la copia hereda (tema de paquete y metadatos educativos).
+    settings: dict | None = None
 
 
 @dataclass(frozen=True, slots=True)

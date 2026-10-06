@@ -51,3 +51,22 @@ def ova_title(prompt: str, limit: int = 80) -> str:
     if colon and len(title) > limit and len(head.strip()) >= _MIN_TITLE_SENTENCE:
         title = head.strip()
     return smart_truncate(title, limit)
+
+
+_LEVEL_LINE = re.compile(r"(?:^|\n)[ \t]*Nivel educativo:[ \t]*([^\n]*?)[ \t]*\.?[ \t]*$", re.IGNORECASE)
+
+
+def split_education_level(prompt: str) -> tuple[str, str]:
+    """(prompt sin la línea «Nivel educativo: …», nivel).
+
+    El front añade esa línea al final del prompt para que el motor conozca el
+    nivel; en la descripción visible del OVA sobra, y el nivel va en su propio
+    campo de metadatos. Sin la línea devuelve el prompt tal cual y `""`.
+    """
+    text = (prompt or "").rstrip()
+    match = _LEVEL_LINE.search(text)
+    if match is None:
+        return prompt, ""
+    level = match.group(1).strip()
+    clean = text[: match.start()].rstrip()
+    return (clean or prompt), (level[:1].upper() + level[1:] if clean else "")

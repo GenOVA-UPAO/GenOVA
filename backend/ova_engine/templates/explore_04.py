@@ -245,7 +245,7 @@ _STYLE = """
   transition: all .2s ease;
 }
 .ova-pause-chip.is-done {
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
   color: var(--success, #146c49);
 }
 .ova-pause-lead {

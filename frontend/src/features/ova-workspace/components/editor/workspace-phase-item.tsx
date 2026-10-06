@@ -37,7 +37,7 @@ export function WorkspacePhaseItem({ ovaId, phase, busy, onRegenerate, reorder }
   const error = workspace.savePhase.error ?? workspace.deletePhase.error;
   return (
     <article className="rounded-xl border border-border bg-card">
-      <WorkspacePhaseItemHeader name={name} saved={saved} dirty={dirty} reorder={reorder} />
+      <WorkspacePhaseItemHeader name={name} ovaTitle={workspace.data?.title} saved={saved} dirty={dirty} reorder={reorder} />
       {editing && (
         <WorkspacePhaseCodeEditor
           id={editorId}

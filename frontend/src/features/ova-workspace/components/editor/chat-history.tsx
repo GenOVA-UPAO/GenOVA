@@ -6,6 +6,7 @@ import { ConfirmModal } from "@/core/components/confirm-modal";
 import { Button } from "@/core/components/ui/button";
 
 import type { RegenChatMessage } from "../../lib/regen-chat";
+import type { RegenCancel } from "./cancel-regen-button";
 import { ChatEmptyState } from "./chat-empty-state";
 import { ChatMessageItem } from "./chat-message-item";
 
@@ -14,6 +15,7 @@ interface Props {
   onRemove: (id: string) => void;
   onClear: () => void;
   onSelectPrompt?: (prompt: string) => void;
+  cancel?: RegenCancel;
 }
 
 function countLabel(count: number, t: TFunction): string {
@@ -21,7 +23,7 @@ function countLabel(count: number, t: TFunction): string {
 }
 
 /** Hilo de instrucciones: lo más reciente abajo, como en cualquier chat. */
-export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Readonly<Props>) {
+export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt, cancel }: Readonly<Props>) {
   const { t } = useTranslation();
   const list = useRef<HTMLOListElement>(null);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -53,7 +55,7 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Rea
       </div>
       <ol ref={list} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-2 pb-4">
         {messages.map((message) => (
-          <ChatMessageItem key={message.id} message={message} onRemove={onRemove} />
+          <ChatMessageItem key={message.id} message={message} onRemove={onRemove} cancel={cancel} />
         ))}
       </ol>
       {confirmClear && (

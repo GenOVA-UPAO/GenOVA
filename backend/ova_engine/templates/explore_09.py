@@ -269,7 +269,7 @@ _STYLE = """
   border: 1px solid var(--border, #E2E8F2);
 }
 .col-pill--tech {
-  background: #FFF3EB;
+  background: var(--accent-tint, #FFF3EB);
   color: var(--action, #B84B00);
   border: 1px solid #FFE0CC;
 }
@@ -342,7 +342,7 @@ _STYLE = """
 }
 .mindmap-card.tech-card.is-selected {
   border-color: var(--accent, #F47A20);
-  background: #FFF3EB;
+  background: var(--accent-tint, #FFF3EB);
   box-shadow: 0 0 0 3px rgba(244,122,32,.18);
 }
 .mindmap-card.is-drag-over {

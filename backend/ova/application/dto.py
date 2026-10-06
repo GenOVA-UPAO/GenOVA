@@ -89,6 +89,7 @@ class DuplicateOvaInput:
 class DuplicateOvaResult:
     id: str
     title: str
+    status: str = "borrador"
 
 
 @dataclass(frozen=True, slots=True)
@@ -198,6 +199,8 @@ class OvaListQuery:
     limit: int
     search: str
     status: str
+    # Solo el administrador: ver los OVAs de todos los usuarios (moderación/soporte).
+    all_users: bool = False
 
 
 @dataclass(frozen=True, slots=True)

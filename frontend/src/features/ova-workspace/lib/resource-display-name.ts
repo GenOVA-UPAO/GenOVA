@@ -2,7 +2,12 @@ import i18n, { type TFunction } from "i18next";
 
 import { localizedCatalogName } from "./resource-previews";
 
+// Nombres propios que conservan su mayúscula en medio de la frase.
+const PROPER_NOUNS = new Map([["geogebra", "GeoGebra"]]);
+
 function lowerWord(word: string): string {
+  const proper = PROPER_NOUNS.get(word.toLowerCase());
+  if (proper) return proper;
   // Siglas (FAQ) se quedan como están; el resto en minúscula, también tras guion.
   if (word.length > 1 && word === word.toUpperCase()) return word;
   return word.toLowerCase();

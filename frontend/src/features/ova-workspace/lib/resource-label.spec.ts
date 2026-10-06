@@ -2,6 +2,7 @@ import {
   contentPlainPreview,
   contentPlainText,
   isContentPreviewTruncated,
+  previewWithoutTitles,
   resourceLabel,
 } from "./resource-label";
 
@@ -44,5 +45,22 @@ describe("contentPlainPreview", () => {
     expect(isContentPreviewTruncated(long, 140)).toBe(true);
     expect(contentPlainText(long).length).toBe(200);
     expect(isContentPreviewTruncated("<p>corto</p>", 140)).toBe(false);
+  });
+});
+
+describe("extractos del editor", () => {
+  it("decodifica entidades, también las doblemente codificadas", () => {
+    expect(contentPlainText("<p>Juego Drag &amp;amp; Drop &lt;b&gt; &#233;</p>")).toBe("Juego Drag & Drop <b> é");
+  });
+
+  it("quita el título del OVA y el del recurso con que empieza el HTML", () => {
+    const html = "<h1>Derivadas como razón de cambio: Juego Drag &amp;amp; Drop</h1><p>Arrastra cada tarjeta.</p>";
+    expect(previewWithoutTitles(html, ["Derivadas como razón de cambio", "Juego Drag & Drop"])).toBe(
+      "Arrastra cada tarjeta.",
+    );
+  });
+
+  it("si solo hay título, lo conserva", () => {
+    expect(previewWithoutTitles("<h1>Mi OVA</h1>", ["Mi OVA"])).toBe("Mi OVA");
   });
 });

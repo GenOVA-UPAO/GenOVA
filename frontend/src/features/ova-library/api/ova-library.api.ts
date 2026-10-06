@@ -7,6 +7,8 @@ export interface OvaListParams {
   page: number;
   search?: string;
   status?: string;
+  /** Solo el administrador: «all» trae los OVAs de todos los usuarios. */
+  scope?: "mine" | "all";
 }
 
 export interface OvaListPage {
@@ -20,10 +22,11 @@ const PAGE_SIZE = "12";
 const json = (body: unknown) => JSON.stringify(body);
 
 export const ovaLibraryApi = {
-  list: ({ page, search = "", status = "" }: OvaListParams): Promise<OvaListPage> => {
+  list: ({ page, search = "", status = "", scope = "mine" }: OvaListParams): Promise<OvaListPage> => {
     const qs = new URLSearchParams({ page: String(page), limit: PAGE_SIZE });
     if (search.trim()) qs.set("search", search.trim());
     if (status.trim()) qs.set("status", status.trim());
+    if (scope === "all") qs.set("scope", "all");
     return apiJson(`/api/ovas?${qs.toString()}`);
   },
   trash: (page: number): Promise<OvaListPage> => {

@@ -19,9 +19,12 @@ from generation.infrastructure.regen_persist import (
 from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_heartbeat import JobHeartbeat
 from generation.regen.regen_jobs import (
+    RegenCancelled,
     RegenLost,
     claim_regen,
     fail_regen,
+    finish_cancelled,
+    is_cancel_requested,
     mark_regen_success,
     touch_regen,
 )
@@ -74,6 +77,13 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             db.rollback()
             logger.warning("regen sin contenido", ova_id=str(ova_id), job_id=job_id)
             if fail_regen(job_id, str(exc)):
+                _release_ova(db, ova_id)
+        except RegenCancelled:
+            # El docente canceló: no se escribe versión (lo ya editado se descarta)
+            # y el OVA vuelve a «listo» con su versión actual intacta.
+            db.rollback()
+            logger.info("regen cancelada", ova_id=str(ova_id), job_id=job_id)
+            if finish_cancelled(job_id):
                 _release_ova(db, ova_id)
         except RegenLost:
             # Otro proceso la dio por interrumpida (y liberó el OVA) mientras este
@@ -137,6 +147,11 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
     # usaría la misma sesión desde varios hilos (una sesión no es thread-safe).
     db.expire_on_commit = False
     db.commit()
+    def should_stop() -> bool:
+        return beat.lost.is_set() or is_cancel_requested(job_id)
+
+    if is_cancel_requested(job_id):
+        raise RegenCancelled(job_id)
     regen_content = regen_phases_parallel(
         to_regen,
         prompt,
@@ -145,7 +160,10 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
         image_settings=image_settings,
         contexto=material.contexto,
         fallback_theme=_ova_theme(current_phases),
+        should_stop=should_stop,
     )
+    if not beat.lost.is_set() and is_cancel_requested(job_id):
+        raise RegenCancelled(job_id)
     if beat.lost.is_set() or not touch_regen(job_id, step="persist"):
         raise RegenLost(job_id)
     # Antes se cerraba como «success» con una versión idéntica: un recurso

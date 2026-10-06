@@ -39,7 +39,7 @@ const ALLOWED_LITERALS = new Set(["GenOVA", "UPAO", "SCORM", "HTML", "PDF", "EPU
 /** Archivos con texto en duro justificado (cada entrada necesita un motivo). */
 const ALLOWED_FILES: Record<string, string> = {
   // Catálogo de identificadores `tipo` del backend → icono; no se muestra como texto.
-  "src/features/ova-workspace/lib/resource-icons.ts": "Claves del protocolo, no etiquetas de interfaz",
+  "src/core/lib/resource-icons.ts": "Claves del protocolo, no etiquetas de interfaz",
 };
 
 const SPANISH_MARKS = /[áéíóúñ¿¡ÁÉÍÓÚÑ]/;

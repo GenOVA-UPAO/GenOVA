@@ -23,7 +23,7 @@
     "audience": { "label": "Target audience", "hint": "For example: first-year students." },
     "typical_learning_time": {
       "label": "Typical learning time",
-      "hint": "PT30M = 30 minutes; PT1H30M = an hour and a half."
+      "hint": "Type minutes (45) or hours and minutes (1 h 30 min). It is stored in a standard format."
     }
   },
   "licenses": {
@@ -45,7 +45,7 @@
     "keywords": "Use up to 30 keywords.",
     "educationalLevel": "The education level can contain up to 120 characters.",
     "audience": "The target audience can contain up to 255 characters.",
-    "learningTime": "Use PT30M for 30 minutes or PT1H30M for an hour and a half.",
+    "learningTime": "Type minutes (45) or hours and minutes (1 h 30 min).",
     "author": "The author can contain up to 255 characters.",
     "theme": "Select a valid theme."
   }

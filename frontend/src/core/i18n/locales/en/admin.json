@@ -38,7 +38,7 @@
       },
       "exportOva": {
         "label": "Export OVAs",
-        "desc": "Can download OVAs as a SCORM package for virtual classrooms."
+        "desc": "Can download OVAs in any export format (SCORM, IMS, Web, EPUB, eXe, H5P) for virtual classrooms."
       },
       "manageUsers": {
         "label": "Manage users",

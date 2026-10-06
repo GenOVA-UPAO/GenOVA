@@ -8,6 +8,7 @@
   const T = {
     primary:   'var(--primary,#0A3D91)',
     primaryHv: 'var(--primary-hover,#072C6B)',
+    onPrimary: 'var(--on-primary,#fff)',
     accent:    'var(--accent,#F47A20)',
     accentHv:  'var(--action-hover,#923B00)',
     action:    'var(--action,#B84B00)',
@@ -31,6 +32,18 @@
     fontDisp:  "var(--font-display,system-ui),system-ui,sans-serif",
     fontBody:  "var(--font-body,system-ui),system-ui,sans-serif",
     ease:      'cubic-bezier(.4,0,.2,1)',
+  };
+
+  /* ── Iconos SVG en línea ────────────────────────────────────────────
+     Los emoji dependen de una fuente del sistema: sin ella (Linux, algunos
+     Android) salen como un cuadro vacío. Estos hereden el color del texto. */
+  const svgIcon = d => `<svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="currentColor" aria-hidden="true" focusable="false" style="vertical-align:-.15em"><path d="${d}"/></svg>`;
+  const ICON = {
+    flag:   svgIcon('M5 2h2v20H5zM8 3h12l-3 5 3 5H8z'),
+    trophy: svgIcon('M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3zM6 7v1a2 2 0 0 0 1 1.7V7zm11 0v2.7A2 2 0 0 0 18 8V7z'),
+    mic:    svgIcon('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM6 11h2a4 4 0 0 0 8 0h2a6 6 0 0 1-5 5.9V20h3v2H8v-2h3v-3.1A6 6 0 0 1 6 11z'),
+    bot:    svgIcon('M11 2h2v3h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h4zM8.5 10a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9 15v2h6v-2z'),
+    bulb:   svgIcon('M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zM9 20h6v2H9z'),
   };
 
   /* ── Global keyframes (injected once) ──────────────────────────────── */
@@ -249,7 +262,7 @@ ${s}
   class UPAOReveal extends UE {
     connectedCallback() {
       const label = this.getAttribute('label') || 'Mostrar';
-      const icon  = this.getAttribute('icon')  || '💡';
+      const icon  = this.getAttribute('icon')  || ICON.bulb;
       this.shadowRoot.innerHTML = this.css(`
         .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;
           background:${T.action};color:#fff;border:none;border-radius:${T.radiusSm};
@@ -392,16 +405,16 @@ ${s}
       const label = this.getAttribute('label') || 'Puntuación';
       this.shadowRoot.innerHTML = this.css(`
         .wrap{display:inline-flex;align-items:center;gap:14px;
-          padding:10px 20px;border-radius:${T.radiusSm};background:${T.primary};color:#fff}
+          padding:10px 20px;border-radius:${T.radiusSm};background:${T.primary};color:${T.onPrimary}}
         .lbl{font-size:.72rem;font-weight:700;letter-spacing:.1em;
-          text-transform:uppercase;opacity:.8;white-space:nowrap}
+          text-transform:uppercase;white-space:nowrap}
         .fig{display:flex;align-items:baseline;gap:2px}
         .val{font-family:${T.fontDisp};font-size:1.6rem;font-weight:700;
           color:#fff;text-align:right;animation:upao-count-up .25s ${T.ease}}
-        .max{font-size:.85rem;font-weight:600;opacity:.75}
+        .max{font-size:.85rem;font-weight:600}
       `) + `
       <div class="wrap" role="status" aria-live="polite" aria-label="${label}: ${this._val} de ${max}">
-        <span aria-hidden="true">🏆</span>
+        <span aria-hidden="true">${ICON.trophy}</span>
         <div class="lbl">${label}</div>
         <div class="fig"><span class="val" id="v">${this._val}</span><span class="max">/ ${max}</span></div>
       </div>`;
@@ -519,7 +532,7 @@ ${s}
         <div class="num-badge" aria-label="Panel ${num}">${num}</div>
         <div class="img-wrap">
           <slot name="art"></slot>
-          ${hasArt ? '' : src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">🤖</div>`}
+          ${hasArt ? '' : src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">${ICON.bot}</div>`}
         </div>
         <p class="char-label">${char}</p>
         <div class="bubble"><slot></slot></div>
@@ -575,7 +588,7 @@ ${s}
       `) + `
       <div class="card">
         <div class="head">
-          <span class="mic" aria-hidden="true">🎙️</span>
+          <span class="mic" aria-hidden="true">${ICON.mic}</span>
           <div><div class="htitle">Micro-Podcast</div><div class="hsub">${concept}</div></div>
         </div>
         <div class="body">
@@ -748,7 +761,7 @@ ${s}
       `) + `
       <div class="wrap">
         <button class="btn" id="btn"${locked ? ' disabled' : ''} aria-label="${label}">
-          <span id="icon" aria-hidden="true">🏁</span> <span id="lbl">${label}</span>
+          <span id="icon" aria-hidden="true">${ICON.flag}</span> <span id="lbl">${label}</span>
         </button>
         ${locked ? `<p class="hint" id="hint" aria-live="polite">Completa la actividad para continuar</p>` : ''}
       </div>`;

@@ -1,9 +1,9 @@
 import i18n, { type TFunction } from "i18next";
 
+import { PHASE_ICON_BY_KEY } from "@/core/lib/resource-icons";
 import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { phaseMeta } from "./phase-meta";
-import { PHASE_ICON_BY_KEY } from "./resource-icons";
 
 export const MAX_PER_PHASE = 4;
 

@@ -1,19 +1,21 @@
 {
-  "label": "Visual theme",
+  "label": "Package theme",
   "loading": "Loading themes…",
   "previewTitle": "Learning together",
   "continue": "Continue",
-  "help": "Applies to the preview and all export formats.",
+  "help": "Applies to the preview and to every exported format.",
   "loadError": "Could not load themes.",
   "retry": "Retry",
-  "updated": "Visual theme updated",
-  "saveError": "Could not save the visual theme. Please try again.",
+  "updated": "Package theme updated",
+  "saveError": "Could not save the package theme. Please try again.",
   "saving": "Saving…",
   "names": {
+    "original": "OVA palette",
     "upao": "UPAO",
     "claro": "Light",
     "oscuro": "Dark",
     "alto-contraste": "High contrast",
     "infantil": "Children"
-  }
+  },
+  "originalHint": "The colours the resources were generated with are kept (the palette you chose when creating the OVA)."
 }

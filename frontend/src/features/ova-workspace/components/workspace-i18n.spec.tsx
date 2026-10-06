@@ -65,7 +65,7 @@ describe("workspace montado cambia de idioma", () => {
   it("traduce subtítulos, alcance y estado del editor con props estables", async () => {
     render(<>
       <WorkspaceOvaPanelTabs tab="preview" onChange={vi.fn()} />
-      <ChatScopeToggle selecting count={2} onToggle={vi.fn()} />
+      <ChatScopeToggle selecting count={2} onToggle={vi.fn()} onClear={vi.fn()} />
       <WorkspacePhaseCodeEditor id="html" value="<p>Mi contenido</p>" dirty saving={false} saved={false} onChange={vi.fn()} onSave={vi.fn()} onDiscard={vi.fn()} />
     </>);
     expect(screen.getByText("Así lo verán tus estudiantes.")).toBeVisible();

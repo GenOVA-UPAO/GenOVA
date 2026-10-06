@@ -41,4 +41,13 @@ describe("applyPackageTheme", () => {
     expect(twice.split("<!--genova-package-theme-->")).toHaveLength(2);
     expect(twice).toContain("<script>x</SCRIPT\t>");
   });
+
+  it("«Paleta del OVA» (css vacío) no inyecta nada y quita el tema anterior", () => {
+    const html = "<html><head><style>:root{--primary:#14532D}</style></head><body>Hola</body></html>";
+    expect(applyPackageTheme(html, "")).toBe(html);
+    const themed = applyPackageTheme(html, css);
+    const restored = applyPackageTheme(themed, { id: "original", label: "Paleta del OVA", tokens: {}, css: "" });
+    expect(restored).toBe(html);
+    expect(restored).toContain("--primary:#14532D");
+  });
 });

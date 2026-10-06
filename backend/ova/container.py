@@ -83,7 +83,9 @@ class OvaUseCases:
 
 def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
     lifecycle = SqlAlchemyOvaLifecycleRepository(db)
-    creation = SqlAlchemyOvaCreationRepository(db)
+    creation = SqlAlchemyOvaCreationRepository(
+        db, build_scorm_zip=build_scorm_zip_bytes, persist_scorm_zip=persist_scorm_zip
+    )
     editor = SqlAlchemyOvaEditorRepository(db)
     catalog = SqlAlchemyOvaCatalogRepository(db)
     chat = SqlAlchemyChatRepository(db)

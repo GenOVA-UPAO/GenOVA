@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
+import { resourceIconName } from "@/core/lib/resource-icons";
 
 import type { Resource } from "../../lib/ova-types";
 import { resourceDisplayName } from "../../lib/resource-display-name";
-import { resourceIconName } from "../../lib/resource-icons";
 
 interface Props {
   resource: Resource;

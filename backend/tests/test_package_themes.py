@@ -6,8 +6,16 @@ from zipfile import ZipFile
 import pytest
 
 from core.educational_metadata import EducationalMetadata
-from core.package_themes import PACKAGE_THEMES, inject_package_theme
+from core.package_themes import (
+    PACKAGE_THEMES,
+    default_package_theme,
+    inject_package_theme,
+    theme_css,
+)
 from scorm import EXPORT_FORMATS, build_export
+
+# «original» no inyecta variables (conserva la paleta del OVA): no tiene tokens que probar.
+STYLED_THEMES = [theme for theme in PACKAGE_THEMES if theme != "original"]
 
 
 def _luminance(color):
@@ -21,7 +29,7 @@ def _contrast(a, b):
     return (light + 0.05) / (dark + 0.05)
 
 
-@pytest.mark.parametrize("theme", PACKAGE_THEMES)
+@pytest.mark.parametrize("theme", STYLED_THEMES)
 def test_complete_tokens_and_accessible_text(theme):
     tokens = PACKAGE_THEMES[theme]
     assert set(tokens) == set(PACKAGE_THEMES["upao"])
@@ -41,7 +49,7 @@ def test_complete_tokens_and_accessible_text(theme):
     assert "http" not in tokens["font-body"]
 
 
-@pytest.mark.parametrize("theme", PACKAGE_THEMES)
+@pytest.mark.parametrize("theme", STYLED_THEMES)
 @pytest.mark.parametrize("fmt", [fmt for fmt in EXPORT_FORMATS if fmt != "h5p"])
 def test_every_export_contains_selected_tokens(theme, fmt):
     original = "<html><head><style>p{color:#123456}</style></head><body><p>Hola</p><script>window.x=1</script></body></html>"
@@ -125,3 +133,78 @@ def test_inject_is_idempotent_and_handles_unusual_script_end_tags():
     assert twice.count(THEME_START) == 1
     assert f"/* UPAO Components v1.0 */ {new}" in twice
     assert f"<script>{old}</script>" in twice  # solo se toca el script de componentes UPAO
+
+
+def test_el_tema_original_no_pisa_la_paleta_del_recurso():
+    html = "<html><head><style>:root{--primary:#14532D}</style></head><body>Hola</body></html>"
+    assert theme_css("original") == ""
+    assert inject_package_theme(html, "original") == html
+    # Si venía de otro tema, el bloque anterior se quita.
+    themed = inject_package_theme(html, "oscuro")
+    assert "genova-package-theme" in themed
+    assert "genova-package-theme" not in inject_package_theme(themed, "original")
+    assert "--primary:#14532D" in inject_package_theme(themed, "original")
+
+
+@pytest.mark.parametrize(
+    ("ova_theme", "expected"),
+    [
+        (None, "upao"),
+        ({"color": "upao", "design": "upao"}, "upao"),
+        ({"color": "upao", "design": "free"}, "upao"),
+        ({"color": "free", "design": "free"}, "original"),
+        ({"color": "custom", "design": "upao", "palette": {"primary": "#14532D"}}, "original"),
+    ],
+)
+def test_el_tema_de_paquete_por_defecto_respeta_la_paleta_elegida(ova_theme, expected):
+    assert default_package_theme(ova_theme) == expected
+
+
+@pytest.mark.parametrize("fmt", [fmt for fmt in EXPORT_FORMATS if fmt != "h5p"])
+def test_exportar_con_el_tema_original_no_inyecta_variables(fmt):
+    html = "<html><head><style>:root{--primary:#14532D}</style></head><body><p>Hola</p></body></html>"
+    phases = [{"type": "engage", "order": 1, "content": html}]
+    with ZipFile(BytesIO(build_export(fmt, "Curso", phases, theme="original"))) as package:
+        assert not any(
+            "--primary:#0A3D91 !important" in package.read(name).decode(errors="ignore")
+            for name in package.namelist()
+        )
+
+
+@pytest.mark.parametrize(
+    ("theme", "expected"),
+    [({"color": "custom", "design": "upao"}, "original"), ({"color": "upao", "design": "upao"}, "upao")],
+)
+def test_crear_el_ova_en_generacion_fija_el_tema_de_paquete_segun_la_paleta(theme, expected):
+    import uuid
+    from unittest.mock import MagicMock
+
+    from generation.jobs.jobs_service import create_job
+    from models import Ova
+
+    db = MagicMock()
+    create_job(
+        db,
+        user_id=uuid.uuid4(),
+        prompt="Derivadas",
+        params={"theme": theme},
+        resources=[{"phase_type": "engage", "phase_order": 1, "resource_type": "1"}],
+    )
+    ovas = [call.args[0] for call in db.add.call_args_list if isinstance(call.args[0], Ova)]
+    assert [ova.package_theme for ova in ovas] == [expected]
+
+
+def test_los_componentes_no_dependen_de_una_fuente_de_emoji():
+    """B6: sin fuente de emoji, 🏁/🏆/🎙️ salían como un cuadro vacío en «Continuar»."""
+    import re
+    from pathlib import Path
+
+    js = (Path(__file__).parents[1] / "llm" / "ova_components" / "upao_components.js").read_text(
+        encoding="utf-8"
+    )
+    assert not re.search("[\U0001F300-\U0001FAFF]", js)
+    assert "ICON.flag" in js
+
+    old = '<html><head></head><body><script>/* UPAO Components v1.0 */const x=`<span id="icon" aria-hidden="true">🏁</span>`</script></body></html>'
+    themed = inject_package_theme(old, "upao")
+    assert "🏁" not in themed and "<svg" in themed

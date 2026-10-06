@@ -40,7 +40,7 @@ function useConfirmationState(params: ConfirmationStateParams) {
     params.setComposedSpec(buildInitialSpec(newBlocks));
     setPendingConfirmation(null);
     params.setStatusMessage(
-      i18n.t("workspace:intencion_confirmada_y_aplicada_en_value_ms_value", { p0: trace.elapsedMs.toString(), p1: trace.backend })
+      i18n.t("workspace:changeApplied", { instruction: (instruction ?? "").trim() })
     );
     toast.success(
       i18n.t("workspace:cambio_confirmado_y_aplicado_con_exito_value_conf", { p0: Math.round(intent.confianza * 100).toString() })

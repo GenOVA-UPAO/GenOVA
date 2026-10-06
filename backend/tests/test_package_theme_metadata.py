@@ -92,7 +92,7 @@ def test_metadata_http_validation_and_catalog(metadata_repo):
         assert res.status_code == 422
         catalog = client.get("/api/ovas/package-themes/catalog")
         assert catalog.status_code == 200
-        assert len(catalog.json()["themes"]) == 5
+        assert len(catalog.json()["themes"]) == 6
         changed = client.patch(
             f"/api/ovas/{ova_id}/metadata",
             json={"title": "Curso", "description": "Descripción", "package_theme": "oscuro"},

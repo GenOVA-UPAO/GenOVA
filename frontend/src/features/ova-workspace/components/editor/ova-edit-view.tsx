@@ -8,6 +8,7 @@ import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import type { PhaseWithContent } from "../../lib/types";
 import { OvaEditLayout } from "./ova-edit-layout";
 import { OvaGeneratingPanel } from "./ova-generating-panel";
+import { WorkspaceApplyingGate } from "./workspace-applying-gate";
 import { WorkspaceLoadError } from "./workspace-load-error";
 import { WorkspaceSkeleton } from "./workspace-skeleton";
 
@@ -57,7 +58,10 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
         }}
       />
     );
+  // Regeneración ya en curso al abrir el editor: se ve igual, con un aviso (no la
+  // pantalla de generación inicial). La de esta sesión la avisa el pie del panel.
   return (
+    <WorkspaceApplyingGate ovaId={ovaId} status={workspace.data.status} busy={regen.busy}>
     <OvaEditLayout
       ovaId={ovaId}
       title={title}
@@ -68,5 +72,6 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
       phases={phases}
       regen={regen}
     />
+    </WorkspaceApplyingGate>
   );
 }
