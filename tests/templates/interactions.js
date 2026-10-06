@@ -82,7 +82,7 @@ export async function completeResource(page, id) {
         if (await next.count()) await activate(page, next.last());
       }
     }
-    if (id === 'explore_04') await activate(page, '#btn-copy-prompt');
+    // El prompt de video es material del docente (en un <details>): ya no condiciona el avance.
     return;
   }
   if (id === 'explore_08') {
