@@ -61,7 +61,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `respuesta_correcta`: 'A' o 'B'.
   * `explicacion_conexion`: breve explicación (≤30 palabras) que revela el paralelismo directo entre la lógica del acertijo y cómo funciona «{concept}».
 - epilogo: desenlace narrativo triunfal al abrir la compuerta final, resumiendo el valor del concepto (≤40 palabras).
-[RESTRICCIONES] Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+[RESTRICCIONES] Cada acertijo tiene UNA sola respuesta correcta defendible con lógica o con hechos del tema; nunca pidas ordenar o elegir por «importancia», «utilidad» u otro criterio subjetivo, y la opción incorrecta debe ser claramente errónea y explicable. Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
 {d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
     return f"""[ROL] Diseñador de escape rooms educativas digitales para {d.audiencia}.
@@ -77,7 +77,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `respuesta_correcta`: 'A' o 'B'.
   * `explicacion_conexion`: breve explicación (≤30 palabras) que revela el paralelismo directo entre la lógica del acertijo y cómo funciona «{concept}».
 - epilogo: desenlace narrativo triunfal al abrir la compuerta final, resumiendo el valor del concepto (≤40 palabras).
-[RESTRICCIONES] Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+[RESTRICCIONES] Cada acertijo tiene UNA sola respuesta correcta defendible con lógica o con hechos del tema; nunca pidas ordenar o elegir por «importancia», «utilidad» u otro criterio subjetivo, y la opción incorrecta debe ser claramente errónea y explicable. Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
 {d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 

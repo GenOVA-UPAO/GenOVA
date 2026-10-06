@@ -325,7 +325,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     timeline_js = _TIMELINE_JS.replace("__TOTAL__", str(total))
 
     return f"""{_STYLE}
-<upao-header eyebrow="TIMELINE HISTÓRICO" title="{esc(data["titulo"])}">
+<upao-header eyebrow="TIMELINE INTERACTIVO" title="{esc(data["titulo"])}">
   <p>{esc(data["intro"])}</p>
 </upao-header>
 

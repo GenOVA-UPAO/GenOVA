@@ -639,7 +639,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     )
 
     return f"""{_STYLE}
-<upao-header eyebrow="JUEGO DE CLASIFICACIÓN" title="{esc(data["titulo"])}">
+<upao-header eyebrow="JUEGO DRAG &amp; DROP" title="{esc(data["titulo"])}">
   <p>Arrastra cada elemento a su categoría correcta o utiliza los botones de selección directa para jugar con teclado o móvil.</p>
 </upao-header>
 
