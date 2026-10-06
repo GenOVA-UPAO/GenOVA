@@ -45,11 +45,11 @@ const base = (key: string) => key.replace(/_(?:zero|one|two|few|many|other)$/, "
 const baseKeys = (map: Map<string, string>) => sorted(new Set([...map.keys()].map(base)));
 
 function missingReferences(file: string, source: string): string[] {
-  const defaultNamespace = /useTranslation\(\s*["']([^"']+)["']/.exec(source)?.[1] ?? "common";
+  const defaultNamespace = /useTranslation\(\s*(?:\[\s*)?["']([^"']+)["']/.exec(source)?.[1] ?? "common";
   const references = new Set([
     ...[...source.matchAll(/\bt\(\s*["']([^"']+)["']/g)].map((match) => match[1]),
     // Incluye claves de catálogos, metadatos y helpers resueltas con t(key).
-    ...[...source.matchAll(/["']((?:workspace|workspace-versioning):[^"']+)["']/g)].map((match) => match[1]),
+    ...[...source.matchAll(/["']((?:workspace|workspace-versioning|metadata|lti|package-themes|shared):[^"'`$]+)["']/g)].map((match) => match[1]),
   ]);
   return [...references].flatMap((reference) => {
     const separator = reference.indexOf(":");
@@ -90,9 +90,9 @@ describe("recursos de traducción", () => {
     }
   });
 
-  it("las claves literales usadas por app, core, biblioteca y workspace existen en ambos idiomas", () => {
+  it("las claves literales de producción existen en ambos idiomas", () => {
     const problems = Object.entries(SOURCES)
-      .filter(([file]) => /^\/src\/(app|core|features\/(ova-library|ova-workspace))\//.test(file) && !/\.(spec|test)\.tsx?$/.test(file))
+      .filter(([file]) => !/\.(spec|test)\.tsx?$/.test(file) && !file.endsWith(".d.ts"))
       .flatMap(([file, source]) => missingReferences(file, source));
     expect(problems).toEqual([]);
   });

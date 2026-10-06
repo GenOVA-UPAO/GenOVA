@@ -1,4 +1,5 @@
 {
+  "profiles.deleting": "Deleting…",
   "api": {
     "applyProfileError": "Could not apply profile.",
     "checkConnectionError": "Could not check connection.",

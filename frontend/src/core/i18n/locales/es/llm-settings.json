@@ -1,4 +1,5 @@
 {
+  "profiles.deleting": "Eliminando…",
   "api": {
     "applyProfileError": "No se pudo aplicar el perfil.",
     "checkConnectionError": "No se pudo comprobar la conexión.",

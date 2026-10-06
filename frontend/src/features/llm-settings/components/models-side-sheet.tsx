@@ -58,7 +58,7 @@ export function ModelsSideSheet({
                 variant="ghost"
                 size="icon-sm"
                 className="-mt-1 -mr-2 max-sm:size-11"
-                aria-label={t("actions.close", { ns: "common" })}
+                aria-label={t("common:actions.close")}
               >
                 <Icon name="x" size="text-base" />
               </Button>
