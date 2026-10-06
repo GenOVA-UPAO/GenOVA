@@ -8,6 +8,7 @@ desplegar todos y barra de progreso que desbloquea la finalización al revisar l
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, obj, s
 
@@ -44,8 +45,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_milestones"]
-    return f"""[ROL] Historiador y divulgador científico de la tecnología y bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Historiador y divulgador científico de la tecnología y bases de datos.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Construye una crónica histórica en {n} hitos verídicos o altamente plausibles que llevaron al surgimiento y evolución de «{concept}».
 - titulo: título atractivo del timeline histórico (≤10 palabras).
 - intro: introducción intrigante que contextualice la necesidad histórica de «{concept}» (≤25 palabras).
@@ -57,6 +60,22 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `conexion_actual`: impacto directo en la vida cotidiana o profesional del estudiante hoy (≤25 palabras).
 - sintesis: conclusión de cómo el pasado forjó lo que hoy es «{concept}» y por qué importa dominarlo (≤35 palabras).
 [RESTRICCIONES] Hechos verídicos o altamente plausibles que llevaron al concepto. Sin fórmulas ni jerga técnica densa. Tono de divulgación histórica apasionante y riguroso.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Historiador y divulgador científico especializado en «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Construye una crónica histórica en {n} hitos verídicos o altamente plausibles que llevaron al surgimiento y evolución de «{concept}».
+- titulo: título atractivo del timeline histórico (≤10 palabras).
+- intro: introducción intrigante que contextualice la necesidad histórica de «{concept}» (≤25 palabras).
+- hitos: exactamente {n} hitos históricos cronológicos. Por cada hito:
+  * `anio`: año o época del acontecimiento (ej. '1970', '1979', 'Años 80', ≤20 caracteres).
+  * `nombre`: nombre corto y memorable del hito (≤10 palabras).
+  * `descripcion`: crónica narrativa de qué ocurrió y qué problema resolvió (≤45 palabras).
+  * `dato_sorprendente`: curiosidad o anécdota poco conocida del hito (≤25 palabras).
+  * `conexion_actual`: impacto directo en la vida cotidiana o profesional del estudiante hoy (≤25 palabras).
+- sintesis: conclusión de cómo el pasado forjó lo que hoy es «{concept}» y por qué importa dominarlo (≤35 palabras).
+[RESTRICCIONES] Hechos verídicos o altamente plausibles que llevaron al concepto. Sin fórmulas ni jerga técnica densa. Tono de divulgación histórica apasionante y riguroso.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

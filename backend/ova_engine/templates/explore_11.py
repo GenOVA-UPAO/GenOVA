@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 
@@ -60,7 +61,9 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_steps"]
-    return f"""[ROL] Docente universitario experto en matemáticas, funciones, geometría y modelado computacional con GeoGebra.
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Docente universitario experto en matemáticas, funciones, geometría y modelado computacional con GeoGebra.
 [CONCEPTO] «{concept}».
 [TAREA] Diseña un applet interactivo con GeoGebra para explorar matemáticamente «{concept}».
 - titulo: título claro de la actividad (≤10 palabras).
@@ -75,6 +78,24 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `feedback_incorrecto`: pista que oriente a manipular el applet y verificar (≤20 palabras).
 - cierre: síntesis conceptual de lo descubierto (≤35 palabras).
 [RESTRICCIONES] Comandos matemáticos estándar de GeoGebra. Sin código HTML ni Markdown fuera del JSON.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Docente experto en matemáticas, funciones, geometría y modelado computacional con GeoGebra.
+[CONCEPTO] «{concept}».
+[TAREA] Diseña un applet interactivo con GeoGebra para explorar matemáticamente «{concept}».
+- titulo: título claro de la actividad (≤10 palabras).
+- objetivo: qué patrón o propiedad matemática descubrirá el alumno (≤25 palabras).
+- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). PROHIBIDO Execute, URLs, scripts o JS.
+- consignas: exactamente {n} consignas guiadas paso a paso. Por cada consigna:
+  * `paso`: número secuencial (1 a {n}).
+  * `indicacion`: qué slider o elemento mover en el applet (≤20 palabras).
+  * `pregunta`: qué valor, propiedad o cambio se observa (≤20 palabras).
+  * `respuesta_esperada`: respuesta concisa esperada (número, signo, fórmula o palabra clave, ≤6 palabras).
+  * `feedback_correcto`: explicación de por qué ocurre esa relación matemática (≤20 palabras).
+  * `feedback_incorrecto`: pista que oriente a manipular el applet y verificar (≤20 palabras).
+- cierre: síntesis conceptual de lo descubierto (≤35 palabras).
+[RESTRICCIONES] Comandos matemáticos estándar de GeoGebra. Sin código HTML ni Markdown fuera del JSON.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

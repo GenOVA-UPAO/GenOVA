@@ -8,6 +8,7 @@ que se revele la solución directamente, culminando en reflexión técnica.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import obj, s
 
@@ -38,8 +39,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     words = p["context_words"]
-    return f"""[ROL] Diseñador de experiencias de aprendizaje basadas en roles para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de experiencias de aprendizaje basadas en roles para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea un escenario interactivo de juego de roles donde el estudiante actúa como un DBA junior en su primer día enfrentando un problema crítico en la base de datos que se resuelve mediante el entendimiento de «{concept}».
 - titulo: título profesional y sugerente para la simulación de rol (≤10 palabras).
 - contexto_rol: narrativa inmersiva en segunda persona ("tú") de aproximadamente {words} palabras que sitúa al estudiante como DBA junior en su primer día. Describe el entorno de la empresa, la presión del incidente y la tensión operativa relacionada directamente con «{concept}».
@@ -51,6 +54,22 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - pregunta_cierre: pregunta provocadora para reflexionar sobre el impacto y balance de la decisión tomada (≤20 palabras).
 - reflexion_final: síntesis reflexiva que analiza las tensiones del dilema y conecta la experiencia con los fundamentos de «{concept}» (≤45 palabras).
 [RESTRICCIONES] Empatía total con el novato: transmite la ansiedad realista del primer día sin toxicidad laboral. Sin jerga técnica impenetrable ni fórmulas matemáticas. El feedback debe mostrar causas y efectos sin limitarse a un juicio binario de "correcto/incorrecto" ni regalar la solución.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de experiencias de aprendizaje basadas en roles para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Crea un escenario interactivo de juego de roles donde el estudiante actúa como un especialista junior en su primer día enfrentando un problema crítico que se resuelve mediante el entendimiento de «{concept}».
+- titulo: título profesional y sugerente para la simulación de rol (≤10 palabras).
+- contexto_rol: narrativa inmersiva en segunda persona ("tú") de aproximadamente {words} palabras que sitúa al estudiante como especialista junior en su primer día. Describe el entorno de la empresa, la presión del incidente y la tensión operativa relacionada directamente con «{concept}».
+- pregunta_decision: el dilema técnico y operativo inmediato ante el cual debes tomar una decisión de guardia (≤25 palabras).
+- opcion_A: primera alternativa de acción concreta y verosímil ante el incidente (≤15 palabras).
+- opcion_B: segunda alternativa de acción concreta y verosímil con un enfoque técnico distinto (≤15 palabras).
+- feedback_A: consecuencia y análisis inmediato de optar por la opción A (≤35 palabras). Valida el razonamiento sin revelar directamente la respuesta definitiva ni cerrar el caso.
+- feedback_B: consecuencia y análisis inmediato de optar por la opción B (≤35 palabras). Valida el razonamiento sin revelar directamente la respuesta definitiva ni cerrar el caso.
+- pregunta_cierre: pregunta provocadora para reflexionar sobre el impacto y balance de la decisión tomada (≤20 palabras).
+- reflexion_final: síntesis reflexiva que analiza las tensiones del dilema y conecta la experiencia con los fundamentos de «{concept}» (≤45 palabras).
+[RESTRICCIONES] Empatía total con el novato: transmite la ansiedad realista del primer día sin toxicidad laboral. Sin jerga técnica impenetrable ni fórmulas matemáticas. El feedback debe mostrar causas y efectos sin limitarse a un juicio binario de "correcto/incorrecto" ni regalar la solución.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -257,14 +276,14 @@ _ROLE_JS = """
 def render(data: dict, ctx: RenderContext) -> str:
     return f"""{_STYLE}
 <upao-header eyebrow="JUEGO DE ROLES" title="{esc(data["titulo"])}">
-  <p>Asume el rol de un DBA junior en su primer día y toma una decisión operativa clave.</p>
+  <p>Asume el rol de un especialista junior en su primer día y toma una decisión operativa clave.</p>
 </upao-header>
 
 <upao-progress id="prog" current="0" total="2" label="Progreso del caso" show-fraction></upao-progress>
 
 <section class="ova-card">
   <div class="ova-role-header">
-    <span class="ova-role-badge">👤 Rol: DBA Junior (Día 1)</span>
+    <span class="ova-role-badge">👤 Rol: Especialista junior (Día 1)</span>
     <span class="ova-role-tag">Entorno de producción</span>
   </div>
   <h2>Situación operativa</h2>

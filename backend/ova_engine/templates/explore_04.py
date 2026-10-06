@@ -8,6 +8,7 @@ un prompt de video técnico en inglés para generadores externos de video AI, y 
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, b, i, obj, s
 
@@ -61,8 +62,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_pauses"]
-    return f"""[ROL] Diseñador instruccional y guionista de video educativo interactivo para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador instruccional y guionista de video educativo interactivo para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea un storyboard de video con {n} pausas activas para predicción que despierten curiosidad sin adelantar la solución sobre «{concept}». El video intercala {n + 1} segmentos de guion con {n} pausas interactivas en momentos clave de tensión o dilema.
 - titulo: título atractivo del video educativo (≤10 palabras).
 - gancho: introducción intrigante que invite a explorar el video y formular hipótesis (≤25 palabras).
@@ -78,6 +81,26 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo (Runway, Luma, Sora), describiendo la progresión visual y conceptual de «{concept}», estilo animación técnica moderna, sin texto en pantalla ni fórmulas.
 - sintesis: reflexión de cierre que consolida lo descubierto en las pausas y conecta las predicciones con el funcionamiento real de «{concept}» (≤35 palabras).
 [RESTRICCIONES] Las preguntas de pausa deben ser genuinamente predictivas: suscitar hipótesis sobre causa y efecto sin adelantar la solución de golpe. Sin jerga técnica pesada ni fórmulas en el guion. Tono estimulante y empático.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador instruccional y guionista de video educativo interactivo para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Crea un storyboard de video con {n} pausas activas para predicción que despierten curiosidad sin adelantar la solución sobre «{concept}». El video intercala {n + 1} segmentos de guion con {n} pausas interactivas en momentos clave de tensión o dilema.
+- titulo: título atractivo del video educativo (≤10 palabras).
+- gancho: introducción intrigante que invite a explorar el video y formular hipótesis (≤25 palabras).
+- guion_segmentos: exactamente {n + 1} segmentos secuenciales del video. Para cada segmento:
+  * `segundo`: intervalo de tiempo del segmento (ej. '0:00 - 0:20', '0:20 - 0:45').
+  * `visual`: descripción visual concreta de la escena, animación o analogía (≤30 palabras).
+  * `narracion`: locución o voz en off que acompaña la escena y prepara el siguiente momento (≤25 palabras).
+- pausas: exactamente {n} pausas activas intercaladas entre los segmentos (la pausa 1 tras el segmento 1, la pausa 2 tras el segmento 2, etc.). Para cada pausa:
+  * `numero`: número correlativo de la pausa (1 a {n}).
+  * `momento`: marca de tiempo exacta de la pausa (ej. 'En 0:20', 'En 0:45').
+  * `pregunta_prediccion`: pregunta desafiante que pide al estudiante predecir qué sucederá o cuál será la consecuencia inmediata antes de ver la continuación (≤25 palabras).
+  * `opciones`: lista de 2 a 3 opciones breves y plausibles. Exactamente UNA con `correcta: true`; cada una con `texto` (≤12 palabras) y `feedback` formativo que explique por qué esa predicción se cumple o no en la realidad (≤25 palabras).
+- prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo (Runway, Luma, Sora), describiendo la progresión visual y conceptual de «{concept}», estilo animación técnica moderna, sin texto en pantalla ni fórmulas.
+- sintesis: reflexión de cierre que consolida lo descubierto en las pausas y conecta las predicciones con el funcionamiento real de «{concept}» (≤35 palabras).
+[RESTRICCIONES] Las preguntas de pausa deben ser genuinamente predictivas: suscitar hipótesis sobre causa y efecto sin adelantar la solución de golpe. Sin jerga técnica pesada ni fórmulas en el guion. Tono estimulante y empático.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
