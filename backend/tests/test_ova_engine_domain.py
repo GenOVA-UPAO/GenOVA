@@ -1,5 +1,7 @@
 """El dominio del motor no está fijado a Oracle: se deriva del tema y del nivel (A1 del QA)."""
 
+import re
+
 import pytest
 
 from ova_engine import text as text_mod
@@ -7,7 +9,11 @@ from ova_engine.domain_context import detect_level, domain_for, is_db_text
 from ova_engine.registry import all_specs
 
 SPECS = sorted(all_specs().values(), key=lambda s: (s.phase, s.rt))
-PROHIBIDAS = ("oracle", "sgbd", "dba", "tablespace", "base de datos", "bases de datos", "sql")
+_PROHIBIDAS_RE = re.compile(r"\b(oracle|sgbd|dba|tablespaces?|sql|pl/sql)\b|bases? de datos")
+
+
+def _halladas(texto: str) -> list[str]:
+    return [m.group(0) for m in _PROHIBIDAS_RE.finditer(texto.lower())]
 TEMAS_NO_BD = [
     ("La fotosíntesis", "Pedido del docente (respeta su objetivo y nivel): La fotosíntesis. Nivel educativo: secundaria."),
     ("Derivadas como razón de cambio", "Pedido del docente (respeta su objetivo y nivel): Derivadas. Nivel educativo: universitario (ciclos iniciales)."),
@@ -39,8 +45,7 @@ def test_prompt_de_tema_ajeno_no_menciona_oracle(spec, concept, contexto):
     params = spec.resolve_params({})
     prompt = spec.prompt(concept, contexto, params)
     full = text_mod._full_prompt(prompt, spec.schema(params), domain_for(concept, contexto).is_db)
-    bajo = full.lower()
-    halladas = [w for w in PROHIBIDAS if w in bajo]
+    halladas = _halladas(full)
     assert not halladas, (spec.key, halladas)
     assert "Hechos de Oracle" not in full
 
@@ -65,7 +70,7 @@ def test_podcast_no_hereda_el_curso_de_oracle():
 
     pedido = "La fotosíntesis. Nivel educativo: secundaria."
     p = prompt_texto(3, pedido, "")
-    assert not [w for w in PROHIBIDAS if w in p.lower()], p
+    assert not _halladas(p), p
     assert "estudiantes de secundaria" in p
     db = prompt_texto(3, "Tablespaces en Oracle", "")
     assert "Oracle" in db
