@@ -80,8 +80,28 @@ def translate_geogebra_command(cmd: str) -> str:
     return _CMD_CALL.sub(repl, cmd)
 
 
+_FUNC_DEF = re.compile(r"^\s*([A-Za-z]\w*)\s*\(\s*x\s*\)\s*=")
+_POINT_ON_FUNC = re.compile(r"\bPoint\(\s*([A-Za-z]\w*)\s*,\s*([^,()]+?)\s*\)")
+
+
+def fix_point_on_function(cmds: list[str]) -> list[str]:
+    """`Point(f, a)` sobre una función es un punto «en el camino» con parámetro `a`, no el
+    punto de abscisa `a`: el QA (2026-10-06) vio P lejos del punto de tangencia. Si `f` es
+    una función definida como `f(x) = …`, se reescribe como `(a, f(a))`."""
+    funcs = {m.group(1) for c in cmds if (m := _FUNC_DEF.match(c))}
+
+    def repl(m: re.Match) -> str:
+        name, arg = m.group(1), m.group(2)
+        return f"({arg}, {name}({arg}))" if name in funcs else m.group(0)
+
+    return [_POINT_ON_FUNC.sub(repl, c) for c in cmds]
+
+
 def normalize_geogebra_commands(cmds: list) -> list:
-    return [translate_geogebra_command(c) if isinstance(c, str) else c for c in cmds or []]
+    out = [translate_geogebra_command(c) if isinstance(c, str) else c for c in cmds or []]
+    texts = [c for c in out if isinstance(c, str)]
+    fixed = iter(fix_point_on_function(texts))
+    return [next(fixed) if isinstance(c, str) else c for c in out]
 
 
 def normalize(data: dict, p: dict) -> dict:
@@ -119,7 +139,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Diseña un applet interactivo con GeoGebra para explorar matemáticamente «{concept}».
 - titulo: título claro de la actividad (≤10 palabras).
 - objetivo: qué patrón o propiedad matemática descubrirá el alumno (≤25 palabras).
-- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). Usa SIEMPRE los nombres de comando en inglés (Slider, Line, Tangent, Point, Segment, Circle, Intersect, Derivative…), nunca en español. PROHIBIDO Execute, URLs, scripts o JS.
+- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). Un punto sobre la gráfica de f en x = a se escribe 'P = (a, f(a))', no 'Point(f, a)'. Usa SIEMPRE los nombres de comando en inglés (Slider, Line, Tangent, Point, Segment, Circle, Intersect, Derivative…), nunca en español. PROHIBIDO Execute, URLs, scripts o JS.
 - consignas: exactamente {n} consignas guiadas paso a paso. Por cada consigna:
   * `paso`: número secuencial (1 a {n}).
   * `indicacion`: qué slider o elemento mover en el applet (≤20 palabras).
@@ -136,7 +156,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Diseña un applet interactivo con GeoGebra para explorar matemáticamente «{concept}».
 - titulo: título claro de la actividad (≤10 palabras).
 - objetivo: qué patrón o propiedad matemática descubrirá el alumno (≤25 palabras).
-- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). Usa SIEMPRE los nombres de comando en inglés (Slider, Line, Tangent, Point, Segment, Circle, Intersect, Derivative…), nunca en español. PROHIBIDO Execute, URLs, scripts o JS.
+- comandos: lista de 3 a 8 comandos GeoGebra limpios (ej: 'a = Slider(-5, 5, 0.5)', 'f(x) = a * x^2 + 1', 'P = (0, 0)', 'Intersect(f, g)', etc.). Un punto sobre la gráfica de f en x = a se escribe 'P = (a, f(a))', no 'Point(f, a)'. Usa SIEMPRE los nombres de comando en inglés (Slider, Line, Tangent, Point, Segment, Circle, Intersect, Derivative…), nunca en español. PROHIBIDO Execute, URLs, scripts o JS.
 - consignas: exactamente {n} consignas guiadas paso a paso. Por cada consigna:
   * `paso`: número secuencial (1 a {n}).
   * `indicacion`: qué slider o elemento mover en el applet (≤20 palabras).
