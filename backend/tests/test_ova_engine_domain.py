@@ -74,3 +74,23 @@ def test_podcast_no_hereda_el_curso_de_oracle():
     assert "estudiantes de secundaria" in p
     db = prompt_texto(3, "Tablespaces en Oracle", "")
     assert "Oracle" in db
+
+
+@pytest.mark.parametrize(
+    "tema",
+    [
+        # Palabras que contienen un término de BD como subcadena (QA 2026-10-06:
+        # «transforman» contiene «rman» y la fotosíntesis salía con Oracle).
+        "La fotosíntesis: cómo las plantas transforman la luz en energía",
+        "Ecuaciones de primer grado y su comprobación",
+        "Transformaciones geométricas en el plano",
+        "Dibujo técnico: vistas y cotas",
+    ],
+)
+def test_subcadenas_no_activan_el_dominio_bd(tema):
+    assert not domain_for(tema).is_db
+
+
+@pytest.mark.parametrize("tema", ["Copias de seguridad con RMAN", "Consultas SQL con JOIN", "Índices B-tree en Oracle"])
+def test_terminos_completos_si_activan_el_dominio_bd(tema):
+    assert domain_for(tema).is_db

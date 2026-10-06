@@ -52,7 +52,9 @@ _DB_TERMS = (
     r"postgres",
     r"mysql",
 )
-_DB_RE = re.compile("|".join(f"(?:{t})" for t in _DB_TERMS))
+# Siempre como palabra completa: sin `\b`, «t-rman-sforman» activaba `rman` y un OVA de
+# fotosíntesis salía con Oracle (QA 2026-10-06).
+_DB_RE = re.compile(r"\b(?:" + "|".join(f"(?:{t})" for t in _DB_TERMS) + r")\b")
 
 _LEVEL_RE = re.compile(r"nivel educativo\s*:\s*([^.\n]+)", re.IGNORECASE)
 
