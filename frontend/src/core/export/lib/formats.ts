@@ -47,7 +47,8 @@ export const EXPORT_FORMATS = [
     id: "h5p",
     label: "H5P",
     extension: "h5p",
-    description: "Actividades editables para Moodle, WordPress o Lumi",
+    get description() { return i18n.t("shared:export.h5pDescription"); },
+    descriptionKey: "shared:export.h5pDescription",
   },
 ] as const;
 
