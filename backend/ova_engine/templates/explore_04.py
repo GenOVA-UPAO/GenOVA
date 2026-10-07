@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 
 PARAMS = (
@@ -406,15 +407,15 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="ova-card ova-segment-card">'
             f'<div class="ova-segment-head">'
             f'<span class="ova-badge-step">Segmento {idx} de {total_segments}</span>'
-            f'<span class="ova-time-tag">⏱️ {seg_time}</span>'
+            f'<span class="ova-time-tag">{icon("clock")} {seg_time}</span>'
             f"</div>"
             f'<div class="ova-segment-body">'
             f'<div class="ova-segment-row">'
-            f'<div class="ova-icon-box" aria-hidden="true">🎬</div>'
+            f'<div class="ova-icon-box" aria-hidden="true">{icon("film")}</div>'
             f'<div class="ova-segment-text"><strong>Visual</strong><p>{seg_visual}</p></div>'
             f"</div>"
             f'<div class="ova-segment-row">'
-            f'<div class="ova-icon-box" aria-hidden="true">🎙️</div>'
+            f'<div class="ova-icon-box" aria-hidden="true">{icon("mic")}</div>'
             f'<div class="ova-segment-text"><strong>Locución</strong><p>«{seg_narracion}»</p></div>'
             f"</div>"
             f"</div>"
@@ -422,7 +423,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="ova-pause-card" id="pause-card-{idx}">'
             f'<div class="ova-pause-head">'
             f'<div class="ova-pause-title">'
-            f'<span aria-hidden="true">⏸️</span>'
+            f'<span aria-hidden="true">{icon("pause")}</span>'
             f"<span>Pausa Activa {pause_num} • {pause_momento}</span>"
             f"</div>"
             f'<span class="ova-pause-chip" id="chip-pause-{idx}">Pendiente</span>'
@@ -459,15 +460,15 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<div class="ova-card ova-segment-card ova-segment-card--final">'
         f'<div class="ova-segment-head">'
         f'<span class="ova-badge-step ova-badge-step--final">Segmento {final_seg_idx} de {total_segments} • Desenlace</span>'
-        f'<span class="ova-time-tag">⏱️ {final_time}</span>'
+        f'<span class="ova-time-tag">{icon("clock")} {final_time}</span>'
         f"</div>"
         f'<div class="ova-segment-body">'
         f'<div class="ova-segment-row">'
-        f'<div class="ova-icon-box" aria-hidden="true">🎬</div>'
+        f'<div class="ova-icon-box" aria-hidden="true">{icon("film")}</div>'
         f'<div class="ova-segment-text"><strong>Visual</strong><p>{final_visual}</p></div>'
         f"</div>"
         f'<div class="ova-segment-row">'
-        f'<div class="ova-icon-box" aria-hidden="true">🎙️</div>'
+        f'<div class="ova-icon-box" aria-hidden="true">{icon("mic")}</div>'
         f'<div class="ova-segment-text"><strong>Locución</strong><p>«{final_narracion}»</p></div>'
         f"</div>"
         f"</div>"
@@ -480,7 +481,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<pre class="ova-prompt-box"><code id="prompt-video-text">{esc(data.get("prompt_video", ""))}</code></pre>'
         f'<div class="ova-copy-bar">'
         f'<button type="button" class="ova-btn" id="btn-copy-prompt" aria-label="Copiar prompt de video al portapapeles">'
-        f'<span aria-hidden="true">📋</span> <span id="copy-btn-label">Copiar prompt de video</span>'
+        f'<span aria-hidden="true">{icon("clipboard")}</span> <span id="copy-btn-label">Copiar prompt de video</span>'
         f"</button>"
         f'<span id="copy-status" aria-live="polite" class="ova-muted" style="font-size:0.875rem"></span>'
         f"</div>"

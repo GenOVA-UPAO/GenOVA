@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -643,9 +644,9 @@ function setFeedback(type, title, msg) {
     if (fbBadge) fbBadge.textContent = '✓';
   } else if (type === 'error') {
     fbBanner.classList.add('is-error');
-    if (fbBadge) fbBadge.textContent = '⚠';
+    if (fbBadge) fbBadge.innerHTML = ovaIcon('warning');
   } else {
-    if (fbBadge) fbBadge.textContent = '💡';
+    if (fbBadge) fbBadge.innerHTML = ovaIcon('bulb');
   }
   fbTitle.textContent = title;
   fbMsg.textContent = msg;
@@ -768,7 +769,7 @@ function attemptMatch(cardA, cardB, idA, idB) {
       document.querySelectorAll('upao-complete[locked]').forEach(function(b) {
         if (b && typeof b.unlock === 'function') b.unlock();
       });
-      setFeedback('success', '🎉 ¡Mapa mental completado!', 'Has establecido con éxito todos los vínculos entre analogías cotidianas y la arquitectura técnica.');
+      setFeedback('success', '¡Mapa mental completado!', 'Has establecido con éxito todos los vínculos entre analogías cotidianas y la arquitectura técnica.');
     }
   } else {
     const clueId = cardA.getAttribute('data-type') === 'clue' ? idA : idB;
@@ -867,7 +868,7 @@ allCards.forEach(function(card) {
 <upao-progress id="prog" current="0" total="{total}" label="Vínculos conceptuales completados" show-fraction></upao-progress>
 
 <div id="mindmap-live-feedback" class="mindmap-feedback-banner" role="status" aria-live="polite">
-  <div class="feedback-badge" id="feedback-badge" aria-hidden="true">💡</div>
+  <div class="feedback-badge" id="feedback-badge" aria-hidden="true">{icon('bulb')}</div>
   <div class="feedback-content">
     <strong id="feedback-title" class="feedback-title">Asocia cada intuición cotidiana con su nodo técnico</strong>
     <p id="feedback-msg" class="feedback-msg">Haz clic en una pista cotidiana y luego en su nodo técnico correspondiente, o arrastra una tarjeta sobre la otra.</p>
@@ -886,7 +887,7 @@ allCards.forEach(function(card) {
   </div>
 
   <div class="mindmap-divider" aria-hidden="true">
-    <span class="divider-icon">⚡</span>
+    <span class="divider-icon">{icon('bolt')}</span>
     <span class="divider-line"></span>
   </div>
 
@@ -908,7 +909,7 @@ allCards.forEach(function(card) {
   </div>
   <p class="network-intro">Conforme emparejes cada concepto, aquí se consolidará la red de relaciones:</p>
   <div id="network-empty" class="network-empty-state">
-    <span class="empty-icon" aria-hidden="true">🔗</span>
+    <span class="empty-icon" aria-hidden="true">{icon('link')}</span>
     <span>Aún no hay conexiones establecidas. Empareja tu primera pista arriba.</span>
   </div>
   <ul id="network-connections" class="network-connections-list" aria-live="polite"></ul>

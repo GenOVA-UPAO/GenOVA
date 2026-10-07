@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -468,7 +469,7 @@ _ESCAPE_JS = """
             doorChip.setAttribute('aria-label', 'Puerta de escape: Abierta');
           }
           if (doorState) {
-            doorState.textContent = 'Abierta 🔓';
+            doorState.innerHTML = 'Abierta ' + ovaIcon('unlock');
           }
           if (doorBanner) {
             doorBanner.hidden = false;
@@ -581,7 +582,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<upao-status id="status-{idx}" state="info">Selecciona tu respuesta para comprobar la combinación.</upao-status>'
             f'</div>'
             f'<div class="ova-puzzle-explanation" id="explanation-{idx}" hidden>'
-            f'<h4 class="ova-explanation-title">🔓 Mecanismo descifrado:</h4>'
+            f'<h4 class="ova-explanation-title">{icon("unlock")} Mecanismo descifrado:</h4>'
             f'<p class="ova-explanation-text">{explicacion}</p>'
             f'</div>'
             f'<div class="ova-puzzle-nav">'
@@ -599,7 +600,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <upao-progress id="prog" current="0" total="{total_puzzles}" label="Candados superados" show-fraction></upao-progress>
 
 <section class="ova-card ova-lock-dashboard">
-  <h2 class="ova-dashboard-title">🔐 Mecanismo de Seguridad: Candados de Acceso</h2>
+  <h2 class="ova-dashboard-title">{icon('lock')} Mecanismo de Seguridad: Candados de Acceso</h2>
   <p class="ova-dashboard-desc">Descifra la lógica de cada acertijo para abrir los candados y desbloquear la compuerta de escape.</p>
   <div class="ova-lock-track" role="region" aria-label="Estado de los candados">
     {track_html}
@@ -614,7 +615,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <upao-nav id="nav" total="{total_puzzles}" current="1" prev-label="Acertijo anterior" next-label="Siguiente acertijo"></upao-nav>
 
 <section class="ova-door-banner" id="door-banner" hidden>
-  <div class="ova-door-banner-icon" aria-hidden="true">🎉🚪</div>
+  <div class="ova-door-banner-icon" aria-hidden="true">{icon('star')}{icon('door')}</div>
   <div>
     <h3 class="ova-door-banner-title">¡Compuerta Abierta! Has completado el Escape Room</h3>
     <p class="ova-door-banner-desc">{esc(data["epilogo"])}</p>

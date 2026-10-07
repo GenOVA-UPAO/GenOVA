@@ -19,6 +19,8 @@ _BASE = {
     "text": "#15233B", "text-muted": "#52617A", "border": "#94A3B8",
     "success": "#146C49", "danger": "#B42332", "radius": "14px",
     "success-bg": "#EAF7F1", "danger-bg": "#FBEDED",
+    # Ámbar (avisos, pistas) y azul informativo: texto y fondo de cada uno.
+    "warning": "#92400E", "warning-bg": "#FFFBEB", "info": "#0369A1", "info-bg": "#E0F2FE",
     "shadow": "0 6px 20px rgba(10,61,145,.08)",
     "font-body": 'system-ui,-apple-system,"Segoe UI",Arial,sans-serif',
     "font-display": "var(--font-body)",
@@ -52,6 +54,7 @@ PACKAGE_THEMES = {
         "accent": "#FFAE60", "accent-hover": "#FFAE60", "accent-tint": "#000000",
         "success": "#767676", "danger": "#767676", "shadow": "none",
         "success-bg": "#000000", "danger-bg": "#000000",
+        "warning": "#FFAE60", "warning-bg": "#000000", "info": "#7DD3FC", "info-bg": "#000000",
     },
     "alto-contraste": {
         **_BASE, "bg": "#FFFFFF", "surface-tint": "#FFFFFF", "surface-2": "#FFFFFF", "accent-tint": "#FFFFFF",
@@ -60,6 +63,7 @@ PACKAGE_THEMES = {
         "accent": "#000000", "accent-hover": "#000000", "border": "#000000",
         "success": "#000000", "danger": "#000000", "radius": "0px", "shadow": "none",
         "success-bg": "#FFFFFF", "danger-bg": "#FFFFFF",
+        "warning": "#000000", "warning-bg": "#FFFFFF", "info": "#000000", "info-bg": "#FFFFFF",
     },
     "infantil": {
         **_BASE, "bg": "#FFFDF5", "surface-tint": "#F0ECFF", "accent-tint": "#FFF2D6",

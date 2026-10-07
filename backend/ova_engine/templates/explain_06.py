@@ -14,6 +14,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import CYCLE_GLOSSARY, icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -33,8 +34,6 @@ def schema(p: dict) -> dict:
             obj(
                 termino=s(22),
                 definicion=s(330),
-                icono=s(8),
-                icono_desc=s(110),
                 ejemplo=s(220),
             ),
             min_items=n,
@@ -63,8 +62,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - terminos: por cada término:
   * `termino`: el nombre exacto (≤20 caracteres).
   * `definicion`: definición autocontenida y precisa (≤50 palabras), sin usar el propio término para definirse.
-  * `icono`: UN solo emoji distinto en cada término.
-  * `icono_desc`: qué representa ese emoji respecto al término (≤15 palabras).
+  * No incluyas emoji ni símbolos decorativos en ningún campo: el icono de cada tarjeta lo pone la plantilla.
   * `ejemplo`: ejemplo real razonado (≤30 palabras): {d.pick("una situación del DBA o la sentencia/vista Oracle", "una situación concreta del tema")} donde aparece el término.
 - cierre: frase que conecte los términos entre sí y con «{concept}».
 [RESTRICCIONES] Términos distintos entre sí, correctos y sin tecnicismos sin definir.
@@ -79,7 +77,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     for k, t in enumerate(terms):
         cards.append(
             f'<article class="k-panel gl-card" data-i="{k}" data-term="{esc(t["termino"])}">'
-            f'<div class="k-row"><span class="gl-ico" role="img" aria-label="{esc(t["icono_desc"])}">{esc(t["icono"])}</span>'
+            f'<div class="k-row"><span class="gl-ico" aria-hidden="true">{icon(CYCLE_GLOSSARY[k % len(CYCLE_GLOSSARY)], "1em")}</span>'
             f'<h3 class="gl-name">{esc(t["termino"])}</h3></div>'
             f'<button type="button" class="k-btn gl-btn" aria-expanded="false" aria-controls="gl-b{k}">Ver definición</button>'
             f'<div class="gl-body k-hide" id="gl-b{k}"><p>{esc(t["definicion"])}</p>'
@@ -171,7 +169,6 @@ picks.forEach((idx, r) => {
 
 
 def sample(concept: str, p: dict) -> dict:
-    icons = ["📘", "🔑", "🗄️", "⚙️", "🔍", "🧱", "📊", "🛡️", "⏱️", "🧩"]
     return {
         "titulo": f"Glosario de {concept}"[:70],
         "intro": f"Explora los términos clave para dominar {concept}.",
@@ -184,8 +181,6 @@ def sample(concept: str, p: dict) -> dict:
             {
                 "termino": f"Término {k}",
                 "definicion": f"Definición autocontenida del término {k} dentro de {concept}.",
-                "icono": icons[(k - 1) % len(icons)],
-                "icono_desc": "Imagen que evoca el término.",
                 "ejemplo": f"El DBA consulta una vista de Oracle donde aparece el término {k}.",
             }
             for k in range(1, p["num_terms"] + 1)

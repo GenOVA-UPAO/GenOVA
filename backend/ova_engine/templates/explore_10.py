@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, obj, s
 
 PARAMS = (Param("num_trials", 3, min=3, max=5, help="Número de pruebas experimentales"),)
@@ -554,7 +555,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       </p>
     </div>
     <div class="ova-counter-chip" id="trial-counter-wrap">
-      <span aria-hidden="true">🧪</span>
+      <span aria-hidden="true">{icon('flask')}</span>
       <span>Pruebas: <strong id="trial-counter-val">0 / {n}</strong></span>
     </div>
   </div>
@@ -572,7 +573,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         {"".join(select_options)}
       </select>
       <button type="button" id="btn-run-trial" class="ova-btn ova-btn--primary">
-        <span aria-hidden="true">🔬</span> Ejecutar prueba
+        <span aria-hidden="true">{icon('microscope')}</span> Ejecutar prueba
       </button>
     </div>
   </div>

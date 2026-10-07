@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import obj, s
 
 PARAMS = (
@@ -283,7 +284,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
 <section class="ova-card">
   <div class="ova-role-header">
-    <span class="ova-role-badge">👤 Rol: Especialista junior (Día 1)</span>
+    <span class="ova-role-badge">{icon('user')} Rol: Especialista junior (Día 1)</span>
     <span class="ova-role-tag">Entorno de producción</span>
   </div>
   <h2>Situación operativa</h2>
@@ -291,7 +292,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 </section>
 
 <section class="ova-card">
-  <h2>⚡ Dilema de decisión</h2>
+  <h2>{icon('bolt')} Dilema de decisión</h2>
   <p class="ova-decision-prompt"><strong>{esc(data["pregunta_decision"])}</strong></p>
   <p class="ova-muted" style="font-size:0.875rem;margin-bottom:14px">
     Selecciona la opción que consideres más adecuada para analizar su impacto en el sistema:
@@ -331,7 +332,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <p class="ova-muted" style="font-size:0.875rem;margin-bottom:14px">
     Abre la reflexión guiada para conectar las consecuencias observadas con los fundamentos teóricos:
   </p>
-  <upao-reveal id="reveal-reflexion" label="Abrir análisis y reflexión guiada" icon="💡">
+  <upao-reveal id="reveal-reflexion" label="Abrir análisis y reflexión guiada" icon="{esc(icon('bulb'))}">
     <p>{esc(data["reflexion_final"])}</p>
   </upao-reveal>
 </section>

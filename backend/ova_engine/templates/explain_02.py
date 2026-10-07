@@ -18,6 +18,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -189,15 +190,15 @@ _STYLE = """
 }
 .tag-idea {
   color: var(--primary, #0A3D91);
-  background: #E0E7FF;
+  background: var(--surface-tint, #E0E7FF);
 }
 .tag-ejemplo {
-  color: #0369A1;
-  background: #E0F2FE;
+  color: var(--info, #0369A1);
+  background: var(--info-bg, #E0F2FE);
 }
 .tag-pregunta {
-  color: #B45309;
-  background: #FEF3C7;
+  color: var(--warning, #B45309);
+  background: var(--warning-bg, #FEF3C7);
 }
 
 .sec-idea-card {
@@ -205,11 +206,11 @@ _STYLE = """
   border-left: 4px solid var(--primary, #0A3D91);
 }
 .sec-ejemplo-card {
-  background: #F8FAFC;
+  background: var(--surface-2, #F8FAFC);
   border-left: 4px solid #0284C7;
 }
 .sec-check-card {
-  background: #FFFDF5;
+  background: var(--warning-bg, #FFFDF5);
   border-left: 4px solid var(--action, #F47A20);
 }
 .sec-text {
@@ -318,19 +319,19 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="sec-body">'
             f'<div class="sec-card sec-idea-card">'
             f'<div class="sec-card-header">'
-            f'<span class="sec-card-tag tag-idea" aria-hidden="true">💡 Idea Central</span>'
+            f'<span class="sec-card-tag tag-idea" aria-hidden="true">{icon("bulb")} Idea Central</span>'
             f'</div>'
             f'<p class="sec-text">{esc(sec["idea_central"])}</p>'
             f'</div>'
             f'<div class="sec-card sec-ejemplo-card">'
             f'<div class="sec-card-header">'
-            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">🔍 Ejemplo Razonado{d.pick(" (Oracle)", "")}</span>'
+            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">{icon("search")} Ejemplo Razonado{d.pick(" (Oracle)", "")}</span>'
             f'</div>'
             f'<p class="sec-text">{esc(sec["ejemplo_razonado"])}</p>'
             f'</div>'
             f'<div class="sec-card sec-check-card">'
             f'<div class="sec-card-header">'
-            f'<span class="sec-card-tag tag-pregunta" aria-hidden="true">❓ Comprobación de Aprendizaje</span>'
+            f'<span class="sec-card-tag tag-pregunta" aria-hidden="true">{icon("question")} Comprobación de Aprendizaje</span>'
             f'</div>'
             f'<p class="sec-question">{esc(sec["pregunta_comprobacion"])}</p>'
             f'<upao-reveal class="sec-reveal" data-sec="{idx}" label="Comprobar respuesta modelo" icon="✓">'
@@ -366,12 +367,12 @@ def render(data: dict, ctx: RenderContext) -> str:
     });
     if (nodes.length > 0 && openCount === nodes.length) {
       allOpen = true;
-      if (toggleIcon) toggleIcon.textContent = '📁';
+      if (toggleIcon) toggleIcon.innerHTML = ovaIcon('folder');
       if (toggleText) toggleText.textContent = 'Plegar todas las secciones';
       if (btnToggleAll) btnToggleAll.setAttribute('aria-expanded', 'true');
     } else if (openCount === 0) {
       allOpen = false;
-      if (toggleIcon) toggleIcon.textContent = '📂';
+      if (toggleIcon) toggleIcon.innerHTML = ovaIcon('folder-open');
       if (toggleText) toggleText.textContent = 'Abrir todas las secciones';
       if (btnToggleAll) btnToggleAll.setAttribute('aria-expanded', 'false');
     }
@@ -423,7 +424,7 @@ def render(data: dict, ctx: RenderContext) -> str:
           window.ovaMark('sec-' + idx);
         }
       });
-      if (toggleIcon) toggleIcon.textContent = allOpen ? '📁' : '📂';
+      if (toggleIcon) toggleIcon.innerHTML = allOpen ? ovaIcon('folder') : ovaIcon('folder-open');
       if (toggleText) toggleText.textContent = allOpen ? 'Plegar todas las secciones' : 'Abrir todas las secciones';
       btnToggleAll.setAttribute('aria-expanded', String(allOpen));
     });
@@ -460,7 +461,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <div class="reading-toolbar" role="region" aria-label="Controles de lectura">
     <span class="toolbar-hint">Despliega cada sección para avanzar en la lectura y comprobar respuestas.</span>
     <button type="button" id="btn-toggle-all" class="btn-toggle-all" aria-expanded="false">
-      <span id="toggle-all-icon" class="btn-icon" aria-hidden="true">📂</span>
+      <span id="toggle-all-icon" class="btn-icon" aria-hidden="true">{icon('folder-open')}</span>
       <span id="toggle-all-text">Abrir todas las secciones</span>
     </button>
   </div>
@@ -471,7 +472,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
   <section class="ova-card dba-panel" aria-labelledby="dba-panel-heading">
     <div class="dba-header">
-      <span class="dba-icon-badge" aria-hidden="true">🛠️</span>
+      <span class="dba-icon-badge" aria-hidden="true">{icon('tools')}</span>
       <div>
         <span class="dba-eyebrow">{d.pick("EN PRODUCCIÓN · ROL DBA", "EN LA PRÁCTICA")}</span>
         <h2 id="dba-panel-heading" class="dba-title">{d.pick("Aplicación Concreta para el DBA (Oracle)", "Aplicación concreta en " + d.practica)}</h2>
@@ -480,7 +481,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div class="dba-body">
       <p>{esc(data["aplicacion_practica"])}</p>
       <div class="dba-tip">
-        <span class="dba-tip-icon" aria-hidden="true">💡</span>
+        <span class="dba-tip-icon" aria-hidden="true">{icon('bulb')}</span>
         <span>{d.pick("<strong>Buenas prácticas del DBA:</strong> Consulta periódicamente el diccionario de datos y las vistas de rendimiento dinámico (<code>V$</code> y <code>DBA_*</code>) para auditar el impacto en memoria y almacenamiento.", "<strong>Consejo:</strong> repasa esta aplicación con tus propias palabras y busca un ejemplo nuevo en tu entorno.")}</span>
       </div>
     </div>

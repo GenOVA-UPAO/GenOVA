@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 
 PARAMS = (Param("num_turns", 4, min=3, max=6, help="Número de turnos socráticos"),)
@@ -274,7 +275,7 @@ _STYLE = """
 }
 .socratic-opt-btn.is-wrong {
   border-color: var(--accent, #f47a20);
-  background: #fffbeb;
+  background: var(--warning-bg, #fffbeb);
 }
 .socratic-opt-badge {
   width: 28px;
@@ -320,7 +321,7 @@ _STYLE = """
   border-left: 4px solid var(--success, #146c49);
 }
 .socratic-bubble.is-wrong {
-  background: #fffbeb;
+  background: var(--warning-bg, #fffbeb);
   border: 1px solid #fde68a;
   border-left: 4px solid var(--accent, #f47a20);
 }
@@ -338,12 +339,12 @@ _STYLE = """
   letter-spacing: 0.04em;
 }
 .socratic-bubble.is-correct .socratic-fb-badge {
-  background: #dcfce7;
+  background: var(--success-bg, #dcfce7);
   color: var(--success, #146c49);
 }
 .socratic-bubble.is-wrong .socratic-fb-badge {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg, #fef3c7);
+  color: var(--warning, #92400e);
 }
 .socratic-fb-msg {
   font-size: 0.94rem;
@@ -354,12 +355,12 @@ _STYLE = """
 .socratic-pista-card {
   margin-top: 4px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface-2, rgba(255, 255, 255, 0.7));
   border-radius: 6px;
   border: 1px dashed var(--accent, #f47a20);
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #78350f;
+  color: var(--warning, #78350f);
 }
 .socratic-turn-actions {
   display: flex;
@@ -463,14 +464,14 @@ def render(data: dict, ctx: RenderContext) -> str:
 
         is_first = t_idx == 1
         is_last = t_idx == total_turns
-        next_label = "Ver Revelación Final ✨" if is_last else f"Continuar al Turno {t_idx + 1} →"
+        next_label = "Ver Revelación Final" if is_last else f"Continuar al Turno {t_idx + 1} →"
         next_val = "final" if is_last else str(t_idx + 1)
 
         turnos_html.append(
             f'<article class="socratic-turn" id="turn-{t_idx}" data-turn="{t_idx}"{" " if is_first else " hidden "}>'
             f'  <div class="socratic-turn-header">'
             f'    <div class="socratic-mentor-info">'
-            f'      <span class="socratic-avatar" aria-hidden="true">🤖</span>'
+            f'      <span class="socratic-avatar" aria-hidden="true">{icon("bot")}</span>'
             f"      <div>"
             f'        <p class="socratic-mentor-name">Guía</p>'
             f'        <p class="socratic-mentor-role">Mentor</p>'
@@ -486,7 +487,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'    <pre class="socratic-code"><code>{dato_mostrado}</code></pre>'
             f"  </div>"
             f'  <div class="socratic-question-card">'
-            f'    <span class="socratic-q-icon" aria-hidden="true">💬</span>'
+            f'    <span class="socratic-q-icon" aria-hidden="true">{icon("chat")}</span>'
             f'    <p class="socratic-q-text">{pregunta}</p>'
             f"  </div>"
             f'  <div class="socratic-options-section">'
@@ -498,7 +499,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'  <div class="socratic-response-zone" id="response-{t_idx}" hidden>'
             f'    <div class="socratic-bubble" id="bubble-{t_idx}">'
             f'      <div class="socratic-bubble-head">'
-            f'        <span class="socratic-avatar" style="width:24px;height:24px;font-size:0.9rem;" aria-hidden="true">🤖</span>'
+            f'        <span class="socratic-avatar" style="width:24px;height:24px;font-size:0.9rem;" aria-hidden="true">{icon("bot")}</span>'
             f'        <strong>Guía</strong>'
             f'        <span class="socratic-fb-badge" id="fb-badge-{t_idx}"></span>'
             f"      </div>"
@@ -572,7 +573,7 @@ optionButtons.forEach(function (btn) {
     if (respZone && bubble && badge && msg && pistaCard) {
       respZone.removeAttribute('hidden');
       bubble.className = 'socratic-bubble ' + (isCorrect ? 'is-correct' : 'is-wrong');
-      badge.textContent = isCorrect ? '✓ Deducción acertada' : '💡 Guía de Guía';
+      badge.textContent = isCorrect ? '✓ Deducción acertada' : 'Guía de Guía';
       msg.textContent = feedback;
 
       if (!isCorrect && pista) {

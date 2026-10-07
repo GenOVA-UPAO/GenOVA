@@ -43,6 +43,9 @@
     trophy: svgIcon('M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3zM6 7v1a2 2 0 0 0 1 1.7V7zm11 0v2.7A2 2 0 0 0 18 8V7z'),
     mic:    svgIcon('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM6 11h2a4 4 0 0 0 8 0h2a6 6 0 0 1-5 5.9V20h3v2H8v-2h3v-3.1A6 6 0 0 1 6 11z'),
     bot:    svgIcon('M11 2h2v3h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h4zM8.5 10a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9 15v2h6v-2z'),
+    play:   svgIcon('M7 4v16l13-8z'),
+    pause:  svgIcon('M6 4h4v16H6zm8 0h4v16h-4z'),
+    clock:  svgIcon('M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3v6l4.5 2.7.8-1.3-3.8-2.2V7z'),
     bulb:   svgIcon('M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2zM9 20h6v2H9z'),
   };
 
@@ -371,7 +374,7 @@ ${s}
         .icon{font-size:1.1rem}
       `) + `
       <div class="wrap" role="timer" aria-live="off" aria-label="${label}">
-        <span class="icon" aria-hidden="true">⏱</span>
+        <span class="icon" aria-hidden="true">${ICON.clock}</span>
         <div><div class="lbl">${label}</div><div class="time" id="t">${this._fmt(this._rem)}</div></div>
       </div>`;
       const tick = () => {
@@ -595,7 +598,7 @@ ${s}
           ${src ? `<audio id="aud" src="${src}" preload="auto"></audio>` : ''}
           <div class="wave" id="wave">${bars}</div>
           <div class="controls">
-            <button class="btn play" id="play" aria-label="Reproducir">▶ Reproducir</button>
+            <button class="btn play" id="play" aria-label="Reproducir">${ICON.play} Reproducir</button>
             <button class="btn ghost" id="rep" aria-label="Repetir">↺ Repetir</button>
           </div>
           ${src ? `<div class="track" id="track" role="slider" aria-label="Progreso del audio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -615,7 +618,7 @@ ${s}
       const track= this.$('#track');
       const st   = this.$('#st');
       if (!aud) {
-        if (play) { play.textContent = '▶ Leer texto'; play.onclick = () => { st.textContent = '✓ Leído'; this.emit('upao-podcast-complete'); typeof _scormComplete === 'function' && _scormComplete(); }; }
+        if (play) { play.innerHTML = ICON.play + ' Leer texto'; play.onclick = () => { st.textContent = '✓ Leído'; this.emit('upao-podcast-complete'); typeof _scormComplete === 'function' && _scormComplete(); }; }
         if (rep) rep.style.display = 'none';
         return;
       }
@@ -626,10 +629,10 @@ ${s}
         if (this.$('#cur')) this.$('#cur').textContent = fmt(aud.currentTime);
         if (track) track.setAttribute('aria-valuenow', Math.round(pct));
       });
-      aud.addEventListener('play',  () => { play.textContent = '⏸ Pausar'; wave?.classList.add('playing'); });
-      aud.addEventListener('pause', () => { play.textContent = '▶ Reproducir'; wave?.classList.remove('playing'); });
+      aud.addEventListener('play',  () => { play.innerHTML = ICON.pause + ' Pausar'; wave?.classList.add('playing'); });
+      aud.addEventListener('pause', () => { play.innerHTML = ICON.play + ' Reproducir'; wave?.classList.remove('playing'); });
       aud.addEventListener('ended', () => {
-        play.textContent = '▶ Reproducir'; wave?.classList.remove('playing');
+        play.innerHTML = ICON.play + ' Reproducir'; wave?.classList.remove('playing');
         st.textContent = '✓ Podcast escuchado';
         this.emit('upao-podcast-complete');
         typeof G._scormComplete === 'function' && G._scormComplete();

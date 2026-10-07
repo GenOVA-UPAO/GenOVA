@@ -90,9 +90,9 @@ def render(data: dict, ctx: RenderContext) -> str:
 .ge-board{{display:flex;gap:6px;flex-wrap:wrap}}
 .ge-tile{{width:34px;height:34px;border-radius:8px;border:2px solid var(--border);display:grid;place-items:center;font-weight:800;font-size:.85rem;background:var(--surface)}}
 .ge-tile.cur{{border-color:var(--primary);box-shadow:0 0 0 3px var(--surface-tint)}}
-.ge-tile.q2{{background:#EAF7F1;border-color:var(--success);color:var(--success)}}
-.ge-tile.q1{{background:#FFF4DD;border-color:#C98A00;color:#8A5D00}}
-.ge-tile.q0{{background:#FBEDED;border-color:var(--danger);color:var(--danger)}}
+.ge-tile.q2{{background:var(--success-bg,#EAF7F1);border-color:var(--success);color:var(--success)}}
+.ge-tile.q1{{background:var(--warning-bg,#FFF4DD);border-color:#C98A00;color:var(--warning,#8A5D00)}}
+.ge-tile.q0{{background:var(--danger-bg,#FBEDED);border-color:var(--danger);color:var(--danger)}}
 .ge-opts{{display:grid;gap:10px;margin-top:10px}}
 .ge-hud{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));align-items:center}}
 .ge-rev li{{margin-bottom:6px}}

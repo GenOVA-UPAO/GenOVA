@@ -13,6 +13,8 @@ import json
 import re
 from typing import Any
 
+from .icons import js_prelude
+
 
 def esc(value: Any) -> str:
     return _html.escape("" if value is None else str(value), quote=True)
@@ -37,10 +39,11 @@ def json_data(data: Any, element_id: str = "ova-data") -> str:
 def script(js: str) -> str:
     """JS de la plantilla, diferido a DOMContentLoaded: el runtime de componentes
     se inyecta al final del documento y antes de eso los upao-* no tienen métodos
-    (`prog.set is not a function`)."""
+    (`prog.set is not a function`). Si el JS pide `ovaIcon('nombre')`, se le
+    antepone la tabla con esos iconos SVG."""
     return (
         "<script>\ndocument.addEventListener('DOMContentLoaded', function () {\n"
-        f"{js.strip()}\n}});\n</script>"
+        f"{js_prelude(js)}{js.strip()}\n}});\n</script>"
     )
 
 

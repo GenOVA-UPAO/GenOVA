@@ -17,6 +17,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (Param("num_options", 3, min=2, max=4, help="Número de opciones de postura ética"),)
@@ -308,11 +309,11 @@ def render(data: dict, ctx: RenderContext) -> str:
             f"  </div>"
             f'  <div class="dilema-impact-panel" id="impact-{k}" hidden>'
             f'    <div class="dilema-impact-card dilema-consequence-card">'
-            f'      <span class="dilema-impact-tag dilema-consequence-tag">⚡ Consecuencia práctica</span>'
+            f'      <span class="dilema-impact-tag dilema-consequence-tag">{icon("bolt")} Consecuencia práctica</span>'
             f'      <p class="dilema-impact-text">{opt_consequence}</p>'
             f"    </div>"
             f'    <div class="dilema-impact-card dilema-tension-card">'
-            f'      <span class="dilema-impact-tag dilema-tension-tag">⚖️ Tensión ética</span>'
+            f'      <span class="dilema-impact-tag dilema-tension-tag">{icon("scale")} Tensión ética</span>'
             f'      <p class="dilema-impact-text">{opt_tension}</p>'
             f"    </div>"
             f"  </div>"
@@ -359,7 +360,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <section class="ova-card dilema-card">
   <h2 class="dilema-section-title">Reflexión posterior</h2>
   <p class="ova-muted">La administración de bases de datos exige contrastar tus decisiones con la ética profesional.</p>
-  <upao-reveal id="reveal-reflexion" label="Ver reflexión posterior" icon="⚖️">
+  <upao-reveal id="reveal-reflexion" label="Ver reflexión posterior" icon="{esc(icon('scale'))}">
     <div class="dilema-reflection-body">
       <p>{esc(data["reflexion_post_voto"])}</p>
     </div>

@@ -104,7 +104,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 .cmp-table{{border-collapse:separate;border-spacing:0;min-width:640px}}
 .cmp-table th,.cmp-table td{{vertical-align:top;padding:10px;text-align:left}}
 .cmp-table td.hl,.cmp-table tr.hl th{{background:var(--surface-tint)}}
-.cmp-table td.hl-col{{background:#FFF6EC}}
+.cmp-table td.hl-col{{background:var(--accent-tint,#FFF6EC)}}
 .cmp-bal{{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}}
 .cmp-good{{border-left:4px solid var(--success)}}
 .cmp-bad{{border-left:4px solid var(--danger)}}

@@ -12,6 +12,7 @@ import math
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -493,7 +494,7 @@ _STYLE = """
 }
 .detail-status.is-done {
   color: var(--success, #146C49);
-  background: rgba(20, 108, 73, 0.1);
+  background: var(--success-bg, rgba(20, 108, 73, 0.1));
 }
 .detail-status.is-pending {
   color: var(--action, #B84B00);
@@ -733,7 +734,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
   <section class="mapa-detail-card" id="mapa-detail-panel" aria-live="polite" aria-label="Panel de detalle conceptual">
     <div class="detail-empty" id="detail-empty">
-      <div class="detail-empty-icon" aria-hidden="true">🗺️</div>
+      <div class="detail-empty-icon" aria-hidden="true">{icon('map')}</div>
       <h3 class="detail-empty-title">Explora las conexiones</h3>
       <p class="detail-empty-desc">Haz clic en cualquier nodo del grafo o usa el botón <strong>Explorar todo</strong> para examinar cada relación, su explicación técnica y ejemplos{d.pick(" en el SGBD", "")}.</p>
       <p class="detail-empty-hint">Al explorar los {total} nodos satélite se desbloqueará el cierre de la actividad.</p>
