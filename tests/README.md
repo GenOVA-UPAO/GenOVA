@@ -10,7 +10,7 @@
 | A11y (axe-core) | `pnpm test:a11y` | Auditoría WCAG 2.0 A/AA; requiere el mismo backend/frontend que e2e. |
 | Lighthouse | `pnpm test:lighthouse` | Rendimiento (FCP/LCP/TBT/CLS) por ruta en móvil y escritorio, sobre build de producción con API stub. No necesita backend. |
 | Carga (JMeter/Locust) | ver `tests/load/` | Pruebas de carga contra un entorno propio. |
-| Smoke manual | `tests/playwright-smoke/SMOKE_TESTS.md` | Guion manual con playwright-cli contra develop/producción. |
+| Smoke manual | `tests/playwright-smoke/SMOKE_TESTS.md` | Guion manual con playwright-cli contra local/producción. |
 
 Los tres primeros (vitest, typecheck, lint) y cucumber solo necesitan `pnpm install`:
 
@@ -42,9 +42,32 @@ HU-013 y HU-025) hacen `POST /api/jobs` y esperan un OVA terminado. La suite com
 - El job `e2e` de CI ya define `LLM_FAKE: '1'` (y `RATE_LIMIT_ENABLED: '0'`); no hay
   que tocar nada para CI.
 
-`e2e-develop.yml` es la variante contra el deploy remoto de develop: solo corre
-`@smoke` por defecto y **no** ejecuta escenarios de generación, por lo que no usa
-LLM_FAKE. Si se lanza con otros tags contra un backend real, gastaría cuota LLM.
+### Workflows de GitHub Actions
+
+- **`e2e-develop.yml` (E2E nocturno autónomo).** Cron diario sobre `develop` (07:00 UTC) y
+  `workflow_dispatch`. Levanta Postgres, backend (`LLM_FAKE=1`, sin llamadas LLM reales) y
+  Vite dentro del job, como el job `e2e` de `ci.yml`. Por defecto corre la suite completa
+  (más amplia que los `@smoke` de los PR). Entradas opcionales: `tags` (expresión de
+  playwright-bdd, p. ej. `@smoke`) y `base_url` (frontend externo; entonces no se levanta
+  app local, y conviene `tags=@smoke` para no gastar cuota LLM).
+  ```bash
+  gh workflow run e2e-develop.yml --ref develop
+  gh workflow run e2e-develop.yml --ref develop -f tags=@smoke
+  gh run watch && gh run download -n playwright-report-develop
+  ```
+- **`smoke-prod.yml` (humo de producción, solo lectura).** Cron diario (12:00 UTC) y
+  `workflow_dispatch`. Despierta el backend de Render (`/health`, hasta ~3 min), comprueba
+  que el frontend de Vercel responde 200 y que su HTML apunta al backend esperado y, si
+  existen los secrets `SMOKE_USER_EMAIL` y `SMOKE_USER_PASSWORD` (usuario sin 2FA), hace
+  login por API y `GET /api/ovas`. No crea OVAs. El resumen queda en `$GITHUB_STEP_SUMMARY`;
+  si falla, el job falla y GitHub avisa por correo.
+  ```bash
+  gh workflow run smoke-prod.yml
+  ```
+
+Producción: frontend `https://gen-ova-frontend.vercel.app` (Vercel), backend
+`https://genova-backend-lbdr.onrender.com` (Render free, se duerme), BD en Supabase. No hay
+despliegue de `develop`.
 
 ### Correr la suite completa en local sin gastar cuota
 
