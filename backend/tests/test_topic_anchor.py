@@ -62,3 +62,16 @@ def test_strip_hidden_blocks_igual_al_regex_original_con_unicode():
     ]
     for html in casos:
         assert _strip_hidden_blocks(html) == original(html), html
+
+
+def test_el_nivel_educativo_no_cuenta_como_tema():
+    # «secundaria» es el nivel: el tema es de una sola palabra y un titular creativo
+    # («Max y la Fábrica Solar») no debe marcarse como desviado.
+    html = "<h1>Max y la Fábrica Solar</h1><p>Max descubre cómo la hoja atrapa la luz.</p>"
+    assert topic_drift_defect(html, "Fotosíntesis para secundaria") is None
+    assert topic_drift_defect(html, "Fotosíntesis. Nivel educativo: universitario (ciclos iniciales).") is None
+
+
+def test_sigue_detectando_desvio_con_tema_de_varias_palabras_y_nivel():
+    html = "<h1>Recetas de cocina italiana</h1><p>Pasta, salsa y queso.</p>"
+    assert topic_drift_defect(html, "Revolución Industrial para secundaria")
