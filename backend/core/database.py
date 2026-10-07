@@ -1,4 +1,5 @@
 import os
+
 import structlog
 from dotenv import load_dotenv
 from fastapi import HTTPException, status

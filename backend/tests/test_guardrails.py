@@ -364,3 +364,97 @@ def test_checker_tema_fail_open_si_el_llm_falla(monkeypatch):
 
     monkeypatch.setattr(InputGuardrailChecker, "_call_llm", boom)
     InputGuardrailChecker().assert_allowed("Explica la fotosíntesis", uuid4())
+
+
+def _checker_topic_settings(monkeypatch):
+    from generation.infrastructure import guardrails_store, input_guardrail
+
+    input_guardrail.clear_verdict_cache()
+    monkeypatch.setattr(
+        guardrails_store,
+        "runtime_settings",
+        lambda: {
+            "topic_enabled": True,
+            "topic_area": "Bases de datos",
+            "moderation_enabled": False,
+            "terms": DEFAULT_TERMS,
+            "moderation_model": "",
+        },
+    )
+
+
+def test_checker_cachea_el_veredicto_por_prompt_normalizado_y_area(monkeypatch):
+    from generation.infrastructure.input_guardrail import InputGuardrailChecker
+
+    _checker_topic_settings(monkeypatch)
+    calls = []
+
+    def fake(self, *_a, **_k):
+        calls.append(1)
+        return '{"language":"ok","topic":"ok"}'
+
+    monkeypatch.setattr(InputGuardrailChecker, "_call_llm", fake)
+    c = InputGuardrailChecker()
+    c.assert_allowed("Índices  B-tree", uuid4())
+    c.assert_allowed("indices b-tree ", uuid4())
+    assert len(calls) == 1
+
+
+def test_checker_cache_expira_por_ttl_y_no_cachea_fallos(monkeypatch):
+    from generation.infrastructure import input_guardrail
+    from generation.infrastructure.input_guardrail import InputGuardrailChecker
+
+    _checker_topic_settings(monkeypatch)
+    calls = []
+
+    def boom(self, *_a, **_k):
+        calls.append(1)
+        raise TimeoutError("lento")
+
+    monkeypatch.setattr(InputGuardrailChecker, "_call_llm", boom)
+    c = InputGuardrailChecker()
+    c.assert_allowed("Normalización", uuid4())
+    c.assert_allowed("Normalización", uuid4())
+    assert len(calls) == 2  # fail-open sin caché
+
+    ok = []
+    monkeypatch.setattr(
+        InputGuardrailChecker,
+        "_call_llm",
+        lambda self, *_a, **_k: ok.append(1) or '{"language":"ok","topic":"ok"}',
+    )
+    c.assert_allowed("Normalización", uuid4())
+    monkeypatch.setattr(input_guardrail, "_CACHE_TTL_S", -1.0)
+    c.assert_allowed("Normalización", uuid4())
+    assert len(ok) == 2
+
+
+def test_checker_latencia_cacheada_es_inmediata(monkeypatch):
+    """Mide antes/después con un fake que simula 0,3 s de latencia del modelo."""
+    import time
+
+    from generation.infrastructure.input_guardrail import InputGuardrailChecker
+
+    _checker_topic_settings(monkeypatch)
+
+    def slow(self, *_a, **_k):
+        time.sleep(0.3)
+        return '{"language":"ok","topic":"ok"}'
+
+    monkeypatch.setattr(InputGuardrailChecker, "_call_llm", slow)
+    c = InputGuardrailChecker()
+    t0 = time.perf_counter()
+    c.assert_allowed("Índices", uuid4())
+    frio = time.perf_counter() - t0
+    t0 = time.perf_counter()
+    c.assert_allowed("Índices", uuid4())
+    caliente = time.perf_counter() - t0
+    print(f"guardrail frio={frio:.3f}s cacheado={caliente:.4f}s")
+    assert frio >= 0.3
+    assert caliente < 0.05
+
+
+def test_checker_timeout_del_clasificador_es_corto():
+    from generation.infrastructure import input_guardrail
+
+    assert input_guardrail._LLM_TIMEOUT_S <= 4

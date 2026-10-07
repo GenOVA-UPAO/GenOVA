@@ -10,6 +10,8 @@ No se pasa `deadline` a generar_texto: el router corta la cadena si quedan
 
 from __future__ import annotations
 
+import threading
+import time
 from uuid import UUID
 
 import structlog
@@ -17,6 +19,7 @@ import structlog
 from generation.domain.guardrails import (
     LlmVerdict,
     evaluate_input,
+    fold_text,
     parse_classifier_response,
     parse_moderation_model,
     raise_if_blocked,
@@ -25,7 +28,11 @@ from generation.infrastructure import guardrails_store
 
 logger = structlog.get_logger(__name__)
 
-_LLM_TIMEOUT_S = 15
+# Tope corto: el chequeo va dentro de POST /api/jobs. Si el modelo tarda más, se
+# abre (fail-open, la política de siempre) en vez de bloquear la petición.
+_LLM_TIMEOUT_S = 4
+_CACHE_TTL_S = 600.0
+_CACHE_MAX = 256
 _LLM_MAX_TOKENS = 120
 
 _CLASSIFIER_PROMPT = """\
@@ -47,6 +54,37 @@ Reglas:
 Prompt del usuario:
 {prompt}
 """
+
+
+_cache: dict[tuple, tuple[float, LlmVerdict]] = {}
+_cache_lock = threading.Lock()
+
+
+def _cache_key(prompt: str, area: str, model: tuple[str, str] | None, topic_on: bool) -> tuple:
+    return (" ".join(fold_text(prompt).split()), " ".join(fold_text(area).split()), model, topic_on)
+
+
+def _cache_get(key: tuple) -> LlmVerdict | None:
+    with _cache_lock:
+        hit = _cache.get(key)
+        if hit is None:
+            return None
+        if time.monotonic() - hit[0] > _CACHE_TTL_S:
+            _cache.pop(key, None)
+            return None
+        return hit[1]
+
+
+def _cache_put(key: tuple, verdict: LlmVerdict) -> None:
+    with _cache_lock:
+        if len(_cache) >= _CACHE_MAX:
+            _cache.pop(next(iter(_cache)), None)
+        _cache[key] = (time.monotonic(), verdict)
+
+
+def clear_verdict_cache() -> None:
+    with _cache_lock:
+        _cache.clear()
 
 
 class InputGuardrailChecker:
@@ -100,6 +138,10 @@ class InputGuardrailChecker:
     def _classify(self, prompt, area, need_llm, model, topic_on, user_id):
         if not need_llm:
             return None
+        key = _cache_key(prompt, area, model, topic_on)
+        cached = _cache_get(key)
+        if cached is not None:
+            return cached
         try:
             raw = self._call_llm(prompt, area, model)
         except Exception:
@@ -119,9 +161,10 @@ class InputGuardrailChecker:
             )
             return None
         # Sin modelo de moderación, el LLM solo opina del tema (la lista es el suelo).
-        if model is None:
-            return LlmVerdict(language_ok=None, topic_ok=parsed.topic_ok)
-        return parsed
+        verdict = LlmVerdict(language_ok=None, topic_ok=parsed.topic_ok) if model is None else parsed
+        # Solo se cachean veredictos válidos: un fallo/timeout no se recuerda.
+        _cache_put(key, verdict)
+        return verdict
 
     def _call_llm(self, prompt: str, area: str, model: tuple[str, str] | None) -> str:
         from llm.router import generar_texto
