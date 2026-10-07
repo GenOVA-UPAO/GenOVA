@@ -16,6 +16,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, header, progress, summary
 
@@ -178,7 +179,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <span><i class="fw-sw" style="background:var(--accent)"></i>Paso del flujo</span><span>↓ Contiene / se conecta con</span></div>
 <article class="k-panel ova-stack" id="fw-detail" aria-live="polite"><p class="ova-muted">Selecciona un bloque del diagrama para ver su función.</p></article>
 <upao-example title="Ejemplo trabajado: recorrido de una operación"><upao-steps><ol>{steps}</ol></upao-steps>
-<button type="button" class="k-btn main" id="fw-play">▶ Resaltar el recorrido en el diagrama</button>
+<button type="button" class="k-btn main" id="fw-play">{icon('play')} Resaltar el recorrido en el diagrama</button>
 <p class="k-fb k-hide" id="fw-play-t" role="status" aria-live="polite"></p></upao-example>
 <upao-question number="1" prompt="{esc(q["enunciado"])}">{choices}</upao-question>
 {summary(data["sintesis"], "Síntesis")}

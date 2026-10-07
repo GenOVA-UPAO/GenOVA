@@ -14,6 +14,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import obj, s
 
 PARAMS = (
@@ -339,7 +340,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     </div>
   </div>
   <div class="news-byline">
-    <span>🏢 Organización: <strong>{esc(data["organizacion"])}</strong></span>
+    <span>{icon('building')} Organización: <strong>{esc(data["organizacion"])}</strong></span>
   </div>
   <div class="news-body">
     {paragraphs(data["cuerpo_noticia"])}
@@ -407,7 +408,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <blockquote class="news-quote">
     <p>{esc(data["pregunta_cierre"])}</p>
   </blockquote>
-  <upao-reveal id="reveal-analisis" label="Revelar análisis del caso" icon="💡">
+  <upao-reveal id="reveal-analisis" label="Revelar análisis del caso" icon="{esc(icon('bulb'))}">
     <div class="news-analisis-box">
       <h4>Análisis de la Redacción</h4>
       <p>{esc(data["analisis_cierre"])}</p>

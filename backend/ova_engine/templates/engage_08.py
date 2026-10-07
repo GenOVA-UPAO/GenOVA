@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -273,7 +274,7 @@ _TIMELINE_JS = """
           markMilestone(idx);
         }
       });
-      if (toggleIcon) toggleIcon.textContent = allOpen ? '📁' : '📂';
+      if (toggleIcon) toggleIcon.innerHTML = allOpen ? ovaIcon('folder') : ovaIcon('folder-open');
       if (toggleText) toggleText.textContent = allOpen ? 'Plegar todos los hitos' : 'Abrir todos los hitos';
       toggleAllBtn.setAttribute('aria-expanded', String(allOpen));
       if (statusEl) {
@@ -306,16 +307,16 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<p class="ova-milestone-desc">{descripcion}</p>'
             f'<div class="ova-milestone-meta">'
             f'<div class="ova-milestone-card ova-milestone-card--fact">'
-            f'<strong class="ova-meta-title">💡 Dato sorprendente</strong>'
+            f'<strong class="ova-meta-title">{icon("bulb")} Dato sorprendente</strong>'
             f'<p>{dato}</p>'
             f"</div>"
             f'<div class="ova-milestone-card ova-milestone-card--conn">'
-            f'<strong class="ova-meta-title">🔗 Conexión actual</strong>'
+            f'<strong class="ova-meta-title">{icon("link")} Conexión actual</strong>'
             f'<p>{conexion}</p>'
             f"</div>"
             f"</div>"
             f'<div class="ova-milestone-footer">'
-            f'<span class="ova-milestone-status" id="status-milestone-{idx}" aria-live="polite">👁️ Por revisar</span>'
+            f'<span class="ova-milestone-status" id="status-milestone-{idx}" aria-live="polite">{icon("eye")} Por revisar</span>'
             f"</div>"
             f"</div>"
             f"</upao-node>"
@@ -334,7 +335,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <section class="ova-card">
   <div class="ova-timeline-controls">
     <button type="button" class="ova-btn ova-btn--ghost" id="btn-toggle-all" aria-expanded="false" aria-label="Abrir o plegar todos los hitos históricos">
-      <span aria-hidden="true" id="btn-toggle-icon">📂</span> <span id="btn-toggle-text">Abrir todos los hitos</span>
+      <span aria-hidden="true" id="btn-toggle-icon">{icon('folder-open')}</span> <span id="btn-toggle-text">Abrir todos los hitos</span>
     </button>
     <span class="ova-timeline-hint" id="timeline-status" aria-live="polite">
       Explora cada hito histórico o usa los controles para completar la revisión.

@@ -5,6 +5,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -125,7 +126,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<h3 id="lc-h{k}" style="margin:0">{esc(x["enunciado"])}</h3>'
         f'<label for="lc-a{k}" class="k-label">Editor (completa los ___)</label>'
         f'<textarea id="lc-a{k}" class="k-code-in" rows="5" spellcheck="false" autocapitalize="off" autocomplete="off">{esc(x["codigo_inicial"])}</textarea>'
-        f'<div class="k-row"><button type="button" class="k-btn main lc-run">▶ Ejecutar</button>'
+        f'<div class="k-row"><button type="button" class="k-btn main lc-run">{icon("play")} Ejecutar</button>'
         f'<button type="button" class="k-btn lc-reset">Restablecer</button>'
         f'<button type="button" class="k-btn lc-sol k-hide">Ver solución</button></div>'
         f'<div class="lc-out k-hide" aria-live="polite"></div></section>'

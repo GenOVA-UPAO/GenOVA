@@ -11,6 +11,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, obj, s
 
 PARAMS = (
@@ -445,11 +446,11 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="scenario-card">'
             f'<div class="scenario-meta">'
             f'<span class="role-badge">Especialista junior</span>'
-            f'<span class="company-tag">🏢 {esc(sc.get("empresa", ""))}</span>'
+            f'<span class="company-tag">{icon("building")} {esc(sc.get("empresa", ""))}</span>'
             f"</div>"
             f'<h2 id="scenario-heading-{k}" class="scenario-heading">Caso {k}: {esc(sc.get("empresa", ""))}</h2>'
             f'<div class="problem-box">'
-            f'<div class="problem-title"><span aria-hidden="true">⚠️</span> Situación crítica reportada</div>'
+            f'<div class="problem-title"><span aria-hidden="true">{icon("warning")}</span> Situación crítica reportada</div>'
             f'<p class="problem-desc">{esc(sc.get("problema", ""))}</p>'
             f"</div>"
             f'<div class="decision-box">'

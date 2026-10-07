@@ -12,6 +12,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -670,14 +671,14 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div class="demo-toolbar">
       <div class="demo-ctrls" role="toolbar" aria-label="Controles de reproducción">
         <button type="button" class="demo-ctrl-btn btn-play" id="btn-play" aria-label="Reproducir demostración automática">
-          <span id="play-icon" aria-hidden="true">▶</span>
+          <span id="play-icon" aria-hidden="true">{icon('play')}</span>
           <span id="play-text">Reproducir</span>
         </button>
         <button type="button" class="demo-ctrl-btn" id="btn-prev" aria-label="Paso anterior" disabled>
-          <span aria-hidden="true">⏮</span> Anterior
+          <span aria-hidden="true">{icon('prev')}</span> Anterior
         </button>
         <button type="button" class="demo-ctrl-btn" id="btn-next" aria-label="Paso siguiente">
-          Siguiente <span aria-hidden="true">⏭</span>
+          Siguiente <span aria-hidden="true">{icon('next')}</span>
         </button>
         <button type="button" class="demo-ctrl-btn" id="btn-reset" aria-label="Reiniciar demostración">
           <span aria-hidden="true">↺</span> Reiniciar
@@ -708,7 +709,7 @@ def render(data: dict, ctx: RenderContext) -> str:
           <g class="data-packet" id="data-packet" transform="translate({first_cx:.1f}, {first_cy:.1f})" style="transform: translate({first_cx:.1f}px, {first_cy:.1f}px);">
             <circle class="packet-halo" r="12"/>
             <circle class="packet-core" r="8"/>
-            <text class="packet-symbol" x="0" y="4" text-anchor="middle">⚡</text>
+            <text class="packet-symbol" x="0" y="4" text-anchor="middle">{icon('bolt')}</text>
           </g>
         </svg>
       </div>
@@ -731,7 +732,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       </div>
     </div>
     <div class="active-state-box">
-      <span class="state-icon" aria-hidden="true">📊</span>
+      <span class="state-icon" aria-hidden="true">{icon('chart')}</span>
       <div>
         <span class="state-heading">Estado de los datos:</span>
         <p class="state-value" id="panel-state">{first_state}</p>
@@ -859,7 +860,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       goToStep(1);
     }
     isPlaying = true;
-    if (playIcon) playIcon.textContent = '⏸';
+    if (playIcon) playIcon.innerHTML = ovaIcon('pause');
     if (playText) playText.textContent = 'Pausar';
     if (btnPlay) {
       btnPlay.setAttribute('aria-label', 'Pausar demostración');
@@ -879,7 +880,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     isPlaying = false;
     clearInterval(playTimer);
     playTimer = null;
-    if (playIcon) playIcon.textContent = '▶';
+    if (playIcon) playIcon.innerHTML = ovaIcon('play');
     if (playText) playText.textContent = 'Reproducir';
     if (btnPlay) {
       btnPlay.setAttribute('aria-label', 'Reproducir demostración automática');

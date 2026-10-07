@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 
 PARAMS = (
@@ -518,7 +519,7 @@ def _render_steps(preguntas: list[dict], num_steps: int) -> str:
             f'    {choices}'
             f'  </upao-question>'
             f'  <div class="step-hint">'
-            f'    <span class="hint-icon" aria-hidden="true">💡</span>'
+            f'    <span class="hint-icon" aria-hidden="true">{icon("bulb")}</span>'
             f'    <span class="hint-text"><strong>Pista:</strong> {esc(q.get("pista", ""))}</span>'
             f'  </div>'
             f'</section>'
@@ -566,7 +567,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     </div>
 
     <div id="chart-tooltip" class="chart-tooltip-box" aria-live="polite">
-      <span class="tooltip-icon" aria-hidden="true">🎯</span>
+      <span class="tooltip-icon" aria-hidden="true">{icon('target')}</span>
       <span id="tooltip-text">Pasa el cursor o selecciona un punto del gráfico para inspeccionar sus métricas.</span>
     </div>
   </section>
@@ -581,7 +582,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       <h2 id="revelacion-title" class="step-title">Revelación: Principio Operativo</h2>
     </div>
     <p class="revelacion-intro">¡Excelente trabajo de deducción visual! Este es el principio que fundamenta las mediciones:</p>
-    <upao-reveal id="upao-rev" label="Ver fundamento del experimento" icon="🔬">
+    <upao-reveal id="upao-rev" label="Ver fundamento del experimento" icon="{esc(icon('microscope'))}">
       <div class="revelacion-content">
         <p>{esc(data.get("revelacion", ""))}</p>
       </div>

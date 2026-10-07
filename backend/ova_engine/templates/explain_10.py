@@ -13,6 +13,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import CYCLE_INFOGRAPHIC, icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, header, progress, summary
 
@@ -27,7 +28,7 @@ def schema(p: dict) -> dict:
         titulo=s(70),
         objetivo=s(180),
         secciones=arr(
-            obj(titulo=s(40), emoji=s(8), dato=s(36), explicacion=s(270), porque=s(210)),
+            obj(titulo=s(40), dato=s(36), explicacion=s(270), porque=s(210)),
             min_items=n,
             max_items=n,
         ),
@@ -51,7 +52,8 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * "logo" para tecnologías o marcas concretas.
   * "escena" para ilustraciones pedagógicas de la situación.
   Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
-- secciones: por cada una: `titulo` (≤5 palabras), `emoji` (un solo emoji), `dato` (el dato clave destacado en grande: una cifra, sigla, comando o frase muy corta ≤5 palabras, p. ej. {d.pick("«8 KB», «ROWID», «COMMIT»", "«100 °C», «6 pasos», «1789»")}), `explicacion` (qué significa y cómo se aplica, ≤40 palabras) y `porque` (por qué ese dato importa o por qué es así, ≤30 palabras).
+- secciones: por cada una: `titulo` (≤5 palabras), `dato` (el dato clave destacado en grande: una cifra, sigla, comando o frase muy corta ≤5 palabras, p. ej. {d.pick("«8 KB», «ROWID», «COMMIT»", "«100 °C», «6 pasos», «1789»")}), `explicacion` (qué significa y cómo se aplica, ≤40 palabras) y `porque` (por qué ese dato importa o por qué es así, ≤30 palabras).
+- No incluyas emoji ni símbolos decorativos en ningún campo: el icono de cada sección lo pone la plantilla.
 - sintesis: cierre que integre las {n} ideas.
 [RESTRICCIONES] Datos técnicamente correctos y verificables; cada sección aporta una idea distinta y las secciones forman una secuencia lógica.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
@@ -85,7 +87,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         hidden = "" if k == 0 else " hidden"
         cards.append(
             f'<section class="k-panel ig-sec" id="ig-s{k}" data-i="{k}" aria-labelledby="ig-h{k}"{hidden}>'
-            f'<div class="k-row"><span class="ig-emo" aria-hidden="true">{esc(sec["emoji"])}</span>'
+            f'<div class="k-row"><span class="ig-emo" aria-hidden="true">{icon(CYCLE_INFOGRAPHIC[k % len(CYCLE_INFOGRAPHIC)], "1em")}</span>'
             f'<h2 id="ig-h{k}" style="margin:0">{k + 1}. {esc(sec["titulo"])}</h2></div>'
             f'<p class="ig-big" aria-label="Dato clave">{esc(sec["dato"])}</p>'
             f'<p>{esc(sec["explicacion"])}</p>'
@@ -158,7 +160,6 @@ secs.forEach(sec => {
 
 
 def sample(concept: str, p: dict) -> dict:
-    emos = ["🧠", "🗄️", "⚡", "🔐", "📈", "🧩"]
     return {
         "titulo": f"{concept} en una mirada"[:70],
         "objetivo": f"Al terminar podrás integrar las ideas clave de {concept}.",
@@ -170,7 +171,6 @@ def sample(concept: str, p: dict) -> dict:
         "secciones": [
             {
                 "titulo": f"Idea {k}",
-                "emoji": emos[(k - 1) % len(emos)],
                 "dato": f"{k * 8} KB",
                 "explicacion": f"Explicación de la idea {k} y su aplicación en {concept}.",
                 "porque": f"Importa porque condiciona el rendimiento del paso {k}.",

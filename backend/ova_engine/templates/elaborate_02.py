@@ -5,6 +5,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -102,7 +103,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="k-row"><button type="button" class="k-btn main eg-check">Comprobar</button>'
             f'<button type="button" class="k-btn eg-hint">Ver pista</button>'
             f'<button type="button" class="k-btn eg-sol k-hide">Ver solución</button></div>'
-            f'<div class="k-fb k-hide eg-hintbox">💡 {esc(p["pista"])}</div>'
+            f'<div class="k-fb k-hide eg-hintbox">{icon("bulb")} {esc(p["pista"])}</div>'
             f'<div class="eg-res k-hide" aria-live="polite"></div></section>'
         )
     return f"""

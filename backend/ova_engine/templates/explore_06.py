@@ -5,6 +5,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -605,7 +606,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <textarea id="ova-hypothesis-input" class="ova-textarea" rows="2" placeholder="Escribe tu hipótesis: creo que el valor óptimo está en... porque..."></textarea>
     <div>
       <button type="button" id="ova-btn-contrast" class="ova-btn-contrast" aria-expanded="false">
-        <span aria-hidden="true">💡</span> Contrastar hipótesis y revelar zona óptima
+        <span aria-hidden="true">{icon('bulb')}</span> Contrastar hipótesis y revelar zona óptima
       </button>
     </div>
     <div id="ova-optimal-box" class="ova-optimal-box" hidden aria-live="polite">

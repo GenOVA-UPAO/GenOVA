@@ -13,6 +13,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -130,7 +131,7 @@ fieldset.mp-crit{{margin:0 0 12px}}
 {progress(n + 1, "Entregables y autoevaluación")}
 <article class="ova-card ova-stack" aria-labelledby="mp-ds-h"><h2 id="mp-ds-h">Caso y datos de partida</h2>{paragraphs(data["dataset_sugerido"])}</article>
 <div class="k-row"><upao-timer id="tmr" seconds="600" label="Tiempo sugerido (10 min)"></upao-timer>
-<button type="button" class="k-btn" id="mp-start">▶ Iniciar cronómetro</button></div>
+<button type="button" class="k-btn" id="mp-start">{icon('play')} Iniciar cronómetro</button></div>
 <section class="ova-stack" aria-labelledby="mp-ent-h"><h2 id="mp-ent-h">Entregables</h2><ol class="mp-list">{ent_html}</ol></section>
 <section class="ova-card ova-stack" aria-labelledby="mp-rub-h"><h2 id="mp-rub-h">Autoevalúa tu trabajo con la rúbrica</h2>
 <p class="ova-muted">Elige el nivel que mejor describe tu entregable en cada criterio.</p>

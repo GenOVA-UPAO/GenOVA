@@ -407,7 +407,7 @@ _GAME_JS = """
         if (fb) {
           fb.hidden = false;
           fb.className = 'ova-feedback is-warn';
-          fb.textContent = '⏱ ¡Tiempo cumplido! Selecciona una opción para completar la ronda.';
+          fb.textContent = '¡Tiempo cumplido! Selecciona una opción para completar la ronda.';
         }
       }
     });

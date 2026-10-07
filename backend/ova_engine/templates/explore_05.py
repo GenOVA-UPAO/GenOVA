@@ -19,6 +19,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, obj, s
 
 PARAMS = (
@@ -341,7 +342,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     </table>
   </div>
   <div id="inspector-callout" class="inspector-box" aria-live="polite">
-    <span class="inspector-icon" aria-hidden="true">💡</span>
+    <span class="inspector-icon" aria-hidden="true">{icon('bulb')}</span>
     <span id="inspector-text">Selecciona una fila de la tabla para analizar su observación técnica.</span>
   </div>
 </section>
@@ -362,7 +363,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <h2 id="revelation-heading" class="card-title">Mecanismo Explicativo</h2>
   </div>
   <p class="revelation-hint">Comprueba el razonamiento técnico que sustenta el patrón observado en los datos:</p>
-  <upao-reveal id="revelacion-mecanismo" label="Revelar explicación del mecanismo" icon="🔍">
+  <upao-reveal id="revelacion-mecanismo" label="Revelar explicación del mecanismo" icon="{esc(icon('search'))}">
     <div class="revelacion-content">
       <p>{esc(data["revelacion"])}</p>
     </div>

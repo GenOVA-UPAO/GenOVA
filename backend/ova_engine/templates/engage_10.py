@@ -10,6 +10,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -593,7 +594,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 </upao-example>
 
 <section class="ova-card">
-  <h2>🛠️ Panel de Experimentación</h2>
+  <h2>{icon('tools')} Panel de Experimentación</h2>
   <p class="ova-muted" style="margin-bottom:12px;font-size:0.9rem">
     Ajusta cada control deslizante o pulsa los botones (+/−) para alterar los parámetros y analizar la respuesta reactiva del sistema.
   </p>

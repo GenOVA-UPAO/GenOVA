@@ -5,6 +5,7 @@ from __future__ import annotations
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
@@ -120,7 +121,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 </section>
 <section class="ev-card" id="diploma-wrap" aria-label="Diploma">
   <article class="dp-paper is-{esc(estilo)}" id="diploma">
-    <div class="dp-seal" aria-hidden="true">🏆</div>
+    <div class="dp-seal" aria-hidden="true">{icon('trophy')}</div>
     <p class="dp-kicker">Se otorga a</p>
     <p class="dp-name is-empty" id="d-name" aria-live="polite">Tu nombre aparecerá aquí</p>
     <h2 class="dp-title">{esc(data["titulo"])}</h2>

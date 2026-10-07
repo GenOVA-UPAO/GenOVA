@@ -219,7 +219,7 @@ _LAB_JS = """
 })();
 """
 
-_ICONS = ("▶", "◆", "■", "●")
+_ICONS = ("▲", "◆", "■", "●")
 
 
 def render(data: dict, ctx: RenderContext) -> str:
