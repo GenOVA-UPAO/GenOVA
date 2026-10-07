@@ -618,11 +618,19 @@ def test_tool_key_from_environment(env, monkeypatch):
 # --- redirección /play/{token} → /play/{token}/ ----------------------------------------
 
 
-def test_play_without_slash_redirects_valid_token_to_same_host(env):
-    token = "aaa.bbb_-.ccc-_"
-    response = env["client"].get(f"/lti/play/{token}", follow_redirects=False)
-    assert response.status_code == 307
-    assert response.headers["location"] == f"/lti/play/{token}/"
+def test_play_without_slash_serves_player_with_absolute_urls(env):
+    client = env["client"]
+    state, nonce = _login(client)
+    path = _player_path(_launch(client, state, _id_token(nonce, **_resource_claims(env["graded"]))))
+    response = client.get(path.rstrip("/"), follow_redirects=False)
+    assert response.status_code == 200
+    assert f'src="{path}content/index.html"' in response.text
+    assert f"{path}score" in response.text.replace("\\/", "/")
+
+
+def test_play_without_slash_unknown_token_is_rejected(env):
+    response = env["client"].get("/lti/play/aaa.bbb_-.ccc-_", follow_redirects=False)
+    assert response.status_code == 401
 
 
 @pytest.mark.parametrize("token", ["no-es-jwt", "a.b", "a.b.c.d", "a.b.c%20d", "a.b.c$"])

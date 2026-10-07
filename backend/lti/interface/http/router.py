@@ -219,18 +219,8 @@ def deep_link_submit(
     return _html(html, origins=platform_origins(platform))
 
 
-@router.get("/play/{token}", include_in_schema=False)
-def play_without_slash(token: str):
-    # Las rutas relativas del reproductor (content/…, score) necesitan la barra final.
-    # El token es un JWT (tres segmentos base64url): cualquier otra cosa es 404, así
-    # que el destino es siempre una ruta del propio host y no puede salir de GenOVA.
-    if not _SESSION_TOKEN.fullmatch(token):
-        raise HTTPException(status_code=404)
-    return RedirectResponse(f"/lti/play/{quote(token, safe='')}/", status_code=307)
-
-
-@router.get("/play/{token}/", summary="Reproductor de la OVA dentro del LMS")
-def play(token: str, request: Request, service: Service):
+def _player_response(token: str, service: Service, *, base: str):
+    """Página del reproductor. `base` es el prefijo de las URLs de contenido y nota."""
     try:
         launch_row, platform = service.session_launch(token, SESSION_PLAY)
         summary = ova_content.get_ready_ova(service.db, str(launch_row.ova_id))
@@ -240,11 +230,26 @@ def play(token: str, request: Request, service: Service):
         return _error(LtiError("La OVA de esta actividad ya no está disponible."))
     html = pages.player_page(
         title=summary.title,
-        content_url="content/index.html",
-        score_url="score",
+        content_url=f"{base}content/index.html",
+        score_url=f"{base}score",
         has_evaluation=summary.has_evaluation and launch_row.can_post_score,
     )
     return _html(html, origins=platform_origins(platform))
+
+
+@router.get("/play/{token}", include_in_schema=False)
+def play_without_slash(token: str, service: Service):
+    # Sin barra final las rutas relativas del reproductor se resolverían mal: en vez
+    # de redirigir (alerta py/url-redirection) se sirve la misma página con URLs
+    # absolutas de la propia ruta. El token es un JWT (tres segmentos base64url).
+    if not _SESSION_TOKEN.fullmatch(token):
+        raise HTTPException(status_code=404)
+    return _player_response(token, service, base=f"/lti/play/{quote(token, safe='')}/")
+
+
+@router.get("/play/{token}/", summary="Reproductor de la OVA dentro del LMS")
+def play(token: str, service: Service):
+    return _player_response(token, service, base="")
 
 
 @router.get("/play/{token}/content/{path:path}", include_in_schema=False)
