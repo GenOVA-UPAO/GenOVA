@@ -50,7 +50,7 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     d = domain_for(concept, contexto)
     rol = d.pick("Creador de crucigramas conceptuales para universitarios.", f"Creador de crucigramas conceptuales para {d.audiencia}. {d.guia_nivel}")
-    abrev = d.pick(" salvo SGA/PGA", "")
+    abrev = d.pick(d.si_oracle(" salvo SGA/PGA", ""), "")
     n = p["num_terms"]
     return f"""[ROL] {rol}
 [CONCEPTO] «{concept}» ({d.curso}).

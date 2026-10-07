@@ -46,7 +46,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_params"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Diseñador de simulaciones de administración de bases de datos Oracle.""",
+        f"""[ROL] Diseñador de simulaciones de administración de bases de datos {d.bd_adj}.""",
         f"""[ROL] Diseñador de simulaciones interactivas para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -54,7 +54,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         f"""[CONCEPTO] «{concept}» ({d.curso}).""",
     )
     _l2 = d.pick(
-        f"""[TAREA] Diseña una simulación donde el estudiante aplique «{concept}» a un escenario Oracle realista (p. ej. dimensionar la SGA, planificar backups según el RPO, elegir índices) ajustando EXACTAMENTE {n} parámetros numéricos con sliders. Un valor ÓPTIMO interior a cada rango equilibra rendimiento y costo: ni todo al mínimo ni todo al máximo.""",
+        f"""[TAREA] Diseña una simulación donde el estudiante aplique «{concept}» a un escenario {d.si_oracle("Oracle ", "")}realista (p. ej. {d.si_oracle("dimensionar la SGA", "dimensionar la memoria caché")}, planificar backups según el RPO, elegir índices) ajustando EXACTAMENTE {n} parámetros numéricos con sliders. Un valor ÓPTIMO interior a cada rango equilibra rendimiento y costo: ni todo al mínimo ni todo al máximo.""",
         f"""[TAREA] Diseña una simulación donde el estudiante aplique «{concept}» a un escenario realista del área del tema ajustando EXACTAMENTE {n} parámetros numéricos con sliders. Un valor ÓPTIMO interior a cada rango equilibra beneficio y costo: ni todo al mínimo ni todo al máximo.""",
     )
     _l3 = d.pick(
@@ -70,7 +70,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """- metrica_costo: nombre del costo o recurso que sube con los valores altos.""",
     )
     _l6 = d.pick(
-        """[RESTRICCIONES] Valores y unidades realistas de Oracle; los óptimos deben poder justificarse técnicamente.""",
+        f"""[RESTRICCIONES] Valores y unidades realistas {d.si_oracle("de Oracle", "del tema")}; los óptimos deben poder justificarse técnicamente.""",
         f"""[RESTRICCIONES] Valores y unidades realistas del área; los óptimos deben poder justificarse con el concepto. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
     )
     return f"""{_l0}

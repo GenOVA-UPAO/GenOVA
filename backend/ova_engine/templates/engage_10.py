@@ -56,7 +56,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     if d.is_db:
         return f"""[ROL] Diseñador de simuladores intuitivos y experiencias interactivas para ingeniería de bases de datos.
 [CONCEPTO] «{concept}» ({d.curso}).
-[TAREA] Diseña los parámetros conceptuales para un simulador interactivo de {n} control(es) que permita al estudiante descubrir relaciones causa-efecto fundamentales sobre «{concept}» (p. ej. tamaño del buffer cache frente a lecturas en disco, sesiones concurrentes que compiten por filas y generan bloqueos, tasa de inserción frente al llenado de un tablespace, o selectividad de un índice frente al costo de escaneo).
+[TAREA] Diseña los parámetros conceptuales para un simulador interactivo de {n} control(es) que permita al estudiante descubrir relaciones causa-efecto fundamentales sobre «{concept}» (p. ej. {d.si_oracle("tamaño del buffer cache", "tamaño de la caché")} frente a lecturas en disco, selectividad de un índice frente al costo de escaneo, {d.si_oracle("tasa de inserción frente al llenado de un tablespace", "volumen de filas frente al tiempo de una consulta")}; elige solo lo que encaje con «{concept}»).
 - titulo: título evocador del simulador (≤10 palabras).
 - objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras, qué descubrirá al manipular los controles).
 - controles: exactamente {n} control(es) manipulable(s) con respuesta intuitiva. Por cada control:

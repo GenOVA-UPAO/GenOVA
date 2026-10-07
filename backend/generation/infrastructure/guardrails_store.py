@@ -122,8 +122,23 @@ def runtime_settings() -> dict:
     }
 
 
+def active_topic_area() -> str:
+    """Área temática vigente para generar: la configurada si el guardarraíl está activo, si no ""."""
+    cfg = runtime_settings()
+    return cfg["topic_area"] if cfg["topic_enabled"] and cfg["topic_area"] else ""
+
+
+class StoredTopicAreaSource:
+    """Adaptador del puerto `TopicAreaSource` sobre la configuración de guardarraíles."""
+
+    def active_area(self) -> str:
+        return active_topic_area()
+
+
 # Re-export so tests can pin the store without importing domain twice.
 __all__ = [
+    "StoredTopicAreaSource",
+    "active_topic_area",
     "get_guardrails_config",
     "invalidate",
     "load_stored",

@@ -11,6 +11,7 @@ from generation.application.ports import (
     JobLauncher,
     JobRepository,
     ReferenceMaterial,
+    TopicAreaSource,
 )
 from llm.images.style_guide import build_style_guide
 
@@ -24,6 +25,8 @@ class CreateJob:
     # Opcional para no obligar a cada doble de test a traerlo: sin él los ids
     # pasan tal cual (comportamiento anterior).
     references: ReferenceMaterial | None = None
+    # Sin él no hay área (comportamiento anterior).
+    topic_area: TopicAreaSource | None = None
 
     def execute(self, data: CreateJobInput) -> CreateJobResult:
         self.guardrail.assert_allowed(data.prompt, data.user_id)
@@ -54,6 +57,11 @@ class CreateJob:
             "image_settings": image_settings or {},
             "resource_configs": dict(data.resource_configs),
         }
+        # Foto del área temática vigente: un cambio posterior en Configuración no altera
+        # este job, y el reintento o la reanudación leen la misma de aquí.
+        area = self.topic_area.active_area() if self.topic_area is not None else ""
+        if area:
+            params["topic_area"] = area
         job = self.repo.create(
             user_id=data.user_id,
             prompt=data.prompt,

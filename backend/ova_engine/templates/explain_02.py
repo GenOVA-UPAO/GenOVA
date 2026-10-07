@@ -54,24 +54,24 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_sections"]
     return f"""[ROL] {d.pick("Docente universitario y redactor académico de sistemas de bases de datos.", "Docente experto y redactor didáctico para " + d.audiencia + ".")}
 [CONCEPTO] «{concept}» ({d.curso}).
-{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Redacta una lectura académica guiada, accesible y estructurada sobre «{concept}», {d.pick("de nivel universitario, orientada a casos reales con el motor Oracle Database", "adecuada para " + d.audiencia + ", orientada a casos reales y cotidianos del tema")}. La lectura debe evitar fórmulas matemáticas complejas y explicar los mecanismos mediante razonamiento técnico y analogías claras.
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Redacta una lectura académica guiada, accesible y estructurada sobre «{concept}», {d.pick(f"de nivel universitario, orientada a casos reales con {d.si_oracle('el motor Oracle Database', 'un SGBD relacional')}", "adecuada para " + d.audiencia + ", orientada a casos reales y cotidianos del tema")}. La lectura debe evitar fórmulas matemáticas complejas y explicar los mecanismos mediante razonamiento técnico y analogías claras.
 - titulo: título académico claro y conciso de la lectura guiada (≤10 palabras).
-- introduccion: contextualización accesible del concepto mediante un caso o situación real {d.pick("en entornos Oracle", "propio del tema")} (≤45 palabras).
+- introduccion: contextualización accesible del concepto mediante un caso o situación real {d.pick(f"en entornos {d.bd_adj}", "propio del tema")} (≤45 palabras).
 - imagen (opcional): elemento visual estructurado según el concepto:
   * usa "foto" ÚNICAMENTE para objetos físicos concretos, hardware, servidores o datacenters tangibles (NUNCA para abstracciones o algoritmos).
   * usa "diagrama" para conceptos abstractos, procesos o estructuras, incluyendo el objeto `diagrama` (tipo: "flujo"|"arbol"|"capas"|"er"|"secuencia"|"comparacion", titulo, nodos, aristas).
-  * usa "logo" para marcas o tecnologías reconocidas (ej. {d.pick("Oracle", "una marca o institución del tema")}).
+  * usa "logo" para marcas o tecnologías reconocidas (ej. {d.pick(d.si_oracle("Oracle", "PostgreSQL"), "una marca o institución del tema")}).
   * usa "escena" para ilustraciones pedagógicas de la situación.
   Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - secciones: exactamente {n} secciones temáticas estructuradas con progresión pedagógica. Cada sección contiene:
   * `subtitulo`: nombre conceptual de la sección o aspecto abordado (≤8 palabras).
   * `idea_central`: explicación teórica clara y rigurosa sin fórmulas complejas ni abstracciones excesivas (≤35 palabras).
-  * `ejemplo_razonado`: caso práctico y razonado {d.pick("en Oracle", "propio del tema")} que ilustra el funcionamiento real (≤35 palabras).
+  * `ejemplo_razonado`: caso práctico y razonado {d.pick(d.si_oracle("en Oracle", "en un SGBD relacional"), "propio del tema")} que ilustra el funcionamiento real (≤35 palabras).
   * `pregunta_comprobacion`: pregunta formativa de autoevaluación para que el estudiante reflexione y compruebe su comprensión (≤25 palabras).
   * `respuesta_modelo`: respuesta explicativa modelo que argumenta la solución a la pregunta (≤30 palabras).
-- aplicacion_practica: {d.pick("aplicación concreta y operativa para el Administrador de Base de Datos (DBA), indicando sentencias SQL/PLSQL, parámetros o vistas del diccionario Oracle (p. ej. vistas V$ o DBA_*) y su relevancia operativa", "aplicación concreta del concepto en " + d.practica + ", con pasos o situaciones reales y por qué importa")} (≤45 palabras).
+- aplicacion_practica: {d.pick(f"aplicación concreta y operativa para el Administrador de Base de Datos (DBA), indicando sentencias SQL{d.si_oracle('/PLSQL', '')}, parámetros o vistas del diccionario{d.si_oracle(' Oracle (p. ej. vistas V$ o DBA_*)', '')} y su relevancia operativa", "aplicación concreta del concepto en " + d.practica + ", con pasos o situaciones reales y por qué importa")} (≤45 palabras).
 - cierre: síntesis pedagógica final que consolida los aprendizajes clave de la lectura (≤35 palabras).
-[RESTRICCIONES] Sin fórmulas matemáticas complejas ni jerga críptica innecesaria. Cada sección debe tener rigor conceptual y conexión práctica {d.pick("con Oracle", "con el tema y el nivel indicados")}. No generes HTML ni menciones la especificación JSON Schema.
+[RESTRICCIONES] Sin fórmulas matemáticas complejas ni jerga críptica innecesaria. Cada sección debe tener rigor conceptual y conexión práctica {d.pick(d.si_oracle("con Oracle", "con el tema"), "con el tema y el nivel indicados")}. No generes HTML ni menciones la especificación JSON Schema.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

@@ -38,7 +38,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_steps"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Instructor de laboratorio Oracle de un curso universitario.""",
+        f"""[ROL] Instructor de laboratorio de {d.motor_corto} de un curso universitario.""",
         f"""[ROL] {d.docente.capitalize()} que diseña ejercicios guiados para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -62,7 +62,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """  * `pista`: ayuda que orienta sin dar el resultado (≤25 palabras).""",
     )
     _l6 = d.pick(
-        """  * `resultado_esperado`: la sentencia SQL/PL-SQL/comando Oracle correcta, en una o pocas líneas.""",
+        f"""  * `resultado_esperado`: la sentencia {d.si_oracle("SQL/PL-SQL/comando Oracle", "SQL/comando")} correcta, en una o pocas líneas.""",
         """  * `resultado_esperado`: el resultado correcto del paso (operación, expresión, respuesta o procedimiento), en una o pocas líneas.""",
     )
     _l7 = d.pick(
@@ -70,7 +70,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """  * `palabras_clave`: 2-5 palabras, números o símbolos que DEBE contener la respuesta del estudiante y que aparecen literalmente dentro de `resultado_esperado`.""",
     )
     _l8 = d.pick(
-        """[RESTRICCIONES] Cada paso depende del anterior. Sintaxis Oracle correcta. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado.""",
+        f"""[RESTRICCIONES] Cada paso depende del anterior. Sintaxis {d.si_oracle("Oracle", "SQL estándar")} correcta. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado.""",
         f"""[RESTRICCIONES] Cada paso depende del anterior. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
     )
     return f"""{_l0}

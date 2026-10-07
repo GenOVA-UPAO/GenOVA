@@ -59,10 +59,10 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     if d.is_db:
         return f"""[ROL] Diseñador pedagógico de minijuegos interactivos de clasificación para administración de bases de datos.
 [CONCEPTO] «{concept}» ({d.curso}).
-[TAREA] Diseña un juego drag & drop de clasificación en el que el estudiante debe clasificar {n} elementos en 2 categorías fundamentales e ilustrativas de «{concept}» (por ejemplo: SGA vs PGA, estructura lógica vs física, privilegios de sistema vs de objeto, backup en frío vs en caliente, DDL vs DML, bloqueo compartido vs exclusivo).
+[TAREA] Diseña un juego drag & drop de clasificación en el que el estudiante debe clasificar {n} elementos en 2 categorías fundamentales e ilustrativas de «{concept}» (por ejemplo: {d.si_oracle("SGA vs PGA, ", "")}estructura lógica vs física, privilegios de sistema vs de objeto, backup en frío vs en caliente, DDL vs DML; elige solo lo que encaje con «{concept}»).
 - titulo: título motivador del juego de clasificación (≤10 palabras).
 - categoria_a: primera categoría conceptual, con:
-  * `id`: identificador alfanumérico corto sin espacios (ej. 'cat_a' o 'sga', ≤10 caracteres).
+  * `id`: identificador alfanumérico corto sin espacios (ej. 'cat_a' o 'logica', ≤10 caracteres).
   * `nombre`: nombre representativo de la categoría (≤4 palabras).
   * `descripcion`: definición o criterio distintivo de esta categoría (≤15 palabras).
 - categoria_b: segunda categoría conceptual contrastante, con:

@@ -39,7 +39,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_exercises"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Diseñador de laboratorios de código SQL y PL/SQL de Oracle.""",
+        f"""[ROL] Diseñador de laboratorios de código SQL{d.si_oracle(" y PL/SQL de Oracle", " estándar")}.""",
         f"""[ROL] Diseñador de laboratorios de ejercicios prácticos para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -79,7 +79,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """- cierre: consolida el procedimiento y cuándo aplicarlo.""",
     )
     _l10 = d.pick(
-        """[RESTRICCIONES] Sintaxis Oracle válida. Las palabras clave deben estar presentes textualmente dentro de `solucion`.""",
+        f"""[RESTRICCIONES] Sintaxis {d.si_oracle("Oracle", "SQL estándar")} válida. Las palabras clave deben estar presentes textualmente dentro de `solucion`.""",
         f"""[RESTRICCIONES] Notación y resultados correctos. Las palabras clave deben estar presentes textualmente dentro de `solucion`. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
     )
     return f"""{_l0}

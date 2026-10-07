@@ -24,6 +24,7 @@ def regenerate_phase_content(
     image_settings: dict | None = None,
     contexto: str = "",
     theme: dict | None = None,
+    area: str | None = None,
 ) -> str | None:
     """Genera HTML fresco para un recurso con el pipeline unificado.
 
@@ -48,6 +49,7 @@ def regenerate_phase_content(
             image_settings=image_settings,
             contexto=contexto,
             theme=theme,
+            area=area,
         )
         record_activity(result.html, getattr(result, "activity", None))
         return result.html

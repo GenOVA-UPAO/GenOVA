@@ -30,7 +30,7 @@ from generation.regen.regen_jobs import (
 )
 from generation.regen.regen_rag import build_regen_material
 from llm.utils.ova_runtime import theme_of
-from models import Ova, OvaPhase, OvaVersion
+from models import Ova, OvaJob, OvaPhase, OvaVersion
 from ova import (
     ensure_version_exists,
     get_active_version,
@@ -53,6 +53,19 @@ def _ova_theme(phases: list) -> dict | None:
         if phase.content and placeholder_prompt(phase.content) is None:
             return theme_of(phase.content)
     return None
+
+
+def _ova_topic_area(db: Session, ova_id) -> str:
+    """Área temática con la que se generó el OVA (foto en los params de su job); "" si no tiene."""
+    try:
+        with db.begin_nested():  # savepoint: un fallo aquí no tumba la regeneración
+            params = db.execute(
+                select(OvaJob.params).where(OvaJob.ova_id == ova_id).order_by(OvaJob.created_at.desc()).limit(1)
+            ).scalar_one_or_none()
+    except Exception:
+        logger.warning("no se pudo leer el área temática del OVA; se regenera sin ella", ova_id=str(ova_id))
+        return ""
+    return str((params or {}).get("topic_area") or "")
 
 
 def _finalize_edit(job_id: str, ova_id: str) -> None:
@@ -114,6 +127,7 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
     if not ova:
         raise LookupError("OVA no encontrado")
 
+    area = _ova_topic_area(db, ova_id)
     llm_config = _owner_llm_config(db, ova.user_id)
     image_settings = _owner_image_settings(db, ova.user_id)
 
@@ -161,6 +175,7 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
         contexto=material.contexto,
         fallback_theme=_ova_theme(current_phases),
         should_stop=should_stop,
+        area=area,
     )
     if not beat.lost.is_set() and is_cancel_requested(job_id):
         raise RegenCancelled(job_id)

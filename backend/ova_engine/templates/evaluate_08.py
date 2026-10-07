@@ -99,7 +99,7 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     d = domain_for(concept, contexto)
     rol = d.pick("Evaluador universitario de bases de datos.", f"Evaluador de {d.topic} para {d.audiencia}. {d.guia_nivel}")
-    exigir = d.pick("justificar una decisión del DBA o escribir y explicar una sentencia Oracle.", "justificar una decisión, explicar un razonamiento o resolver un problema propio del tema.")
+    exigir = d.pick(f"justificar una decisión del DBA o escribir y explicar una sentencia {d.si_oracle('Oracle', 'SQL')}.", "justificar una decisión, explicar un razonamiento o resolver un problema propio del tema.")
     n = p["num_questions"]
     return f"""[ROL] {rol}
 [CONCEPTO] «{concept}» ({d.curso}).

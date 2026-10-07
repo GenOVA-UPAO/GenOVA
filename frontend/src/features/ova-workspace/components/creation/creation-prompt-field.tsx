@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
 
-import { examplePrompt } from "../../lib/creation-form";
+import { examplePrompt, promptPlaceholder } from "../../lib/creation-form";
 import { missingPromptChars } from "../../lib/creation-guidance";
 
 interface Props {
@@ -16,6 +16,8 @@ interface Props {
   showError: boolean;
   onBlur: () => void;
   onSubmitShortcut: () => void;
+  /** Área temática activa: el ejemplo y el placeholder se adaptan a ella. */
+  topicArea?: string;
 }
 
 const HELP_ID = "ova-create-prompt-help";
@@ -34,6 +36,7 @@ export function CreationPromptField({
   showError,
   onBlur,
   onSubmitShortcut,
+  topicArea,
 }: Readonly<Props>) {
   const { t } = useTranslation();
   const invalid = showError && missingPromptChars(prompt) > 0;
@@ -41,7 +44,7 @@ export function CreationPromptField({
   // El ejemplo sustituye lo escrito: si había texto propio, se ofrece deshacerlo.
   const applyExample = () => {
     const previous = prompt;
-    const example = examplePrompt();
+    const example = examplePrompt(topicArea);
     onPrompt(example);
     textareaRef.current?.focus();
     if (previous.trim() === "" || previous === example) return;
@@ -79,7 +82,7 @@ export function CreationPromptField({
           "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
           "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/40",
         )}
-        placeholder={t("workspace:promptPlaceholder")}
+        placeholder={promptPlaceholder(topicArea)}
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);

@@ -52,11 +52,11 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         f"""[CONCEPTO] «{concept}» ({d.curso}).""",
     )
     _l2 = d.pick(
-        f"""[TAREA] Diseña un mini-proyecto de 8-10 minutos donde el estudiante aplique «{concept}» en una pequeña empresa ficticia con Oracle.""",
+        f"""[TAREA] Diseña un mini-proyecto de 8-10 minutos donde el estudiante aplique «{concept}» en una pequeña empresa ficticia con {d.motor_corto if d.is_oracle else "un SGBD relacional"}.""",
         f"""[TAREA] Diseña un mini-proyecto de 8-10 minutos donde el estudiante aplique «{concept}» en una situación ficticia propia del área del tema.""",
     )
     _l3 = d.pick(
-        """- dataset_sugerido: el caso de la pequeña empresa en ≤80 palabras: al menos 4 tablas con sus claves, filas estimadas, tablespaces y usuarios involucrados.""",
+        f"""- dataset_sugerido: el caso de la pequeña empresa en ≤80 palabras: al menos 4 tablas con sus claves, filas estimadas, {d.si_oracle("tablespaces y ", "")}usuarios involucrados.""",
         """- dataset_sugerido: el caso o material de partida en ≤80 palabras: datos, elementos o fuentes con los que se trabaja y las personas o roles involucrados.""",
     )
     _l4 = d.pick(
@@ -68,7 +68,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """  * tipo "foto" ÚNICAMENTE para objetos, lugares o instalaciones físicas reales (consulta en inglés).""",
     )
     _l6 = d.pick(
-        """  * tipo "logo" para la tecnología o motor del proyecto (ej. Oracle, PostgreSQL).""",
+        f"""  * tipo "logo" para la tecnología o motor del proyecto (ej. {d.si_oracle("Oracle, PostgreSQL", "PostgreSQL, MySQL")}).""",
         """  * tipo "logo" para una marca o herramienta reconocible del proyecto, si la hay.""",
     )
     _l7 = d.pick(

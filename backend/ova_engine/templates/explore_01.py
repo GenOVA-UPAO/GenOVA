@@ -55,7 +55,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     if d.is_db:
         return f"""[ROL] Diseñador de laboratorios virtuales y simulaciones de mecanismos internos de bases de datos.
 [CONCEPTO] «{concept}» ({d.curso}).
-[TAREA] Modela el mecanismo interno de «{concept}» como un pequeño sistema que el estudiante manipula: unos componentes con estado, unos contadores observables y acciones que los cambian. El estudiante hará al menos {n} acciones. Todo debe ser técnicamente correcto para Oracle y propio de «{concept}» (no uses buffer cache, redo o bloqueos salvo que sean el tema).
+[TAREA] Modela el mecanismo interno de «{concept}» como un pequeño sistema que el estudiante manipula: unos componentes con estado, unos contadores observables y acciones que los cambian. El estudiante hará al menos {n} acciones. Todo debe ser técnicamente correcto{d.si_oracle(" para Oracle", "")} y propio de «{concept}» (no uses caché, redo, transacciones o bloqueos salvo que sean el tema).
 - titulo: título conciso del laboratorio (≤10 palabras).
 - objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras).
 - concepto_mecanismo: explicación concisa del mecanismo y cómo responde a las acciones (≤35 palabras).

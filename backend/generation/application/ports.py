@@ -71,6 +71,12 @@ class InputGuardrail(Protocol):
     def assert_allowed(self, prompt: str, user_id: UUID) -> None: ...
 
 
+class TopicAreaSource(Protocol):
+    """Área temática que el admin fijó para todos los OVAs (o "" si no hay)."""
+
+    def active_area(self) -> str: ...
+
+
 class ReferenceMaterial(Protocol):
     """Archivos de referencia (RAG) que el docente adjunta a un OVA."""
 

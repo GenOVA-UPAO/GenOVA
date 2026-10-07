@@ -37,7 +37,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_questions"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Diseñador de dashboards de monitoreo de bases de datos Oracle.""",
+        f"""[ROL] Diseñador de dashboards de monitoreo de bases de datos {d.bd_adj}.""",
         f"""[ROL] Diseñador de tableros de datos para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -45,7 +45,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         f"""[CONCEPTO] «{concept}» ({d.curso}).""",
     )
     _l2 = d.pick(
-        f"""[TAREA] Crea un conjunto de datos de monitoreo relacionado con «{concept}» (p. ej. como saldría de DBA_SEGMENTS, V$SESSION o un reporte Statspack) para analizarlo con una tabla y dos gráficos.""",
+        f"""[TAREA] Crea un conjunto de datos de monitoreo relacionado con «{concept}» (p. ej. como saldría de {d.si_oracle("DBA_SEGMENTS, V$SESSION o un reporte Statspack", "una consulta de monitoreo o un reporte de rendimiento")}) para analizarlo con una tabla y dos gráficos.""",
         f"""[TAREA] Crea un conjunto de datos plausible relacionado con «{concept}» (como el que saldría de una medición, encuesta, experimento o registro del área) para analizarlo con una tabla y dos gráficos.""",
     )
     _l3 = d.pick(
@@ -53,7 +53,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """- contexto: qué se mide y qué decisión debe tomar el estudiante con ello (≤40 palabras).""",
     )
     _l4 = d.pick(
-        """- columnas: nombres de columna: `nombre` (qué identifica cada registro, p. ej. «Segmento»), `categoria` (la agrupación, p. ej. «Tablespace»), `valor_a` (primera métrica con su unidad, p. ej. «Tamaño (MB)») y `valor_b` (segunda métrica con unidad, p. ej. «Lecturas físicas»).""",
+        f"""- columnas: nombres de columna: `nombre` (qué identifica cada registro, p. ej. «Segmento»), `categoria` (la agrupación, p. ej. «{d.si_oracle("Tablespace", "Tabla")}»), `valor_a` (primera métrica con su unidad, p. ej. «Tamaño (MB)») y `valor_b` (segunda métrica con unidad, p. ej. «Lecturas físicas»).""",
         """- columnas: nombres de columna: `nombre` (qué identifica cada registro), `categoria` (la agrupación), `valor_a` (primera magnitud con su unidad) y `valor_b` (segunda magnitud con unidad), todo propio del tema.""",
     )
     _l5 = d.pick(

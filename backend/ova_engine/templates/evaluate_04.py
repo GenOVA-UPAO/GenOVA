@@ -37,7 +37,7 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     d = domain_for(concept, contexto)
     rol = d.pick("Examinador universitario de bases de datos.", f"Examinador de {d.topic} para {d.audiencia}. {d.guia_nivel}")
-    aplic = d.pick("sentencia Oracle", "situación o problema propio del tema")
+    aplic = d.pick(f"sentencia {d.si_oracle('Oracle', 'SQL')}", "situación o problema propio del tema")
     n = p["num_questions"]
     return f"""[ROL] {rol}
 [CONCEPTO] «{concept}» ({d.curso}).

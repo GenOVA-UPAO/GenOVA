@@ -76,6 +76,7 @@
   "tema": "Tema",
   "iniciando_generacion": "Iniciando generación…",
   "crear_nuevo_ova": "Crear nuevo OVA",
+  "topicAreaNote": "Los recursos se generarán dentro del área «{{area}}».",
   "creationSubtitle": "Describe el tema y elige qué recursos generará la IA en cada fase del modelo 5E.",
   "ver_tutorial": "Ver tutorial",
   "vista_previa_de_los_recursos_listos": "Vista previa de los recursos listos",
@@ -903,5 +904,7 @@
   "applyingChangesHint": "El OVA se está regenerando; puedes verlo, pero no editarlo hasta que termine.",
   "changeApplied": "Cambio aplicado: {{instruction}}",
   "detalles_tecnicos": "Detalles técnicos",
-  "resourceConfigsSaveError": "No se pudo guardar la configuración de los recursos en tu perfil. Este OVA la usará igual, pero la próxima vez tendrás que volver a ajustarla."
+  "resourceConfigsSaveError": "No se pudo guardar la configuración de los recursos en tu perfil. Este OVA la usará igual, pero la próxima vez tendrás que volver a ajustarla.",
+  "promptPlaceholderArea": "Ej.: Un tema concreto de «{{area}}». Objetivo: qué deben comprender y saber hacer los estudiantes al terminar.",
+  "examplePromptArea": "Conceptos fundamentales de {{area}}.\nObjetivos: definir los conceptos clave, relacionarlos con un caso práctico del área y aplicarlos en un ejercicio guiado."
 }

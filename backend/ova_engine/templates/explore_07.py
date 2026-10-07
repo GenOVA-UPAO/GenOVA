@@ -62,7 +62,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un experimento guiado de observación científica con {n} pasos progresivos para explorar «{concept}». Proporciona un dataset de métricas gráficas comparativas (ej. filas de la tabla vs costo de consulta con/sin índice, sesiones concurrentes vs tiempo de espera por bloqueos, o tasa de transacciones vs latencia de buffer pool):
 - titulo: título motivador del experimento guiado (≤10 palabras).
-- descripcion_dataset: descripción contextual de las métricas simuladas (de dónde provienen, ej. trazas de V$SQL_PLAN o V$SYSSTAT, qué representa el eje X y qué representa el eje Y, ≤45 palabras).
+- descripcion_dataset: descripción contextual de las métricas simuladas (de dónde provienen, ej. {d.si_oracle("trazas de V$SQL_PLAN o V$SYSSTAT", "planes de ejecución o estadísticas del motor")}, qué representa el eje X y qué representa el eje Y, ≤45 palabras).
 - puntos: entre 12 y 20 mediciones numéricas. Cada punto tiene coordenadas enteras `x` e `y` y un nombre de `grupo` comparativo (ej. "Sin índice" vs "Con índice", o "Cache frío" vs "Cache caliente"). Los puntos deben formar dos o tres series claramente contrastables que revelen el impacto observable de «{concept}».
 - preguntas: exactamente {n} preguntas de observación progresivas (paso 1 a {n}) que guíen al estudiante en el análisis visual del gráfico:
   * `paso`: número entero correlativo del paso (1 a {n}).

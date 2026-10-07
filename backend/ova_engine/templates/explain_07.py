@@ -46,7 +46,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `titulo`: nombre breve del hito (≤25 caracteres).
   * `descripcion`: crónica de lo ocurrido y por qué importó (≤45 palabras).
   * `dato_curioso`: una curiosidad verificable (≤25 palabras).
-  * `legado_actual`: cómo sigue vigente hoy {d.pick("en Oracle u otros motores", "en el mundo actual")} (≤25 palabras).
+  * `legado_actual`: cómo sigue vigente hoy {d.pick(d.si_oracle("en Oracle u otros motores", "en los SGBD actuales"), "en el mundo actual")} (≤25 palabras).
 - cierre: frase que enlace la historia con el uso actual de «{concept}».
 [RESTRICCIONES] Sin mitos ni fechas inventadas; si una fecha es aproximada, usa el año más aceptado.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""

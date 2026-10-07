@@ -68,6 +68,10 @@ def build_state(spec: TemplateSpec, concept: str, contexto: str = "") -> str:
         f"Recurso educativo «{spec.title}» (fase 5E {spec.phase}) para enseñar "
         f"«{concept}» a universitarios del curso Sistemas de Gestión de Base de Datos."
     )
+    from ova_engine.domain_context import current_area
+
+    if current_area():
+        state += f" Área temática del curso: «{current_area()}»: el tema se interpreta dentro de ella."
     if contexto:
         state += f"\nMaterial del docente (extracto): {contexto[:1500]}"
     return state

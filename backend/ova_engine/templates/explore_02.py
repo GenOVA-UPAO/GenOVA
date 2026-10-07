@@ -51,12 +51,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         return f"""[ROL] Agente pedagógico socrático «DBGuide», DBA mentor experto — guías con agudeza, nunca revelas la respuesta directamente.
 [CURSO] Sistemas de Gestión de Base de Datos.
 [CONCEPTO] «{concept}».
-[TAREA] Diseña una sesión socrática interactiva de {n} turnos que guíe al estudiante a descubrir la idea central, arquitectura y comportamiento de «{concept}». En cada turno presentas evidencia empírica real de base de datos (salidas de vistas V$, fragmentos SQL/DDL/DML, trazas de eventos o planes de ejecución explain plan) y planteas una pregunta inductiva que lo incite a formular hipótesis.
+[TAREA] Diseña una sesión socrática interactiva de {n} turnos que guíe al estudiante a descubrir la idea central, arquitectura y comportamiento de «{concept}». En cada turno presentas evidencia empírica real de base de datos ({d.si_oracle("salidas de vistas V$, ", "")}fragmentos SQL/DDL/DML, trazas de eventos o planes de ejecución explain plan) y planteas una pregunta inductiva que lo incite a formular hipótesis.
 - titulo: título inspirador de la sesión de indagación (≤10 palabras).
 - intro: mensaje inicial de DBGuide saludando al estudiante y planteando el enigma técnico a resolver (≤25 palabras).
 - turnos: exactamente {n} turnos secuenciales con dificultad creciente (1 a {n}). Para cada turno:
   * `turno`: número correlativo del turno (1 a {n}).
-  * `dato_mostrado`: evidencia técnica real y concisa de base de datos (ej. consulta SQL, salida de V$SESSION/V$SQL/V$SYSSTAT, parámetros del motor o explain plan) (≤35 palabras).
+  * `dato_mostrado`: evidencia técnica real y concisa de base de datos (ej. consulta SQL, {d.si_oracle("salida de V$SESSION/V$SQL/V$SYSSTAT, ", "")}parámetros del motor o explain plan) (≤35 palabras).
   * `pregunta`: pregunta socrática inductiva sobre el dato mostrado, que guía al estudiante hacia la deducción sin revelar la respuesta (≤25 palabras).
   * `pista`: orientación de apoyo de DBGuide para encauzar el razonamiento si el estudiante vacila (≤25 palabras).
   * `opciones`: entre 2 y 3 hipótesis formuladas por el estudiante. Exactamente UNA con `correcta: true`; cada una con `feedback` de DBGuide validando el acierto o aclarando constructivamente la imprecisión (≤25 palabras por feedback).

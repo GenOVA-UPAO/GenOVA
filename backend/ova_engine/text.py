@@ -23,7 +23,7 @@ import httpx
 import structlog
 
 from llm.utils.utils import parse_json
-from ova_engine.domain_context import is_db_text
+from ova_engine.domain_context import is_oracle_text
 from ova_engine.schema import validate
 
 logger = structlog.get_logger(__name__)
@@ -34,9 +34,11 @@ class TextGenerationError(RuntimeError):
 
 
 # Errores de Oracle que los modelos repiten (QA en producción, 2026-10-04): se fijan
-# como hechos para el texto y para el revisor (ambos pasan por aquí).
+# como hechos de REFERENCIA para el texto y para el revisor (ambos pasan por aquí). Solo
+# se añaden si el tema o el área nombran Oracle, y nunca como tema ni como ejemplo.
 ORACLE_FACTS = (
-    "Hechos de Oracle que NO puedes contradecir: "
+    "Hechos de referencia de Oracle: si el recurso toca alguno de estos puntos, no lo contradigas. "
+    "NO los uses como tema ni como ejemplo si el tema trata de otra cosa: el tema manda. "
     "(1) ante un interbloqueo (ORA-00060) Oracle revierte solo la SENTENCIA que lo detecta, "
     "no la transacción ni elige «víctima»; la sesión decide luego COMMIT o ROLLBACK; "
     "(2) un SELECT normal no bloquea filas (lectura consistente con undo); solo SELECT ... FOR UPDATE las bloquea; "
@@ -56,10 +58,10 @@ _SYSTEM_RULES = (
 
 
 def _full_prompt(prompt: str, schema: dict, db_facts: bool | None = None) -> str:
-    """Prompt + reglas del sistema. Los hechos de Oracle solo se añaden si el tema trata de
-    Oracle o de bases de datos (`db_facts`; por defecto se detecta en el prompt)."""
+    """Prompt + reglas del sistema. Los hechos de Oracle solo se añaden si el tema o el área
+    nombran Oracle (`db_facts`; por defecto se detecta en el prompt, que ya lleva el área)."""
     if db_facts is None:
-        db_facts = is_db_text(prompt)
+        db_facts = is_oracle_text(prompt)
     facts = ORACLE_FACTS if db_facts else ""
     return f"{prompt}\n\n{facts}{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
 

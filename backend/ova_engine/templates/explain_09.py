@@ -50,11 +50,11 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_dimensions"]
     return f"""[ROL] Analista comparativo {d.pick("de administración de bases de datos", "experto en «" + concept + "»")}.
 [CONCEPTO] «{concept}» ({d.curso}).
-{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Compara «{concept}» con otras alternativas o conceptos relacionados {d.pick("(p. ej. backup frío/caliente/incremental, DBMS_JOB/DBMS_SCHEDULER, Oracle/SQL Server/PostgreSQL)", "(alternativas, enfoques o conceptos cercanos del mismo tema)")}: EXACTAMENTE 3 elementos comparados (uno puede ser «{concept}») en {n} dimensiones medibles.
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Compara «{concept}» con otras alternativas o conceptos relacionados {d.pick(d.si_oracle("(p. ej. backup frío/caliente/incremental, DBMS_JOB/DBMS_SCHEDULER, Oracle/SQL Server/PostgreSQL)", "(alternativas, enfoques o conceptos cercanos del mismo tema, p. ej. variantes de una técnica o de un tipo de SGBD)"), "(alternativas, enfoques o conceptos cercanos del mismo tema)")}: EXACTAMENTE 3 elementos comparados (uno puede ser «{concept}») en {n} dimensiones medibles.
 - titulo: título corto de la comparación.
 - intro: una frase que explique qué se compara y para qué.
 - imagen (opcional): recurso visual estructurado comparativo:
-  * "logo" para marcas o tecnologías reconocidas comparadas (ej. {d.pick("Oracle vs PostgreSQL", "dos marcas o instituciones comparadas")}).
+  * "logo" para marcas o tecnologías reconocidas comparadas (ej. {d.pick(d.si_oracle("Oracle vs PostgreSQL", "PostgreSQL vs MySQL"), "dos marcas o instituciones comparadas")}).
   * "diagrama" para esquemas conceptuales o contrastes arquitectónicos (incluye objeto `diagrama` con tipo "comparacion"|"capas"|"flujo", titulo, nodos, aristas).
   * "foto" ÚNICAMENTE para equipamiento físico o hardware tangible.
   * "escena" para ilustraciones pedagógicas.

@@ -43,6 +43,8 @@ _CTX_KEYS = (
     # Contexto RAG recuperado por el concierge: sin esta clave los workers
     # generaban ignorando el material subido por el usuario.
     "rag_context",
+    # Área temática del job: cada worker genera dentro de ella.
+    "topic_area",
 )
 
 
@@ -112,6 +114,7 @@ def resource_worker(payload: dict) -> dict:
             resource_config=per_config,
             contexto=payload.get("rag_context", "") or "",
             deadline=deadline,
+            area=payload.get("topic_area") or "",
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
         auth = is_provider_auth_error(exc)

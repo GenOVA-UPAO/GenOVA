@@ -28,6 +28,7 @@ from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
 from editor.interface.http import router as editor_router
+from generation.interface.http.admin_guardrails_router import public_router as topic_area_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
@@ -325,6 +326,7 @@ app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
 app.include_router(guardrails_router, prefix="/api/admin")
+app.include_router(topic_area_router, prefix="/api/config")
 app.include_router(lti_admin_router, prefix="/api/admin")
 # LTI 1.3: el LMS llama a /lti/* directamente (login OIDC, launch, JWKS, reproductor).
 app.include_router(lti_router)

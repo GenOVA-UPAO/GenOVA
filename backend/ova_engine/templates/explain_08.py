@@ -51,7 +51,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_blocks"]
     return f"""[ROL] Diseñador de diagramas {d.pick("de arquitectura de bases de datos", "didácticos sobre «" + concept + "» para " + d.audiencia)}.
 [CONCEPTO] «{concept}» ({d.curso}).
-{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Describe la arquitectura de «{concept}» como exactamente {n} bloques jerárquicos, del más externo/general al más interno/específico {d.pick("(p. ej. instancia > base de datos, o tablespace > segmento > extent > bloque, o niveles ANSI/SPARC)", "(p. ej. de lo general a lo específico: sistema > subsistema > componente > parte)")}.
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Describe la arquitectura de «{concept}» como exactamente {n} bloques jerárquicos, del más externo/general al más interno/específico {d.pick(d.si_oracle("(p. ej. instancia > base de datos, o tablespace > segmento > extent > bloque, o niveles ANSI/SPARC)", "(p. ej. niveles ANSI/SPARC: externo > conceptual > interno, o servidor > base de datos > esquema > tabla)"), "(p. ej. de lo general a lo específico: sistema > subsistema > componente > parte)")}.
 - titulo: título corto del diagrama.
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás interpretar…»).
 - imagen (opcional): apoyo visual estructurado de la arquitectura:
@@ -64,7 +64,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - flujo: 3 o 4 pasos de un ejemplo trabajado de cómo viaja {d.pick("una operación (p. ej. una consulta)", "un elemento o proceso del tema")} por la estructura; cada uno con `paso` (≤25 palabras) y `bloque` (número entero: posición del bloque implicado, empezando en 1).
 - pregunta: una pregunta de comprensión sobre por qué se organiza así la jerarquía, con 3-4 opciones; exactamente UNA `correcta: true`; cada `feedback` explica el porqué.
 - sintesis: cierre que consolide la función de cada bloque.
-[RESTRICCIONES] {d.pick("Nombres técnicos exactos de Oracle cuando existan", "Nombres exactos y correctos del área del tema")}; sin inventar componentes.
+[RESTRICCIONES] {d.pick(d.si_oracle("Nombres técnicos exactos de Oracle cuando existan", "Nombres técnicos exactos cuando existan"), "Nombres exactos y correctos del área del tema")}; sin inventar componentes.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

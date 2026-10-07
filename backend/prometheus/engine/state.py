@@ -32,6 +32,8 @@ class OvaGenerationState(TypedDict, total=False):
     progress: int
 
     rag_context: str
+    # Área temática fijada al crear el job (foto de Configuración); "" si no hay.
+    topic_area: str
 
     results: Annotated[list[dict], operator.add]  # [{phase, html, resource_type, ..}]
     errors: Annotated[list[dict], operator.add]  # [{phase, resource_type, error}]

@@ -54,7 +54,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     d = domain_for(concept, contexto)
     rol = d.pick("Diseñador de simulaciones evaluativas para futuros DBA.", f"Diseñador de simulaciones evaluativas de {d.topic} para {d.audiencia}. {d.guia_nivel}")
     actor = d.pick("un DBA", "una persona que aplica el tema")
-    extra = d.pick("Menciona sentencias o vistas de Oracle cuando aplique.", "Mantente estrictamente en el tema y el nivel indicados, con ejemplos propios del tema.")
+    extra = d.pick(f"Menciona sentencias {d.si_oracle('o vistas de Oracle', 'SQL')} cuando aplique.", "Mantente estrictamente en el tema y el nivel indicados, con ejemplos propios del tema.")
     n = p["num_decisions"]
     return f"""[ROL] {rol}
 [CONCEPTO] «{concept}» ({d.curso}).
