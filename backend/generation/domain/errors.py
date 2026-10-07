@@ -12,6 +12,12 @@ class GenerationError(Exception):
 
     code = "generation_error"
 
+    def __init__(self, message: str = "") -> None:
+        super().__init__(message)
+        # Texto pensado para el usuario: lo fija el dominio y es lo único que la
+        # capa HTTP expone (nunca `str(exc)` ni trazas).
+        self.public_message = message
+
 
 class JobNotFound(GenerationError):
     code = "job_not_found"
