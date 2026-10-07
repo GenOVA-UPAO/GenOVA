@@ -14,7 +14,6 @@ from __future__ import annotations
 import mimetypes
 import re
 from typing import Annotated
-from urllib.parse import quote
 
 import structlog
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request
@@ -219,18 +218,8 @@ def deep_link_submit(
     return _html(html, origins=platform_origins(platform))
 
 
-@router.get("/play/{token}", include_in_schema=False)
-def play_without_slash(token: str):
-    # Las rutas relativas del reproductor (content/…, score) necesitan la barra final.
-    # El token es un JWT (tres segmentos base64url): cualquier otra cosa es 404, así
-    # que el destino es siempre una ruta del propio host y no puede salir de GenOVA.
-    if not _SESSION_TOKEN.fullmatch(token):
-        raise HTTPException(status_code=404)
-    return RedirectResponse(f"/lti/play/{quote(token, safe='')}/", status_code=307)
-
-
 @router.get("/play/{token}/", summary="Reproductor de la OVA dentro del LMS")
-def play(token: str, request: Request, service: Service):
+def play(token: str, service: Service):
     try:
         launch_row, platform = service.session_launch(token, SESSION_PLAY)
         summary = ova_content.get_ready_ova(service.db, str(launch_row.ova_id))
@@ -245,6 +234,24 @@ def play(token: str, request: Request, service: Service):
         has_evaluation=summary.has_evaluation and launch_row.can_post_score,
     )
     return _html(html, origins=platform_origins(platform))
+
+
+# Página fija (sin datos de la petición): el navegador añade la barra final que
+# necesitan las rutas relativas del reproductor. El lanzamiento ya redirige a la URL
+# con barra; esta ruta solo cubre enlaces copiados sin ella. Ni redirección del
+# servidor (py/url-redirection) ni el token en el HTML (py/reflective-xss).
+_ADD_TRAILING_SLASH_HTML = (
+    "<!doctype html><meta charset=\"utf-8\"><title>GenOVA</title>"
+    "<script>location.replace(location.pathname + \"/\" + location.search)</script>"
+)
+
+
+@router.get("/play/{token}", include_in_schema=False)
+def play_without_slash(token: str):
+    # El token es un JWT (tres segmentos base64url): cualquier otra cosa es 404.
+    if not _SESSION_TOKEN.fullmatch(token):
+        raise HTTPException(status_code=404)
+    return _html(_ADD_TRAILING_SLASH_HTML)
 
 
 @router.get("/play/{token}/content/{path:path}", include_in_schema=False)
