@@ -130,7 +130,7 @@ def _parse_dba_panels(soup: BeautifulSoup, blocks: list[dict[str, Any]], start_i
             "id": f"card-dba-{idx}",
             "tipo": "upao-card",
             "props": {
-                "title": "Aplicación Concreta para el DBA (Oracle)",
+                "title": "Aplicación concreta para el DBA",
                 "text": p_text,
             },
         })

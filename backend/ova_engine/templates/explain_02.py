@@ -325,7 +325,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'</div>'
             f'<div class="sec-card sec-ejemplo-card">'
             f'<div class="sec-card-header">'
-            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">{icon("search")} Ejemplo Razonado{d.pick(" (Oracle)", "")}</span>'
+            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">{icon("search")} Ejemplo Razonado{d.si_oracle(" (Oracle)", "")}</span>'
             f'</div>'
             f'<p class="sec-text">{esc(sec["ejemplo_razonado"])}</p>'
             f'</div>'
@@ -444,7 +444,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <div class="ova-reading-container">
   <upao-header eyebrow="LECTURA GUIADA" title="{esc(data["titulo"])}">
-    <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado{d.pick(" en Oracle", "")} y comprueba tu comprensión.</p>
+    <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado{d.si_oracle(" en Oracle", "")} y comprueba tu comprensión.</p>
   </upao-header>
 
   <upao-progress id="prog" current="0" total="{n}" label="Progreso de la lectura" show-fraction></upao-progress>
@@ -475,7 +475,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       <span class="dba-icon-badge" aria-hidden="true">{icon('tools')}</span>
       <div>
         <span class="dba-eyebrow">{d.pick("EN PRODUCCIÓN · ROL DBA", "EN LA PRÁCTICA")}</span>
-        <h2 id="dba-panel-heading" class="dba-title">{d.pick("Aplicación Concreta para el DBA (Oracle)", "Aplicación concreta en " + d.practica)}</h2>
+        <h2 id="dba-panel-heading" class="dba-title">{d.pick3("Aplicación Concreta para el DBA (Oracle)", "Aplicación concreta para el DBA", "Aplicación concreta en " + d.practica)}</h2>
       </div>
     </div>
     <div class="dba-body">
