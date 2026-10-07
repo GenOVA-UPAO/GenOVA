@@ -11,13 +11,17 @@ from roles.domain.model import Role
 class RoleRepository(Protocol):
     """Persistencia de roles. La implementación vive en `infrastructure/`."""
 
-    def list_with_user_counts(self) -> list[tuple[Role, int]]: ...
+    def list_with_user_counts(self) -> list[tuple[Role, int]]:
+        raise NotImplementedError
 
-    def get(self, role_id: UUID) -> Role | None: ...
+    def get(self, role_id: UUID) -> Role | None:
+        raise NotImplementedError
 
-    def get_by_name(self, name: str) -> Role | None: ...
+    def get_by_name(self, name: str) -> Role | None:
+        raise NotImplementedError
 
-    def add(self, name: str, description: str, permissions: list[str]) -> Role: ...
+    def add(self, name: str, description: str, permissions: list[str]) -> Role:
+        raise NotImplementedError
 
     def update(
         self,
@@ -26,9 +30,11 @@ class RoleRepository(Protocol):
         name: str | None = None,
         description: str | None = None,
         permissions: list[str] | None = None,
-    ) -> Role: ...
+    ) -> Role:
+        raise NotImplementedError
 
-    def count_users(self, role_id: UUID) -> int: ...
+    def count_users(self, role_id: UUID) -> int:
+        raise NotImplementedError
 
     def reassign_users(self, from_role_id: UUID, to_role_id: UUID) -> None:
         """Mueve las asignaciones de `from_role_id` a `to_role_id`.
@@ -36,6 +42,7 @@ class RoleRepository(Protocol):
         Si un usuario ya tiene el rol destino, la asignación vieja se descarta
         (sin duplicar la clave primaria de user_roles).
         """
-        ...
+        raise NotImplementedError
 
-    def delete(self, role_id: UUID) -> None: ...
+    def delete(self, role_id: UUID) -> None:
+        raise NotImplementedError

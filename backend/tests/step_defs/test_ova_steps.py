@@ -7,6 +7,7 @@ sirve los bytes del archivo). Asserts deterministas (exactamente 4, orden desc,
 content-type application/zip).
 """
 
+import importlib  # noqa: E402
 import os
 import sys
 import uuid
@@ -23,7 +24,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401
+importlib.import_module("models")  # registra los modelos ORM  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from ova.interface.http.history_router import router as ova_history_router  # noqa: E402

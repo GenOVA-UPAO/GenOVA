@@ -10,6 +10,7 @@ happens. The runner is invoked synchronously (`run_job`) for deterministic state
 binds to a throwaway engine; we then point `SessionLocal` at the shared one.
 """
 
+import importlib  # noqa: E402
 import os
 import sys
 import uuid
@@ -23,7 +24,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401  — registers ORM tables on the shared metadata
+importlib.import_module("models")  # registers ORM tables on the shared metadata  # noqa: E402
 from generation.jobs import jobs_runner, jobs_service  # noqa: E402
 from generation.jobs.jobs_helpers import job_to_dict  # noqa: E402
 
@@ -106,13 +107,14 @@ def Sess(engine, monkeypatch):
 
     monkeypatch.setattr(jobs_materialize, "_persist_scorm", lambda *a, **k: None)
     # El autor por defecto ahora se resuelve desde la relación con users.
+    from models import User
     from tests import _sqlite_db  # noqa: F401 — registra JSONB para SQLite
 
-    saved = {column: column.server_default for column in models.User.__table__.columns}
+    saved = {column: column.server_default for column in User.__table__.columns}
     for column in saved:
         column.server_default = None
     try:
-        models.User.__table__.create(engine)
+        User.__table__.create(engine)
     finally:
         for column, default in saved.items():
             column.server_default = default

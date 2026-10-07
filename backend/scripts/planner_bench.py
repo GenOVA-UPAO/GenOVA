@@ -66,7 +66,7 @@ def _attrs(mode: str, url: str | None):
 
 STRATEGIES = {
     "fijo": _fixed,
-    "laya-actual": lambda t: plan_ova_global(t),
+    "laya-actual": plan_ova_global,
     "llm": _llm_plan,
     "atributos": _attrs("laya", LAYA),
     "atributos-8091": _attrs("laya", LAYA_FT),

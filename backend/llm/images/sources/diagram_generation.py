@@ -24,7 +24,7 @@ def _diagram_timeout() -> float:
         if math.isfinite(value) and value > 0:
             return value
     except ValueError:
-        pass
+        pass  # valor no numérico en la variable: se usa el tiempo por defecto
     return 60.0
 
 

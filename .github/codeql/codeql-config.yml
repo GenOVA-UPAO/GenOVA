@@ -17,3 +17,10 @@ paths-ignore:
   # `prepare_ova_visual.py`): son una expresión suelta, no un módulo, así que
   # CodeQL los lee como programa y avisa de «expresión sin efecto».
   - '**/*.browser.js'
+
+# Reglas de calidad (nivel «note») descartadas por falsos positivos sistemáticos:
+# - py/unused-global-variable: se dispara con globales que solo se reasignan con
+#   `global X` (cachés, contadores) y con constantes que se usan desde otro módulo.
+query-filters:
+  - exclude:
+      id: py/unused-global-variable

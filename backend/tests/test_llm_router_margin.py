@@ -10,7 +10,9 @@
 import pytest
 
 import llm.router as router
-from llm.router import LLMBudgetExhaustedError, generar_texto
+
+LLMBudgetExhaustedError = router.LLMBudgetExhaustedError
+generar_texto = router.generar_texto
 from llm.utils import llm_config_store
 from llm.utils.llm_helpers import EmptyContentError
 

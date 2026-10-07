@@ -8,6 +8,7 @@ nuevo por escenario —no en el compartido, que con DATABASE_URL de Postgres ser
 la tabla real— y es el que produce el 429 del bloqueo de forma determinista.
 """
 
+import importlib  # noqa: E402
 import os
 import sys
 import uuid
@@ -28,7 +29,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401
+importlib.import_module("models")  # registra los modelos ORM  # noqa: E402
 from auth.infrastructure.email_throttle import email_login_window  # noqa: E402
 from auth.interface.http.router import router as auth_router  # noqa: E402
 from core.database import get_db  # noqa: E402

@@ -66,11 +66,8 @@ def test_get_image_data_uri_routes_openrouter(monkeypatch):
         lambda *a, **k: "data:image/jpeg;base64,QQ==",
     )
     # get_image_data_uri imports via _openrouter → generate_openrouter_image
-    import llm.images.image_providers as providers
-
     monkeypatch.setattr(
-        providers,
-        "_openrouter",
+        "llm.images.image_providers._openrouter",
         lambda *a, **k: "data:image/jpeg;base64,QQ==",
     )
     assert get_image_data_uri("x", "openrouter", "sk", model="openai/gpt-image-1-mini") == (

@@ -12,6 +12,7 @@ contrato del prompt (F4.3); aquí solo entra lo verificable sin ambigüedad.
 """
 
 import re
+from html.parser import HTMLParser
 
 import structlog
 
@@ -41,9 +42,35 @@ _MIN_HTML_CHARS = 3000  # el recurso legítimo más pequeño (podcast texto) ron
 _MIN_VISIBLE_CHARS = 250
 
 
+class _TextExtractor(HTMLParser):
+    """Texto visible: ignora el contenido de <script>/<style> y las etiquetas."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self._skip = 0
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self._skip += 1
+        self.parts.append(" ")
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style") and self._skip:
+            self._skip -= 1
+        self.parts.append(" ")
+
+    def handle_data(self, data):
+        if not self._skip:
+            self.parts.append(data)
+
+
 def _visible_text(html: str) -> str:
-    no_script = re.sub(r"<(script|style)[\s\S]*?</\1>", " ", html, flags=re.I)
-    return re.sub(r"<[^>]+>", " ", no_script)
+    # Parser en vez de regex: tiempo lineal incluso con entrada hostil.
+    parser = _TextExtractor()
+    parser.feed(html)
+    parser.close()
+    return "".join(parser.parts)
 
 
 def structural_defects(html: str) -> list[str]:
@@ -121,4 +148,4 @@ def resource_defects(html: str, prompt: str = "") -> list[str]:
 
 # Reexport: el texto del contrato vive en llm/utils/output_contract.py (sin
 # dependencias) para evitar el ciclo utils→themes→prometheus→…→utils.
-from llm.utils.output_contract import output_contract  # noqa: E402, F401
+from llm.utils.output_contract import output_contract as output_contract  # noqa: E402

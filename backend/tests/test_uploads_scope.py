@@ -173,7 +173,8 @@ def test_router_filtra_por_ova_y_lanza_la_ingesta_despues(monkeypatch):
     db.add(Ova(id=uuid.UUID(OVA), user_id=uuid.UUID(USER), title="OVA propia"))
     db.commit()
     app.dependency_overrides[get_db] = lambda: db
-    app.dependency_overrides[get_current_user] = lambda: type("U", (), {"id": uuid.UUID(USER)})()
+    current_user = type("U", (), {"id": uuid.UUID(USER)})()
+    app.dependency_overrides[get_current_user] = lambda: current_user
     app.dependency_overrides[build_uploads] = lambda: UploadsUseCases(
         ListUploads(repo), UploadFiles(repo, rag, _Limits()), None
     )

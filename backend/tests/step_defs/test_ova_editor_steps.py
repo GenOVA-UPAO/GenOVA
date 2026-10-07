@@ -17,8 +17,9 @@ import json  # noqa: E402
 from pytest_bdd import given, scenario, then, when  # noqa: E402
 
 import prometheus.nodes.editor as editor_mod  # noqa: E402
+
+editor_node = editor_mod.editor_node  # noqa: E402
 from core.config import settings  # noqa: E402
-from prometheus.nodes.editor import editor_node  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-016_editor.feature")
