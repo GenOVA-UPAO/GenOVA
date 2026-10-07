@@ -114,14 +114,19 @@ export function modalityBucket(modality?: string): string {
   return "otra";
 }
 
-export const MODALITY_BUCKET_LABELS: Record<string, string> = {
-  texto: "Solo texto",
-  imagen: "Acepta imagen",
-  video: "Acepta video",
-  audio: "Acepta audio",
-  archivos: "Acepta archivos",
-  otra: "Otra modalidad",
+const BUCKET_LABEL_KEYS: Record<string, string> = {
+  texto: "llm-settings:modalityBuckets.texto",
+  imagen: "llm-settings:modalityBuckets.imagen",
+  video: "llm-settings:modalityBuckets.video",
+  audio: "llm-settings:modalityBuckets.audio",
+  archivos: "llm-settings:modalityBuckets.archivos",
+  otra: "llm-settings:modalityBuckets.otra",
 };
+
+export function modalityBucketLabel(key: string): string | undefined {
+  const i18nKey = Object.hasOwn(BUCKET_LABEL_KEYS, key) ? BUCKET_LABEL_KEYS[key] : undefined;
+  return i18nKey ? t(i18nKey) : undefined;
+}
 
 const MODALITY_BUCKET_ORDER = ["texto", "imagen", "video", "audio", "archivos", "otra"];
 
@@ -143,7 +148,7 @@ function groupKeyOf(m: CatalogModel, groupBy: GroupBy): string {
 }
 
 function groupLabel(key: string, groupBy: GroupBy, labels: Record<string, string>): string {
-  const modalityLabel = groupBy === "modality" ? MODALITY_BUCKET_LABELS[key] : undefined;
+  const modalityLabel = groupBy === "modality" ? modalityBucketLabel(key) : undefined;
   return modalityLabel ?? orDefault(labels[key], key);
 }
 
