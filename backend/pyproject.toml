@@ -10,11 +10,11 @@ readme = "../readme.md"
 dependencies = [
     "fastapi==0.142.2",
     "uvicorn[standard]==0.54.0",
-    "sqlalchemy==2.1.1",
+    "sqlalchemy==2.1.3",
     "psycopg[binary]==3.3.6",
     "python-dotenv==1.2.4",
     "bcrypt==5.0.0",
-    "PyJWT==2.15.0",
+    "PyJWT==2.15.1",
     "python-multipart==0.0.32",
     "pydantic[email]==2.13.5",
     "pydantic-settings==2.15.0",
@@ -27,29 +27,29 @@ dependencies = [
     # (_IncludedRouter sin `.path`) y tumba /api/*. Ver core/observability.py.
     "logfire[sqlalchemy]==5.1.1",
     "structlog==26.1.0",
-    "openai==2.43.0",
+    "openai==3.3.0",
     "groq==1.7.0",
     "lameenc==1.8.4",
     "pillow==12.3.0",
     "instructor==1.17.0",
-    "supabase==2.31.0",
-    "google-genai==2.26.0",
+    "supabase==2.32.0",
+    "google-genai==2.28.0",
     "pypdf==6.19.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "filetype==1.2.0",
-    "langgraph==1.2.12",
+    "langgraph==1.2.14",
     "langgraph-checkpoint-postgres==3.1.2",
-    "langsmith==0.14.2",
+    "langsmith==0.14.4",
     "pyotp==2.10.0",
     # Parser JS (motor QuickJS) para detectar scripts rotos o truncados en los OVAs generados.
     "quickjs==1.19.4",
     # Conversión HTML → XHTML para la exportación EPUB 3 (ya venía por python-docx).
-    "lxml==6.1.1",
+    "lxml==6.1.3",
     # LTI 1.3: firma/verificación RS256 (PyJWT), cifrado de la clave de la herramienta
     # (Fernet) y llamadas a la plataforma (JWKS, token OAuth2, AGS). Ya venían como
     # transitivas; se fijan porque `lti` las importa directamente.
-    "cryptography==50.0.0",
+    "cryptography==50.0.2",
     "httpx==0.28.1",
 ]
 
