@@ -8,6 +8,11 @@ on:
   schedule:
     - cron: '0 6 * * 1' # lunes 06:00 UTC
   workflow_dispatch:
+  # También en los PR que cambian el propio QA, para probarlo antes de mergear.
+  pull_request:
+    paths:
+      - '.github/workflows/qa-llm-real.yml'
+      - 'backend/scripts/qa_llm_real.py'
 
 permissions:
   contents: read
