@@ -14,7 +14,6 @@ from __future__ import annotations
 import mimetypes
 import re
 from typing import Annotated
-from urllib.parse import quote
 
 import structlog
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request
@@ -219,8 +218,8 @@ def deep_link_submit(
     return _html(html, origins=platform_origins(platform))
 
 
-def _player_response(token: str, service: Service, *, base: str):
-    """Página del reproductor. `base` es el prefijo de las URLs de contenido y nota."""
+@router.get("/play/{token}/", summary="Reproductor de la OVA dentro del LMS")
+def play(token: str, service: Service):
     try:
         launch_row, platform = service.session_launch(token, SESSION_PLAY)
         summary = ova_content.get_ready_ova(service.db, str(launch_row.ova_id))
@@ -230,26 +229,29 @@ def _player_response(token: str, service: Service, *, base: str):
         return _error(LtiError("La OVA de esta actividad ya no está disponible."))
     html = pages.player_page(
         title=summary.title,
-        content_url=f"{base}content/index.html",
-        score_url=f"{base}score",
+        content_url="content/index.html",
+        score_url="score",
         has_evaluation=summary.has_evaluation and launch_row.can_post_score,
     )
     return _html(html, origins=platform_origins(platform))
 
 
+# Página fija (sin datos de la petición): el navegador añade la barra final que
+# necesitan las rutas relativas del reproductor. El lanzamiento ya redirige a la URL
+# con barra; esta ruta solo cubre enlaces copiados sin ella. Ni redirección del
+# servidor (py/url-redirection) ni el token en el HTML (py/reflective-xss).
+_ADD_TRAILING_SLASH_HTML = (
+    "<!doctype html><meta charset=\"utf-8\"><title>GenOVA</title>"
+    "<script>location.replace(location.pathname + \"/\" + location.search)</script>"
+)
+
+
 @router.get("/play/{token}", include_in_schema=False)
-def play_without_slash(token: str, service: Service):
-    # Sin barra final las rutas relativas del reproductor se resolverían mal: en vez
-    # de redirigir (alerta py/url-redirection) se sirve la misma página con URLs
-    # absolutas de la propia ruta. El token es un JWT (tres segmentos base64url).
+def play_without_slash(token: str):
+    # El token es un JWT (tres segmentos base64url): cualquier otra cosa es 404.
     if not _SESSION_TOKEN.fullmatch(token):
         raise HTTPException(status_code=404)
-    return _player_response(token, service, base=f"/lti/play/{quote(token, safe='')}/")
-
-
-@router.get("/play/{token}/", summary="Reproductor de la OVA dentro del LMS")
-def play(token: str, service: Service):
-    return _player_response(token, service, base="")
+    return _html(_ADD_TRAILING_SLASH_HTML)
 
 
 @router.get("/play/{token}/content/{path:path}", include_in_schema=False)
