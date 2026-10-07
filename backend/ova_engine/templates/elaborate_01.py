@@ -57,11 +57,11 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         f"""[CONCEPTO] «{concept}» ({d.curso}).""",
     )
     _l2 = d.pick(
-        f"""[TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una empresa ficticia que usa Oracle.""",
+        f"""[TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una empresa ficticia que usa {d.motor}.""",
         f"""[TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una persona, comunidad u organización ficticia, propio del área del tema.""",
     )
     _l3 = d.pick(
-        """- evidencias: 3 o 4 evidencias técnicas del caso; `fuente` (vista, log o comando: V$..., DBA_..., alert.log) y `dato` (el valor o mensaje observado, p. ej. un error ORA- real o una cifra; ≤25 palabras).""",
+        f"""- evidencias: 3 o 4 evidencias técnicas del caso; `fuente` (vista, log o comando: {d.si_oracle("V$..., DBA_..., alert.log", "una consulta, un log o un plan de ejecución")}) y `dato` (el valor o mensaje observado, p. ej. {d.si_oracle("un error ORA- real", "un mensaje de error real")} o una cifra; ≤25 palabras).""",
         """- evidencias: 3 o 4 evidencias del caso; `fuente` (medición, registro, documento u observación de donde sale) y `dato` (el valor, cita o hecho observado; ≤25 palabras).""",
     )
     _l4 = d.pick(

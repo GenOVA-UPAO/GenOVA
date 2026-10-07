@@ -42,7 +42,7 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     d = domain_for(concept, contexto)
     rol = d.pick("Diseñador de ejercicios de vocabulario técnico para universitarios.", f"Diseñador de ejercicios de vocabulario técnico para {d.audiencia}. {d.guia_nivel}")
-    abrev = d.pick(" salvo SGA/PGA", "")
+    abrev = d.pick(d.si_oracle(" salvo SGA/PGA", ""), "")
     n = p["num_sentences"]
     return f"""[ROL] {rol}
 [CONCEPTO] «{concept}» ({d.curso}).

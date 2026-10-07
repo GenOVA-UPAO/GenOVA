@@ -37,7 +37,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n_lvl = p["num_decisions"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Diseñador de escenarios de decisión para administradores de bases de datos Oracle.""",
+        f"""[ROL] Diseñador de escenarios de decisión para administradores de bases de datos {d.bd_adj}.""",
         f"""[ROL] Diseñador de escenarios de decisión para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -45,7 +45,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         f"""[CONCEPTO] «{concept}» ({d.curso}).""",
     )
     _l2 = d.pick(
-        f"""[TAREA] Diseña un escenario ramificado de {n_lvl} niveles de decisión sobre «{concept}», donde el estudiante hace de DBA en una situación crítica (p. ej. tablespace al 95 %, bloqueo ORA-00060, borrado accidental de datos).""",
+        f"""[TAREA] Diseña un escenario ramificado de {n_lvl} niveles de decisión sobre «{concept}», donde el estudiante hace de DBA en una situación crítica (p. ej. {d.si_oracle("tablespace al 95 %, bloqueo ORA-00060", "disco al 95 %, consultas lentas")}, borrado accidental de datos).""",
         f"""[TAREA] Diseña un escenario ramificado de {n_lvl} niveles de decisión sobre «{concept}», donde el estudiante decide en una situación crítica propia del área del tema.""",
     )
     _l3 = d.pick(

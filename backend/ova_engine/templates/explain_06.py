@@ -54,7 +54,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - titulo: título corto del glosario.
 - intro: una frase que invite a explorar los términos.
 - imagen (opcional): elemento visual estructurado para el glosario:
-  * "logo" para marcas o tecnologías reconocidas (ej. {d.pick("Oracle, PostgreSQL", "una marca o institución del tema")}).
+  * "logo" para marcas o tecnologías reconocidas (ej. {d.pick(d.si_oracle("Oracle, PostgreSQL", "PostgreSQL, MySQL"), "una marca o institución del tema")}).
   * "diagrama" para conceptos, relaciones o procesos (con objeto `diagrama`: tipo, titulo, nodos, aristas).
   * "foto" ÚNICAMENTE si representa hardware, servidores o equipamiento físico real.
   * "escena" para ilustraciones pedagógicas.
@@ -63,7 +63,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `termino`: el nombre exacto (≤20 caracteres).
   * `definicion`: definición autocontenida y precisa (≤50 palabras), sin usar el propio término para definirse.
   * No incluyas emoji ni símbolos decorativos en ningún campo: el icono de cada tarjeta lo pone la plantilla.
-  * `ejemplo`: ejemplo real razonado (≤30 palabras): {d.pick("una situación del DBA o la sentencia/vista Oracle", "una situación concreta del tema")} donde aparece el término.
+  * `ejemplo`: ejemplo real razonado (≤30 palabras): {d.pick(f"una situación del DBA o la sentencia {d.si_oracle('/vista Oracle', 'SQL')}", "una situación concreta del tema")} donde aparece el término.
 - cierre: frase que conecte los términos entre sí y con «{concept}».
 [RESTRICCIONES] Términos distintos entre sí, correctos y sin tecnicismos sin definir.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""

@@ -52,20 +52,20 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     if d.is_db:
         return f"""[ROL] Diseñador pedagógico de laboratorios experimentales y contraste de hipótesis en bases de datos.
 [CONCEPTO] «{concept}» ({d.curso}).
-[TAREA] Diseña un laboratorio experimental para contrastar hipótesis sobre el comportamiento del sistema al variar parámetros de «{concept}» (ej. tamaño del buffer cache vs lecturas físicas a disco, grado de concurrencia vs tiempos de bloqueo, o factor de relleno vs encadenamiento de filas). El estudiante formulará predicciones y ejecutará {n} pruebas experimentales para observar las métricas y deducir una conclusión fundada en evidencia empírica.
+[TAREA] Diseña un laboratorio experimental para contrastar hipótesis sobre el comportamiento del sistema al variar parámetros de «{concept}» (ej. {d.si_oracle("tamaño del buffer cache", "tamaño de la caché")} vs lecturas físicas a disco, presencia de un índice vs tiempo de consulta, o factor de relleno vs encadenamiento de filas; elige solo lo que encaje con «{concept}»). El estudiante formulará predicciones y ejecutará {n} pruebas experimentales para observar las métricas y deducir una conclusión fundada en evidencia empírica.
 - titulo: título conciso del laboratorio experimental (≤10 palabras).
 - objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras, qué hipótesis contrastará el estudiante).
-- variable_independiente: factor o parámetro de configuración que el estudiante manipula (≤7 palabras, ej. "Tamaño asignado al Buffer Cache").
+- variable_independiente: factor o parámetro de configuración que el estudiante manipula (≤7 palabras, ej. "Tamaño asignado a la caché").
 - variable_dependiente: métrica o efecto observable del sistema que se mide tras la prueba (≤7 palabras, ej. "Tasa de aciertos de caché (Hit Ratio)").
 - opciones_prueba: lista de {n} configuraciones experimentales ordenadas progresivamente para evaluar el comportamiento del sistema (mínimo 3, máximo 5). Para cada opción:
   * `id`: identificador alfanumérico corto sin espacios (ej. "cfg_1", "cfg_2").
-  * `valor`: valor asignado a la variable independiente en esta prueba (≤5 palabras, ej. "Buffer Cache = 64 MB").
+  * `valor`: valor asignado a la variable independiente en esta prueba (≤5 palabras, ej. "Caché = 64 MB").
   * `resultado_metrica`: valor medido de la variable dependiente con su unidad (≤6 palabras, ej. "Hit Ratio: 65% (410 I/O disco/s)").
   * `interpretacion`: explicación causa-efecto de lo que ocurre internamente en la base de datos con este valor (≤20 palabras).
 - pregunta_conclusion: pregunta final de síntesis científica que pide al estudiante enunciar la regla o principio empírico demostrado por los datos acumulados (≤25 palabras).
 - opciones_conclusion: entre 2 y 3 opciones de respuesta fundamentadas en la evidencia observada. Exactamente UNA con `correcta: true` y las demás `correcta: false`. Cada opción con `texto` (afirmación concluyente, ≤15 palabras) y `feedback` formativo que justifique por qué la evidencia respalda o refuta esa deducción (≤20 palabras).
 - sintesis_evidencia: consolidación de los hallazgos experimentales, explicando el umbral óptimo o límite técnico del comportamiento observado en producción (≤45 palabras).
-[RESTRICCIONES] Enfoque riguroso de indagación científica y causa-efecto en bases de datos. Las métricas deben ser plausibles para una base de datos Oracle/relacional. No generes etiquetas HTML ni markdown en el JSON.
+[RESTRICCIONES] Enfoque riguroso de indagación científica y causa-efecto en bases de datos. Las métricas deben ser plausibles para una base de datos {d.si_oracle("Oracle", "relacional")}. No generes etiquetas HTML ni markdown en el JSON.
 {d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
     return f"""[ROL] Diseñador pedagógico de laboratorios experimentales y contraste de hipótesis sobre «{concept}».

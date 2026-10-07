@@ -39,7 +39,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_turns"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Diseñador de juegos de estrategia para administradores de bases de datos Oracle.""",
+        f"""[ROL] Diseñador de juegos de estrategia para administradores de bases de datos {d.bd_adj}.""",
         f"""[ROL] Diseñador de juegos de estrategia para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -47,7 +47,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         f"""[CONCEPTO] «{concept}» ({d.curso}).""",
     )
     _l2 = d.pick(
-        f"""[TAREA] Diseña una partida de {n} turnos donde el estudiante, como DBA, protege un sistema aplicando las reglas reales de «{concept}» (p. ej. ordenar transacciones concurrentes, planificar copias de seguridad, gestionar espacio).""",
+        f"""[TAREA] Diseña una partida de {n} turnos donde el estudiante, como DBA, protege un sistema aplicando las reglas reales de «{concept}» (p. ej. elegir índices, planificar copias de seguridad, gestionar espacio; usa solo lo que encaje con «{concept}»).""",
         f"""[TAREA] Diseña una partida de {n} turnos donde el estudiante toma decisiones para cuidar un sistema aplicando las reglas reales de «{concept}» en un contexto propio del área del tema.""",
     )
     _l3 = d.pick(
@@ -55,7 +55,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """- recurso: nombre del indicador de salud del sistema que se cuida (p. ej. «Equilibrio», «Progreso»).""",
     )
     _l4 = d.pick(
-        """[RESTRICCIONES] Las reglas deben ser fieles a Oracle; las opciones malas deben parecer tentadoras.""",
+        f"""[RESTRICCIONES] Las reglas deben ser fieles {d.si_oracle("a Oracle", "al concepto")}; las opciones malas deben parecer tentadoras.""",
         f"""[RESTRICCIONES] Las reglas deben ser fieles al concepto; las opciones malas deben parecer tentadoras. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
     )
     return f"""{_l0}

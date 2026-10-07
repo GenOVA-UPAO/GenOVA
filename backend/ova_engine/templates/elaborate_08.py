@@ -37,7 +37,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_problems"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Facilitador de análisis de incidencias de bases de datos Oracle.""",
+        f"""[ROL] Facilitador de análisis de incidencias de bases de datos {d.bd_adj}.""",
         f"""[ROL] Facilitador de análisis de casos para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -57,7 +57,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """  * `sintomas`: 3 señales observables de la situación (≤15 palabras cada una).""",
     )
     _l5 = d.pick(
-        """  * `diagnostico`: causa raíz formulada como etiqueta corta (≤15 palabras, p. ej. «Contención por bloqueos sin COMMIT»), sin repetir palabras de los síntomas.""",
+        """  * `diagnostico`: causa raíz formulada como etiqueta corta (≤15 palabras, p. ej. «Consulta sin índice adecuado»), sin repetir palabras de los síntomas.""",
         """  * `diagnostico`: causa raíz formulada como etiqueta corta (≤15 palabras), sin repetir palabras de las señales.""",
     )
     _l6 = d.pick(

@@ -32,7 +32,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_criteria"]
     d = domain_for(concept, contexto)
     _l0 = d.pick(
-        """[ROL] Diseñador de retos de arquitectura y diseño de bases de datos Oracle.""",
+        f"""[ROL] Diseñador de retos de arquitectura y diseño de bases de datos {d.bd_adj}.""",
         f"""[ROL] Diseñador de retos de diseño para {d.audiencia}.""",
     )
     _l1 = d.pick(
@@ -44,7 +44,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
         """- enunciado: ≈80 palabras: el cliente o comunidad ficticia, el problema, y las restricciones (presupuesto, tiempo, recursos disponibles…).""",
     )
     _l3 = d.pick(
-        """[RESTRICCIONES] Datos y términos de Oracle correctos; la solución de referencia es UNA opción defendible, no la única.""",
+        f"""[RESTRICCIONES] Datos y términos {d.si_oracle("de Oracle ", "del tema ")}correctos; la solución de referencia es UNA opción defendible, no la única.""",
         f"""[RESTRICCIONES] Datos y términos correctos para el tema; la solución de referencia es UNA opción defendible, no la única. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
     )
     return f"""{_l0}
