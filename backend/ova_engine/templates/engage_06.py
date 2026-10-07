@@ -269,7 +269,7 @@ _STYLE = """
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #EAF7F1;
+  background: var(--success-bg, #EAF7F1);
   color: var(--success);
   font-weight: 600;
   font-size: .88rem;

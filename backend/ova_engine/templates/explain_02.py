@@ -190,15 +190,15 @@ _STYLE = """
 }
 .tag-idea {
   color: var(--primary, #0A3D91);
-  background: #E0E7FF;
+  background: var(--surface-tint, #E0E7FF);
 }
 .tag-ejemplo {
-  color: #0369A1;
-  background: #E0F2FE;
+  color: var(--info, #0369A1);
+  background: var(--info-bg, #E0F2FE);
 }
 .tag-pregunta {
-  color: #B45309;
-  background: #FEF3C7;
+  color: var(--warning, #B45309);
+  background: var(--warning-bg, #FEF3C7);
 }
 
 .sec-idea-card {
@@ -206,11 +206,11 @@ _STYLE = """
   border-left: 4px solid var(--primary, #0A3D91);
 }
 .sec-ejemplo-card {
-  background: #F8FAFC;
+  background: var(--surface-2, #F8FAFC);
   border-left: 4px solid #0284C7;
 }
 .sec-check-card {
-  background: #FFFDF5;
+  background: var(--warning-bg, #FFFDF5);
   border-left: 4px solid var(--action, #F47A20);
 }
 .sec-text {

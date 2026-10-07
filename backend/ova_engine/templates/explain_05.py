@@ -395,7 +395,7 @@ _STYLE = """
 .stepper-btn.is-completed:not(.is-active) {
   border-color: var(--success, #146c49);
   color: var(--success, #146c49);
-  background: #eaf7f1;
+  background: var(--success-bg, #eaf7f1);
 }
 .stepper-num {
   display: inline-flex;

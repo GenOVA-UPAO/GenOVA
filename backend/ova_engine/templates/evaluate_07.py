@@ -23,15 +23,15 @@ _CSS = """
 .cw-cell .cw-n{position:absolute;top:1px;left:3px;font-size:.62rem;font-weight:700;color:var(--primary,#0A3D91);pointer-events:none}
 .ev-cell{width:100%;height:100%;padding:8px 0 0;text-align:center;font:inherit;font-weight:800;text-transform:uppercase;border:2px solid var(--primary,#0A3D91);border-radius:4px;background:var(--surface,#fff);color:var(--text,#1b2437);caret-color:var(--accent,#F47A20)}
 .ev-cell.is-active{background:var(--surface-tint,#eef2ff)}
-.ev-cell.is-ok{background:rgba(26,127,75,.18);border-color:var(--success,#1a7f4b)}
-.ev-cell.is-bad{background:rgba(192,57,43,.15);border-color:var(--danger,#c0392b)}
+.ev-cell.is-ok{background:var(--success-bg,rgba(26,127,75,.18));border-color:var(--success,#1a7f4b)}
+.ev-cell.is-bad{background:var(--danger-bg,rgba(192,57,43,.15));border-color:var(--danger,#c0392b)}
 .cw-clues{display:grid;gap:var(--space-3,16px)}
 @media (min-width:640px){.cw-clues{grid-template-columns:1fr 1fr}}
 .cw-clues ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .cw-clue{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;padding:8px 10px;border:1px solid var(--border,#cbd5e1);border-radius:10px;background:var(--surface,#fff);color:var(--text,#1b2437);font:inherit;cursor:pointer;min-height:44px}
 .cw-clue:hover{border-color:var(--primary,#0A3D91)}
 .cw-clue:focus-visible{outline:3px solid var(--primary,#0A3D91);outline-offset:2px}
-.cw-clue.is-ok{border-color:var(--success,#1a7f4b);background:rgba(26,127,75,.10)}
+.cw-clue.is-ok{border-color:var(--success,#1a7f4b);background:var(--success-bg,rgba(26,127,75,.10))}
 .cw-num{flex:none;font-weight:800;color:var(--primary,#0A3D91);min-width:1.6em}
 </style>
 """

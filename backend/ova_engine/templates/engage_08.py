@@ -161,7 +161,7 @@ _STYLE = """
   transition: all 0.2s ease;
 }
 .ova-milestone-status.is-done {
-  background: #DCFCE7;
+  background: var(--success-bg, #DCFCE7);
   color: var(--success, #146C49);
   font-weight: 700;
 }

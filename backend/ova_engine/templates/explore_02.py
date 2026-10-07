@@ -275,7 +275,7 @@ _STYLE = """
 }
 .socratic-opt-btn.is-wrong {
   border-color: var(--accent, #f47a20);
-  background: #fffbeb;
+  background: var(--warning-bg, #fffbeb);
 }
 .socratic-opt-badge {
   width: 28px;
@@ -321,7 +321,7 @@ _STYLE = """
   border-left: 4px solid var(--success, #146c49);
 }
 .socratic-bubble.is-wrong {
-  background: #fffbeb;
+  background: var(--warning-bg, #fffbeb);
   border: 1px solid #fde68a;
   border-left: 4px solid var(--accent, #f47a20);
 }
@@ -339,12 +339,12 @@ _STYLE = """
   letter-spacing: 0.04em;
 }
 .socratic-bubble.is-correct .socratic-fb-badge {
-  background: #dcfce7;
+  background: var(--success-bg, #dcfce7);
   color: var(--success, #146c49);
 }
 .socratic-bubble.is-wrong .socratic-fb-badge {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg, #fef3c7);
+  color: var(--warning, #92400e);
 }
 .socratic-fb-msg {
   font-size: 0.94rem;
@@ -355,12 +355,12 @@ _STYLE = """
 .socratic-pista-card {
   margin-top: 4px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface-2, rgba(255, 255, 255, 0.7));
   border-radius: 6px;
   border: 1px dashed var(--accent, #f47a20);
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #78350f;
+  color: var(--warning, #78350f);
 }
 .socratic-turn-actions {
   display: flex;

@@ -208,3 +208,26 @@ def test_los_componentes_no_dependen_de_una_fuente_de_emoji():
     old = '<html><head></head><body><script>/* UPAO Components v1.0 */const x=`<span id="icon" aria-hidden="true">🏁</span>`</script></body></html>'
     themed = inject_package_theme(old, "upao")
     assert "🏁" not in themed and "<svg" in themed
+
+
+def _luminance(hex_color: str) -> float:
+    channels = [int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def _contrast(a: str, b: str) -> float:
+    hi, lo = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+@pytest.mark.parametrize("theme", sorted(set(PACKAGE_THEMES) - {"original"}))
+@pytest.mark.parametrize(
+    ("fg", "bg"),
+    [("success", "success-bg"), ("danger", "danger-bg"), ("warning", "warning-bg"), ("info", "info-bg"),
+     ("text", "success-bg"), ("text", "danger-bg"), ("text", "warning-bg"), ("text", "surface-2"),
+     ("text", "accent-tint")],
+)
+def test_tokens_de_estado_pasan_aa_en_cada_tema(theme, fg, bg):
+    tokens = PACKAGE_THEMES[theme]
+    assert _contrast(tokens[fg], tokens[bg]) >= 4.5, (theme, fg, bg)

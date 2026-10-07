@@ -208,17 +208,17 @@ _STYLE = """
 .ova-feedback.is-correct {
   background: var(--success-bg, #f0fdf4);
   border: 1px solid #86efac;
-  color: #14532d;
+  color: var(--foreground, #14532d);
 }
 .ova-feedback.is-wrong {
-  background: #fef2f2;
+  background: var(--danger-bg, #fef2f2);
   border: 1px solid #fca5a5;
-  color: #7f1d1d;
+  color: var(--foreground, #7f1d1d);
 }
 .ova-feedback.is-warn {
-  background: #fffbeb;
+  background: var(--warning-bg, #fffbeb);
   border: 1px solid #fde68a;
-  color: #92400e;
+  color: var(--warning, #92400e);
 }
 .ova-round-actions {
   display: flex;

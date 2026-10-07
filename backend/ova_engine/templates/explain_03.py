@@ -494,7 +494,7 @@ _STYLE = """
 }
 .detail-status.is-done {
   color: var(--success, #146C49);
-  background: rgba(20, 108, 73, 0.1);
+  background: var(--success-bg, rgba(20, 108, 73, 0.1));
 }
 .detail-status.is-pending {
   color: var(--action, #B84B00);

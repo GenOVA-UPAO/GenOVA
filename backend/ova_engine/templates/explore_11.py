@@ -183,7 +183,7 @@ GGB_CSS = """
 .ggb-commands-box code{display:block;white-space:pre-wrap;background:#f8fafc;padding:8px;border-radius:6px;margin-top:6px;font-family:monospace;color:#0f172a}
 .ggb-steps{display:grid;gap:14px;margin-top:16px}
 .ggb-step{background:var(--surface,#fff);border:2px solid var(--border,#cbd5e1);border-radius:var(--radius,12px);padding:16px;transition:border-color .2s ease}
-.ggb-step.is-done{border-color:var(--success,#1a7f4b);background:rgba(26,127,75,.04)}
+.ggb-step.is-done{border-color:var(--success,#1a7f4b);background:var(--success-bg,rgba(26,127,75,.04))}
 .ggb-step-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .ggb-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--primary,#0A3D91);color:#fff;font-weight:700;font-size:.85rem}
 .ggb-step.is-done .ggb-badge{background:var(--success,#1a7f4b)}
@@ -196,8 +196,8 @@ GGB_CSS = """
 .ggb-btn:hover:not(:disabled){background:#083075}
 .ggb-btn:disabled{opacity:.5;cursor:not-allowed}
 .ggb-fb{margin-top:10px;padding:10px 12px;border-radius:6px;font-size:.9rem}
-.ggb-fb.is-ok{background:rgba(26,127,75,.12);color:var(--success,#1a7f4b);border-left:4px solid var(--success,#1a7f4b)}
-.ggb-fb.is-bad{background:rgba(192,57,43,.12);color:var(--danger,#c0392b);border-left:4px solid var(--danger,#c0392b)}
+.ggb-fb.is-ok{background:var(--success-bg,rgba(26,127,75,.12));color:var(--success,#1a7f4b);border-left:4px solid var(--success,#1a7f4b)}
+.ggb-fb.is-bad{background:var(--danger-bg,rgba(192,57,43,.12));color:var(--danger,#c0392b);border-left:4px solid var(--danger,#c0392b)}
 .ggb-fb[hidden]{display:none}
 @media (max-width: 600px) {
   .ggb-container{min-height:360px}
