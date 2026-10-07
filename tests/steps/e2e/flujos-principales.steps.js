@@ -167,16 +167,18 @@ Then('el OVA sigue en la versión {int} sin el cambio pedido', async ({ page }, 
 
 // ── Exportar (FP-002) ────────────────────────────────────────────────────────
 
+const escapeRegExp = (text) => text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 When('descargo el OVA desde el editor como {string}', async ({ page }, format) => {
   const downloadPromise = page.waitForEvent('download', { timeout: 90000 })
   await page.getByRole('button', { name: 'Elegir formato de descarga' }).click()
-  await page.getByRole('menuitem', { name: new RegExp(`^${format.replaceAll(/[()]/g, '\\$&')}`) }).click()
+  await page.getByRole('menuitem', { name: new RegExp(`^${escapeRegExp(format)}`) }).click()
   state(page).download = await downloadPromise
 })
 
 Then('el archivo descargado termina en {string} y no está vacío', async ({ page }, extension) => {
   const download = state(page).download
-  expect(download.suggestedFilename()).toMatch(new RegExp(`${extension.replace('.', '\\.')}$`))
+  expect(download.suggestedFilename()).toMatch(new RegExp(`${escapeRegExp(extension)}$`))
   const path = await download.path()
   expect((await stat(path)).size).toBeGreaterThan(0)
 })
