@@ -4,6 +4,7 @@ Uso: python tests/moodle/lti_register_platform.py '<json de provision_lti.php>'
 Equivale a «Administración → LTI → Registrar plataforma» de la app.
 """
 
+import importlib
 import json
 import sys
 from pathlib import Path
@@ -13,7 +14,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from sqlalchemy.orm import Session  # noqa: E402
 
-import models  # noqa: E402,F401  — registra todas las tablas (FKs del ORM)
+importlib.import_module("models")  # registra todas las tablas (FKs del ORM)  # noqa: E402
 from core.database import engine  # noqa: E402
 from lti.infrastructure.orm import LtiPlatform  # noqa: E402
 

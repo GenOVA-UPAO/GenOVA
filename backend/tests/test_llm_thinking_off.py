@@ -9,7 +9,8 @@ with_model_thinking() mantiene su contrato puro.
 import pytest
 
 import llm.router as router
-from llm.router import generar_texto
+
+generar_texto = router.generar_texto
 from llm.utils.llm_helpers import (
     _FALLBACK_OR_MODEL,
     with_model_thinking,

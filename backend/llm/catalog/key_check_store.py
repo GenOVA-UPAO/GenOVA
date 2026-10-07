@@ -31,6 +31,6 @@ def platform_checks(db, providers) -> dict:
                 if stored["fingerprint"] == hashlib.sha256((key or "").encode()).hexdigest():
                     result = stored["result"]
             except (ValueError, KeyError):
-                pass
+                pass  # fila corrupta o de otro formato: se trata como «sin comprobar»
         checks[provider] = result
     return checks

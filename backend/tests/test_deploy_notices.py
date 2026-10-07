@@ -148,12 +148,12 @@ def test_un_fallo_de_la_bd_no_tumba_el_arranque():
 
 
 def test_la_purga_del_arranque_lanza_el_aviso(monkeypatch):
-    import rag
+    from rag import purge_expired
 
     calls = []
-    monkeypatch.setattr(rag, "_purge_expired_chunks", lambda db: calls.append("purge") or 4)
+    monkeypatch.setattr("rag._purge_expired_chunks", lambda db: calls.append("purge") or 4)
     monkeypatch.setattr(
         reindex_notice, "warn_if_stale_embeddings", lambda db: calls.append("check") or 0
     )
-    assert rag.purge_expired(_Db()) == 4
+    assert purge_expired(_Db()) == 4
     assert calls == ["purge", "check"]  # se cuenta después de purgar

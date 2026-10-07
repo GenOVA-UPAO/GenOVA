@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import os
 from contextlib import asynccontextmanager
 
@@ -17,7 +18,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from sqlalchemy.exc import DataError
 
-import models  # noqa: F401  — imported for side-effect of registering ORM models
+importlib.import_module("models")  # imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
 from auth.interface.http.router import router as auth_router
 from core.config import settings

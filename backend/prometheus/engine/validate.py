@@ -148,4 +148,4 @@ def resource_defects(html: str, prompt: str = "") -> list[str]:
 
 # Reexport: el texto del contrato vive en llm/utils/output_contract.py (sin
 # dependencias) para evitar el ciclo utils→themes→prometheus→…→utils.
-from llm.utils.output_contract import output_contract  # noqa: E402, F401
+from llm.utils.output_contract import output_contract as output_contract  # noqa: E402

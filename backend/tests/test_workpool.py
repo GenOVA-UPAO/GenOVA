@@ -3,12 +3,11 @@
 from langgraph.types import Send
 
 import prometheus.engine.workpool as wp
-from prometheus.engine.workpool import (
-    build_workpool_graph,
-    collect_node,
-    fan_out,
-    resource_worker,
-)
+
+build_workpool_graph = wp.build_workpool_graph
+collect_node = wp.collect_node
+fan_out = wp.fan_out
+resource_worker = wp.resource_worker
 
 
 def _state():
