@@ -45,7 +45,7 @@ export const RESOURCE_CONFIG_SCHEMA: Record<string, ConfigField[]> = {
   // engage
   "engage:1": [N("num_panels", "workspace:vinetas", 3, 8, 5, "workspace:numero_de_vinetas_del_comic_generado")],
   "engage:2": [
-    N("duration_seconds", "workspace:segundos_video", 20, 60, 40, "workspace:duracion_del_video_de_apertura"),
+    N("num_scenes", "workspace:escenas_del_guion", 3, 5, 4, "workspace:escenas_temporales_del_guion_de_video_de_apertura"),
   ],
   "engage:3": [N("word_count", "workspace:palabras", 80, 150, 110, "workspace:extension_del_monologo_narrativo")],
   "engage:4": [N("num_rounds", "workspace:rondas", 2, 6, 3, "workspace:rondas_de_deteccion_en_el_minijuego")],
