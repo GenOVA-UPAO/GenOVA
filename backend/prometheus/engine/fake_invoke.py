@@ -21,9 +21,19 @@ prompt lo cubren los tests con un LLM que captura los prompts
 
 import html as html_lib
 import re
+import time
 import uuid
 
 from sqlalchemy import select
+
+# Marcadores SOLO para tests E2E (únicamente actúan con LLM_FAKE=1):
+# - FAIL_MARKER en el prompt del job: la PRIMERA generación falla (todos los
+#   recursos quedan en «error»); el reintento («Reintentar generación») sí funciona.
+# - SLOW_MARKER en una instrucción de edición: la edición tarda unos segundos, el
+#   tiempo justo para poder pulsar «Cancelar» con la regeneración en curso.
+FAIL_MARKER = "[fallo-e2e]"
+SLOW_MARKER = "[lento-e2e]"
+SLOW_EDIT_SECONDS = 6
 
 
 def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None) -> dict:
@@ -52,6 +62,8 @@ def _fake_invoke(initial_state: dict, thread_id: str, checkpointer=None) -> dict
             .all()
         )
         results = []
+        if only_ids is None and FAIL_MARKER in concept:
+            return {"results": [], "errors": [_forced_error(r) for r in resources]}
         for res in resources:
             if only_ids is not None and str(res.id) not in only_ids:
                 continue
@@ -79,6 +91,17 @@ def _fake_invoke(initial_state: dict, thread_id: str, checkpointer=None) -> dict
         return {"results": results, "errors": []}
     finally:
         db.close()
+
+
+def _forced_error(res) -> dict:
+    return {
+        "phase": res.phase_type,
+        "resource_type": res.resource_type,
+        "error": f"Fallo simulado por {FAIL_MARKER} (LLM_FAKE=1)",
+        "code": "fake_forced_failure",
+        "exhausted": True,
+        "attempts": 3,
+    }
 
 
 def _template_html(concept: str, phase: str, resource_type, contexto: str, theme: dict) -> str | None:
@@ -178,6 +201,8 @@ def fake_edited_html(base_html: str, instruction: str, contexto: str = "") -> st
     """Edición determinista del chat del editor: el HTML actual más una nota con
     el cambio pedido y el material recibido. Sin esto, con LLM_FAKE=1 la edición
     llamaba al LLM real, fallaba sin clave y el recurso quedaba igual."""
+    if SLOW_MARKER in instruction:
+        time.sleep(SLOW_EDIT_SECONDS)
     note = (
         '<aside data-llm-fake-edit="1">'
         f"<p>Cambio aplicado con LLM_FAKE=1: {html_lib.escape(instruction.strip())}</p>"
