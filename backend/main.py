@@ -29,6 +29,7 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from core.sentry_setup import init_sentry
 from editor.interface.http import router as editor_router
 from generation.interface.http.admin_guardrails_router import public_router as topic_area_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
@@ -64,16 +65,7 @@ logger = structlog.get_logger(__name__)
 _IS_PROD = settings.env.lower() == "production"
 
 # Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
-if settings.sentry_dsn:
-    import sentry_sdk
-
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        environment=settings.env,
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
-    )
-    logger.info("Sentry inicializado", environment=settings.env)
+init_sentry()
 
 
 def _background_rag_purge() -> None:
