@@ -52,6 +52,22 @@ describe("OvaCreateFormCard", () => {
     setup({ topicArea: "" });
     expect(screen.queryByTestId("topic-area-note")).not.toBeInTheDocument();
   });
+  it("adapta el ejemplo y el placeholder al área temática si no es de Oracle", () => {
+    const { props } = setup({ topicArea: "machine learning" });
+    expect(screen.getByRole("textbox")).toHaveAttribute(
+      "placeholder",
+      expect.stringContaining("«machine learning»"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
+    const example = (props.onPrompt as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+    expect(example).toMatch(/^Conceptos fundamentales de machine learning/);
+    expect(example).not.toMatch(/Oracle/);
+  });
+  it("mantiene el ejemplo de Oracle si el área lo nombra", () => {
+    const { props } = setup({ topicArea: "Sistemas de gestión de bases de datos con Oracle" });
+    fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
+    expect(props.onPrompt).toHaveBeenCalledWith(EXAMPLE_PROMPT);
+  });
   it("shows required steps and accessible toolbar labels", () => {
     setup();
     expect(screen.getByLabelText("Pasos para crear un OVA")).toBeVisible();

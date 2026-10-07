@@ -904,5 +904,7 @@
   "applyingChangesHint": "El OVA se está regenerando; puedes verlo, pero no editarlo hasta que termine.",
   "changeApplied": "Cambio aplicado: {{instruction}}",
   "detalles_tecnicos": "Detalles técnicos",
-  "resourceConfigsSaveError": "No se pudo guardar la configuración de los recursos en tu perfil. Este OVA la usará igual, pero la próxima vez tendrás que volver a ajustarla."
+  "resourceConfigsSaveError": "No se pudo guardar la configuración de los recursos en tu perfil. Este OVA la usará igual, pero la próxima vez tendrás que volver a ajustarla.",
+  "promptPlaceholderArea": "Ej.: Un tema concreto de «{{area}}». Objetivo: qué deben comprender y saber hacer los estudiantes al terminar.",
+  "examplePromptArea": "Conceptos fundamentales de {{area}}.\nObjetivos: definir los conceptos clave, relacionarlos con un caso práctico del área y aplicarlos en un ejercicio guiado."
 }

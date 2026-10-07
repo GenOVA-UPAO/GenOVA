@@ -904,5 +904,7 @@
   "applyingChangesHint": "The OVA is being regenerated; you can view it but not edit it until it finishes.",
   "changeApplied": "Change applied: {{instruction}}",
   "detalles_tecnicos": "Technical details",
-  "resourceConfigsSaveError": "Your resource settings could not be saved to your profile. This OVA will still use them, but you will need to set them again next time."
+  "resourceConfigsSaveError": "Your resource settings could not be saved to your profile. This OVA will still use them, but you will need to set them again next time.",
+  "promptPlaceholderArea": "e.g. A specific topic in \"{{area}}\". Objective: what students should understand and be able to do by the end.",
+  "examplePromptArea": "Core concepts of {{area}}.\nObjectives: define the key concepts, relate them to a practical case in the area and apply them in a guided exercise."
 }

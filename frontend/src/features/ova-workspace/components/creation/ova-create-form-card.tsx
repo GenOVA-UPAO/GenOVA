@@ -71,6 +71,7 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
               if (props.prompt.trim()) setTouched(true);
             }}
             onSubmitShortcut={tryGenerate}
+            topicArea={props.topicArea}
           />
           <FileChips files={props.files} onRemove={props.onRemove} />
           {props.topicArea ? (
