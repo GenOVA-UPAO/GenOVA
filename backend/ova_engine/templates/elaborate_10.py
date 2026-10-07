@@ -11,7 +11,7 @@ from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summ
 POINTS = 10
 
 PARAMS = (
-    Param("num_criteria", 4, min=3, max=5, help="Número de criterios de diseño que se evalúan"),
+    Param("num_criteria", 4, min=3, max=6, help="Número de criterios de diseño que se evalúan"),
 )
 
 

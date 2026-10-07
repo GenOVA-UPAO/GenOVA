@@ -18,7 +18,7 @@ from ova_engine.icons import icon
 from ova_engine.schema import obj, s
 
 PARAMS = (
-    Param("body_words", 90, min=60, max=120, help="Extensión en palabras del cuerpo de la noticia"),
+    Param("body_words", 90, min=60, max=130, help="Extensión en palabras del cuerpo de la noticia"),
 )
 
 

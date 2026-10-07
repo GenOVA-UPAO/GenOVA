@@ -9,7 +9,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
 PARAMS = (
-    Param("num_decisions", 3, min=2, max=3, help="Niveles de decisión del árbol (2 = 4 desenlaces, 3 = 8)"),
+    Param("num_decisions", 3, min=2, max=4, help="Niveles de decisión del árbol (2 = 4 desenlaces, 3 = 8)"),
 )
 
 NEEDED_ENDINGS = 2

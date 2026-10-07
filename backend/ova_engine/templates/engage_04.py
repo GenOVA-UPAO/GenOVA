@@ -11,7 +11,7 @@ from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 
-PARAMS = (Param("num_rounds", 3, min=3, max=5, help="Número de rondas del minijuego"),)
+PARAMS = (Param("num_rounds", 3, min=2, max=6, help="Número de rondas del minijuego"),)
 
 
 def schema(p: dict) -> dict:

@@ -9,7 +9,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_criteria", 4, min=3, max=6, help="Número de criterios autoevaluables"),
+    Param("num_criteria", 5, min=3, max=6, help="Número de criterios autoevaluables"),
 )
 
 _CSS = """

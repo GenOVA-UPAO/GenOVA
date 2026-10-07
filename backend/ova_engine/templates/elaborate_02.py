@@ -10,7 +10,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
 PARAMS = (
-    Param("num_steps", 5, min=4, max=6, help="Número de pasos incrementales del laboratorio"),
+    Param("num_steps", 5, min=3, max=7, help="Número de pasos incrementales del laboratorio"),
 )
 
 

@@ -9,7 +9,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_pairs", 5, min=4, max=8, help="Número de pares definición-término"),
+    Param("num_pairs", 6, min=4, max=8, help="Número de pares definición-término"),
 )
 
 _CSS = """

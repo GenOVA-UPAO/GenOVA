@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 from ova_engine.decision import build_state
 from ova_engine.domain_context import area_scope
 from ova_engine.registry import all_specs

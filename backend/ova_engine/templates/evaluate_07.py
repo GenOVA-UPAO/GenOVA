@@ -12,7 +12,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_terms", 6, min=5, max=12, help="Número de términos del crucigrama"),
+    Param("num_terms", 8, min=5, max=12, help="Número de términos del crucigrama"),
 )
 
 _CSS = """
