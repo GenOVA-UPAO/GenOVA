@@ -35,7 +35,13 @@ Eres un clasificador binario de un generador educativo. Responde SOLO un JSON:
 Reglas:
 - language=block solo por insultos o contenido sexual explícito. No bloquees
   vocabulario histórico, médico o político (p.ej. esclavitud, Guerra Civil).
-- topic=block solo si el prompt NO trata el área: {area}
+- topic=block solo si el prompt NO PUEDE interpretarse razonablemente dentro del
+  área: {area}
+  El área orienta todos los OVAs: un término ambiguo o genérico que tiene sentido
+  en el área se permite (con el área «Sistemas y gestión de base de datos»:
+  «Árboles» = índices B-tree, «Normalización», «Índices», «Modelos», «Regresión»,
+  «Seguridad» → ok). Bloquea solo lo que no tiene lectura posible en el área
+  (con esa misma área: «Fotosíntesis», «La Revolución Francesa» → block).
 - Si un eje no aplica, pon "ok" en ese eje.
 
 Prompt del usuario:

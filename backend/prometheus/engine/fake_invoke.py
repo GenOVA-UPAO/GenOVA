@@ -27,6 +27,13 @@ from sqlalchemy import select
 
 
 def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None) -> dict:
+    from ova_engine.domain_context import area_scope
+
+    with area_scope(initial_state.get("topic_area")):
+        return _fake_invoke(initial_state, thread_id, checkpointer)
+
+
+def _fake_invoke(initial_state: dict, thread_id: str, checkpointer=None) -> dict:
     from core.database import SessionLocal
     from models import OvaJobResource
     from prometheus.engine.fake_media import with_fake_media

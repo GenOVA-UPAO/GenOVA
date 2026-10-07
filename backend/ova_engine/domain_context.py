@@ -12,6 +12,9 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 
 
@@ -84,6 +87,59 @@ _PRACTICA = {
 }
 
 
+# Área temática del curso que fija el admin (Configuración → Moderación y guardarraíles).
+# El job la fotografía al crearse y quien genera abre `area_scope(area)` alrededor del
+# trabajo: así `domain_for` y `with_area` la ven en cualquier plantilla o prompt sin tener
+# que pasarla por decenas de firmas. Es un ContextVar: cada hilo/tarea tiene la suya y los
+# pools que usan `copy_context` la heredan.
+_AREA: ContextVar[str] = ContextVar("ova_topic_area", default="")
+_AREA_MAX = 200
+
+
+def clean_area(area: str | None) -> str:
+    """El área en una sola línea, sin comillas angulares y acotada («» vacía si no hay)."""
+    text = " ".join((area or "").replace("«", " ").replace("»", " ").split())
+    return text[:_AREA_MAX].strip()
+
+
+def current_area() -> str:
+    return _AREA.get()
+
+
+@contextmanager
+def area_scope(area: str | None) -> Iterator[str]:
+    """Fija el área temática para todo lo que se genere dentro del bloque."""
+    cleaned = clean_area(area)
+    token = _AREA.set(cleaned)
+    try:
+        yield cleaned
+    finally:
+        _AREA.reset(token)
+
+
+def area_block(area: str, topic: str = "") -> str:
+    """Bloque de prompt que ancla el recurso al área («» si no hay área)."""
+    area = clean_area(area)
+    if not area:
+        return ""
+    tema = f" Interpreta el tema «{topic}» dentro de esa área (si el término es ambiguo, usa su significado en el área)." if topic else (
+        " Interpreta el tema dentro de esa área (si el término es ambiguo, usa su significado en el área)."
+    )
+    return (
+        f"[ÁREA DEL CURSO] Todos los recursos pertenecen al área «{area}».{tema} "
+        "Los ejemplos, casos, analogías, personajes y preguntas deben ser del área; "
+        "no uses analogías de otras disciplinas como tema principal."
+    )
+
+
+def with_area(prompt: str, topic: str = "", area: str | None = None) -> str:
+    """`prompt` precedido del bloque del área activa (sin duplicarlo si ya viene)."""
+    block = area_block(current_area() if area is None else area, topic)
+    if not block or "[ÁREA DEL CURSO]" in prompt:
+        return prompt
+    return f"{block}\n\n{prompt}"
+
+
 def is_db_text(text: str) -> bool:
     """¿El texto trata de Oracle o de bases de datos? Palabras clave, sin LLM."""
     return bool(_DB_RE.search(_fold(text)))
@@ -106,6 +162,7 @@ class DomainContext:
     topic: str
     level: str  # secundaria | universitario | posgrado | general
     is_db: bool
+    area: str = ""  # área temática fijada por el admin; vacía si no hay
 
     def pick(self, db: str, generic: str) -> str:
         """`db` si el tema es de Oracle/bases de datos; `generic` en cualquier otro."""
@@ -136,19 +193,29 @@ class DomainContext:
 
     def rules(self) -> str:
         """Bloque de dominio y nivel para el prompt."""
-        return (
+        base = (
             f"[DOMINIO] Tema: «{self.topic}». Público: {self.audiencia}. {self.guia_nivel} "
             "Mantente en este tema; los ejemplos, casos y analogías deben ser propios de él y del nivel indicado."
         )
+        block = area_block(self.area, self.topic)
+        return f"{block}\n{base}" if block else base
 
 
-def domain_for(concept: str, contexto: str = "") -> DomainContext:
-    """Contexto de dominio del recurso. El dominio se decide con el tema y con el pedido del
-    docente («Pedido del docente …»); el material RAG no cuenta para no confundir temas."""
+def domain_for(concept: str, contexto: str = "", area: str | None = None) -> DomainContext:
+    """Contexto de dominio del recurso. El dominio se decide con el tema, el pedido del
+    docente («Pedido del docente …») y el área temática (la del `area_scope` activo si no se
+    pasa); el material RAG no cuenta para no confundir temas. Un área de bases de datos hace
+    `is_db` verdadero aunque el tema sea ambiguo («Árboles», «Normalización»)."""
+    area = clean_area(current_area() if area is None else area)
     pedido = ""
     for line in (contexto or "").splitlines():
         if line.startswith("Pedido del docente"):
             pedido = line
             break
     level = detect_level(pedido or f"{concept}\n{contexto}")
-    return DomainContext(topic=" ".join((concept or "").split()), level=level, is_db=is_db_text(f"{concept} {pedido}"))
+    return DomainContext(
+        topic=" ".join((concept or "").split()),
+        level=level,
+        is_db=is_db_text(f"{concept} {pedido} {area}"),
+        area=area,
+    )

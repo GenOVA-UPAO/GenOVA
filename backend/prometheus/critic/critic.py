@@ -120,11 +120,16 @@ def critique_resource(
     On any LLM or parse failure the function returns the fallback (accept, score 0)
     so it never blocks resource delivery (R4).
     """
-    prompt = _PROMPT_TMPL.format(
-        phase=phase,
-        rt=rt,
-        concept=concept,
-        html_excerpt=build_excerpt(html),
+    from ova_engine.domain_context import with_area
+
+    prompt = with_area(
+        _PROMPT_TMPL.format(
+            phase=phase,
+            rt=rt,
+            concept=concept,
+            html_excerpt=build_excerpt(html),
+        ),
+        concept,
     )
 
     try:

@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 import httpx
 import structlog
 
+from ova_engine.domain_context import with_area
 from ova_engine.schema import arr, b, obj, s, validate
 from ova_engine.text import generate_json
 
@@ -197,7 +198,7 @@ def review_fields(
         return []
     listing = "\n".join(f"[{n}] ({p}) {t}" for n, (p, t) in enumerate(fields))
     out = _llm_json(
-        _PROMPT.format(concept=concept, fields=listing),
+        with_area(_PROMPT.format(concept=concept, fields=listing), concept),
         REVIEW_SCHEMA,
         deadline=deadline,
         llm_config=llm_config,
@@ -292,8 +293,11 @@ def fix_fields(
     Solo se aceptan cambios en las rutas afectadas y el resultado debe validar."""
     plist = "\n".join(f"- {p['campo']} ({p['tipo']}): {p['explicacion']}" for p in problems)
     new = generate_json(
-        _FIX_PROMPT.format(
-            concept=concept, problems=plist, current=json.dumps(data, ensure_ascii=False, indent=1)
+        with_area(
+            _FIX_PROMPT.format(
+                concept=concept, problems=plist, current=json.dumps(data, ensure_ascii=False, indent=1)
+            ),
+            concept,
         ),
         schema,
         llm_config=llm_config,

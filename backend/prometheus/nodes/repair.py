@@ -69,6 +69,7 @@ def repair_node(state: OvaGenerationState) -> dict:
     # El reintento debe usar el mismo material del docente que el intento
     # original: sin esto, un recurso reparado salía sin el contexto RAG.
     contexto = state.get("rag_context", "") or ""
+    area = state.get("topic_area", "") or ""
     job_id = state.get("job_id")
     _touch_job(job_id)
     logger.info("repair: retrying failed resources", count=len(failures))
@@ -104,6 +105,7 @@ def repair_node(state: OvaGenerationState) -> dict:
                 resource_config=per_config,
                 contexto=contexto,
                 deadline=deadline,
+                area=area,
             )
             record_activity(result.html, getattr(result, "activity", None))
             return err, result.html, result.defects

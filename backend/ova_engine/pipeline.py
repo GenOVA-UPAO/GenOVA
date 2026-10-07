@@ -16,7 +16,7 @@ import structlog
 
 from ova_engine.contract import RenderContext, TemplateSpec
 from ova_engine.decision import decide, rules_decide
-from ova_engine.domain_context import domain_for
+from ova_engine.domain_context import domain_for, with_area
 from ova_engine.html import document
 from ova_engine.planner_attrs import normalize_topic
 from ova_engine.review import review_and_fix
@@ -94,7 +94,7 @@ def generate_with_template(
         spec.sample(concept, params)
         if fake
         else generate_json(
-            spec.prompt(concept, prompt_ctx, params),
+            with_area(spec.prompt(concept, prompt_ctx, params), concept),
             spec.schema(params),
             llm_config=llm_config,
             enabled_models=enabled_models,

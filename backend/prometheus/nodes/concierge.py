@@ -71,6 +71,13 @@ def _retrieve_rag_context(prompt: str, upload_ids: list) -> str:
 
 
 def concierge_node(state: OvaGenerationState) -> dict:
+    from ova_engine.domain_context import area_scope
+
+    with area_scope(state.get("topic_area")):
+        return _concierge_node(state)
+
+
+def _concierge_node(state: OvaGenerationState) -> dict:
     prompt = state.get("prompt", "")
     enabled_models = state.get("enabled_models", [])
     upload_ids = state.get("upload_ids", [])
@@ -181,7 +188,9 @@ Reglas de selección:
 
 [SALIDA] JSON puro sin markdown: {{"engage": [ids], "explore": [ids], "explain": [ids], "elaborate": [ids], "evaluate": [ids]}}"""
 
-    full = f"{sys_prompt}\n\nConcepto del usuario: {prompt}"
+    from ova_engine.domain_context import with_area
+
+    full = with_area(f"{sys_prompt}\n\nConcepto del usuario: {prompt}")
     try:
         raw = generar_texto(full, "orquestador", max_tokens=4096)
         data = parse_json(raw)

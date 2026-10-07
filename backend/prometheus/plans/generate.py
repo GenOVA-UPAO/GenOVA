@@ -45,10 +45,12 @@ def _gen_podcast(
         mono = f"Micro-podcast educativo sobre {concept}."
         audio = None
     else:
+        from ova_engine.domain_context import with_area
+        from ova_engine.planner_attrs import normalize_topic
         from ova_engine.text import generate_plain
         from ova_engine.word_fit import fit_words
 
-        prompt = prompt_texto(rt, concept, contexto, resource_config)
+        prompt = with_area(prompt_texto(rt, concept, contexto, resource_config), normalize_topic(concept)[0])
 
         def _ask(text: str) -> str:
             return plain_monologue(
@@ -125,8 +127,23 @@ def generate_resource(
     contexto: str = "",
     refine: bool = True,  # conservado por compatibilidad de firma
     deadline: float | None = None,
+    area: str | None = None,
 ) -> ResourceResult:
-    """Genera UN recurso 5E con el pipeline moderno de plantillas (o podcast)."""
+    """Genera UN recurso 5E con el pipeline moderno de plantillas (o podcast).
+
+    `area` es el área temática del job (foto tomada al crearlo): todo el recurso se genera
+    dentro de ella. `None` hereda la del contexto actual; "" = sin área."""
+    from ova_engine.domain_context import area_scope, current_area
+
+    with area_scope(current_area() if area is None else area):
+        return _generate_resource(
+            phase, rt, concept, plan, llm_config, enabled_models, theme, image_settings,
+            resource_config, contexto, deadline,
+        )
+
+
+def _generate_resource(phase, rt, concept, plan, llm_config, enabled_models, theme, image_settings,
+                       resource_config, contexto, deadline) -> ResourceResult:
     from core.config import settings
     from ova_engine.registry import get_spec
 

@@ -56,7 +56,8 @@ def render_texto(
         return ""
     d = domain_for(concept, contexto)
     # El curso de Oracle solo se inyecta en temas de bases de datos; en los demás, el nivel.
-    curso = CURSO_CONTEXTO if d.is_db else f"{d.rules()}"
+    # Con área fijada, su bloque va siempre (también si el tema es de bases de datos).
+    curso = d.rules() if not d.is_db else (f"{CURSO_CONTEXTO}\n{d.rules()}" if d.area else CURSO_CONTEXTO)
     return Template(entry["template"]).substitute(
         concept=concept,
         curso=curso,

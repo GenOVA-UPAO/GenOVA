@@ -26,6 +26,7 @@ from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.ova_runtime import inject_runtime, runtime_palette, strip_runtime, theme_of
 from llm.utils.utils import extract_html_document
 from ova import placeholder_prompt
+from ova_engine.domain_context import with_area
 
 logger = structlog.get_logger(__name__)
 
@@ -127,15 +128,19 @@ def _patch_edit(
     contexto: str,
     llm_config: dict | None,
     enabled_models: list | None,
+    area: str = "",
 ) -> str | None:
     """HTML editado con fragmentos sustituidos, o None si el modelo no dio un parche válido."""
     try:
         raw = generar_texto(
-            _PATCH_PROMPT.format(
-                concept=concept,
-                instruction=instruction,
-                material=_material_block(contexto),
-                html=authored,
+            with_area(
+                _PATCH_PROMPT.format(
+                    concept=concept,
+                    instruction=instruction,
+                    material=_material_block(contexto),
+                    html=authored,
+                ),
+                area=area,
             ),
             "codigo",
             _PATCH_MAX_TOKENS,
@@ -159,9 +164,11 @@ def edit_phase_content(
     llm_config: dict | None = None,
     enabled_models: list | None = None,
     contexto: str = "",
+    area: str = "",
 ) -> str | None:
     """HTML editado con el cambio pedido, o None si falla o regresiona.
-    `contexto` es el bloque RAG (ya delimitado y con su guarda anti-inyección)."""
+    `contexto` es el bloque RAG (ya delimitado y con su guarda anti-inyección).
+    `area` es el área temática del OVA: la edición no debe sacarlo de ella."""
     from core.config import settings
 
     instruction = (instruction or "").strip()
@@ -175,7 +182,7 @@ def edit_phase_content(
     # stripped first and re-injected after, so it is never rewritten or cut.
     authored, had_css, had_components = strip_runtime(base_html)
     local = getattr(settings, "ova_text_backend", None) == "local"
-    patched = None if local else _patch_edit(concept, instruction, authored, contexto, llm_config, enabled_models)
+    patched = None if local else _patch_edit(concept, instruction, authored, contexto, llm_config, enabled_models, area)
     if patched is not None:
         return inject_runtime(
             patched, css=had_css, components=had_components, palette=runtime_palette(base_html)
@@ -193,11 +200,14 @@ def edit_phase_content(
                     "messages": [
                         {
                             "role": "user",
-                            "content": _EDIT_PROMPT.format(
-                                concept=concept,
-                                instruction=instruction,
-                                material=_material_block(contexto),
-                                html=authored,
+                            "content": with_area(
+                                _EDIT_PROMPT.format(
+                                    concept=concept,
+                                    instruction=instruction,
+                                    material=_material_block(contexto),
+                                    html=authored,
+                                ),
+                                area=area,
                             ),
                         }
                     ],
@@ -212,11 +222,14 @@ def edit_phase_content(
         else:
             new_html = extract_html_document(
                 generar_texto(
-                    _EDIT_PROMPT.format(
-                        concept=concept,
-                        instruction=instruction,
-                        material=_material_block(contexto),
-                        html=authored,
+                    with_area(
+                        _EDIT_PROMPT.format(
+                            concept=concept,
+                            instruction=instruction,
+                            material=_material_block(contexto),
+                            html=authored,
+                        ),
+                        area=area,
                     ),
                     "codigo",
                     _CODE_MAX_TOKENS,
@@ -266,6 +279,7 @@ def _regen_one_phase(
     image_settings: dict | None,
     contexto: str = "",
     fallback_theme: dict | None = None,
+    area: str = "",
 ) -> str | None:
     """Edita (si hay `instruction`) o regenera desde cero un recurso de fase.
 
@@ -280,7 +294,7 @@ def _regen_one_phase(
         instruction = None
     if instruction:
         edited = edit_phase_content(
-            concept, instruction, phase.content or "", llm_config, enabled_models, contexto
+            concept, instruction, phase.content or "", llm_config, enabled_models, contexto, area
         )
         if edited:
             return edited
@@ -302,6 +316,7 @@ def _regen_one_phase(
         contexto,
         # Mismo tema con el que se generó: colores libres o la paleta del docente.
         theme=theme_of(phase.content or "") if pending is None else fallback_theme,
+        area=area,
     )
 
 
@@ -315,6 +330,7 @@ def regen_phases_parallel(
     contexto: str = "",
     fallback_theme: dict | None = None,
     should_stop: Callable[[], bool] | None = None,
+    area: str = "",
 ) -> dict[str, str | None]:
     """Edita/regenera `phases` en paralelo → {phase_id: html|None}.
 
@@ -342,6 +358,7 @@ def regen_phases_parallel(
                 image_settings,
                 contexto,
                 fallback_theme,
+                area,
             )
         except Exception:
             logger.exception("regen failed for phase", phase_id=phase.id)
