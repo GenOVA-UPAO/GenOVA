@@ -27,7 +27,7 @@ langgraph==1.2.14
 langgraph-checkpoint-postgres==3.1.2
 langsmith==0.14.4
 # AI SDKs
-openai==2.43.0
+openai==3.3.0
 groq==1.7.0
 # MP3 del micro-podcast (el TTS en streaming devuelve PCM crudo; ~7 veces menos que WAV)
 lameenc==1.8.4
