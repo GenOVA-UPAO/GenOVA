@@ -11,7 +11,7 @@ from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summ
 ITERATIONS = 3
 
 PARAMS = (
-    Param("num_params", 3, min=3, max=4, help="Número de parámetros ajustables de la simulación"),
+    Param("num_params", 3, min=2, max=5, help="Número de parámetros ajustables de la simulación"),
 )
 
 
@@ -208,6 +208,9 @@ refresh();
 def sample(concept: str, p: dict) -> dict:
     names = [("Tamaño de buffer cache", "MB", 64, 2048, 128, 1024), ("Sesiones máximas", "ses", 10, 500, 20, 200),
              ("Tamaño de shared pool", "MB", 32, 1024, 48, 384), ("Frecuencia de checkpoint", "min", 1, 60, 2, 15)]
+    # El rango configurable llega a 5 parámetros: se completa con parámetros genéricos.
+    while len(names) < p["num_params"]:
+        names.append((f"Parámetro {len(names) + 1}", "u", 10, 100, 20, 60))
     return {
         "titulo": f"Simulación de {concept}"[:70],
         "escenario": f"Dimensiona {concept} para una base de datos Oracle de ventas con picos al fin de mes.",

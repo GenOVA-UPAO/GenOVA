@@ -18,8 +18,8 @@ PARAMS = (
     Param(
         "num_scenarios",
         4,
-        min=3,
-        max=5,
+        min=2,
+        max=6,
         help="Número de escenarios de negocios",
     ),
 )
@@ -616,6 +616,27 @@ def sample(concept: str, p: dict) -> dict:
             ],
         },
     ]
+    # El rango configurable llega a 6 escenarios: se completan con escenarios genéricos.
+    for k in range(len(all_scenarios) + 1, n + 1):
+        all_scenarios.append(
+            {
+                "id": f"esc-{k}",
+                "empresa": f"Empresa {k} (Servicios)",
+                "problema": f"Un equipo enfrenta un incidente nuevo (caso {k}) que depende de aplicar bien {concept}."[:250],
+                "opciones": [
+                    {
+                        "texto": "Analizar la causa raíz y aplicar la solución técnica adecuada",
+                        "correcta": True,
+                        "feedback": "¡Correcto! Atacar la causa raíz resuelve el problema de forma sostenible.",
+                    },
+                    {
+                        "texto": "Ignorar el incidente hasta que el usuario lo reporte de nuevo",
+                        "correcta": False,
+                        "feedback": "Inadecuado: postergar el análisis agrava el problema.",
+                    },
+                ],
+            }
+        )
     return {
         "titulo": f"Decisiones de DBA Junior: {concept}"[:70],
         "intro": (

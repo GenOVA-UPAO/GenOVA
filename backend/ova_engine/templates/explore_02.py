@@ -13,7 +13,7 @@ from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 
-PARAMS = (Param("num_turns", 4, min=3, max=6, help="Número de turnos socráticos"),)
+PARAMS = (Param("num_turns", 6, min=4, max=8, help="Número de turnos socráticos"),)
 
 
 def schema(p: dict) -> dict:
@@ -736,6 +736,29 @@ def sample(concept: str, p: dict) -> dict:
             ],
         },
     ]
+
+    # El rango configurable llega a 8 turnos: se completan con turnos genéricos.
+    for k in range(len(base_turns) + 1, n + 1):
+        base_turns.append(
+            {
+                "turno": k,
+                "dato_mostrado": f"Traza {k} del motor sobre {concept}: la medición cambia al variar la carga de trabajo.",
+                "pregunta": f"¿Qué conclusión adicional permite extraer la traza {k} sobre {concept}?",
+                "pista": "Compara esta medición con la de los turnos anteriores.",
+                "opciones": [
+                    {
+                        "texto": "Confirma el patrón observado y refina la explicación anterior.",
+                        "correcta": True,
+                        "feedback": "¡Correcto! Cada traza adicional consolida el principio que ya dedujiste.",
+                    },
+                    {
+                        "texto": "Contradice todo lo observado en los turnos anteriores.",
+                        "correcta": False,
+                        "feedback": "No: la medición es coherente con las anteriores y las refuerza.",
+                    },
+                ],
+            }
+        )
 
     selected_turns = [dict(t) for t in base_turns[:n]]
     for idx, t in enumerate(selected_turns, 1):

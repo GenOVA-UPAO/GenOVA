@@ -14,7 +14,7 @@ from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 
 PARAMS = (
-    Param("num_steps", 3, min=3, max=4, help="Número de pasos guiados"),
+    Param("num_steps", 4, min=3, max=6, help="Número de pasos guiados"),
 )
 
 
@@ -184,6 +184,27 @@ def sample(concept: str, p: dict) -> dict:
         {"x": 130, "y": 29, "grupo": "Con optimización"},
         {"x": 160, "y": 32, "grupo": "Con optimización"},
     ]
+    # El rango configurable llega a 6 consignas: se completan con consignas genéricas.
+    for k in range(len(base_preguntas) + 1, n + 1):
+        base_preguntas.append(
+            {
+                "paso": k,
+                "pregunta": f"Observa de nuevo ambos grupos. ¿Qué conclusión adicional (n.º {k}) puedes extraer sobre {concept}?"[:160],
+                "pista": "Compara la separación entre los grupos en distintos valores de X."[:140],
+                "opciones": [
+                    {
+                        "texto": "La brecha entre los grupos se mantiene o crece al aumentar el volumen.",
+                        "feedback": "¡Correcto! Es coherente con la tendencia de los pasos anteriores.",
+                        "correcta": True,
+                    },
+                    {
+                        "texto": "Ambos grupos se vuelven idénticos al aumentar el volumen.",
+                        "feedback": "Incorrecto. Los puntos muestran lo contrario.",
+                        "correcta": False,
+                    },
+                ],
+            }
+        )
 
     return {
         "titulo": f"Experimento guiado: {concept}"[:70],
