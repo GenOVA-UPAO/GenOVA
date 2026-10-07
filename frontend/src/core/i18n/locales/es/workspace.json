@@ -76,6 +76,7 @@
   "tema": "Tema",
   "iniciando_generacion": "Iniciando generación…",
   "crear_nuevo_ova": "Crear nuevo OVA",
+  "topicAreaNote": "Los recursos se generarán dentro del área «{{area}}».",
   "creationSubtitle": "Describe el tema y elige qué recursos generará la IA en cada fase del modelo 5E.",
   "ver_tutorial": "Ver tutorial",
   "vista_previa_de_los_recursos_listos": "Vista previa de los recursos listos",

@@ -87,3 +87,17 @@ export function saveAdminGuardrails(payload: unknown): Promise<unknown> {
     { fallbackMsg: i18n.t("shared:no_se_pudo_guardar_la_configuracion_de_guardrails") },
   );
 }
+
+export interface TopicAreaResponse {
+  /** Área temática que guía todos los OVAs; vacía si el administrador no fijó ninguna. */
+  area: string;
+}
+
+/** Área temática activa. La puede leer cualquier usuario autenticado (no es solo de admin). */
+export function getTopicArea(): Promise<TopicAreaResponse> {
+  return apiJson<TopicAreaResponse>(
+    "/api/config/topic-area",
+    {},
+    { fallbackMsg: i18n.t("shared:no_se_pudo_cargar_la_configuracion_de_plataforma") },
+  );
+}

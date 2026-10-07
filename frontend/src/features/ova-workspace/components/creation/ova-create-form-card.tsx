@@ -30,6 +30,8 @@ interface Props {
   onGenerate: () => void;
   onTour: () => void;
   error?: string;
+  /** Área temática fijada por el administrador ("" o ausente = ninguna). */
+  topicArea?: string;
 }
 
 export function OvaCreateFormCard(props: Readonly<Props>) {
@@ -71,6 +73,12 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
             onSubmitShortcut={tryGenerate}
           />
           <FileChips files={props.files} onRemove={props.onRemove} />
+          {props.topicArea ? (
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground" data-testid="topic-area-note">
+              <Icon name="info" className="mt-0.5 shrink-0" />
+              <span>{t("workspace:topicAreaNote", { area: props.topicArea })}</span>
+            </p>
+          ) : null}
         </div>
         <CreationToolbar
           nivel={props.nivel}

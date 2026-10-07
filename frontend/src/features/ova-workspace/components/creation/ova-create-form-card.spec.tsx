@@ -40,6 +40,18 @@ function setup(overrides = {}) {
   return { ...render(<OvaCreateFormCard {...props} />), props };
 }
 describe("OvaCreateFormCard", () => {
+  it("avisa del área temática activa al crear un OVA", () => {
+    setup({ topicArea: "Sistemas y gestión de base de datos" });
+    expect(screen.getByTestId("topic-area-note")).toHaveTextContent(
+      "Los recursos se generarán dentro del área «Sistemas y gestión de base de datos».",
+    );
+  });
+  it("no muestra la nota si no hay área temática", () => {
+    setup();
+    expect(screen.queryByTestId("topic-area-note")).not.toBeInTheDocument();
+    setup({ topicArea: "" });
+    expect(screen.queryByTestId("topic-area-note")).not.toBeInTheDocument();
+  });
   it("shows required steps and accessible toolbar labels", () => {
     setup();
     expect(screen.getByLabelText("Pasos para crear un OVA")).toBeVisible();

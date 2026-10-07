@@ -76,6 +76,7 @@
   "tema": "Theme",
   "iniciando_generacion": "Starting generation…",
   "crear_nuevo_ova": "Create a new OVA",
+  "topicAreaNote": "Resources will be generated within the area \"{{area}}\".",
   "creationSubtitle": "Describe your topic and choose the resources AI will generate for each phase of the 5E model.",
   "ver_tutorial": "View tutorial",
   "vista_previa_de_los_recursos_listos": "Preview completed resources",
