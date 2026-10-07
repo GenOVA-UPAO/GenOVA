@@ -1,3 +1,4 @@
+import { t as i18nT } from "i18next";
 import { useState } from "react";
 
 import type { SlotIssue } from "../lib/chain-validation";
@@ -77,5 +78,5 @@ export function AdminTaskEditor({
 
 function appliedMessage(changed: string[]): string {
   const where = joinList(changed.map((t) => taskMeta(t).label));
-  return `Modelo copiado a ${where}. Guarda los cambios para usarlo.`;
+  return i18nT("llm-settings:taskEditor.appliedCopied", { where });
 }

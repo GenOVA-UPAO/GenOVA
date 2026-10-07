@@ -1,5 +1,7 @@
 import os
 
+# Antes de importar la app: ni Settings ni load_dotenv leen el backend/.env local.
+os.environ["GENOVA_TESTING"] = "1"
 os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 

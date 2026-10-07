@@ -52,5 +52,6 @@
   "gestion_de_roles": "Role management",
   "fase_explore": "Explore phase",
   "fase_engage": "Engage phase",
-  "pagina_no_encontrada": "Page not found"
+  "pagina_no_encontrada": "Page not found",
+  "despertando_servidor": "Waking up the server… the first time it can take up to a minute"
 }

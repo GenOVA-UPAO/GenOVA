@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 # Load .env before importing modules that read env vars at import time.
-load_dotenv()
+if not os.getenv("GENOVA_TESTING"):  # los tests no leen el .env del desarrollador
+    load_dotenv()
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status

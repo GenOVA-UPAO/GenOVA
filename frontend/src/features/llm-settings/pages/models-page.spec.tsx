@@ -175,7 +175,8 @@ describe("ModelsPage", () => {
       server_keys: [],
     };
     renderPage();
-    expect(screen.getByText("0 de 4 proveedores conectados")).toBeTruthy();
+    // Con clave y sin «Probar conexión» es «Sin verificar»: cuenta como conectado.
+    expect(screen.getByText("2 de 4 proveedores conectados (2 sin verificar)")).toBeTruthy();
     platformConfig.data = undefined;
   });
 

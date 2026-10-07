@@ -406,6 +406,8 @@
   "overview": {
     "connected_one": "{{connected}} of {{total}} provider connected",
     "connected_other": "{{connected}} of {{total}} providers connected",
+    "connectedUnverified_one": "{{connected}} of {{total}} provider connected ({{unverified}} unverified)",
+    "connectedUnverified_other": "{{connected}} of {{total}} providers connected ({{unverified}} unverified)",
     "favorites_one": "{{count}} favorite model",
     "favorites_other": "{{count}} favorite models",
     "overviewSeparator": " · ",
@@ -705,5 +707,27 @@
     "fromPlatform": "From platform",
     "inUse": "in use",
     "timeoutRange": "Maximum timeout ranges from {{min}} to {{max}} seconds and applies to all your OVAs."
+  },
+  "modalityBuckets": {
+    "texto": "Text only",
+    "imagen": "Accepts images",
+    "video": "Accepts video",
+    "audio": "Accepts audio",
+    "archivos": "Accepts files",
+    "otra": "Other modality"
+  },
+  "modalityMeta": {
+    "text": "Text",
+    "multimodal": "Multimodal",
+    "image": "Image",
+    "video": "Video",
+    "audio": "Audio",
+    "embedding": "Embedding"
+  },
+  "taskEditor": {
+    "appliedCopied": "Model copied to {{where}}. Save your changes to use it."
+  },
+  "manageModal": {
+    "mine": "{{task}} (yours)"
   }
 }

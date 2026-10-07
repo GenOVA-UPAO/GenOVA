@@ -7,6 +7,8 @@ la carga. Importar ``settings`` valida al arranque (falla temprano si falta/est�
 mal una var crítica), igual que antes hacían security.py/database.py a mano.
 """
 
+import os
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -15,7 +17,7 @@ _REDIS_SCHEMES = ("redis://", "rediss://", "unix://")
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=None if os.getenv("GENOVA_TESTING") else ".env", extra="ignore", case_sensitive=False)
 
     # --- Entorno / Auth ---
     env: str = "dev"

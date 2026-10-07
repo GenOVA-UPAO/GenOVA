@@ -52,5 +52,6 @@
   "gestion_de_roles": "Gestión de roles",
   "fase_explore": "Fase Explore",
   "fase_engage": "Fase Engage",
-  "pagina_no_encontrada": "Página no encontrada"
+  "pagina_no_encontrada": "Página no encontrada",
+  "despertando_servidor": "Despertando el servidor… puede tardar hasta un minuto la primera vez"
 }

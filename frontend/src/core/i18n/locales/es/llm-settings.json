@@ -406,6 +406,8 @@
   "overview": {
     "connected_one": "{{connected}} de {{total}} proveedor conectado",
     "connected_other": "{{connected}} de {{total}} proveedores conectados",
+    "connectedUnverified_one": "{{connected}} de {{total}} proveedor conectado ({{unverified}} sin verificar)",
+    "connectedUnverified_other": "{{connected}} de {{total}} proveedores conectados ({{unverified}} sin verificar)",
     "favorites_one": "{{count}} modelo favorito",
     "favorites_other": "{{count}} modelos favoritos",
     "overviewSeparator": " · ",
@@ -705,5 +707,27 @@
     "fromPlatform": "De la plataforma",
     "inUse": "en uso",
     "timeoutRange": "El tiempo máximo de espera va de {{min}} a {{max}} segundos y se aplica a todos tus OVAs."
+  },
+  "modalityBuckets": {
+    "texto": "Solo texto",
+    "imagen": "Acepta imagen",
+    "video": "Acepta video",
+    "audio": "Acepta audio",
+    "archivos": "Acepta archivos",
+    "otra": "Otra modalidad"
+  },
+  "modalityMeta": {
+    "text": "Texto",
+    "multimodal": "Multimodal",
+    "image": "Imagen",
+    "video": "Video",
+    "audio": "Audio",
+    "embedding": "Embedding"
+  },
+  "taskEditor": {
+    "appliedCopied": "Modelo copiado a {{where}}. Guarda los cambios para usarlo."
+  },
+  "manageModal": {
+    "mine": "{{task}} (tuyo)"
   }
 }

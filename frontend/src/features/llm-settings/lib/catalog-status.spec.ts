@@ -21,19 +21,19 @@ describe("catalog-status", () => {
   });
 
   it("counts connected providers by key, not by fetch result", () => {
-    expect(connectedProviders(status)).toEqual({ connected: 2, total: 4 });
+    expect(connectedProviders(status)).toEqual({ connected: 2, total: 4, unverified: 0 });
   });
 
   it("falls back to `ok` when the backend does not send `configured`", () => {
     const legacy = { groq: { ok: true }, openrouter: { ok: false } };
     expect(failedProviders(legacy)).toEqual(["openrouter"]);
     expect(unconnectedProviders(legacy)).toEqual([]);
-    expect(connectedProviders(legacy)).toEqual({ connected: 1, total: 2 });
+    expect(connectedProviders(legacy)).toEqual({ connected: 1, total: 2, unverified: 0 });
   });
 
   it("handles a missing status", () => {
     expect(failedProviders(null)).toEqual([]);
-    expect(connectedProviders(undefined)).toEqual({ connected: 0, total: 0 });
+    expect(connectedProviders(undefined)).toEqual({ connected: 0, total: 0, unverified: 0 });
   });
 
   it("cuenta las claves de plataforma sobre todos los proveedores de Credenciales", () => {
@@ -53,7 +53,16 @@ describe("catalog-status", () => {
       server_keys: ["runware"],
       checks: { groq: { code: "connected" }, openrouter: { code: "invalid_key" }, runware: { code: "unchecked" } },
     };
-    expect(platformKeyCount(config)).toEqual({ connected: 1, total: 8 });
+    expect(platformKeyCount(config)).toEqual({ connected: 2, total: 8, unverified: 1 });
+  });
+
+  it("«Sin verificar» cuenta como conectado y «rechazada» no", () => {
+    const config = {
+      providers: ["groq", "openrouter", "opencode"],
+      platform_config: { groq: "gsk_…abcd", openrouter: "sk-or-…wxyz" },
+      checks: { openrouter: { code: "unchecked" }, groq: { code: "invalid_key" } },
+    };
+    expect(platformKeyCount(config)).toEqual({ connected: 1, total: 3, unverified: 1 });
   });
 
   it("sin datos de plataforma no cuenta (se usa el estado del catálogo)", () => {
