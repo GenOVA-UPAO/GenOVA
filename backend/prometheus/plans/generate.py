@@ -20,6 +20,10 @@ class ResourceResult(NamedTuple):
     html: str
     defects: list[str]  # defectos estructurales restantes
     raw_json: dict | list | None  # datos JSON del recurso (o {"monologue": ...} para podcast)
+    # Datos estructurados de un recurso de plantilla para exportarlo como actividad
+    # editable: {"template", "phase", "resource_type", "data", "params"}. Quien guarda
+    # el HTML los persiste con `prometheus.engine.activity_store.record_activity`.
+    activity: dict | None = None
 
 
 def _gen_podcast(
@@ -32,6 +36,7 @@ def _gen_podcast(
     deadline=None,
     *,
     fake: bool = False,
+    resource_config: dict | None = None,
 ) -> ResourceResult:
     from llm.podcast.podcast import build_podcast_html, plain_monologue, podcast_audio
     from prometheus.prompts.engage_prompts import prompt_texto
@@ -40,15 +45,29 @@ def _gen_podcast(
         mono = f"Micro-podcast educativo sobre {concept}."
         audio = None
     else:
+        from ova_engine.domain_context import with_area
+        from ova_engine.planner_attrs import normalize_topic
         from ova_engine.text import generate_plain
+        from ova_engine.word_fit import fit_words
 
-        mono = generate_plain(
-            prompt_texto(rt, concept, contexto),
-            llm_config=llm_config,
-            enabled_models=enabled_models,
-            deadline=deadline,
-        )
-        mono = plain_monologue(mono)
+        prompt = with_area(prompt_texto(rt, concept, contexto, resource_config), normalize_topic(concept)[0])
+
+        def _ask(text: str) -> str:
+            return plain_monologue(
+                generate_plain(text, llm_config=llm_config, enabled_models=enabled_models, deadline=deadline)
+            )
+
+        mono = _ask(prompt)
+        target = (resource_config or {}).get("word_count")
+        if isinstance(target, int) and target > 0:
+            mono = fit_words(
+                mono,
+                target,
+                regenerate=lambda cur, n: _ask(
+                    f"{prompt}\n\nTu texto anterior tiene {len(cur.split())} palabras y debe tener unas {n}. "
+                    f"Reescríbelo con unas {n} palabras (±15 %), sin añadir encabezados:\n{cur}"
+                ),
+            )
         audio = podcast_audio(mono)
 
     html = build_podcast_html(concept, mono, *(audio or (None,)))
@@ -68,6 +87,7 @@ def _gen_template(
     *,
     fake: bool,
 ) -> ResourceResult:
+    from ova_engine.html import engine_info
     from ova_engine.pipeline import generate_with_template
     from prometheus.engine.validate import resource_defects
 
@@ -83,7 +103,14 @@ def _gen_template(
         deadline=deadline,
         fake=fake,
     )
-    return ResourceResult(html, resource_defects(html, concept), data)
+    activity = {
+        "template": spec.key,
+        "phase": spec.phase,
+        "resource_type": spec.rt,
+        "data": data,
+        "params": engine_info(html).get("params") or {},
+    }
+    return ResourceResult(html, resource_defects(html, concept), data, activity)
 
 
 def generate_resource(
@@ -100,8 +127,23 @@ def generate_resource(
     contexto: str = "",
     refine: bool = True,  # conservado por compatibilidad de firma
     deadline: float | None = None,
+    area: str | None = None,
 ) -> ResourceResult:
-    """Genera UN recurso 5E con el pipeline moderno de plantillas (o podcast)."""
+    """Genera UN recurso 5E con el pipeline moderno de plantillas (o podcast).
+
+    `area` es el área temática del job (foto tomada al crearlo): todo el recurso se genera
+    dentro de ella. `None` hereda la del contexto actual; "" = sin área."""
+    from ova_engine.domain_context import area_scope, current_area
+
+    with area_scope(current_area() if area is None else area):
+        return _generate_resource(
+            phase, rt, concept, plan, llm_config, enabled_models, theme, image_settings,
+            resource_config, contexto, deadline,
+        )
+
+
+def _generate_resource(phase, rt, concept, plan, llm_config, enabled_models, theme, image_settings,
+                       resource_config, contexto, deadline) -> ResourceResult:
     from core.config import settings
     from ova_engine.registry import get_spec
 
@@ -118,6 +160,7 @@ def generate_resource(
             enabled_models,
             deadline,
             fake=settings.llm_fake,
+            resource_config=resource_config,
         )
 
     spec = get_spec(phase, n)

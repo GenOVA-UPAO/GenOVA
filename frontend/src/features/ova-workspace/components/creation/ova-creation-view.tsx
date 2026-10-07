@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 
+import { useTopicArea } from "@/core/hooks/use-topic-area";
+
 import { useOvaCreation } from "../../hooks/use-ova-creation";
 import { OvaCreateFormCard } from "./ova-create-form-card";
 
@@ -27,6 +29,7 @@ function usePrefetchModals() {
 
 export function OvaCreationView() {
   const creation = useOvaCreation();
+  const topicArea = useTopicArea();
   usePrefetchModals();
   return (
     <div className="flex min-h-full flex-col bg-background">
@@ -45,6 +48,7 @@ export function OvaCreationView() {
         onGenerate={creation.generate}
         onTour={creation.replayTour}
         error={creation.error}
+        topicArea={topicArea}
       />
       {/* Sin texto de carga: el tutorial no ocupa sitio en la página y los
           modales se descargan en segundo plano al entrar (ver abajo). */}

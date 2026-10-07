@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import type { Draft } from "./llm-config-draft";
 import { isMediaTask } from "./llm-config-draft";
 import { taskMeta } from "./task-meta";
@@ -53,9 +55,9 @@ export function sharingSummary(
   const distinct = new Set(keys).size;
   if (distinct === 0) return null;
   if (distinct === 1 && keys.length === text.length) {
-    return `Las ${String(text.length)} tareas de texto usan el mismo modelo`;
+    return t("llm-settings:taskSharing.allSame", { count: text.length });
   }
   return distinct === 1
-    ? "Las tareas de texto usan 1 modelo"
-    : `Las tareas de texto usan ${String(distinct)} modelos distintos`;
+    ? t("llm-settings:taskSharing.singleModel")
+    : t("llm-settings:taskSharing.multipleDistinct", { count: distinct });
 }

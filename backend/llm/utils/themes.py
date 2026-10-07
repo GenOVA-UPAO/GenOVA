@@ -211,7 +211,7 @@ def _interaction_block(color_mode: str) -> str:
             "     :hover transform translateY(-1px) + shadow elevada, :active translateY(0),\n"
             "     :focus-visible outline 3px solid color primario con offset 2px.\n"
             "   - Inputs/selectables: borde 2px, focus-visible cambia borde a primary.\n"
-            "   - Estados de carga, completado y error VISUALMENTE distintos (color + icono/emoji).\n"
+            "   - Estados de carga, completado y error VISUALMENTE distintos (color + icono SVG en línea, nunca emoji).\n"
             "   - Usa UN solo momento de movimiento intencional: responde a una acción del estudiante "
             "(revelar respuesta, avanzar progreso o mostrar resultado). Si al quitarlo no pierde significado "
             "ni feedback, quítalo; nunca animes la entrada de cada sección."

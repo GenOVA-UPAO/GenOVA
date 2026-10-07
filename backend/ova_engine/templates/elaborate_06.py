@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, json_data, script
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -33,17 +34,38 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
-    d = p["num_decisions"]
-    return f"""[ROL] Diseñador de escenarios de decisión para administradores de bases de datos Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña un escenario ramificado de {d} niveles de decisión sobre «{concept}», donde el estudiante hace de DBA en una situación crítica (p. ej. tablespace al 95 %, bloqueo ORA-00060, borrado accidental de datos).
+    n_lvl = p["num_decisions"]
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        f"""[ROL] Diseñador de escenarios de decisión para administradores de bases de datos {d.bd_adj}.""",
+        f"""[ROL] Diseñador de escenarios de decisión para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Diseña un escenario ramificado de {n_lvl} niveles de decisión sobre «{concept}», donde el estudiante hace de DBA en una situación crítica (p. ej. {d.si_oracle("tablespace al 95 %, bloqueo ORA-00060", "disco al 95 %, consultas lentas")}, borrado accidental de datos).""",
+        f"""[TAREA] Diseña un escenario ramificado de {n_lvl} niveles de decisión sobre «{concept}», donde el estudiante decide en una situación crítica propia del área del tema.""",
+    )
+    _l3 = d.pick(
+        """- nodo_raiz: la primera situación (≈60 palabras: qué síntomas ve el DBA, qué métricas o errores aparecen) con EXACTAMENTE 2 `opciones` (decisiones no triviales: las dos parecen razonables, una es mejor que la otra según el concepto).""",
+        """- nodo_raiz: la primera situación (≈60 palabras: qué observa el estudiante, qué datos o señales aparecen) con EXACTAMENTE 2 `opciones` (decisiones no triviales: las dos parecen razonables, una es mejor que la otra según el concepto).""",
+    )
+    _l4 = d.pick(
+        """[RESTRICCIONES] Los desenlaces deben diferir (no todo es éxito o desastre); las consecuencias justifican técnicamente el resultado.""",
+        f"""[RESTRICCIONES] Los desenlaces deben diferir (no todo es éxito o desastre); las consecuencias justifican el resultado con el concepto. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del escenario.
 - introduccion: contexto inicial que da el rol y la urgencia (≤30 palabras).
-- nodo_raiz: la primera situación (≈60 palabras: qué síntomas ve el DBA, qué métricas o errores aparecen) con EXACTAMENTE 2 `opciones` (decisiones no triviales: las dos parecen razonables, una es mejor que la otra según el concepto).
+{_l3}
   * En los niveles intermedios cada opción tiene `texto` (la decisión, ≤18 palabras), `consecuencia` (qué ocurre de inmediato y por qué, ≤30 palabras) y `siguiente_nodo` (la nueva situación con otras 2 opciones, con la misma estructura).
   * En el último nivel cada opción tiene `texto`, `desenlace` (resultado final en ≈40 palabras, con consecuencias para el negocio) y `leccion_aprendida` (qué principio de «{concept}» lo explica, ≤30 palabras).
 - cierre: reflexión sobre cómo decidir bajo presión aplicando «{concept}».
-[RESTRICCIONES] Los desenlaces deben diferir (no todo es éxito o desastre); las consecuencias justifican técnicamente el resultado.
+{_l4}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -183,7 +205,7 @@ def _sample_node(level: int, tag: str, concept: str) -> dict:
                     "siguiente_nodo": _sample_node(level - 1, t + ".", concept),
                 }
             )
-    return {"situacion": f"Situación {tag or 'inicial'}: el DBA observa síntomas relacionados con {concept}.", "opciones": opts}
+    return {"situacion": f"Situación {tag or 'inicial'}: observas señales relacionadas con {concept}.", "opciones": opts}
 
 
 def sample(concept: str, p: dict) -> dict:

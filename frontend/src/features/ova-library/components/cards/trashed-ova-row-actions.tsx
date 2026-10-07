@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -15,6 +17,7 @@ export function TrashedOvaRowActions({
   onRestore,
   onPermanentDelete,
 }: Readonly<TrashedOvaRowActionsProps>) {
+  const { t } = useTranslation();
   const busy = isRestoring || isDeleting;
 
   return (
@@ -27,17 +30,17 @@ export function TrashedOvaRowActions({
         onClick={onRestore}
       >
         {!isRestoring && <Icon name="arrow-counter-clockwise" size="text-base" />}
-        {isRestoring ? "Restaurando…" : "Restaurar"}
+        {isRestoring ? t("ova-library:restaurando") : t("ova-library:restaurar")}
       </Button>
       <Button
         variant="ghost"
         className="text-destructive hover:bg-destructive/10 hover:text-destructive max-sm:h-11 max-sm:flex-1"
         disabled={busy}
-        aria-label="Eliminar definitivamente"
+        aria-label={t("ova-library:eliminar_definitivamente")}
         onClick={onPermanentDelete}
       >
         <Icon name="trash" size="text-base" />
-        Eliminar
+        {t("ova-library:eliminar")}{" "}
       </Button>
     </div>
   );

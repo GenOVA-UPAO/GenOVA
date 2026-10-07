@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS
+from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_questions", 6, min=5, max=10, help="Número de preguntas del examen"),
+    Param("num_questions", 6, min=5, max=12, help="Número de preguntas del examen"),
 )
 
 _TIPOS = ("conceptual", "aplicacion", "analisis", "relacion")
@@ -34,10 +35,13 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Examinador universitario de bases de datos.", f"Examinador de {d.topic} para {d.audiencia}. {d.guia_nivel}")
+    aplic = d.pick(f"sentencia {d.si_oracle('Oracle', 'SQL')}", "situación o problema propio del tema")
     n = p["num_questions"]
-    return f"""[ROL] Examinador universitario de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Redacta un examen de {n} preguntas de opción múltiple sobre «{concept}», con balance entre conceptual, aplicación (sentencia Oracle), análisis y relación con otros conceptos.
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Redacta un examen de {n} preguntas de opción múltiple sobre «{concept}», con balance entre conceptual, aplicación ({aplic}), análisis y relación con otros conceptos.
 - titulo: título formal del examen.
 - instrucciones: una frase (tiempo sugerido, una respuesta por pregunta, se califica al entregar).
 - preguntas: exactamente {n}. Cada una con:
@@ -245,4 +249,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("preguntas", "num_questions"),
 )

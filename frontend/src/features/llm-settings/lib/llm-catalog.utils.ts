@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { firstNonBlank } from "@/core/lib/text";
 
 export const PROVIDER_LABELS: Record<string, string> = {
@@ -18,32 +20,44 @@ export interface ModalityMeta {
 
 export const MODALITY_META: Record<string, ModalityMeta> = {
   text: {
-    label: "Texto",
+    get label() {
+      return t("llm-settings:modalityMeta.text");
+    },
     color: "text-blue-700 dark:text-blue-400",
     bg: "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
   },
   multimodal: {
-    label: "Multimodal",
+    get label() {
+      return t("llm-settings:modalityMeta.multimodal");
+    },
     color: "text-purple-700 dark:text-purple-400",
     bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/30 dark:border-purple-800",
   },
   image: {
-    label: "Imagen",
+    get label() {
+      return t("llm-settings:modalityMeta.image");
+    },
     color: "text-pink-700 dark:text-pink-400",
     bg: "bg-pink-50 border-pink-200 dark:bg-pink-950/30 dark:border-pink-800",
   },
   video: {
-    label: "Video",
+    get label() {
+      return t("llm-settings:modalityMeta.video");
+    },
     color: "text-orange-700 dark:text-orange-400",
     bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-800",
   },
   audio: {
-    label: "Audio",
+    get label() {
+      return t("llm-settings:modalityMeta.audio");
+    },
     color: "text-amber-800 dark:text-amber-400",
     bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
   },
   embedding: {
-    label: "Embedding",
+    get label() {
+      return t("llm-settings:modalityMeta.embedding");
+    },
     color: "text-emerald-700 dark:text-emerald-400",
     bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800",
   },

@@ -66,7 +66,7 @@ def _stuck_generating(ova) -> bool:
     está en marcha es una regeneración: repararlo la rompería, y comprobarlo con
     FOR UPDATE esperaría a que termine.
     """
-    return ova is not None and ova.status == "generando" and ova.current_version_id is None
+    return ova is not None and ova.current_version_id is None
 
 
 def _release_ova_from_generating(db: Session, job: OvaJob) -> None:
@@ -200,6 +200,10 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
     )
 
     result_map, exhausted_map = build_result_maps(results, errors)
+    auth_code = next(
+        (e.get("code") for e in errors if e.get("code", "").startswith("provider_auth")),
+        None,
+    )
 
     for res in resources:
         if res.status == "done":
@@ -217,8 +221,8 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
             res.attempts = (res.attempts or 0) + 1
             if res.status == "degraded":
                 _ensure_degraded_error(db, job, res)
-        elif key in exhausted_map:
-            e = exhausted_map[key]
+        elif key in exhausted_map or auth_code:
+            e = exhausted_map.get(key, {"error": auth_code, "code": auth_code, "attempts": 0})
             eid = log_generation_error(
                 db,
                 message=e.get("error", "generation failed"),
@@ -229,6 +233,7 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
                 job_resource_id=res.id,
             )
             res.status = "error"
+            res.defect_reason = e.get("code")
             res.error_id = uuid.UUID(eid)
             res.attempts = e.get("attempts", MAX_ATTEMPTS)
         else:

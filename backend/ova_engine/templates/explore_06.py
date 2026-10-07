@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -37,8 +39,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_zones"]
-    return f"""[ROL] Diseñador de simuladores interactivos de afinamiento de bases de datos para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de simuladores interactivos de afinamiento de bases de datos para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un simulador interactivo de slider sobre un parámetro técnico del motor de bases de datos directamente vinculado a «{concept}» (ej. DB_CACHE_SIZE, SHARED_POOL_SIZE, LOG_BUFFER, concurrencia de sesiones, frecuencia de checkpoint o PCTFREE). El simulador debe definir exactamente {n} zonas de rendimiento continuas que ilustren el comportamiento del sistema al variar este parámetro.
 - titulo: título conciso del simulador (≤10 palabras).
 - parametro: nombre técnico del parámetro del motor a afinar (≤4 palabras, ej. 'DB_CACHE_SIZE', 'Concurrencia de Sesiones', 'Frecuencia de Checkpoint').
@@ -54,6 +58,26 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `efecto`: impacto observable en rendimiento, latencia o contención (≤20 palabras).
 - explicacion_optima: explicación técnica clara (≤45 palabras) que justifique por qué la zona óptima equilibra el rendimiento y describe el dilema técnico (trade-off) de los extremos.
 [RESTRICCIONES] Valores enteros en min_val, max_val y default_val, con min_val < max_val. Las {n} zonas deben ser continuas y cubrir todo el rango. Sin código web ni etiquetas de formato.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de simuladores interactivos de parámetros de «{concept}» para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un simulador interactivo de slider sobre un parámetro numérico directamente vinculado a «{concept}» (ej. una cantidad, una temperatura, una velocidad, una concentración o un tiempo, según el tema). El simulador debe definir exactamente {n} zonas de rendimiento continuas que ilustren el comportamiento del sistema al variar este parámetro.
+- titulo: título conciso del simulador (≤10 palabras).
+- parametro: nombre del parámetro que el estudiante ajusta (≤4 palabras, ej. 'Temperatura', 'Velocidad', 'Concentración').
+- unidad: unidad de medida del parámetro (≤2 palabras, ej. 'MB', 'sesiones', 'segundos', '%').
+- min_val: valor entero mínimo representativo del rango (ej. 64).
+- max_val: valor entero máximo representativo del rango (ej. 1024; debe ser mayor que min_val).
+- default_val: valor entero por defecto inicial dentro del rango (preferiblemente en la primera zona para invitar a explorar).
+- zonas: array de exactamente {n} zonas consecutivas de operación que cubren de min_val a max_val. Por cada zona:
+  * `nombre`: nombre corto de la zona (≤5 palabras, ej. 'Subdimensionado', 'Zona Óptima', 'Saturación').
+  * `rango`: intervalo numérico de la zona (≤4 palabras, ej. '64 - 256 MB').
+  * `estado`: estado operativo para el indicador ('warning', 'success', 'error' o 'info').
+  * `descripcion`: qué ocurre en el sistema estudiado en esta zona (≤20 palabras).
+  * `efecto`: impacto observable en rendimiento, latencia o contención (≤20 palabras).
+- explicacion_optima: explicación técnica clara (≤45 palabras) que justifique por qué la zona óptima equilibra el rendimiento y describe el dilema técnico (trade-off) de los extremos.
+[RESTRICCIONES] Valores enteros en min_val, max_val y default_val, con min_val < max_val. Las {n} zonas deben ser continuas y cubrir todo el rango. Sin código web ni etiquetas de formato.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -582,7 +606,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <textarea id="ova-hypothesis-input" class="ova-textarea" rows="2" placeholder="Escribe tu hipótesis: creo que el valor óptimo está en... porque..."></textarea>
     <div>
       <button type="button" id="ova-btn-contrast" class="ova-btn-contrast" aria-expanded="false">
-        <span aria-hidden="true">💡</span> Contrastar hipótesis y revelar zona óptima
+        <span aria-hidden="true">{icon('bulb')}</span> Contrastar hipótesis y revelar zona óptima
       </button>
     </div>
     <div id="ova-optimal-box" class="ova-optimal-box" hidden aria-live="polite">

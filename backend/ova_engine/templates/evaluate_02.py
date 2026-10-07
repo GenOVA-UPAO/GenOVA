@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS
+from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
     Param("num_criteria", 4, min=3, max=6, help="Número de criterios autoevaluables"),
@@ -46,9 +47,12 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de rúbricas de autoevaluación para universitarios.", f"Diseñador de rúbricas de autoevaluación para {d.audiencia}. {d.guia_nivel}")
+    extra = d.pick(f"Incluye sentencias o elementos de {d.si_oracle('Oracle', 'SQL estándar')} cuando aplique.", "Mantente estrictamente en el tema y el nivel indicados, con ejemplos propios del tema.")
     n = p["num_criteria"]
-    return f"""[ROL] Diseñador de rúbricas de autoevaluación para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña una rúbrica de {n} criterios que el estudiante usa para valorar su propio dominio de «{concept}».
 - titulo: título corto de la rúbrica.
 - instrucciones: una frase que explique cómo autoevaluarse con honestidad.
@@ -58,7 +62,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `en_desarrollo`: descriptor del nivel en desarrollo (2 puntos), «Puedo…» (≤30 palabras).
   * `logrado`: descriptor del nivel logrado (3 puntos), «Puedo…» (≤30 palabras).
 - reflexion_baja / reflexion_media / reflexion_alta: mensaje reflexivo y accionable según el puntaje total (rango bajo <50 %, medio 50–79 %, alto ≥80 %), ≤35 palabras cada uno, con una sugerencia concreta de estudio.
-[RESTRICCIONES] Los tres niveles deben diferenciarse por profundidad y autonomía, no por adjetivos vagos. Incluye sentencias o elementos de Oracle cuando aplique.
+[RESTRICCIONES] Los tres niveles deben diferenciarse por profundidad y autonomía, no por adjetivos vagos. {extra}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -163,4 +167,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("criterios", "num_criteria"),
 )

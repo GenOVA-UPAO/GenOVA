@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -12,6 +13,7 @@ interface CopyFieldProps {
 }
 
 export function CopyField({ label, value, ariaLabel, mono = false }: Readonly<CopyFieldProps>) {
+  const { t } = useTranslation("profile");
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
@@ -22,6 +24,8 @@ export function CopyField({ label, value, ariaLabel, mono = false }: Readonly<Co
       }, 2000);
     });
   };
+
+  const copyLabel = copied ? t("copy.copied") : ariaLabel;
 
   return (
     <div>
@@ -35,12 +39,12 @@ export function CopyField({ label, value, ariaLabel, mono = false }: Readonly<Co
         >
           {value}
         </code>
-        <Tooltip label={copied ? "Copiado" : ariaLabel} side="top">
+        <Tooltip label={copyLabel} side="top">
           <button
             type="button"
             onClick={copy}
             className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none max-sm:size-10"
-            aria-label={copied ? "Copiado" : ariaLabel}
+            aria-label={copyLabel}
           >
             <Icon
               name={copied ? "check" : "copy"}

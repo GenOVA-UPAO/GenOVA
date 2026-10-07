@@ -1,6 +1,17 @@
 """Ova, OvaVersion, OvaPhase, OvaPhaseVersion ORM models."""
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Text, text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -28,6 +39,14 @@ class Ova(Base):
     )
     title = Column(String(255), nullable=False)
     description = Column(Text)
+    license = Column(String(80), nullable=False, default="CC BY-SA 4.0", server_default=text("'CC BY-SA 4.0'"))
+    language = Column(String(35), nullable=False, default="es", server_default=text("'es'"))
+    keywords = Column(JSON, nullable=False, default=list, server_default=text("'[]'"))
+    educational_level = Column(String(120), nullable=False, default="", server_default="")
+    audience = Column(String(255), nullable=False, default="", server_default="")
+    typical_learning_time = Column(String(40), nullable=False, default="", server_default="")
+    author = Column(String(255), nullable=False, default="", server_default="")
+    package_theme = Column(String(24), nullable=False, default="upao", server_default="upao")
     status = Column(String(20), nullable=False, default="borrador", server_default="borrador")
     file_path = Column(Text)
     storage_key = Column(Text)  # Supabase Storage object key (new persistence path)

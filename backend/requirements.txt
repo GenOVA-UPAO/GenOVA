@@ -45,3 +45,9 @@ filetype==1.2.0
 pyotp==2.10.0
 # Validación de sintaxis JS de los OVAs generados (motor QuickJS)
 quickjs==1.19.4
+# Conversión HTML → XHTML para la exportación EPUB 3 (ya venía por python-docx)
+lxml==6.1.1
+# LTI 1.3: RS256 (PyJWT), cifrado de la clave de la herramienta (Fernet) y llamadas
+# a la plataforma (JWKS, token OAuth2, AGS). Ya venían como transitivas.
+cryptography==50.0.0
+httpx==0.28.1

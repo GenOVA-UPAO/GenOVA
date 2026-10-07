@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -34,17 +35,42 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_questions"]
-    return f"""[ROL] Diseñador de dashboards de monitoreo de bases de datos Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Crea un conjunto de datos de monitoreo relacionado con «{concept}» (p. ej. como saldría de DBA_SEGMENTS, V$SESSION o un reporte Statspack) para analizarlo con una tabla y dos gráficos.
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        f"""[ROL] Diseñador de dashboards de monitoreo de bases de datos {d.bd_adj}.""",
+        f"""[ROL] Diseñador de tableros de datos para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Crea un conjunto de datos de monitoreo relacionado con «{concept}» (p. ej. como saldría de {d.si_oracle("DBA_SEGMENTS, V$SESSION o un reporte Statspack", "una consulta de monitoreo o un reporte de rendimiento")}) para analizarlo con una tabla y dos gráficos.""",
+        f"""[TAREA] Crea un conjunto de datos plausible relacionado con «{concept}» (como el que saldría de una medición, encuesta, experimento o registro del área) para analizarlo con una tabla y dos gráficos.""",
+    )
+    _l3 = d.pick(
+        """- contexto: qué se monitorea y qué decisión debe tomar el DBA (≤40 palabras).""",
+        """- contexto: qué se mide y qué decisión debe tomar el estudiante con ello (≤40 palabras).""",
+    )
+    _l4 = d.pick(
+        f"""- columnas: nombres de columna: `nombre` (qué identifica cada registro, p. ej. «Segmento»), `categoria` (la agrupación, p. ej. «{d.si_oracle("Tablespace", "Tabla")}»), `valor_a` (primera métrica con su unidad, p. ej. «Tamaño (MB)») y `valor_b` (segunda métrica con unidad, p. ej. «Lecturas físicas»).""",
+        """- columnas: nombres de columna: `nombre` (qué identifica cada registro), `categoria` (la agrupación), `valor_a` (primera magnitud con su unidad) y `valor_b` (segunda magnitud con unidad), todo propio del tema.""",
+    )
+    _l5 = d.pick(
+        """[RESTRICCIONES] Las respuestas correctas deben ser verificables con los datos; no uses datos contradictorios.""",
+        f"""[RESTRICCIONES] Las respuestas correctas deben ser verificables con los datos; no uses datos contradictorios. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del dashboard.
-- contexto: qué se monitorea y qué decisión debe tomar el DBA (≤40 palabras).
-- columnas: nombres de columna: `nombre` (qué identifica cada registro, p. ej. «Segmento»), `categoria` (la agrupación, p. ej. «Tablespace»), `valor_a` (primera métrica con su unidad, p. ej. «Tamaño (MB)») y `valor_b` (segunda métrica con unidad, p. ej. «Lecturas físicas»).
+{_l3}
+{_l4}
 - registros: entre 15 y 18 registros plausibles: `nombre`, `categoria` (usa solo 3 o 4 categorías distintas, repetidas), `valor_a` y `valor_b` (enteros positivos; incluye 1 o 2 valores atípicos y alguna relación visible entre A y B).
 - ejemplo: ejemplo trabajado de cómo leer los datos y llegar a una conclusión (≤45 palabras, citando registros concretos).
 - preguntas: EXACTAMENTE {n} preguntas de interpretación que SE RESPONDAN con los datos generados (p. ej. cuál es el mayor, qué categoría concentra el problema, qué relación hay entre A y B), cada una con 3-4 opciones, UNA `correcta: true` y un `feedback` que explique el porqué citando valores.
 - cierre: conclusión de monitoreo y acción recomendada.
-[RESTRICCIONES] Las respuestas correctas deben ser verificables con los datos; no uses datos contradictorios.
+{_l5}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

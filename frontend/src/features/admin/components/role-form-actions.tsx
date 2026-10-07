@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 import { DialogFooter } from "@/core/components/ui/dialog";
 
@@ -12,10 +14,12 @@ export function RoleFormActions({
   submitLabel,
   onCancel,
 }: Readonly<RoleFormActionsProps>) {
+  const { t } = useTranslation("admin");
+
   return (
     <DialogFooter>
       <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-        Cancelar
+        {t("roles.form.cancel")}
       </Button>
       <Button type="submit" loading={isSubmitting}>
         {submitLabel}

@@ -34,6 +34,8 @@ def update_ova_metadata(
                 actor=_actor_from_user(current_user),
                 title=payload.title,
                 description=payload.description,
+                metadata=payload.model_dump(exclude_unset=True, exclude={"title", "description", "package_theme"}),
+                package_theme=payload.package_theme,
             )
         )
     except OvaError as error:
@@ -42,6 +44,8 @@ def update_ova_metadata(
         "id": result.id,
         "title": result.title,
         "description": result.description,
+        **result.metadata,
+        "package_theme": result.package_theme,
         "message": "Metadatos actualizados correctamente.",
     }
 

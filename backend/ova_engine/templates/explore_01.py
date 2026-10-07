@@ -9,6 +9,7 @@ redo, optimizador…) en vez de simular siempre el mismo mecanismo.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 
@@ -50,9 +51,11 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p.get("num_iterations", 3)
-    return f"""[ROL] Diseñador de laboratorios virtuales y simulaciones de mecanismos internos de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos, Oracle).
-[TAREA] Modela el mecanismo interno de «{concept}» como un pequeño sistema que el estudiante manipula: unos componentes con estado, unos contadores observables y acciones que los cambian. El estudiante hará al menos {n} acciones. Todo debe ser técnicamente correcto para Oracle y propio de «{concept}» (no uses buffer cache, redo o bloqueos salvo que sean el tema).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de laboratorios virtuales y simulaciones de mecanismos internos de bases de datos.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Modela el mecanismo interno de «{concept}» como un pequeño sistema que el estudiante manipula: unos componentes con estado, unos contadores observables y acciones que los cambian. El estudiante hará al menos {n} acciones. Todo debe ser técnicamente correcto{d.si_oracle(" para Oracle", "")} y propio de «{concept}» (no uses caché, redo, transacciones o bloqueos salvo que sean el tema).
 - titulo: título conciso del laboratorio (≤10 palabras).
 - objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras).
 - concepto_mecanismo: explicación concisa del mecanismo y cómo responde a las acciones (≤35 palabras).
@@ -71,6 +74,30 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - ejemplo_trabajado: recorrido guiado de una iteración típica y su efecto en los contadores (≤40 palabras).
 - sintesis: idea clave que el estudiante debe llevarse tras comparar las acciones (≤40 palabras).
 [RESTRICCIONES] Dinámica causa-efecto concreta y verificable. Sin fórmulas abstractas. Tono riguroso pero accesible.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de laboratorios virtuales y simulaciones de mecanismos internos de «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Modela el mecanismo interno de «{concept}» como un pequeño sistema que el estudiante manipula: unos componentes con estado, unos contadores observables y acciones que los cambian. El estudiante hará al menos {n} acciones. Todo debe ser correcto y propio de «{concept}» (no uses mecanismos de otros temas salvo que sean el tema).
+- titulo: título conciso del laboratorio (≤10 palabras).
+- objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras).
+- concepto_mecanismo: explicación concisa del mecanismo y cómo responde a las acciones (≤35 palabras).
+- componentes: 3 o 4 partes del mecanismo que cambian de estado (ej. para el ciclo del agua: "Océano", "Nube", "Lluvia", "Río"). Por cada uno:
+  * `nombre`: nombre corto (≤4 palabras).
+  * `estado_inicial`: estado de partida en pocas palabras (ej. "Sin leer", "Vacío", "Libre").
+- metricas: 2 o 3 contadores enteros que el estudiante ve cambiar (ej. "Litros evaporados", "Pasos realizados", "Energía usada"). Por cada uno: `nombre` (≤4 palabras) e `inicial` (entero ≥ 0, normalmente 0).
+- controles: entre 2 y 4 acciones distintas. Por cada una:
+  * `id`: identificador en minúsculas sin espacios (≤15 caracteres).
+  * `accion`: texto del botón (≤6 palabras, ej. "Calentar el agua").
+  * `descripcion`: qué hará la acción (≤22 palabras).
+  * `componente`: número (1, 2, 3 o 4) del componente de `componentes` cuyo estado cambia.
+  * `nuevo_estado`: estado que toma ese componente (≤5 palabras, ej. "Leído", "Dividido en dos").
+  * `cambios`: lista de enteros, uno por cada contador de `metricas` y en el mismo orden, con lo que suma o resta la acción (ej. [3, 1] o [0, -2]). Usa magnitudes realistas y coherentes entre acciones para que la comparación enseñe algo.
+  * `resultado`: qué ocurrió y por qué, como lo vería el estudiante (≤30 palabras).
+- ejemplo_trabajado: recorrido guiado de una iteración típica y su efecto en los contadores (≤40 palabras).
+- sintesis: idea clave que el estudiante debe llevarse tras comparar las acciones (≤40 palabras).
+[RESTRICCIONES] Dinámica causa-efecto concreta y verificable. Sin fórmulas abstractas. Tono riguroso pero accesible.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -192,7 +219,7 @@ _LAB_JS = """
 })();
 """
 
-_ICONS = ("▶", "◆", "■", "●")
+_ICONS = ("▲", "◆", "■", "●")
 
 
 def render(data: dict, ctx: RenderContext) -> str:

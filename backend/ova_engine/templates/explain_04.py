@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -11,7 +13,7 @@ PARAMS = (
         "num_questions",
         6,
         min=4,
-        max=8,
+        max=10,
         help="Número de preguntas frecuentes",
     ),
 )
@@ -38,10 +40,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p.get("num_questions", 6)
-    return f"""[ROL] Curador y docente especialista en didáctica universitaria.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña una sección de {n} Preguntas Frecuentes (FAQ interactivo) que responda a dudas genuinas, confusiones habituales y obstáculos reales que experimentan los estudiantes al aprender «{concept}». Cada respuesta debe usar una analogía cotidiana o técnica explicativa que clarifique el concepto y corrija errores comunes.
+    return f"""[ROL] Curador y docente especialista en didáctica para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Diseña una sección de {n} Preguntas Frecuentes (FAQ interactivo) que responda a dudas genuinas, confusiones habituales y obstáculos reales que experimentan los estudiantes al aprender «{concept}». Cada respuesta debe usar una analogía cotidiana o técnica explicativa que clarifique el concepto y corrija errores comunes.
 - titulo: título directo y motivador para la sección de FAQ (≤10 palabras).
 - intro: introducción empática que invite a explorar las dudas frecuentes antes de programar o administrar (≤25 palabras).
 - categorias: lista de 2 a 4 categorías temáticas distintas que agrupen las dudas (ej. 'Conceptos Básicos', 'Arquitectura Interna', 'Casos Prácticos', 'Optimización').
@@ -346,12 +349,12 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'number="{idx}" label="{cat} • {lvl}" title="{preg}">'
             f'<div class="ova-faq-body">'
             f'<div class="ova-faq-meta">'
-            f'<span class="ova-chip ova-chip--category"><span aria-hidden="true">🏷️</span> {cat}</span>'
-            f'<span class="ova-chip ova-chip--level" data-level="{lvl}"><span aria-hidden="true">📊</span> {lvl}</span>'
-            f'<span class="ova-chip ova-chip--status" id="faq-status-{idx}" aria-live="polite">⚪ Sin revisar</span>'
+            f'<span class="ova-chip ova-chip--category"><span aria-hidden="true">{icon("tag")}</span> {cat}</span>'
+            f'<span class="ova-chip ova-chip--level" data-level="{lvl}"><span aria-hidden="true">{icon("chart")}</span> {lvl}</span>'
+            f'<span class="ova-chip ova-chip--status" id="faq-status-{idx}" aria-live="polite">{icon("circle")} Sin revisar</span>'
             f'</div>'
             f'<div class="ova-faq-answer">'
-            f'<h3 class="ova-faq-label">💡 Explicación didáctica</h3>'
+            f'<h3 class="ova-faq-label">{icon("bulb")} Explicación didáctica</h3>'
             f'<p class="ova-faq-text">{resp}</p>'
             f'</div>'
             f'</div>'
@@ -504,7 +507,7 @@ if (toggleBtn) {{
       }}
     }});
     toggleBtn.setAttribute('aria-expanded', String(allExpanded));
-    if (toggleIcon) toggleIcon.textContent = allExpanded ? '📁' : '📂';
+    if (toggleIcon) toggleIcon.innerHTML = allExpanded ? ovaIcon('folder') : ovaIcon('folder-open');
     if (toggleText) toggleText.textContent = allExpanded ? 'Colapsar todas' : 'Expandir todas';
   }});
 }}
@@ -534,7 +537,7 @@ if (toggleBtn) {{
 
 <div class="ova-actions-bar">
   <button type="button" class="ova-btn ova-btn--toggle" id="toggle-all-btn" aria-expanded="false">
-    <span id="toggle-icon" aria-hidden="true">📂</span>
+    <span id="toggle-icon" aria-hidden="true">{icon('folder-open')}</span>
     <span id="toggle-text">Expandir todas</span>
   </button>
   <span id="faq-filter-count" class="ova-filter-count" aria-live="polite">Mostrando {total} de {total} preguntas</span>
@@ -545,7 +548,7 @@ if (toggleBtn) {{
 </div>
 
 <div id="faq-empty-state" class="ova-empty-state" hidden role="status">
-  <p>🔍 No hay preguntas frecuentes con los filtros seleccionados.</p>
+  <p>{icon('search')} No hay preguntas frecuentes con los filtros seleccionados.</p>
   <button type="button" class="ova-btn--reset" id="faq-reset-filters">Restablecer filtros</button>
 </div>
 

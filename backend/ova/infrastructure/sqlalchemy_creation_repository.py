@@ -9,25 +9,37 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
-from models import Ova, OvaPhase, OvaVersion
+from models import Ova, OvaPhase, OvaVersion, User
 from ova.domain.model import OvaDuplicateSource
 from ova.domain.model import OvaPhase as DomainOvaPhase
 from rag import tie_uploads_to_ova
 
 logger = structlog.get_logger(__name__)
 
+# Lo que una copia hereda del original además del contenido.
+COPIED_SETTINGS = (
+    "package_theme", "license", "language", "keywords", "educational_level", "audience",
+    "typical_learning_time",
+)
+
 
 class SqlAlchemyOvaCreationRepository:
     """Implementa los puertos de creación estructuralmente, sin importarlos."""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: Session, build_scorm_zip=None, persist_scorm_zip=None) -> None:
         self._db = db
+        # Los inyecta la raíz de composición (container): la capa de infraestructura
+        # no importa la de aplicación.
+        self._build_scorm_zip = build_scorm_zip
+        self._persist_scorm_zip = persist_scorm_zip
         self._ovas: dict[str, Ova] = {}
 
     def create_ova(
         self, owner_id: str, title: str, description: str | None, status: str
     ) -> str:
-        ova = Ova(user_id=owner_id, title=title, description=description, status=status)
+        owner = self._db.get(User, owner_id)
+        ova = Ova(user_id=owner_id, title=title, description=description, status=status,
+                  author=(owner.full_name or owner.email) if owner else "")
         self._db.add(ova)
         self._db.flush()
         self._ovas[str(ova.id)] = ova
@@ -97,6 +109,8 @@ class SqlAlchemyOvaCreationRepository:
                     type=phase.phase_type,
                     order=phase.phase_order,
                     content=phase.content,
+                    title=phase.title,
+                    resource_type_id=phase.resource_type_id,
                 )
                 for phase in self._db.execute(
                     select(OvaPhase)
@@ -113,6 +127,7 @@ class SqlAlchemyOvaCreationRepository:
             status=ova.status,
             prompt=prompt,
             phases=phases,
+            settings={name: getattr(ova, name) for name in COPIED_SETTINGS},
         )
 
     def next_copy_title(self, base_title: str, owner_id: str) -> str:
@@ -127,6 +142,39 @@ class SqlAlchemyOvaCreationRepository:
 
     def set_current_version(self, ova_id: str, version_id: str) -> None:
         self._ovas[ova_id].current_version_id = version_id
+
+    def apply_settings(self, ova_id: str, settings: dict) -> None:
+        """Tema de paquete y metadatos del original (no el autor: lo pone el dueño de la copia)."""
+        ova = self._ovas[ova_id]
+        for name, value in settings.items():
+            if name in COPIED_SETTINGS:
+                setattr(ova, name, value)
+
+    def build_package(self, ova_id: str, version_id: str, user_id: str) -> None:
+        """Genera el SCORM de la copia, para que se pueda descargar sin regenerar nada."""
+        from core.educational_metadata import metadata_from_ova
+
+        if self._build_scorm_zip is None or self._persist_scorm_zip is None:
+            return
+        ova = self._ovas[ova_id]
+        phases = (
+            self._db.execute(
+                select(OvaPhase).where(OvaPhase.version_id == version_id).order_by(OvaPhase.phase_order)
+            )
+            .scalars()
+            .all()
+        )
+        zip_bytes = self._build_scorm_zip(
+            theme=ova.package_theme,
+            course_title=ova.title,
+            module_title="OVA Generado por GenOVA",
+            metadata=metadata_from_ova(ova),
+            phases=[
+                {"type": p.phase_type, "order": p.phase_order, "content": p.content, "title": p.title}
+                for p in phases
+            ],
+        )
+        ova.storage_key, ova.file_path = self._persist_scorm_zip(zip_bytes, user_id, ova_id, 1)
 
     def commit(self, operation: str) -> None:
         commit_or_500(self._db, operation)

@@ -2,6 +2,9 @@ import re
 from html import escape as html_escape
 from xml.sax.saxutils import escape as xml_escape
 
+from core.educational_metadata import EducationalMetadata
+from scorm.domain.templates.lom import build_lom
+
 PHASE_LABELS = {
     "motivacion": "Motivación",
     "contenido": "Contenido",
@@ -71,13 +74,13 @@ def wrap_resource_html(content: str, title: str) -> str:
       body {{
         margin: 0;
         padding: 24px;
-        font-family: Arial, Helvetica, sans-serif;
-        color: #0f172a;
-        background: #ffffff;
+        font-family: var(--font-body, Arial, sans-serif);
+        color: var(--text, #0f172a);
+        background: var(--surface, #ffffff);
         line-height: 1.6;
       }}
-      h1 {{ color: #1746c0; font-size: 1.5rem; }}
-      :focus-visible {{ outline: 3px solid #1746c0; outline-offset: 2px; }}
+      h1 {{ color: var(--primary, #1746c0); font-size: 1.5rem; }}
+      :focus-visible {{ outline: 3px solid var(--focus, #1746c0); outline-offset: 2px; }}
     </style>
   </head>
   <body>
@@ -90,7 +93,7 @@ def wrap_resource_html(content: str, title: str) -> str:
 """
 
 
-def build_manifest(course_title: str, module_title: str, resource_files: list[str]) -> str:
+def build_manifest(course_title: str, module_title: str, resource_files: list[str], metadata: EducationalMetadata | None = None) -> str:
     file_tags = "\n".join(f'      <file href="{f}" />' for f in resource_files)
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <manifest
@@ -107,6 +110,7 @@ def build_manifest(course_title: str, module_title: str, resource_files: list[st
   <metadata>
     <schema>ADL SCORM</schema>
     <schemaversion>1.2</schemaversion>
+    {build_lom(course_title, metadata)}
   </metadata>
 
   <organizations default="ORG-DEFAULT">
@@ -133,8 +137,14 @@ def build_manifest(course_title: str, module_title: str, resource_files: list[st
 """
 
 
-def build_index_html(course_title: str, resources: list[dict]) -> str:
+def build_index_html(
+    course_title: str, resources: list[dict], package_label: str = "SCORM 1.2",
+    metadata: EducationalMetadata | None = None,
+    *, package_format: str = "scorm12", progress_key: str = "",
+) -> str:
     """SCO shell: tablist of resources + iframe panel. One SCO for the whole OVA.
+
+    `package_label` is the format shown under the title (SCORM 1.2, SCORM 2004…).
 
     Accessibility (WCAG 2.2 AA): skip link, semantic landmarks, an ARIA tablist
     with roving tabindex + arrow-key navigation (wired in app.js), an
@@ -149,21 +159,41 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
     )
     first_src = html_escape(resources[0]["file"], quote=True) if resources else ""
     safe_course_title = html_escape(course_title)
+    meta = metadata or EducationalMetadata()
+    meta_tags = "\n".join(
+        f'    <meta name="{name}" content="{html_escape(value, quote=True)}" />'
+        for name, value in (
+            ("author", meta.author), ("description", meta.description or ""),
+            ("keywords", ", ".join(meta.keywords)), ("language", meta.language),
+            ("license", meta.license), ("educational-level", meta.educational_level),
+            ("audience", meta.audience), ("typical-learning-time", meta.typical_learning_time),
+        )
+    )
+    license_text = html_escape(meta.license)
+    footer = (f'<a rel="license" href="{meta.license_url}">{license_text}</a>'
+              if meta.license_url else license_text)
+    initial_status = (
+        f"Progreso local: 0 de {len(resources)} recursos completados."
+        if package_format in ("html", "ims")
+        else "Vista sin aula virtual: tu progreso no se enviará"
+    )
     return f"""<!doctype html>
-<html lang="es">
+<html lang="{html_escape(meta.language, quote=True)}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{safe_course_title}</title>
+{meta_tags}
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="resources/styles.css" />
   </head>
-  <body>
+  <body data-package-format="{html_escape(package_format, quote=True)}"
+        data-progress-key="{html_escape(progress_key, quote=True)}">
     <a class="skip-link" href="#res-frame">Saltar al contenido</a>
     <main class="container">
       <header>
         <h1>{safe_course_title}</h1>
-        <p>Objeto Virtual de Aprendizaje · GenOVA · SCORM 1.2</p>
+        <p>Objeto Virtual de Aprendizaje · GenOVA · {html_escape(package_label)}</p>
       </header>
 
       <nav class="res-nav" aria-label="Recursos del OVA">
@@ -184,11 +214,12 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
       <section class="card" aria-labelledby="estado-titulo">
         <h2 id="estado-titulo" class="visually-hidden">Estado de progreso</h2>
         <p id="scorm-status" role="status" aria-live="polite">
-          Pendiente de inicialización...
+          {initial_status}
         </p>
         <button id="complete-btn" type="button">Marcar OVA como completado</button>
       </section>
     </main>
+    <footer class="container">Licencia: {footer}</footer>
 
     <script src="resources/scorm.js"></script>
     <script src="resources/xapi.js"></script>

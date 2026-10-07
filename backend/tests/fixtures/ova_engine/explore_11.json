@@ -1,0 +1,55 @@
+{
+  "concept": "Funciones cuadráticas y parábolas",
+  "params": {
+    "num_steps": 4
+  },
+  "data": {
+    "titulo": "Exploración con GeoGebra: Funciones cuadráticas y parábolas",
+    "objetivo": "Explora cómo varían la concavidad, vértice y cortes con los ejes en una parábola al modificar sus coeficientes.",
+    "comandos": [
+      "a = Slider(-5, 5, 0.5)",
+      "b = Slider(-5, 5, 0.5)",
+      "c = Slider(-5, 5, 0.5)",
+      "SetValue(a, 1)",
+      "SetValue(b, 0)",
+      "SetValue(c, 0)",
+      "f(x) = a * x^2 + b * x + c",
+      "V = Vertex(f)"
+    ],
+    "consignas": [
+      {
+        "paso": 1,
+        "indicacion": "Desplaza el deslizador a hacia valores positivos (a > 0) y luego negativos (a < 0).",
+        "pregunta": "¿Hacia dónde se abren las ramas de la parábola cuando a es negativo?",
+        "respuesta_esperada": "hacia abajo",
+        "feedback_correcto": "Cuando el coeficiente cuadrático es negativo, la parábola es cóncava hacia abajo.",
+        "feedback_incorrecto": "Observa la orientación de la curva cuando a < 0 en el plano cartesiano."
+      },
+      {
+        "paso": 2,
+        "indicacion": "Fija a = 1 y varía el deslizador c entre -4 y 4 manteniendo b = 0.",
+        "pregunta": "¿Qué punto notable de la parábola coincide con el valor de c cuando x = 0?",
+        "respuesta_esperada": "intersección con el eje y",
+        "feedback_correcto": "El término independiente c indica exactamente el punto de corte con el eje vertical (0, c).",
+        "feedback_incorrecto": "Revisa las coordenadas del punto donde la curva corta la recta vertical x = 0."
+      },
+      {
+        "paso": 3,
+        "indicacion": "Configura a = 1, b = 0 y c = -4.",
+        "pregunta": "¿Cuáles son las raíces o intersecciones de la parábola con el eje x?",
+        "respuesta_esperada": "2 y -2",
+        "feedback_correcto": "Resolviendo x^2 - 4 = 0 obtenemos las dos raíces reales x = 2 y x = -2.",
+        "feedback_incorrecto": "Observa los valores en el eje horizontal donde la curva cruza el eje de abscisas."
+      },
+      {
+        "paso": 4,
+        "indicacion": "Aumenta el valor absoluto de a de 1 a 4.",
+        "pregunta": "¿Cómo cambia la apertura o amplitud de las ramas de la parábola?",
+        "respuesta_esperada": "se estrecha",
+        "feedback_correcto": "A mayor valor absoluto de a, mayor velocidad de crecimiento vertical y ramas más estrechas.",
+        "feedback_incorrecto": "Compara el ancho de la curva cuando a = 1 frente a cuando a = 4."
+      }
+    ],
+    "cierre": "Has verificado experimentalmente el comportamiento gráfico y analítico de las funciones cuadráticas."
+  }
+}

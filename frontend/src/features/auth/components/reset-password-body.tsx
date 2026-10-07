@@ -16,6 +16,8 @@ interface ResetPasswordBodyProps {
   onSubmit: FormSubmitHandler;
 }
 
+import { useTranslation } from "react-i18next";
+
 export function ResetPasswordBody({
   token,
   status,
@@ -23,8 +25,10 @@ export function ResetPasswordBody({
   form,
   onSubmit,
 }: Readonly<ResetPasswordBodyProps>) {
+  const { t } = useTranslation("auth");
+
   if (status === "success") {
-    return <AuthSuccessPanel message={message} href="/login" actionLabel="Ir a iniciar sesión" />;
+    return <AuthSuccessPanel message={message} href="/login" actionLabel={t("reset.goToLogin")} />;
   }
   if (!token) return <ResetTokenMissing />;
   return (

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ConfirmModal } from "@/core/components/confirm-modal";
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -25,6 +27,7 @@ export function ProfilesSheet({
   dirty,
   onDiscardDraft,
 }: Readonly<ProfilesSheetProps>) {
+  const { t } = useTranslation("llm-settings");
   const sheet = useProfilesSheet({ open, onOpenChange, onDiscardDraft });
   const { profiles } = sheet;
   return (
@@ -32,17 +35,17 @@ export function ProfilesSheet({
       <ModelsSideSheet
         open={open}
         onOpenChange={onOpenChange}
-        title="Perfiles de modelos"
-        description="Guarda la configuración de todas las tareas con un nombre y vuelve a ella en un clic."
+        title={t("profiles.title")}
+        description={t("profiles.description")}
         action={
           <div className="space-y-1.5">
             <Button className="w-full max-sm:h-11" disabled={sheet.full} onClick={sheet.openSave}>
               <Icon name="plus" size="text-base" />
-              Guardar la configuración actual
+              {t("profiles.saveCurrent")}
             </Button>
             {sheet.full ? (
               <p className="text-xs text-muted-foreground">
-                Hay {profiles.limit} perfiles, el máximo. Borra alguno para guardar otro.
+                {t("profiles.maxProfilesCount", { count: profiles.limit })}
               </p>
             ) : null}
           </div>
@@ -75,10 +78,10 @@ export function ProfilesSheet({
       />
       <ConfirmModal
         open={sheet.deleting !== null}
-        title={`¿Borrar el perfil «${sheet.deleting?.name ?? ""}»?`}
-        message="La configuración actual no cambia. El perfil no se puede recuperar."
-        confirmLabel="Borrar perfil"
-        loadingLabel="Borrando…"
+        title={t("profiles.deleteConfirmTitle", { name: sheet.deleting?.name ?? "" })}
+        message={t("profiles.deleteDesc")}
+        confirmLabel={t("profiles.deleteAction")}
+        loadingLabel={t("profiles.deleting")}
         isLoading={profiles.remove.isPending}
         onConfirm={() => {
           if (sheet.deleting) void sheet.remove(sheet.deleting);

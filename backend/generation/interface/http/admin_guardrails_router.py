@@ -3,11 +3,12 @@
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from auth.dependencies import require_admin
+from auth.dependencies import get_current_user, require_admin
 from core.database import get_db
 from core.rate_limit import limiter
 from generation.domain.guardrails import validate_guardrail_updates
 from generation.infrastructure.guardrails_store import (
+    active_topic_area,
     get_guardrails_config,
     save_guardrails_config,
 )
@@ -45,3 +46,13 @@ def put_guardrails_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración de guardrails.",
         ) from None
+
+
+# Lectura para cualquier usuario autenticado: la pantalla de creación avisa del área activa.
+public_router = APIRouter(tags=["Generación"])
+
+
+@public_router.get("/topic-area", summary="Área temática activa de los OVAs")
+def get_topic_area_endpoint(_user=Depends(get_current_user)):
+    """{"area": "…"} con el área que guiará la generación, o "" si no hay."""
+    return {"area": active_topic_area()}

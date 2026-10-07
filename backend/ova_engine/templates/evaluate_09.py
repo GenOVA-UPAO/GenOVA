@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS
+from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_decisions", 4, min=3, max=5, help="Número de decisiones del escenario"),
+    Param("num_decisions", 4, min=2, max=5, help="Número de decisiones del escenario"),
 )
 
 _CSS = """
@@ -50,19 +51,23 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Diseñador de simulaciones evaluativas para futuros DBA.", f"Diseñador de simulaciones evaluativas de {d.topic} para {d.audiencia}. {d.guia_nivel}")
+    actor = d.pick("un DBA", "una persona que aplica el tema")
+    extra = d.pick(f"Menciona sentencias {d.si_oracle('o vistas de Oracle', 'SQL')} cuando aplique.", "Mantente estrictamente en el tema y el nivel indicados, con ejemplos propios del tema.")
     n = p["num_decisions"]
-    return f"""[ROL] Diseñador de simulaciones evaluativas para futuros DBA.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos, Oracle).
-[TAREA] Diseña un escenario realista de un DBA que debe tomar {n} decisiones encadenadas sobre «{concept}».
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un escenario realista de {actor} que debe tomar {n} decisiones encadenadas sobre «{concept}».
 - titulo: título corto de la simulación.
 - escenario: contexto del caso (empresa, síntoma, restricción) en ≤50 palabras.
 - decisiones: exactamente {n}, en orden lógico. Cada una con:
   * `criterio`: competencia que mide (≤4 palabras, ej. «Diagnóstico», «Seguridad»); distinto en cada decisión.
   * `peso`: entero 1, 2 o 3 según su importancia en el caso.
-  * `situacion`: lo que ocurre y lo que debe decidir el DBA (≤35 palabras).
+  * `situacion`: lo que ocurre y lo que debe decidir {actor} (≤35 palabras).
   * `opciones`: exactamente 3, cada una con `texto` (acción concreta ≤20 palabras), `nivel` (entero: 2 = óptima, 1 = aceptable con costo, 0 = riesgosa; usa cada nivel una sola vez por decisión y varía el orden) y `feedback` (explica el porqué de la valoración ≤30 palabras).
 - veredicto_alto / veredicto_medio / veredicto_bajo: mensaje final según el desempeño total (≥75 %, 40–74 %, <40 %), ≤35 palabras cada uno.
-[RESTRICCIONES] Opciones plausibles, sin respuesta obvia. Menciona sentencias o vistas de Oracle cuando aplique.
+[RESTRICCIONES] Opciones plausibles, sin respuesta obvia. {extra}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -247,4 +252,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("decisiones", "num_decisions"),
 )

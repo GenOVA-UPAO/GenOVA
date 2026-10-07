@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PlatformKeyActions } from "./platform-key-actions";
 import { PlatformKeyDeleteConfirm } from "./platform-key-delete-confirm";
@@ -6,7 +7,7 @@ import { PlatformKeyInput } from "./platform-key-input";
 import { providerMeta } from "./platform-key-meta";
 import { PlatformKeyRowHeader } from "./platform-key-row-header";
 import { PlatformKeyRowMessages } from "./platform-key-row-messages";
-import { checkPlatformProvider, useProviderCheck } from "./platform-provider-check";
+import { checkPlatformProvider, type ProviderCheckResult, useProviderCheck } from "./platform-provider-check";
 import { ProviderCheckStatus } from "./platform-provider-check-status";
 import { usePlatformKeyDraft } from "./use-platform-key-draft";
 
@@ -15,21 +16,24 @@ interface PlatformKeyRowProps {
   maskedValue?: string | null;
   /** Hay clave en una variable de entorno del servidor (se usa si no se guarda otra). */
   serverKey?: boolean;
+  lastCheck?: ProviderCheckResult;
 }
 
 export function PlatformKeyRow({
   provider,
   maskedValue,
   serverKey = false,
+  lastCheck,
 }: Readonly<PlatformKeyRowProps>) {
+  const { t } = useTranslation();
   const masked = maskedValue ?? "";
   const configured = masked !== "";
   const meta = providerMeta(provider);
   const check = useProviderCheck(checkPlatformProvider);
-  // Al guardar una clave se comprueba al momento con el proveedor.
+  // El PUT valida antes de guardar y devuelve la comprobación en la caché.
   const { inputRef, draft, setDraft, editing, missingKey, save, persist, saveDraft } =
     usePlatformKeyDraft(provider, () => {
-      check.run(provider);
+      check.reset();
     });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const errorId = `platform-key-error-${provider}`;
@@ -51,7 +55,7 @@ export function PlatformKeyRow({
           meta={meta}
           configured={configured}
           serverKey={serverKey}
-          check={check}
+          check={{ ...check, result: check.result ?? lastCheck ?? null }}
         />
         {configured && !editing && <code className="text-xs text-muted-foreground">{masked}</code>}
         {!editing && <PlatformKeyActions editing={false} {...actions} />}
@@ -59,7 +63,7 @@ export function PlatformKeyRow({
       {editing && (
         <div className="flex flex-col gap-2 sm:flex-row">
           <PlatformKeyInput
-            label={`Nueva clave de ${meta.label}`}
+            label={t("shared:nueva_clave_de_value", { p0: meta.label })}
             value={draft ?? ""}
             placeholder={meta.placeholder}
             ref={inputRef}

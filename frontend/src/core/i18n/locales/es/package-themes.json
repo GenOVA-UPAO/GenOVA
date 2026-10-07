@@ -1,0 +1,21 @@
+{
+  "label": "Tema del paquete",
+  "loading": "Cargando temas…",
+  "previewTitle": "Aprender juntos",
+  "continue": "Continuar",
+  "help": "Se aplica a la vista previa y a todos los formatos exportados.",
+  "loadError": "No se pudieron cargar los temas.",
+  "retry": "Reintentar",
+  "updated": "Tema del paquete actualizado",
+  "saveError": "No se pudo guardar el tema del paquete. Inténtalo de nuevo.",
+  "saving": "Guardando…",
+  "names": {
+    "original": "Paleta del OVA",
+    "upao": "UPAO",
+    "claro": "Claro",
+    "oscuro": "Oscuro",
+    "alto-contraste": "Alto contraste",
+    "infantil": "Infantil"
+  },
+  "originalHint": "Se conservan los colores con los que se generaron los recursos (la paleta que elegiste al crear el OVA)."
+}

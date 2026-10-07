@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useId, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { authStore } from "@/core/auth/auth-store";
 import { Button } from "@/core/components/ui/button";
@@ -20,6 +21,7 @@ export function PendingEmailConfirm({
   pendingEmail,
   onConfirmed,
 }: Readonly<PendingEmailConfirmProps>) {
+  const { t } = useTranslation("profile");
   const id = useId();
   const queryClient = useQueryClient();
   const [code, setCode] = useState("");
@@ -35,7 +37,7 @@ export function PendingEmailConfirm({
       await authStore.revalidate();
       onConfirmed(String(result.email));
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "No se pudo confirmar.");
+      setError(err instanceof Error ? err.message : t("pendingEmail.failed"));
     } finally {
       setBusy(false);
     }
@@ -44,12 +46,16 @@ export function PendingEmailConfirm({
   return (
     <div role="status" className="space-y-3 rounded-lg border border-border bg-muted/40 p-4">
       <p className="text-sm text-pretty">
-        Tu correo actual sigue vigente. Enviamos un código a <strong>{pendingEmail}</strong>:
-        escríbelo aquí para completar el cambio.
+        <Trans
+          ns="profile"
+          i18nKey="pendingEmail.notice"
+          values={{ email: pendingEmail }}
+          components={{ strong: <strong /> }}
+        />
       </p>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor={`${id}-code`}>Código de confirmación</Label>
+          <Label htmlFor={`${id}-code`}>{t("pendingEmail.codeLabel")}</Label>
           <Input
             id={`${id}-code`}
             value={code}
@@ -70,7 +76,7 @@ export function PendingEmailConfirm({
             void confirm();
           }}
         >
-          Confirmar correo
+          {t("pendingEmail.confirm")}
         </Button>
       </div>
       {error && (

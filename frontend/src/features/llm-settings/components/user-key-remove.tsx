@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ConfirmModal } from "@/core/components/confirm-modal";
@@ -21,6 +22,7 @@ interface UserKeyRemoveProps {
  * (`{provider: ""}`) pero la interfaz no tenía forma de hacerlo.
  */
 export function UserKeyRemove({ provider, label, onRemoved }: Readonly<UserKeyRemoveProps>) {
+  const { t } = useTranslation("llm-settings");
   const { save, saving } = useUserApiKeys();
   const [open, setOpen] = useState(false);
 
@@ -29,20 +31,20 @@ export function UserKeyRemove({ provider, label, onRemoved }: Readonly<UserKeyRe
       await save({ provider, key: "" });
       setOpen(false);
       onRemoved();
-      toast.success(`Clave de ${label} quitada.`);
+      toast.success(t("credentials.removedKeySuccess", { provider: label }));
     } catch (err: unknown) {
-      toast.error(errorMessage(err, "No se pudo eliminar la clave."));
+      toast.error(errorMessage(err, t("credentials.deleteError")));
     }
   };
 
   return (
     <>
-      <Tooltip label="Quitar clave" side="top">
+      <Tooltip label={t("credentials.removeKeyAction")} side="top">
         <Button
           variant="ghost"
           size="icon"
           className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive max-sm:size-11"
-          aria-label={`Quitar tu clave de ${label}`}
+          aria-label={t("credentials.removeYourKey", { provider: label })}
           onClick={() => {
             setOpen(true);
           }}
@@ -52,10 +54,10 @@ export function UserKeyRemove({ provider, label, onRemoved }: Readonly<UserKeyRe
       </Tooltip>
       <ConfirmModal
         open={open}
-        title={`¿Quitar tu clave de ${label}?`}
-        message="Tus OVAs volverán a usar la clave y los modelos de la plataforma para este proveedor."
-        confirmLabel="Quitar clave"
-        loadingLabel="Quitando…"
+        title={t("credentials.removeKeyTitle", { provider: label })}
+        message={t("credentials.removeKeyDesc")}
+        confirmLabel={t("credentials.removeKeyAction")}
+        loadingLabel={t("credentials.removing")}
         isLoading={saving}
         onConfirm={() => {
           void remove();

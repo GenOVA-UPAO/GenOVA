@@ -1,0 +1,250 @@
+{
+  "nav": {
+    "back": "Volver a Mis OVAs",
+    "myOvas": "Mis OVAs"
+  },
+  "skeleton": {
+    "label": "Cargando OVA",
+    "sr": "Cargando OVA…"
+  },
+  "defaultTitle": "Mi OVA",
+  "generating": {
+    "title": "Generando tu OVA",
+    "loading": "Cargando generación…",
+    "notFound": "No se encontró la generación de este OVA."
+  },
+  "header": {
+    "version": "Versión {{version}}",
+    "viewLabel": "Vista del workspace",
+    "tabs": {
+      "chat": "Instrucciones",
+      "ova": "OVA"
+    }
+  },
+  "readOnly": {
+    "title": "Solo lectura.",
+    "text": "Solo quien creó este OVA puede modificarlo. Puedes revisarlo, comparar sus versiones y descargar el SCORM."
+  },
+  "divider": {
+    "label": "Ancho del panel de chat"
+  },
+  "failedNotice": {
+    "failed_one": "1 recurso no se pudo generar.",
+    "failed_other": "{{count}} recursos no se pudieron generar.",
+    "rest": "El OVA tiene solo lo que sí se generó.",
+    "review": "Revisar y reintentar",
+    "dismiss": "Descartar aviso"
+  },
+  "toolbar": {
+    "history": "Historial de versiones",
+    "aiSettings": "Configuración de IA",
+    "moreActions": "Más acciones",
+    "toast": {
+      "started": "Descarga iniciada",
+      "failed": "No se pudo descargar el paquete",
+      "retry": "Reintentar"
+    }
+  },
+  "export": {
+    "download": "Descargar {{label}}",
+    "chooseFormat": "Elegir formato de descarga",
+    "disabledHint": "Termina o elimina los recursos con error para descargar el paquete."
+  },
+  "loadError": {
+    "notFound": {
+      "title": "No encontramos este OVA",
+      "description": "Puede que se haya movido a la papelera o que el enlace no sea correcto."
+    },
+    "forbidden": {
+      "title": "No tienes acceso a este OVA",
+      "description": "Solo la persona que lo creó puede abrirlo en el editor."
+    },
+    "generic": {
+      "title": "No se pudo abrir el OVA"
+    },
+    "trash": "Ver la papelera",
+    "retry": "Reintentar"
+  },
+  "panel": {
+    "tabsLabel": "Contenido del OVA",
+    "tabs": {
+      "preview": "Vista previa",
+      "edit": "Editar",
+      "visualEditor": "Editor visual (beta)"
+    },
+    "subtitle": {
+      "preview": "Así lo verán tus estudiantes.",
+      "edit": "Reordena, regenera o ajusta cada recurso.",
+      "visualEditor": "Recompone la estructura del recurso con el editor visual inteligente."
+    },
+    "loadingPreview": "Cargando vista previa…",
+    "loadingVisualEditor": "Cargando editor visual…"
+  },
+  "regenStatus": {
+    "target": {
+      "ova": "el OVA",
+      "one": "«{{label}}»",
+      "many": "{{count}} recursos"
+    },
+    "running": "Regenerando {{target}}…",
+    "reorderFailed": "No se pudo cambiar el orden. {{error}}"
+  },
+  "preview": {
+    "empty": {
+      "title": "Este OVA no tiene recursos",
+      "description": "Ve a «Editar» y usa «Añadir recurso» en una fase para crear el primero."
+    },
+    "fallbackName": "el recurso",
+    "frameTitle": "Vista previa del recurso",
+    "loading": "Cargando vista previa…",
+    "tabsLabel": "Recursos del OVA",
+    "footer": {
+      "phase": "Fase: {{label}}",
+      "position": "Recurso {{position}} de {{total}}",
+      "regenerated": "Regenerado",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "previousAria": "Recurso anterior",
+      "nextAria": "Recurso siguiente"
+    }
+  },
+  "feedback": {
+    "group": "Valorar {{name}}",
+    "up": {
+      "aria": "Este recurso me sirvió",
+      "title": "Me sirvió"
+    },
+    "down": {
+      "aria": "Este recurso no me sirvió",
+      "title": "No me sirvió"
+    },
+    "form": {
+      "legend": "¿Qué falló en este recurso?",
+      "reasons": {
+        "contenido_incorrecto": "Contenido incorrecto",
+        "fuera_de_tema": "No trata del tema",
+        "no_funciona": "No funciona",
+        "diseño": "Diseño",
+        "muy_largo": "Muy largo",
+        "muy_corto": "Muy corto",
+        "otro": "Otro"
+      },
+      "comment": "Comentario",
+      "optional": "(opcional)",
+      "placeholder": "Cuéntanos qué esperabas…",
+      "sending": "Enviando…",
+      "submit": "Enviar valoración"
+    }
+  },
+  "resources": {
+    "count": "{{count}} de {{max}} recursos",
+    "maxReached": "Máximo de recursos alcanzado",
+    "add": "Añadir recurso",
+    "addTo": "Añadir recurso a {{label}}",
+    "emptyPhase": "Esta fase no tiene recursos. Añade uno con tus instrucciones.",
+    "moveUp": "Subir",
+    "moveDown": "Bajar",
+    "moveUpAria": "Subir {{name}}",
+    "moveDownAria": "Bajar {{name}}"
+  },
+  "phase": {
+    "unsaved": "Cambios sin guardar en el HTML",
+    "hideCode": "Ocultar código HTML",
+    "editCode": "Editar código HTML",
+    "versions": "Versiones del recurso",
+    "delete": "Eliminar recurso",
+    "regenerate": "Regenerar recurso",
+    "regenConfirm": {
+      "title": "¿Regenerar este recurso?",
+      "message": "La IA volverá a crear «{{name}}» desde cero. La versión actual quedará guardada en el historial de versiones."
+    },
+    "deleteConfirm": {
+      "title": "¿Eliminar este recurso?",
+      "message": "Se quitará «{{name}}» del OVA.",
+      "loading": "Eliminando…"
+    }
+  },
+  "code": {
+    "label": "Código HTML del recurso",
+    "save": "Guardar cambios",
+    "discard": "Descartar cambios",
+    "state": {
+      "dirty": "Cambios sin guardar.",
+      "saved": "Cambios guardados. Ya se ven en la vista previa.",
+      "clean": "Sin cambios."
+    }
+  },
+  "chat": {
+    "panelLabel": "Panel de instrucciones",
+    "status": {
+      "running": "En curso",
+      "error": "Error",
+      "success": "Completado",
+      "idle": "GenOVA"
+    },
+    "progress": "Progreso de regeneración",
+    "attach": {
+      "fileLabel": "Archivo de apoyo",
+      "button": "Adjuntar archivo de apoyo"
+    },
+    "composer": {
+      "label": "Describe los cambios que deseas",
+      "placeholder": "Escribe un cambio o mejora para el OVA…",
+      "placeholderScoped_one": "Cambio para 1 recurso…",
+      "placeholderScoped_other": "Cambio para {{count}} recursos…",
+      "submit": "Aplicar cambios",
+      "hint": {
+        "busy": "Espera a que termine la regeneración en curso.",
+        "uploading": "Subiendo archivos…",
+        "indexing": "Indexando archivos para que la IA pueda consultarlos…",
+        "empty": "Escribe un cambio para poder aplicarlo.",
+        "ready": "Ctrl+Enter para aplicar"
+      }
+    },
+    "delete": {
+      "label": "Eliminar mensaje: {{preview}}",
+      "noText": "sin texto"
+    },
+    "empty": {
+      "title": "¿Cómo deseas mejorar este OVA?",
+      "description": "Escribe abajo qué quieres cambiar. La IA lo aplicará y quedará una nueva versión.",
+      "tryWith": "Prueba con:",
+      "suggestions": {
+        "simplify": "Simplificar explicaciones teóricas",
+        "practice": "Añadir actividades prácticas",
+        "tone": "Ajustar el tono a universitario"
+      }
+    },
+    "history": {
+      "label": "Historial de chat",
+      "count_one": "1 mensaje",
+      "count_other": "{{count}} mensajes",
+      "clear": "Limpiar historial",
+      "clearTitle": "¿Limpiar el historial?",
+      "clearMessage_one": "Se borrará 1 mensaje de este hilo. El OVA y sus versiones no cambian.",
+      "clearMessage_other": "Se borrarán {{count}} mensajes de este hilo. El OVA y sus versiones no cambian."
+    },
+    "header": {
+      "title": "Instrucciones",
+      "regenAll": "Regenerar OVA completo",
+      "confirmTitle": "¿Regenerar el OVA completo?",
+      "confirmMessage": "La IA volverá a crear todos los recursos desde cero. La versión actual quedará guardada en el historial de versiones.",
+      "confirmLabel": "Regenerar OVA"
+    },
+    "select": {
+      "legend": "Recursos a regenerar",
+      "all": "Seleccionar todos",
+      "hint": "La instrucción se aplicará solo a los recursos marcados."
+    },
+    "scope": {
+      "all": "Aplicar a: todo el OVA",
+      "some_one": "Aplicar a: 1 recurso",
+      "some_other": "Aplicar a: {{count}} recursos"
+    },
+    "user": {
+      "you": "Tú: ",
+      "attachments": "Archivos adjuntos",
+      "appliedTo": "Aplicado a: {{labels}}"
+    }
+  }
+}

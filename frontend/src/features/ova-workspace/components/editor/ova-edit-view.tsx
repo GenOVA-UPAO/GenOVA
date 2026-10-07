@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { HttpError } from "@/core/lib/http";
 
@@ -7,6 +8,7 @@ import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import type { PhaseWithContent } from "../../lib/types";
 import { OvaEditLayout } from "./ova-edit-layout";
 import { OvaGeneratingPanel } from "./ova-generating-panel";
+import { WorkspaceApplyingGate } from "./workspace-applying-gate";
 import { WorkspaceLoadError } from "./workspace-load-error";
 import { WorkspaceSkeleton } from "./workspace-skeleton";
 
@@ -29,11 +31,12 @@ function isExportable(status: string | undefined): boolean {
 }
 
 export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
+  const { t } = useTranslation();
   const workspace = useOvaWorkspace(ovaId);
   const regen = useChatRegeneration(ovaId);
   const [awaitingReady, setAwaitingReady] = useState(false);
   const phases = (workspace.data?.current_version?.phases ?? []) as PhaseWithContent[];
-  const title = workspace.data?.title ?? "Mi OVA";
+  const title = workspace.data?.title ?? t("workspace:mi_ova");
   if (showsGeneration(workspace.error, awaitingReady, workspace.isPending))
     return (
       <OvaGeneratingPanel
@@ -55,7 +58,10 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
         }}
       />
     );
+  // Regeneración ya en curso al abrir el editor: se ve igual, con un aviso (no la
+  // pantalla de generación inicial). La de esta sesión la avisa el pie del panel.
   return (
+    <WorkspaceApplyingGate ovaId={ovaId} status={workspace.data.status} busy={regen.busy}>
     <OvaEditLayout
       ovaId={ovaId}
       title={title}
@@ -66,5 +72,6 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
       phases={phases}
       regen={regen}
     />
+    </WorkspaceApplyingGate>
   );
 }

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -37,7 +39,8 @@ export function WorkspaceResourceRow({
   onMove,
   onRegenerate,
 }: Readonly<Props>) {
-  const name = resourceLabel(phase);
+  const { t } = useTranslation();
+  const name = resourceLabel(phase, t);
   return (
     <li className={dragging ? "opacity-50" : undefined} {...dragProps}>
       <WorkspacePhaseItem
@@ -50,13 +53,13 @@ export function WorkspaceResourceRow({
         reorder={
           total > 1 && (
             <span className="flex shrink-0 items-center">
-              <Tooltip label="Subir" side="top">
+              <Tooltip label={t("workspace:subir")} side="top">
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground"
                   disabled={index === 0}
-                  aria-label={`Subir ${name}`}
+                  aria-label={t("workspace:subir_value", { p0: name })}
                   onClick={() => {
                     onMove(index, -1);
                   }}
@@ -64,13 +67,13 @@ export function WorkspaceResourceRow({
                   <Icon name="caret-up" />
                 </Button>
               </Tooltip>
-              <Tooltip label="Bajar" side="top">
+              <Tooltip label={t("workspace:bajar")} side="top">
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground"
                   disabled={index === total - 1}
-                  aria-label={`Bajar ${name}`}
+                  aria-label={t("workspace:bajar_value", { p0: name })}
                   onClick={() => {
                     onMove(index, 1);
                   }}

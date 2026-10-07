@@ -3,21 +3,55 @@
 from __future__ import annotations
 
 import json
+import math
 import os
+import re
+import time
 from typing import Any
 
 import httpx
+import structlog
 
 from llm.images.sources.contract import DIAGRAM_SCHEMA
 from llm.images.sources.diagram import _matches
 
+logger = structlog.get_logger(__name__)
 
-def generate_diagram_json(prompt: str, *, model: str | None = None) -> tuple[str, str]:
+
+def _diagram_timeout() -> float:
+    try:
+        value = float(os.getenv("OVA_DIAGRAM_TIMEOUT", "60"))
+        if math.isfinite(value) and value > 0:
+            return value
+    except ValueError:
+        pass
+    return 60.0
+
+
+def _diagram_attempts() -> int:
+    try:
+        return max(1, int(os.getenv("OVA_DIAGRAM_RETRIES", "2")))
+    except ValueError:
+        return 2
+
+
+def generate_diagram_json(
+    prompt: str, *, model: str | None = None, timeout: float | None = None
+) -> tuple[str, str]:
     """Return raw JSON and the actual model; SVG rendering remains offline.
 
     A model containing '/' is an OpenRouter ID. A bare name is an Ollama ID.
     Invalid credentials, HTTP errors and invalid structured output fall back locally.
     """
+    call_timeout = min(_diagram_timeout(), timeout) if timeout is not None else _diagram_timeout()
+    deadline = time.monotonic() + call_timeout
+
+    def remaining_timeout() -> float:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise httpx.ReadTimeout("Presupuesto de tiempo del diagrama agotado")
+        return min(call_timeout, remaining)
+
     selected = model or os.getenv("OVA_DIAGRAM_MODEL", "")
     key = os.getenv("OPENROUTER_API_KEY", "")
     if selected and "/" in selected and not key:
@@ -46,7 +80,7 @@ def generate_diagram_json(prompt: str, *, model: str | None = None) -> tuple[str
                         },
                     },
                 },
-                timeout=90,
+                timeout=remaining_timeout(),
             )
             response.raise_for_status()
             raw = response.json()["choices"][0]["message"]["content"]
@@ -69,7 +103,7 @@ def generate_diagram_json(prompt: str, *, model: str | None = None) -> tuple[str
             "think": False,
             "options": {"num_predict": 3000, "temperature": 0},
         },
-        timeout=float(os.getenv("OVA_LOCAL_LLM_TIMEOUT", "300")),
+        timeout=remaining_timeout(),  # remoto y fallback comparten el presupuesto de la llamada
     )
     response.raise_for_status()
     return response.json()["message"]["content"], local_model
@@ -151,6 +185,15 @@ def prompt_for(kind: str, concept: str, criteria: str) -> str:
         example["aristas"] = []
 
     rule_text = rules.get(kind, rules["flujo"])
+    if kind == "flujo" and re.search(
+        r"\bestados?\b|ciclo de vida|transacci[oó]n", concept + " " + criteria, re.I
+    ):
+        rule_text += (
+            " En flujos de estados conocidos, incluye todas las transiciones de error desde cada estado no final "
+            "donde ese error sea posible, aunque el detalle no las enumere. Todo estado no final tiene salida. "
+            "Los estados finales no tienen transiciones salientes, salvo que el detalle pida explícitamente "
+            "reintentos; no inventes reintentos."
+        )
     return (
         f"Diagrama en español de {concept}. tipo DEBE ser {kind}. {criteria} {rule_text} "
         "IDs únicos; referencias existentes. Etiquetas cortas (máx 24 caracteres); "
@@ -182,10 +225,14 @@ def generate_diagram_for_request(
     Se invoca cuando el campo `imagen.diagrama` falta o es inválido en la primera llamada.
     """
     from llm.images.sources.contract import ImageRequest, ImageResult
-    from llm.images.sources.diagram import DiagramSource, valid_diagram
+    from llm.images.sources.diagram import (
+        DiagramSource,
+        diagram_rejection_reasons,
+        prepare_diagram_for_render,
+    )
     from llm.images.sources.diagram_selection import (
         classify_topic_traits,
-        validate_diagram_quality,
+        quality_rejection_reasons,
     )
 
     source = diagram_source or DiagramSource()
@@ -199,53 +246,77 @@ def generate_diagram_for_request(
     concept = request.concept or request.descripcion or "Concepto técnico"
     criteria = request.descripcion or request.consulta or concept
 
-    prompt = prompt_for(kind, concept, criteria)
-    try:
-        raw_json, actual_model = generate_diagram_json(prompt, model=model)
-        parsed = json.loads(raw_json)
-        if not valid_diagram(parsed):
-            return None
-        ok_qual, _ = validate_diagram_quality(
-            parsed,
-            request.concept,
-            request.descripcion,
-            getattr(request, "template_key", ""),
-        )
-        if not ok_qual:
-            return None
-
-        # Actualizar la petición con el diagrama generado estructurado
-        req_updated = ImageRequest(
-            tipo="diagrama",
-            descripcion=request.descripcion or concept,
-            consulta=request.consulta or "",
-            marca=request.marca or "",
-            diagrama=parsed,
-            concept=request.concept,
-            template_key=getattr(request, "template_key", ""),
-            width=getattr(request, "width", 768),
-            height=getattr(request, "height", 512),
-        )
-
-        res = source.fetch(req_updated)
-        if res:
-            meta = dict(res.meta)
-            meta.update({
-                "generated_diagram": True,
-                "diagram_model": actual_model,
-                "inferred_kind": kind,
-            })
-            return ImageResult(
-                data_uri=res.data_uri,
-                source="diagrama",
-                alt=res.alt,
-                credit=res.credit,
-                meta=meta,
+    base_prompt = prompt_for(kind, concept, criteria)
+    prompt = base_prompt
+    timeout = _diagram_timeout()
+    deadline = time.monotonic() + 2 * timeout
+    for attempt in range(1, _diagram_attempts() + 1):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        raw_json = ""
+        stage = "render"
+        reasons = []
+        try:
+            raw_json, actual_model = generate_diagram_json(
+                prompt, model=model, timeout=min(timeout, remaining)
             )
-    except Exception as exc:
-        import structlog
-
-        structlog.get_logger(__name__).warning("diagram_generation fallback failed", error=str(exc)[:120])
-
+            stage = "schema"
+            try:
+                parsed = json.loads(raw_json)
+            except (ValueError, TypeError):
+                reasons = ["JSON inválido; devuelve solo un objeto JSON sin Markdown ni texto adicional"]
+            else:
+                reasons = diagram_rejection_reasons(parsed)
+                if not reasons:
+                    stage = "calidad"
+                    reasons = quality_rejection_reasons(
+                        parsed, request.concept, request.descripcion,
+                        getattr(request, "template_key", ""),
+                    )
+                if not reasons:
+                    req_updated = ImageRequest(
+                        tipo="diagrama",
+                        descripcion=request.descripcion or concept,
+                        consulta=request.consulta or "",
+                        marca=request.marca or "",
+                        diagrama=parsed,
+                        concept=request.concept,
+                        template_key=getattr(request, "template_key", ""),
+                        width=getattr(request, "width", 768),
+                        height=getattr(request, "height", 512),
+                    )
+                    _, stage, reasons = prepare_diagram_for_render(req_updated)
+                    if not reasons:
+                        stage = "render"
+                        res = source.fetch(req_updated)
+                        if res:
+                            meta = dict(res.meta)
+                            meta.update({
+                                "generated_diagram": True,
+                                "diagram_model": actual_model,
+                                "inferred_kind": kind,
+                                "diagram_attempts": attempt,
+                            })
+                            logger.info("diagram_generated", attempt=attempt, attempts=attempt, diagram_type=kind)
+                            return ImageResult(
+                                data_uri=res.data_uri, source="diagrama", alt=res.alt,
+                                credit=res.credit, meta=meta,
+                            )
+                        reasons = ["No se pudo renderizar el diagrama; simplifica sus nodos y relaciones"]
+        except Exception as exc:
+            # No incluir mensajes de excepción: pueden contener la respuesta del proveedor.
+            reasons = [f"No se pudo generar o renderizar el diagrama ({type(exc).__name__}); vuelve a intentarlo"]
+        logger.warning(
+            "diagram_rejected", attempt=attempt, diagram_type=kind, stage=stage, reasons=reasons,
+        )
+        rejected = raw_json[:4000] if isinstance(raw_json, str) else ""
+        if isinstance(raw_json, str) and len(raw_json) > 4000:
+            rejected += "\n[JSON recortado]"
+        prompt = (
+            base_prompt + "\nCorrige el intento anterior según estos motivos de rechazo:\n- "
+            + "\n- ".join(reasons)
+            + "\nJSON rechazado (solo como referencia para corregirlo):\n" + rejected
+            + "\nDevuelve el diagrama completo corregido, solo JSON."
+        )
     return None
-

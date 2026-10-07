@@ -14,7 +14,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
-from core.text import ova_title
+from core.package_themes import default_package_theme
+from core.text import ova_title, split_education_level
 from models import Ova, OvaJob, OvaJobResource
 
 logger = structlog.get_logger(__name__)
@@ -56,7 +57,19 @@ def create_job(
     it to "borrador" on completion or "error" on total failure.
     """
     title = ova_title(prompt) or "OVA en generación"
-    ova = Ova(user_id=user_id, title=title, description=prompt, status="generando")
+    # Con paleta propia o «IA elige», el tema de paquete no debe pisarla (A4).
+    # La línea «Nivel educativo: …» sigue viajando en el prompt del job (el motor la
+    # necesita) y de la versión, pero la descripción visible queda limpia y el nivel
+    # va a su campo de metadatos.
+    description, level = split_education_level(prompt)
+    ova = Ova(
+        user_id=user_id,
+        title=title,
+        description=description,
+        educational_level=level,
+        status="generando",
+        package_theme=default_package_theme((params or {}).get("theme")),
+    )
     db.add(ova)
     db.flush()
     job = OvaJob(
@@ -171,16 +184,17 @@ def mark_job_resuming(db: Session, job: OvaJob) -> None:
     """Flip a finished/interrupted job back to running before relaunching (R7)."""
     job.status = "running"
     job.finished_at = None
+    for resource in list_resources(db, job.id):
+        if resource.defect_reason in ("provider_auth", "provider_auth_personal"):
+            resource.defect_reason = None
     commit_or_500(db, op="mark_job_resuming")
 
 
 def cancel_job(db: Session, job: OvaJob) -> None:
     """Mark a queued/running job as canceled and release the Ova placeholder.
 
-    The background thread checks status in `_finalize` and skips persisting
-    results if it finds 'canceled' (R1). Without releasing the Ova here, the
-    row stayed at 'generando' forever because `_finalize` returns early and
-    `_sweep_if_stale` ignored terminal jobs.
+    Workers stop before starting new resources; in-flight results are conserved
+    by `_finalize`. Already completed resources become usable immediately.
     """
     job.status = "canceled"
     job.finished_at = _now()

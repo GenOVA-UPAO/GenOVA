@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -46,9 +47,34 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_questions"]
-    return f"""[ROL] Redactor de casos de estudio para un curso universitario de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una empresa ficticia que usa Oracle.
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        """[ROL] Redactor de casos de estudio para un curso universitario de bases de datos.""",
+        f"""[ROL] Redactor de casos de estudio para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una empresa ficticia que usa {d.motor}.""",
+        f"""[TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una persona, comunidad u organización ficticia, propio del área del tema.""",
+    )
+    _l3 = d.pick(
+        f"""- evidencias: 3 o 4 evidencias técnicas del caso; `fuente` (vista, log o comando: {d.si_oracle("V$..., DBA_..., alert.log", "una consulta, un log o un plan de ejecución")}) y `dato` (el valor o mensaje observado, p. ej. {d.si_oracle("un error ORA- real", "un mensaje de error real")} o una cifra; ≤25 palabras).""",
+        """- evidencias: 3 o 4 evidencias del caso; `fuente` (medición, registro, documento u observación de donde sale) y `dato` (el valor, cita o hecho observado; ≤25 palabras).""",
+    )
+    _l4 = d.pick(
+        """- cierre: reflexión que conecte el caso con la práctica profesional del DBA.""",
+        f"""- cierre: reflexión que conecte el caso con {d.practica}.""",
+    )
+    _l5 = d.pick(
+        """[RESTRICCIONES] Datos coherentes entre narrativa y evidencias; las preguntas deben poder responderse con el caso y el concepto.""",
+        f"""[RESTRICCIONES] Datos coherentes entre narrativa y evidencias; las preguntas deben poder responderse con el caso y el concepto. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del caso.
 - empresa: nombre de la empresa ficticia y su giro (≤8 palabras).
 - imagen (opcional): recurso visual estructurado del caso:
@@ -58,10 +84,10 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * "logo" para marcas de software o motores de datos.
   Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - narrativa: el caso en unas 180 palabras, en 2-3 párrafos separados por salto de línea: contexto de la empresa, el problema y cómo se manifestó.
-- evidencias: 3 o 4 evidencias técnicas del caso; `fuente` (vista, log o comando: V$..., DBA_..., alert.log) y `dato` (el valor o mensaje observado, p. ej. un error ORA- real o una cifra; ≤25 palabras).
+{_l3}
 - preguntas: EXACTAMENTE {n} preguntas de análisis que suban de nivel (observación → interpretación → aplicación → evaluación). Cada una con `pregunta`, `respuesta_modelo` (respuesta razonada, ≤55 palabras) y `puntos_clave` (2-4 conceptos o términos breves, ≤3 palabras, que una buena respuesta debe mencionar).
-- cierre: reflexión que conecte el caso con la práctica profesional del DBA.
-[RESTRICCIONES] Datos coherentes entre narrativa y evidencias; las preguntas deben poder responderse con el caso y el concepto.
+{_l4}
+{_l5}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

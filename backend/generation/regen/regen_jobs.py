@@ -54,6 +54,10 @@ class RegenLost(Exception):
     """Otro proceso dio la regeneración por interrumpida mientras esta seguía."""
 
 
+class RegenCancelled(Exception):
+    """El docente canceló la regeneración: se descarta lo ya editado."""
+
+
 def _engine():
     from core.database import engine
 
@@ -197,6 +201,72 @@ def fail_regen(job_id: str, error: str) -> bool:
 def _read(jid: uuid.UUID):
     with _engine().connect() as conn:
         return conn.execute(select(_T, func.now().label("db_now")).where(_T.c.id == jid)).first()
+
+
+def is_cancel_requested(job_id: str) -> bool:
+    """¿Pidió el docente cancelar? El ejecutor lo comprueba entre recursos."""
+    jid = _as_uuid(job_id)
+    if jid is None:
+        return False
+    with _engine().connect() as conn:
+        return bool(conn.execute(select(_T.c.cancel_requested).where(_T.c.id == jid)).scalar())
+
+
+def finish_cancelled(job_id: str) -> bool:
+    """Cierra como «cancelled» la regeneración que cancelaron (si sigue siendo nuestra)."""
+    return touch_regen(job_id, status="cancelled", step="done", finished_at=func.now())
+
+
+def request_cancel(job_id: str, ova_id: str) -> str | None:
+    """Cancela una regeneración abierta. Devuelve su estado, o None si no existe.
+
+    - Sin ejecutor todavía (en cola): se cierra aquí y se libera el OVA.
+    - En marcha: solo se deja la marca; el ejecutor la lee entre recursos, descarta
+      lo editado y libera el OVA (no se puede abortar una llamada ya en vuelo).
+    - Ya terminada: no hace nada y devuelve su estado final.
+    """
+    from models import Ova
+
+    jid, oid = _as_uuid(job_id), _as_uuid(ova_id)
+    if jid is None or oid is None:
+        return None
+    with _engine().begin() as conn:
+        row = conn.execute(select(_T.c.status, _T.c.owner).where(_T.c.id == jid, _T.c.ova_id == oid)).first()
+        if row is None:
+            return None
+        if row.status not in ACTIVE:
+            return row.status
+        if row.owner is None:
+            conn.execute(
+                update(_T)
+                .where(_T.c.id == jid, _T.c.owner.is_(None), _T.c.status == "running")
+                .values(
+                    status="cancelled", step="done", cancel_requested=True, finished_at=func.now()
+                )
+            )
+            conn.execute(
+                update(Ova.__table__)
+                .where(Ova.id == oid, Ova.status == "generando", Ova.current_version_id.is_not(None))
+                .values(status="listo")
+            )
+            return "cancelled"
+        conn.execute(update(_T).where(_T.c.id == jid).values(cancel_requested=True))
+        return row.status
+
+
+def active_regen_id(ova_id: str) -> str | None:
+    """Regeneración abierta de un OVA (para que el editor la retome al abrirlo)."""
+    oid = _as_uuid(ova_id)
+    if oid is None:
+        return None
+    with _engine().connect() as conn:
+        found = conn.execute(
+            select(_T.c.id)
+            .where(_T.c.ova_id == oid, _T.c.status.in_(ACTIVE))
+            .order_by(_T.c.created_at.desc())
+            .limit(1)
+        ).scalar()
+    return str(found) if found else None
 
 
 def regen_progress_dto(job_id: str, ova_id: str) -> dict | None:

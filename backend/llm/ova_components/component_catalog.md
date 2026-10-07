@@ -50,11 +50,11 @@ Listas ul/ol, citas blockquote/cite, código pre/code y details/summary no neces
 ## upao-card
 Contenedor principal con cabecera UPAO.
 ```html
-<upao-card eyebrow="INTRODUCCIÓN" title="Inteligencia Artificial" icon="🧠">
+<upao-card eyebrow="INTRODUCCIÓN" title="Inteligencia Artificial">
   <p>Contenido aquí</p>
 </upao-card>
 ```
-Attrs: `eyebrow` `title` `subtitle` `icon`
+Attrs: `eyebrow` `title` `subtitle` `icon` (opcional; un <svg> en línea. Nunca un emoji)
 
 ## upao-node
 Nodo expandible (timelines, mapas, pasos numerados).
@@ -83,11 +83,11 @@ La selección bloquea su grupo; feedback explica por qué. Operable con Enter/Es
 ## upao-reveal
 Contenido oculto que se revela al hacer clic.
 ```html
-<upao-reveal label="Ver respuesta" icon="💡">
+<upao-reveal label="Ver respuesta">
   La respuesta correcta es: aprendizaje supervisado.
 </upao-reveal>
 ```
-Attrs: `label` `icon` `trigger-id`
+Attrs: `label` `icon` (opcional; un <svg> en línea, nunca un emoji) `trigger-id`
 Methods: `.reveal()` `.hide()` `.toggle()`
 
 ## upao-progress

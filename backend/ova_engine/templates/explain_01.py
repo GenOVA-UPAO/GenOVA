@@ -8,7 +8,9 @@ el prompt técnico en inglés para generadores de video AI y la síntesis concep
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -44,10 +46,11 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_markers"]
-    return f"""[ROL] Guionista de video educativo y diseñador instruccional para EdTech universitario.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Storyboard explicativo del marco teórico fundamental del concepto «{concept}» con {n} marcadores cada 30 segundos, metáforas conceptuales fieles y rigurosas, y un guion continuo de narración.
+    return f"""[ROL] Guionista de video educativo y diseñador instruccional para EdTech de {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Storyboard explicativo del marco teórico fundamental del concepto «{concept}» con {n} marcadores cada 30 segundos, metáforas conceptuales fieles y rigurosas, y un guion continuo de narración.
 - titulo: título del video teórico (≤10 palabras).
 - introduccion: planteamiento introductorio que contextualice el marco teórico de «{concept}» (≤25 palabras).
 - marcadores: exactamente {n} marcadores temporales secuenciales cada 30 segundos ('0:00 - 0:30', '0:30 - 1:00', etc.). Por cada marcador:
@@ -121,7 +124,7 @@ _STYLE = """
   transition: all .2s ease;
 }
 .ova-marker-chip.is-done {
-  background: #f0fdf4;
+  background: var(--success-bg, #f0fdf4);
   color: var(--success, #146C49);
 }
 .ova-marker-p {
@@ -303,7 +306,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         marker_items.append(
             f'<li class="ova-marker-item" id="marker-item-{idx}" data-marker="{idx}">'
             f'<div class="ova-marker-head">'
-            f'<span class="ova-time-tag">⏱️ {tiempo}</span>'
+            f'<span class="ova-time-tag">{icon("clock")} {tiempo}</span>'
             f'<strong class="ova-marker-concept">{concepto}</strong>'
             f'<span class="ova-marker-chip" id="chip-marker-{idx}" aria-hidden="true">Pendiente</span>'
             f"</div>"
@@ -312,7 +315,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="ova-marker-foot">'
             f'<button type="button" class="ova-btn ova-btn--ghost btn-marker-check" data-marker="{idx}" '
             f'aria-label="Revisar marcador {idx}: {concepto}">'
-            f'<span aria-hidden="true">👁️</span> <span id="btn-lbl-marker-{idx}">Marcar como revisado</span>'
+            f'<span aria-hidden="true">{icon("eye")}</span> <span id="btn-lbl-marker-{idx}">Marcar como revisado</span>'
             f"</button>"
             f"</div>"
             f"</li>"
@@ -329,10 +332,10 @@ def render(data: dict, ctx: RenderContext) -> str:
 
 <section class="ova-card">
   <div class="ova-markers-header">
-    <h2>🎬 Secuencia del Storyboard ({total_markers} marcadores temporales)</h2>
+    <h2>{icon('film')} Secuencia del Storyboard ({total_markers} marcadores temporales)</h2>
     <div class="ova-markers-controls">
       <button type="button" class="ova-btn ova-btn--ghost" id="btn-play-markers" aria-label="Reproducir recorrido de marcadores">
-        <span aria-hidden="true">▶️</span> <span id="play-btn-label">Reproducir recorrido</span>
+        <span aria-hidden="true">{icon('play')}</span> <span id="play-btn-label">Reproducir recorrido</span>
       </button>
       <button type="button" class="ova-btn ova-btn--ghost" id="btn-mark-all" aria-label="Marcar todos los marcadores como revisados">
         <span aria-hidden="true">✓</span> <span>Marcar todos revisados</span>
@@ -350,21 +353,21 @@ def render(data: dict, ctx: RenderContext) -> str:
 </section>
 
 <section class="ova-card">
-  <h2>🎙️ Guion de narración continuo (Voz en off)</h2>
+  <h2>{icon('mic')} Guion de narración continuo (Voz en off)</h2>
   <blockquote style="margin-top:12px">
     <p>{esc(data["narracion_voz"])}</p>
   </blockquote>
 </section>
 
 <section class="ova-card">
-  <h2>🎬 Prompt de video para IA</h2>
+  <h2>{icon('film')} Prompt de video para IA</h2>
   <p class="ova-muted" style="font-size:0.875rem;margin-top:6px">
     Prompt técnico en inglés optimizado para generadores externos (Runway Gen-3, Luma Dream Machine, Sora, Pika):
   </p>
   <pre class="ova-prompt-box"><code id="prompt-video-text">{esc(data["prompt_video"])}</code></pre>
   <div class="ova-copy-bar">
     <button type="button" class="ova-btn" id="btn-copy-prompt" aria-label="Copiar prompt de video al portapapeles">
-      <span aria-hidden="true">📋</span> <span id="copy-btn-label">Copiar prompt de video</span>
+      <span aria-hidden="true">{icon('clipboard')}</span> <span id="copy-btn-label">Copiar prompt de video</span>
     </button>
     <span id="copy-status" aria-live="polite" class="ova-muted" style="font-size:0.875rem"></span>
   </div>

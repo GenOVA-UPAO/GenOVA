@@ -26,6 +26,10 @@ from models import Ova, OvaPhase, OvaVersion, RegenJob  # noqa: E402
 
 _DDL = """
 CREATE TABLE ovas (
+  license TEXT NOT NULL DEFAULT 'CC BY-SA 4.0', language TEXT NOT NULL DEFAULT 'es',
+  keywords JSON NOT NULL DEFAULT '[]', educational_level TEXT NOT NULL DEFAULT '',
+  audience TEXT NOT NULL DEFAULT '', typical_learning_time TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '',
+  package_theme VARCHAR(24) NOT NULL DEFAULT 'upao',
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL, description TEXT,
   status VARCHAR(20) NOT NULL DEFAULT 'borrador', file_path TEXT, storage_key TEXT,
   current_version_id TEXT, deleted_at TIMESTAMP,
@@ -336,3 +340,92 @@ def test_el_recurso_nuevo_recibe_el_tema_del_resto_del_ova(db, engine, executor,
 
     assert seen["theme"] == {"from": "<html>v1</html>"}
     assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "success"
+
+
+# ── Cancelación (A2) ──────────────────────────────────────────────────────────
+
+
+def test_cancelar_en_cola_cierra_la_fila_y_libera_el_ova(db, engine):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+
+    assert regen_jobs.request_cancel(job_id, str(ova.id)) == "cancelled"
+    assert _ova_status(db, ova) == "listo"
+    assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "cancelled"
+    # Un reintento tardío de arq ya no la ejecuta.
+    assert regen_jobs.claim_regen(job_id) is None
+    assert regen_jobs.active_regen_id(str(ova.id)) is None
+
+
+def test_cancelar_en_marcha_solo_deja_la_marca(db, engine):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+    regen_jobs.claim_regen(job_id)
+
+    assert regen_jobs.active_regen_id(str(ova.id)) == job_id
+    assert regen_jobs.request_cancel(job_id, str(ova.id)) == "generating"
+    assert regen_jobs.is_cancel_requested(job_id)
+    assert _ova_status(db, ova) == "generando"  # lo libera el ejecutor
+    assert regen_jobs.request_cancel(job_id, str(uuid.uuid4())) is None
+
+
+def test_el_ejecutor_cancelado_descarta_lo_editado_y_no_crea_version(db, engine, executor):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+    executor["during_llm"] = lambda: regen_jobs.request_cancel(job_id, str(ova.id))
+    regen_service._finalize_edit(job_id, str(ova.id))
+
+    assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "cancelled"
+    assert _ova_status(db, ova) == "listo"
+    versions = db.execute(select(OvaVersion.version_number).where(OvaVersion.ova_id == ova.id))
+    assert sorted(versions.scalars()) == [1]
+
+
+def test_regen_phases_parallel_se_detiene_entre_recursos():
+    from generation.regen import regen_edit
+
+    class P:
+        def __init__(self, i):
+            self.id = i
+            self.content = "<html></html>"
+
+    calls = []
+
+    def fake(phase, *_a, **_k):
+        calls.append(phase.id)
+        return "<html>nuevo</html>"
+
+    orig = regen_edit._regen_one_phase
+    regen_edit._regen_one_phase = fake
+    try:
+        out = regen_edit.regen_phases_parallel(
+            [P(1), P(2)], "tema", "cambio", {}, should_stop=lambda: True
+        )
+    finally:
+        regen_edit._regen_one_phase = orig
+    assert out == {"1": None, "2": None} and calls == []
+
+
+def test_un_ova_sin_generacion_propia_responde_vacio_y_no_404():
+    """M8: abrir el editor de un OVA duplicado lanzaba GET /api/jobs?ova_id= → 404."""
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from auth.dependencies import get_current_user
+    from generation.container import build_generation
+    from generation.domain.errors import JobNotFound
+    from generation.jobs.jobs_router import router
+
+    app = FastAPI()
+    app.include_router(router, prefix="/api/jobs")
+    use_cases = MagicMock()
+    use_cases.find_job_by_ova.execute.side_effect = JobNotFound("No hay generación para este OVA.")
+    app.dependency_overrides[build_generation] = lambda: use_cases
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=uuid.uuid4())
+    response = TestClient(app).get(f"/api/jobs?ova_id={uuid.uuid4()}")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["job_id"] is None and body["resources"] == []

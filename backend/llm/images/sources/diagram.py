@@ -17,8 +17,8 @@ from llm.images.sources.contract import DIAGRAM_SCHEMA, ImageRequest, ImageResul
 from llm.images.sources.diagram_semantics import (
     comparison_values,
     node_keys,
-    prepare_diagram,
-    semantic_valid,
+    prepare_diagram_with_reasons,
+    semantic_rejection_reasons,
 )
 
 BLUE = "#0A3D91"
@@ -40,44 +40,90 @@ def _xml_text(value: str) -> bool:
 
 def _matches(data, schema: dict) -> bool:
     """Exact subset used by DIAGRAM_SCHEMA (including additionalProperties)."""
+    return not _schema_rejection_reasons(data, schema)
+
+
+def _schema_rejection_reasons(data, schema: dict, path: str = "$") -> list[str]:
+    """Diagnóstico acotado: rutas y restricciones, nunca el JSON completo."""
     kind = schema.get("type")
     types = {"object": dict, "array": list, "string": str}
     if kind and not isinstance(data, types[kind]):
-        return False
+        return [f"JSON no cumple el esquema: {path} debe ser {kind}"]
     if "enum" in schema and data not in schema["enum"]:
-        return False
+        return [f"JSON no cumple el esquema: {path} debe ser uno de {schema['enum']}"]
     if kind == "string":
-        return len(data) <= schema.get("maxLength", 10000) and _xml_text(data)
+        if len(data) > schema.get("maxLength", 10000):
+            return [f"JSON no cumple el esquema: {path} supera {schema['maxLength']} caracteres"]
+        if not _xml_text(data):
+            return [f"JSON no cumple el esquema: {path} contiene caracteres XML inválidos"]
     if kind == "array":
-        return schema.get("minItems", 0) <= len(data) <= schema.get("maxItems", 100) and all(
-            _matches(item, schema["items"]) for item in data
-        )
+        if not schema.get("minItems", 0) <= len(data) <= schema.get("maxItems", 100):
+            return [f"JSON no cumple el esquema: {path} requiere entre "
+                    f"{schema.get('minItems', 0)} y {schema.get('maxItems', 100)} elementos"]
+        for index, item in enumerate(data):
+            reasons = _schema_rejection_reasons(item, schema["items"], f"{path}[{index}]")
+            if reasons:
+                return reasons
     if kind == "object":
         props = schema["properties"]
-        return (
-            all(key in data for key in schema.get("required", []))
-            and (schema.get("additionalProperties", True) or data.keys() <= props.keys())
-            and all(_matches(value, props[key]) for key, value in data.items() if key in props)
-        )
-    return True
+        for key in schema.get("required", []):
+            if key not in data:
+                return [f"JSON no cumple el esquema: falta {path}.{key}"]
+        if not schema.get("additionalProperties", True) and not data.keys() <= props.keys():
+            return [f"JSON no cumple el esquema: elimina propiedades no permitidas en {path}"]
+        for key, value in data.items():
+            if key in props:
+                reasons = _schema_rejection_reasons(value, props[key], f"{path}.{key}")
+                if reasons:
+                    return reasons
+    return []
 
 
 def valid_diagram(data) -> bool:
     """Strict schema + nonempty IDs/labels + references + bounded tree semantics."""
-    if not _matches(data, DIAGRAM_SCHEMA):
-        return False
+    return not diagram_rejection_reasons(data)
+
+
+def diagram_rejection_reasons(data) -> list[str]:
+    reasons = _schema_rejection_reasons(data, DIAGRAM_SCHEMA)
+    if reasons:
+        return reasons
     nodes, edges = data["nodos"], data.get("aristas", [])
     ids = [node["id"] for node in nodes]
-    if len(set(ids)) != len(ids) or any(not value.strip() for value in ids):
-        return False
+    if len(set(ids)) != len(ids):
+        return ["Hay IDs de nodos duplicados; asigna un ID único a cada nodo"]
+    if any(not value.strip() for value in ids):
+        return ["Hay IDs vacíos; asigna un ID a cada nodo"]
     if any(not node["etiqueta"].strip() for node in nodes):
-        return False
+        return ["Hay etiquetas de nodos vacías; describe cada nodo"]
     if any(edge["origen"] not in ids or edge["destino"] not in ids for edge in edges):
-        return False
+        return ["Hay aristas con referencias inexistentes; usa IDs de nodos presentes"]
     if data["tipo"] == "arbol":
         parents = [edge["destino"] for edge in edges]
-        return len(parents) == len(set(parents)) and _levels(nodes, edges) is not None
-    return True
+        if len(parents) != len(set(parents)):
+            return ["Un nodo del árbol tiene varios padres; conserva un solo padre por nodo"]
+        if _levels(nodes, edges) is None:
+            return ["El árbol contiene un ciclo; elimina las aristas que vuelven a un antecesor"]
+    return []
+
+
+def prepare_diagram_for_render(request: ImageRequest) -> tuple[dict | None, str, list[str]]:
+    """Comparte el diagnóstico de fetch con la generación y conserva las reparaciones."""
+    reasons = diagram_rejection_reasons(request.diagrama)
+    if reasons:
+        return None, "schema", reasons
+    description = request.descripcion or request.diagrama.get("titulo") or "Diagrama técnico"
+    if len(description) > 2000 or not _xml_text(description):
+        return None, "render", ["La descripción debe tener hasta 2000 caracteres XML válidos"]
+    context = request.descripcion + " " + request.concept
+    data, reasons = prepare_diagram_with_reasons(request.diagrama, context)
+    if reasons:
+        return None, "semántica", reasons
+    reasons = diagram_rejection_reasons(data)
+    if reasons:
+        return None, "schema", reasons
+    reasons = semantic_rejection_reasons(data, context)
+    return (None, "semántica", reasons) if reasons else (data, "", [])
 
 
 def _levels(nodes: list[dict], edges: list[dict]) -> dict[str, int] | None:
@@ -470,18 +516,10 @@ class DiagramSource:
     name = "diagrama"
 
     def fetch(self, request: ImageRequest) -> ImageResult | None:
-        if not valid_diagram(request.diagrama):
+        data, _, reasons = prepare_diagram_for_render(request)
+        if reasons:
             return None
         description = request.descripcion or request.diagrama.get("titulo") or "Diagrama técnico"
-        if len(description) > 2000 or not _xml_text(description):
-            return None
-        data = prepare_diagram(request.diagrama, request.descripcion + " " + request.concept)
-        if (
-            data is None
-            or not valid_diagram(data)
-            or not semantic_valid(data, description + " " + request.concept)
-        ):
-            return None
         svg, meta = _render(data, description)
         meta["diagrama"] = data
         return ImageResult(

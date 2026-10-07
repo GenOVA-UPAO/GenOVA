@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { apiFetch, apiJson } from "@/core/lib/http";
 
 import type { Role } from "../lib/types";
@@ -15,14 +17,14 @@ export interface RegistrationMode {
 const json = (body: unknown) => JSON.stringify(body);
 
 export function fetchRoles(): Promise<Role[]> {
-  return apiJson<Role[]>("/api/roles", {}, { fallbackMsg: "No se pudieron cargar los roles." });
+  return apiJson<Role[]>("/api/roles", {}, { fallbackMsg: t("admin:api.roles.load") });
 }
 
 export function fetchRegistrationMode(): Promise<RegistrationMode> {
   return apiJson<RegistrationMode>(
     "/api/admin/registration-mode",
     {},
-    { fallbackMsg: "No se pudo cargar el modo de registro." },
+    { fallbackMsg: t("admin:api.registrationMode.load") },
   );
 }
 
@@ -30,7 +32,7 @@ export function setRegistrationMode(defaultRegistrationRole: string): Promise<vo
   return apiJson(
     "/api/admin/registration-mode",
     { method: "PUT", body: json({ default_registration_role: defaultRegistrationRole }) },
-    { fallbackMsg: "No se pudo guardar el modo de registro." },
+    { fallbackMsg: t("admin:api.registrationMode.save") },
   ).then(() => undefined);
 }
 
@@ -46,9 +48,9 @@ export async function submitRole(roleId: string | null, payload: RoleFormPayload
     body: json(payload),
   });
   if (response.ok) return (await response.json()) as Role;
-  if (response.status === 409) throw new Error("Ya existe un rol con ese nombre.");
-  const action = roleId ? "actualizar" : "crear";
-  throw new Error(await readDetail(response, `Ocurrió un error inesperado al ${action} el rol.`));
+  if (response.status === 409) throw new Error(t("admin:api.roles.duplicate"));
+  const fallback = roleId ? t("admin:api.roles.updateUnexpected") : t("admin:api.roles.createUnexpected");
+  throw new Error(await readDetail(response, fallback));
 }
 
 export async function deleteRole(roleId: string, reassignToId?: string): Promise<void> {
@@ -56,5 +58,5 @@ export async function deleteRole(roleId: string, reassignToId?: string): Promise
   const path = reassignToId ? `${basePath}?reassign_to_id=${reassignToId}` : basePath;
   const response = await apiFetch(path, { method: "DELETE" });
   if (response.status === 204) return;
-  throw new Error(await readDetail(response, "Ocurrió un error inesperado al eliminar el rol."));
+  throw new Error(await readDetail(response, t("admin:api.roles.deleteUnexpected")));
 }

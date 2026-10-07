@@ -1,4 +1,6 @@
+import type { TFunction } from "i18next";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -17,11 +19,11 @@ interface Props {
   onClose: () => void;
 }
 
-function rangeError(field: ConfigField, raw: string): string | undefined {
+function rangeError(field: ConfigField, raw: string, t: TFunction): string | undefined {
   const value = Number(raw);
   if (raw.trim() !== "" && Number.isInteger(value) && value >= field.min && value <= field.max)
     return undefined;
-  return `Escribe un número entero entre ${String(field.min)} y ${String(field.max)}.`;
+  return t("workspace:escribe_un_numero_entero_entre_value_y_value", { p0: String(field.min), p1: String(field.max) });
 }
 
 function toDraft(fields: ConfigField[], config: Record<string, number>): Record<string, string> {
@@ -38,7 +40,8 @@ export default function ResourceConfigModal({
   onSave,
   onClose,
 }: Readonly<Props>) {
-  const fields = getSchema(phase, resourceId);
+  const { t } = useTranslation();
+  const fields = getSchema(phase, resourceId, t);
   const [draft, setDraft] = useState(() =>
     toDraft(fields, config ?? getDefaultConfig(phase, resourceId)),
   );
@@ -48,11 +51,11 @@ export default function ResourceConfigModal({
   const errors = Object.fromEntries(
     fields.map((field) => [
       field.key,
-      tried ? rangeError(field, draft[field.key] ?? "") : undefined,
+      tried ? rangeError(field, draft[field.key] ?? "", t) : undefined,
     ]),
   );
   const submit = () => {
-    const invalid = fields.find((field) => rangeError(field, draft[field.key] ?? ""));
+    const invalid = fields.find((field) => rangeError(field, draft[field.key] ?? "", t));
     if (invalid) {
       setTried(true);
       document.getElementById(`${formId}-${invalid.key}`)?.focus();
@@ -63,18 +66,16 @@ export default function ResourceConfigModal({
   };
   return (
     <WorkspaceModal
-      title={resourceName ? `Configurar ${resourceName}` : "Configurar recurso"}
+      title={resourceName ? t("workspace:configurar_value", { p0: resourceName }) : t("workspace:configurar_recurso")}
       size="sm"
-      description="Ajusta la extensión y las actividades de este recurso."
+      description={t("workspace:ajusta_la_extension_y_las_actividades_de_este_recurso")}
       onClose={onClose}
       footer={
         <ModalActions>
           <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
+            {t("workspace:cancelar")} </Button>
           <Button type="submit" form={formId}>
-            Guardar configuración
-          </Button>
+            {t("workspace:guardar_configuracion")} </Button>
         </ModalActions>
       }
     >
@@ -89,8 +90,7 @@ export default function ResourceConfigModal({
       >
         {fields.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            Este recurso no tiene opciones configurables.
-          </p>
+            {t("workspace:este_recurso_no_tiene_opciones_configurables")} </p>
         )}
         {fields.map((field) => (
           <ResourceConfigField

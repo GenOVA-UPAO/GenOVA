@@ -1,6 +1,8 @@
+import { t } from "i18next";
+
 import type { AuthMessageData } from "@/core/auth/auth.service";
 
-import { CONNECT_ERROR, LOGIN_FAILED, TOO_MANY_ATTEMPTS } from "./auth-copy";
+import { connectError, loginFailed, tooManyAttempts } from "./auth-copy";
 
 export type LoginOutcome =
   | { kind: "totp"; ticket: string }
@@ -15,9 +17,9 @@ export type LoginOutcome =
  */
 function errorMessage(status: number, data: AuthMessageData): string {
   if (data.message) return data.message;
-  if (status === 429) return TOO_MANY_ATTEMPTS;
+  if (status === 429) return tooManyAttempts();
   // Un 5xx (servidor caído o reiniciándose) no es culpa de los datos: se dice y se invita a reintentar.
-  return status >= 500 ? CONNECT_ERROR : LOGIN_FAILED;
+  return status >= 500 ? connectError() : loginFailed();
 }
 
 export function loginOutcome(status: number, data: AuthMessageData): LoginOutcome {
@@ -34,9 +36,9 @@ export function loginOutcome(status: number, data: AuthMessageData): LoginOutcom
 
 export function loginErrorMessage(outcome: LoginOutcome): string {
   if (outcome.kind === "locked") {
-    return `Cuenta bloqueada. Intenta de nuevo en ${String(outcome.minutes)} minuto(s).`;
+    return t("auth:login.locked", { count: outcome.minutes });
   }
-  return outcome.kind === "error" ? outcome.message : LOGIN_FAILED;
+  return outcome.kind === "error" ? outcome.message : loginFailed();
 }
 
 export function registerNeedsNotice(status: number, required?: boolean): boolean | null {

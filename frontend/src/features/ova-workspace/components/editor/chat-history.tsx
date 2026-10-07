@@ -1,9 +1,12 @@
+import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmModal } from "@/core/components/confirm-modal";
 import { Button } from "@/core/components/ui/button";
 
 import type { RegenChatMessage } from "../../lib/regen-chat";
+import type { RegenCancel } from "./cancel-regen-button";
 import { ChatEmptyState } from "./chat-empty-state";
 import { ChatMessageItem } from "./chat-message-item";
 
@@ -12,14 +15,16 @@ interface Props {
   onRemove: (id: string) => void;
   onClear: () => void;
   onSelectPrompt?: (prompt: string) => void;
+  cancel?: RegenCancel;
 }
 
-function countLabel(count: number): string {
-  return count === 1 ? "1 mensaje" : `${String(count)} mensajes`;
+function countLabel(count: number, t: TFunction): string {
+  return count === 1 ? t("workspace:1_mensaje") : t("workspace:value_mensajes", { p0: String(count) });
 }
 
 /** Hilo de instrucciones: lo más reciente abajo, como en cualquier chat. */
-export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Readonly<Props>) {
+export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt, cancel }: Readonly<Props>) {
+  const { t } = useTranslation();
   const list = useRef<HTMLOListElement>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const last = messages.at(-1);
@@ -29,15 +34,15 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Rea
   }, [messages.length, last?.text, last?.percentage]);
   if (messages.length === 0) {
     return (
-      <section aria-label="Historial de chat" className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <section aria-label={t("workspace:historial_de_chat")} className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <ChatEmptyState onSelectPrompt={onSelectPrompt} />
       </section>
     );
   }
   return (
-    <section aria-label="Historial de chat" className="flex min-h-0 flex-1 flex-col">
+    <section aria-label={t("workspace:historial_de_chat")} className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-2">
-        <span className="text-xs text-muted-foreground">{countLabel(messages.length)}</span>
+        <span className="text-xs text-muted-foreground">{countLabel(messages.length, t)}</span>
         <Button
           variant="ghost"
           size="xs"
@@ -46,19 +51,18 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt }: Rea
             setConfirmClear(true);
           }}
         >
-          Limpiar historial
-        </Button>
+          {t("workspace:limpiar_historial")} </Button>
       </div>
       <ol ref={list} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-2 pb-4">
         {messages.map((message) => (
-          <ChatMessageItem key={message.id} message={message} onRemove={onRemove} />
+          <ChatMessageItem key={message.id} message={message} onRemove={onRemove} cancel={cancel} />
         ))}
       </ol>
       {confirmClear && (
         <ConfirmModal
-          title="¿Limpiar el historial?"
-          message={`Se borrarán ${countLabel(messages.length)} de este hilo. El OVA y sus versiones no cambian.`}
-          confirmLabel="Limpiar historial"
+          title={t("workspace:limpiar_el_historial")}
+          message={t("workspace:chatClearHint", { p0: countLabel(messages.length, t) })}
+          confirmLabel={t("workspace:limpiar_historial")}
           onConfirm={() => {
             onClear();
             setConfirmClear(false);

@@ -18,6 +18,25 @@ from scripts import evaluate_diagrams
 DATA = {"tipo": "flujo", "titulo": "Entrada", "nodos": [{"id": "a", "etiqueta": "Entrada"}]}
 
 
+@pytest.mark.parametrize(
+    "concept,detail",
+    [
+        ("Ciclo de vida de una transacción", "Estados habituales"),
+        ("Protocolo abstracto", "Estados y transiciones"),
+        ("Ciclo de vida de una tarea", "Pendiente y final"),
+    ],
+)
+def test_state_prompt_requires_error_paths_without_invented_retries(concept, detail):
+    prompt = generation.prompt_for("flujo", concept, detail)
+    assert "transiciones de error desde cada estado no final" in prompt
+    assert "Todo estado no final tiene salida" in prompt
+    assert "no inventes reintentos" in prompt
+    assert "Todo estado no final" not in generation.prompt_for(
+        "flujo", "Compilación", "Fases ordenadas"
+    )
+    assert "Todo estado no final" not in generation.prompt_for("er", concept, detail)
+
+
 @pytest.mark.parametrize("kind", ["er", "secuencia", "comparacion", "flujo"])
 def test_neutral_prompt_and_type_specific_instructions(kind):
     prompt = evaluate_diagrams.prompt_for(kind, "Dominio nuevo", "Detalle solicitado")
@@ -152,3 +171,25 @@ def test_cli_cases_and_model(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+@pytest.mark.parametrize(("env", "expected"), [(None, 60.0), ("150", 150.0)])
+def test_local_diagram_call_uses_own_timeout(monkeypatch, env, expected):
+    monkeypatch.setattr(generation.time, "monotonic", lambda: 0)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("OVA_LOCAL_LLM_TIMEOUT", "300")  # el del texto no aplica al diagrama
+    if env is None:
+        monkeypatch.delenv("OVA_DIAGRAM_TIMEOUT", raising=False)
+    else:
+        monkeypatch.setenv("OVA_DIAGRAM_TIMEOUT", env)
+    timeouts = []
+
+    def post(url, **kwargs):
+        timeouts.append(kwargs["timeout"])
+        return httpx.Response(
+            200, json={"message": {"content": json.dumps(DATA)}}, request=httpx.Request("POST", url)
+        )
+
+    monkeypatch.setattr(generation.httpx, "post", post)
+    generation.generate_diagram_json("prompt", model="local-only")
+    assert timeouts[-1] == expected

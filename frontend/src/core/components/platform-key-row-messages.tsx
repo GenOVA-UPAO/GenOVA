@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 interface PlatformKeyRowMessagesProps {
   /** El usuario pulsó «Guardar clave» con el campo vacío. */
   missingKey: boolean;
@@ -13,12 +14,12 @@ export function PlatformKeyRowMessages({
   providerLabel,
   saveError,
 }: Readonly<PlatformKeyRowMessagesProps>) {
+  const { t } = useTranslation();
   return (
     <>
       {missingKey && (
         <p id={errorId} role="alert" className="text-xs text-destructive">
-          Pega la clave de {providerLabel} para guardarla.
-        </p>
+          {t("shared:pega_la_clave_de")} {providerLabel} {t("shared:para_guardarla")} </p>
       )}
       {saveError !== null && (
         <p role="alert" className="text-xs text-destructive">

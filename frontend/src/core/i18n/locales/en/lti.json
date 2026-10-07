@@ -1,0 +1,68 @@
+{
+  "title": "LTI integration",
+  "subtitle": "Connect GenOVA to your learning platform: teachers select their OVAs within a course, and grades are sent back to the LMS.",
+  "register": "Register platform",
+  "registerTitle": "Register LTI platform",
+  "editTitle": "Edit “{{name}}”",
+  "formHelp": "Copy these details from the tool configuration in your LMS.",
+  "activeHelp": "Active (accepts launches from this LMS)",
+  "cancel": "Cancel",
+  "saving": "Saving…",
+  "save": "Save changes",
+  "platformsTitle": "Registered platforms",
+  "loadPlatforms": "Could not load platforms",
+  "emptyTitle": "No platforms yet",
+  "emptyDescription": "Register your LMS so teachers can add GenOVA OVAs to their courses.",
+  "active": "Active",
+  "inactive": "Inactive",
+  "clientId": "Client ID {{id}}",
+  "deployments_one": "{{count}} deployment",
+  "deployments_other": "{{count}} deployments",
+  "edit": "Edit",
+  "delete": "Delete",
+  "deleteLabel": "Delete {{name}}",
+  "deleteTitle": "Delete “{{name}}”?",
+  "deleteDescription": "GenOVA activities in this LMS will stop opening, and grades will no longer be sent. Enter the platform name to confirm.",
+  "deleteConfirm": "Delete platform",
+  "deleting": "Deleting…",
+  "toolTitle": "GenOVA details for your LMS",
+  "toolDescription": "Paste these details when adding GenOVA as an external LTI 1.3 tool in Moodle, Canvas, or Blackboard.",
+  "toolUrlHint": "These URLs come from the address the backend receives requests on: in development that is the local server (e.g. http://127.0.0.1:8000), not this page's address, and an LMS running on another machine will not reach it. In production, set LTI_TOOL_URL in the backend to its public address.",
+  "loginUrl": "Login URL",
+  "loginUrlHint": "Initiate login URL",
+  "launchUrl": "Redirect and tool URL",
+  "launchUrlHint": "Redirection URI, Tool URL, and Deep Linking",
+  "jwksUrl": "Keyset URL",
+  "jwksUrlHint": "Public keyset URL (JWKS)",
+  "copy": "Copy",
+  "copyLabel": "Copy {{label}}",
+  "copied": "{{label}} copied",
+  "copyError": "Could not copy. Select the text and copy it manually.",
+  "errors": {
+    "tool": "Could not load GenOVA details for the LMS.",
+    "platforms": "Could not load LTI platforms.",
+    "save": "Could not save the platform.",
+    "delete": "Could not delete the platform."
+  },
+  "fields": {
+    "name": { "label": "Name", "help": "A name to identify it here, such as “Moodle UPAO”." },
+    "issuer": { "label": "Issuer", "help": "In Moodle: “Platform ID”." },
+    "client_id": { "label": "Client ID", "help": "In Moodle: “Client ID”." },
+    "deployment_ids": {
+      "label": "Deployment IDs",
+      "help": "In Moodle: “Deployment ID”. Enter one per line if there are several."
+    },
+    "auth_login_url": {
+      "label": "Authentication URL",
+      "help": "In Moodle: “Authentication request URL”."
+    },
+    "auth_token_url": { "label": "Access token URL", "help": "In Moodle: “Access token URL”." },
+    "jwks_url": { "label": "Public keyset URL", "help": "In Moodle: “Public keyset URL”." }
+  },
+  "validation": {
+    "name": "Enter a name, such as “Moodle UPAO”.",
+    "clientId": "Copy the Client ID shown in your LMS.",
+    "deployments": "Enter at least one Deployment ID.",
+    "url": "Paste the full URL (https://…)."
+  }
+}

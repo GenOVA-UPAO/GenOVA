@@ -112,7 +112,9 @@ Then('el botón Descargar del OVA sembrado está habilitado', async ({ page }) =
 When('descargo el OVA desde su card', async ({ page }) => {
   const card = ovaCard(page, state(page).ova.title)
   const downloadPromise = page.waitForEvent('download', { timeout: 60000 })
+  // «Descargar» abre el menú de formatos; SCORM 1.2 es el paquete por defecto.
   await card.getByRole('button', { name: 'Descargar' }).click()
+  await page.getByRole('menuitem', { name: /SCORM 1\.2/ }).click()
   state(page).download = await downloadPromise
 })
 

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 import type { SlotIssue } from "../lib/chain-validation";
@@ -42,6 +44,7 @@ export function LlmTaskRowItem({
   onMove,
   onRemove,
 }: Readonly<LlmTaskRowItemProps>) {
+  const { t } = useTranslation("llm-settings");
   const { issue, isError } = slotState(issues, index);
   const chosen = chosenModel(models, entry);
   const summaryId = `fallback-summary-${task}-${String(index)}`;
@@ -65,7 +68,7 @@ export function LlmTaskRowItem({
               invalid={isError}
               usage={usage}
               describedBy={chosen ? summaryId : undefined}
-              ariaLabel={`Modelo de respaldo ${String(index + 1)} de ${taskMeta(task).label}`}
+              ariaLabel={t("tasks.fallbackModelOf", { index: index + 1, task: taskMeta(task).label })}
               onChange={(next) => {
                 onChange(next.provider, next.modelId);
               }}

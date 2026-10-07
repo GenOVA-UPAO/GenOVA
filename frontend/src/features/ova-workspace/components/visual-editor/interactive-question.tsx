@@ -1,4 +1,6 @@
+import type { TFunction } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/core/lib/cn";
 
@@ -31,12 +33,13 @@ function feedbackClass(isCorrect: boolean): string {
     : "bg-rose-100 text-rose-900 dark:bg-rose-900/50 dark:text-rose-200";
 }
 
-function feedbackText(choice: Choice): string {
+function feedbackText(choice: Choice, t: TFunction): string {
   if (choice.feedback) return choice.feedback;
-  return choice.correct ? "¡Correcto!" : "Opción incorrecta.";
+  return choice.correct ? t("workspace:correcto") : t("workspace:opcion_incorrecta");
 }
 
 export function InteractiveQuestion({ id, prompt, choices = [], explanation }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
   const selectedChoice = choices.find((c) => c.value === selected);
 
@@ -72,7 +75,7 @@ export function InteractiveQuestion({ id, prompt, choices = [], explanation }: R
           })}
           {selectedChoice && (
             <div className={cn("mt-2 rounded-lg p-2.5 text-xs font-medium", feedbackClass(selectedChoice.correct))}>
-              {feedbackText(selectedChoice)}
+              {feedbackText(selectedChoice, t)}
             </div>
           )}
         </div>
@@ -81,7 +84,7 @@ export function InteractiveQuestion({ id, prompt, choices = [], explanation }: R
       {explanation && (
         <InteractiveReveal
           id={`${id}-explanation`}
-          label="Ver respuesta fundamentada"
+          label={t("workspace:ver_respuesta_fundamentada")}
           content={explanation}
         />
       )}

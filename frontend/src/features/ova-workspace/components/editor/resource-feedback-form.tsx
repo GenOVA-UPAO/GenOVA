@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { Textarea } from "@/core/components/ui/textarea";
@@ -19,6 +20,7 @@ export function ResourceFeedbackForm({
   pending,
   onSubmit,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const base = useId();
   const [reason, setReason] = useState<FeedbackReason | null>(initialReason);
   const [comment, setComment] = useState(initialComment);
@@ -31,7 +33,7 @@ export function ResourceFeedbackForm({
       }}
     >
       <fieldset className="space-y-1">
-        <legend className="text-sm font-medium">¿Qué falló en este recurso?</legend>
+        <legend className="text-sm font-medium">{t("workspace:que_fallo_en_este_recurso")}</legend>
         <div className="grid grid-cols-1 gap-0.5">
           {FEEDBACK_REASONS.map((item) => (
             <label
@@ -48,14 +50,14 @@ export function ResourceFeedbackForm({
                 }}
                 className="size-4 accent-primary"
               />
-              {item.label}
+              {t(item.labelKey)}
             </label>
           ))}
         </div>
       </fieldset>
       <div className="space-y-1">
         <label htmlFor={`${base}-comment`} className="text-sm font-medium">
-          Comentario <span className="font-normal text-muted-foreground">(opcional)</span>
+          {t("workspace:comentario")} <span className="font-normal text-muted-foreground">{t("workspace:opcional")}</span>
         </label>
         <Textarea
           id={`${base}-comment`}
@@ -63,7 +65,7 @@ export function ResourceFeedbackForm({
           maxLength={COMMENT_MAX}
           rows={3}
           aria-describedby={`${base}-count`}
-          placeholder="Cuéntanos qué esperabas…"
+          placeholder={t("workspace:cuentanos_que_esperabas")}
           onChange={(event) => {
             setComment(event.target.value);
           }}
@@ -74,7 +76,7 @@ export function ResourceFeedbackForm({
       </div>
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={pending || reason === null}>
-          {pending ? "Enviando…" : "Enviar valoración"}
+          {pending ? t("workspace:enviando") : t("workspace:enviar_valoracion")}
         </Button>
       </div>
     </form>

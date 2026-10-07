@@ -19,6 +19,7 @@ export const pageLoaders = {
   models: () => import("@/features/llm-settings/pages/models-page"),
   adminUsers: () => import("@/features/admin/pages/admin-users-page"),
   adminRoles: () => import("@/features/admin/pages/admin-roles-page"),
+  adminLti: () => import("@/features/admin/pages/admin-lti-page"),
   explore: () => import("@/features/ova-workspace/pages/explore-page"),
   engage: () => import("@/features/ova-workspace/pages/engage-page"),
   notFound: () => import("@/core/components/not-found-page"),
@@ -34,6 +35,7 @@ const PATH_TO_PAGE: Partial<Record<string, keyof typeof pageLoaders>> = {
   "/models": "models",
   "/admin": "adminUsers",
   "/admin/roles": "adminRoles",
+  "/admin/lti": "adminLti",
 };
 
 export function prefetchRoute(path: string): void {

@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import type { ProviderCheckResult } from "@/core/components/platform-provider-check";
 import { apiJson } from "@/core/lib/http";
 
@@ -76,7 +78,7 @@ export function testModel(
   return apiJson(
     path,
     { method: "POST", body: json({ provider, model_id: modelId }) },
-    { fallbackMsg: "No se pudo probar el modelo." },
+    { fallbackMsg: t("llm-settings:api.testModelError") },
   );
 }
 
@@ -84,7 +86,7 @@ export function checkOwnProvider(provider: string): Promise<ProviderCheckResult>
   return apiJson(
     `/api/users/me/api-keys/${encodeURIComponent(provider)}/check`,
     { method: "POST" },
-    { fallbackMsg: "No se pudo comprobar la conexión." },
+    { fallbackMsg: t("llm-settings:api.checkConnectionError") },
   );
 }
 
@@ -92,7 +94,7 @@ export function getModelProfiles(): Promise<{ profiles: ModelProfile[]; limit: n
   return apiJson(
     "/api/admin/llm-profiles",
     {},
-    { fallbackMsg: "No se pudieron cargar los perfiles." },
+    { fallbackMsg: t("llm-settings:api.loadProfilesError") },
   );
 }
 
@@ -100,7 +102,7 @@ export function createModelProfile(name: string): Promise<{ profile: ModelProfil
   return apiJson(
     "/api/admin/llm-profiles",
     { method: "POST", body: json({ name }) },
-    { fallbackMsg: "No se pudo guardar el perfil." },
+    { fallbackMsg: t("llm-settings:api.saveProfileError") },
   );
 }
 
@@ -108,7 +110,7 @@ export function renameModelProfile(id: string, name: string): Promise<{ profile:
   return apiJson(
     `/api/admin/llm-profiles/${encodeURIComponent(id)}`,
     { method: "PATCH", body: json({ name }) },
-    { fallbackMsg: "No se pudo renombrar el perfil." },
+    { fallbackMsg: t("llm-settings:api.renameProfileError") },
   );
 }
 
@@ -116,7 +118,7 @@ export function deleteModelProfile(id: string): Promise<unknown> {
   return apiJson(
     `/api/admin/llm-profiles/${encodeURIComponent(id)}`,
     { method: "DELETE" },
-    { fallbackMsg: "No se pudo borrar el perfil." },
+    { fallbackMsg: t("llm-settings:api.deleteProfileError") },
   );
 }
 
@@ -124,7 +126,7 @@ export function applyModelProfile(id: string): Promise<ApplyConfigResponse> {
   return apiJson(
     `/api/admin/llm-profiles/${encodeURIComponent(id)}/apply`,
     { method: "POST" },
-    { fallbackMsg: "No se pudo aplicar el perfil." },
+    { fallbackMsg: t("llm-settings:api.applyProfileError") },
   );
 }
 
@@ -132,7 +134,7 @@ export function getConfigHistory(): Promise<{ entries: HistoryEntry[]; limit: nu
   return apiJson(
     "/api/admin/llm-config/history",
     {},
-    { fallbackMsg: "No se pudo cargar el historial." },
+    { fallbackMsg: t("llm-settings:api.loadHistoryError") },
   );
 }
 
@@ -144,6 +146,7 @@ export function restoreConfigVersion(
   return apiJson(
     `/api/admin/llm-config/history/${encodeURIComponent(id)}/restore`,
     { method: "POST", body: json({ target }) },
-    { fallbackMsg: "No se pudo restaurar la configuración." },
+    { fallbackMsg: t("llm-settings:api.restoreConfigError") },
   );
 }
+

@@ -1,12 +1,14 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 const QUICK_PROMPTS = [
-  { label: "Quitar ejemplo", prompt: "quita el ejemplo" },
-  { label: "Añadir resumen", prompt: "añade un resumen al final" },
-  { label: "Pregunta al inicio", prompt: "pon la pregunta al inicio" },
-  { label: "Añadir objetivo", prompt: "agrega un objetivo de aprendizaje al inicio" },
-  { label: "Quitar última pregunta", prompt: "quita la última pregunta del quiz" },
+  { label: "workspace:quitar_ejemplo", prompt: "workspace:quita_el_ejemplo" },
+  { label: "workspace:anadir_resumen", prompt: "workspace:anade_un_resumen_al_final" },
+  { label: "workspace:pregunta_al_inicio", prompt: "workspace:pon_la_pregunta_al_inicio" },
+  { label: "workspace:anadir_objetivo", prompt: "workspace:agrega_un_objetivo_de_aprendizaje_al_inicio" },
+  { label: "workspace:quitar_ultima_pregunta", prompt: "workspace:quita_la_ultima_pregunta_del_quiz" },
 ] as const;
 
 interface Props {
@@ -28,12 +30,12 @@ export function VisualPromptControls({
   statusMessage,
   errorMessage,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-2xs">
       <div className="flex items-center justify-between">
         <label htmlFor="visual-prompt" className="block text-xs font-bold text-foreground">
-          Instrucción de cambio
-        </label>
+          {t("workspace:instruccion_de_cambio")} </label>
       </div>
 
       <textarea
@@ -49,7 +51,7 @@ export function VisualPromptControls({
             onSubmit();
           }
         }}
-        placeholder="Ej. pon la pregunta al inicio, quita el ejemplo, añade un resumen..."
+        placeholder={t("workspace:visualPromptPlaceholder")}
         className="w-full rounded-lg border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
         disabled={isProcessing}
       />
@@ -60,11 +62,11 @@ export function VisualPromptControls({
             key={qp.label}
             type="button"
             onClick={() => {
-              onChangePrompt(qp.prompt);
+              onChangePrompt(t(qp.prompt));
             }}
             className="rounded-full border border-border/80 bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring transition-colors"
           >
-            {qp.label}
+            {t(qp.label)}
           </button>
         ))}
       </div>
@@ -83,7 +85,7 @@ export function VisualPromptControls({
             name={isProcessing ? "spinner" : "lightning"}
             className={cn("size-3.5", isProcessing && "animate-spin")}
           />
-          {isProcessing ? "Interpretando y aplicando intención…" : "Interpretar y aplicar cambio"}
+          {isProcessing ? t("workspace:interpretando_y_aplicando_intencion") : t("workspace:interpretar_y_aplicar_cambio")}
         </button>
       </div>
 

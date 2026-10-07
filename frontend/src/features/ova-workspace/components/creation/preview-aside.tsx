@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import type { useOvaJob } from "../../hooks/use-ova-job";
@@ -14,9 +16,10 @@ export function PreviewAside({
   pinnedId: string | null;
   onPin: (id: string | null) => void;
 }>) {
+  const { t } = useTranslation();
   return (
     <aside
-      aria-label="Vista previa de los recursos listos"
+      aria-label={t("workspace:vista_previa_de_los_recursos_listos")}
       className={`${pinnedId ? "mt-4 flex" : "hidden"} h-[70vh] min-h-96 min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card lg:sticky lg:top-4 lg:mt-0 lg:flex`}
     >
       {pinnedId && (
@@ -29,8 +32,7 @@ export function PreviewAside({
               onPin(null);
             }}
           >
-            Cerrar vista previa
-          </Button>
+            {t("workspace:cerrar_vista_previa")} </Button>
         </div>
       )}
       <CrearOvaPreviewPanel jobId={jobId} viewModel={resources} pinnedId={pinnedId} onPin={onPin} />

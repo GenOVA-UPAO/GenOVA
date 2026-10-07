@@ -6,12 +6,13 @@ import re
 import unicodedata
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS
+from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_terms", 6, min=5, max=8, help="Número de términos del crucigrama"),
+    Param("num_terms", 6, min=5, max=12, help="Número de términos del crucigrama"),
 )
 
 _CSS = """
@@ -22,15 +23,15 @@ _CSS = """
 .cw-cell .cw-n{position:absolute;top:1px;left:3px;font-size:.62rem;font-weight:700;color:var(--primary,#0A3D91);pointer-events:none}
 .ev-cell{width:100%;height:100%;padding:8px 0 0;text-align:center;font:inherit;font-weight:800;text-transform:uppercase;border:2px solid var(--primary,#0A3D91);border-radius:4px;background:var(--surface,#fff);color:var(--text,#1b2437);caret-color:var(--accent,#F47A20)}
 .ev-cell.is-active{background:var(--surface-tint,#eef2ff)}
-.ev-cell.is-ok{background:rgba(26,127,75,.18);border-color:var(--success,#1a7f4b)}
-.ev-cell.is-bad{background:rgba(192,57,43,.15);border-color:var(--danger,#c0392b)}
+.ev-cell.is-ok{background:var(--success-bg,rgba(26,127,75,.18));border-color:var(--success,#1a7f4b)}
+.ev-cell.is-bad{background:var(--danger-bg,rgba(192,57,43,.15));border-color:var(--danger,#c0392b)}
 .cw-clues{display:grid;gap:var(--space-3,16px)}
 @media (min-width:640px){.cw-clues{grid-template-columns:1fr 1fr}}
 .cw-clues ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .cw-clue{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;padding:8px 10px;border:1px solid var(--border,#cbd5e1);border-radius:10px;background:var(--surface,#fff);color:var(--text,#1b2437);font:inherit;cursor:pointer;min-height:44px}
 .cw-clue:hover{border-color:var(--primary,#0A3D91)}
 .cw-clue:focus-visible{outline:3px solid var(--primary,#0A3D91);outline-offset:2px}
-.cw-clue.is-ok{border-color:var(--success,#1a7f4b);background:rgba(26,127,75,.10)}
+.cw-clue.is-ok{border-color:var(--success,#1a7f4b);background:var(--success-bg,rgba(26,127,75,.10))}
 .cw-num{flex:none;font-weight:800;color:var(--primary,#0A3D91);min-width:1.6em}
 </style>
 """
@@ -47,14 +48,17 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Creador de crucigramas conceptuales para universitarios.", f"Creador de crucigramas conceptuales para {d.audiencia}. {d.guia_nivel}")
+    abrev = d.pick(d.si_oracle(" salvo SGA/PGA", ""), "")
     n = p["num_terms"]
-    return f"""[ROL] Creador de crucigramas conceptuales para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea {n} entradas de crucigrama sobre «{concept}». El sistema arma la cuadrícula cruzando las palabras, así que elige términos que compartan letras entre sí (vocales y consonantes frecuentes: A, E, O, R, S, N, I).
 - titulo: título corto del crucigrama.
 - instrucciones: una frase (escribe en cada casilla, usa las pistas, pulsa «Comprobar»).
 - entradas: exactamente {n}. Cada una con:
-  * `respuesta`: término de UNA sola palabra, 4 a 12 letras, sin espacios, guiones ni números, sin abreviaturas salvo SGA/PGA. Tildes permitidas (se ignoran al validar).
+  * `respuesta`: término de UNA sola palabra, 4 a 12 letras, sin espacios, guiones ni números, sin abreviaturas{abrev}. Tildes permitidas (se ignoran al validar).
   * `pista`: definición justa que lleve a esa palabra sin contenerla (≤25 palabras).
 - cierre: frase que consolide los términos practicados.
 [RESTRICCIONES] Palabras distintas entre sí. Términos reales del dominio, no genéricos.
@@ -325,7 +329,7 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"Crucigrama: {concept}"[:70],
         "instrucciones": "Escribe cada palabra en su casilla; pulsa Comprobar para validar.",
-        "entradas": [{"respuesta": a, "pista": b} for a, b in base[:n]],
+        "entradas": [{"respuesta": base[k % len(base)][0] + "S" * (k // len(base)), "pista": base[k % len(base)][1]} for k in range(n)],
         "cierre": f"Los términos de {concept} ya forman parte de tu vocabulario.",
     }
 
@@ -339,4 +343,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("entradas", "num_terms"),
 )

@@ -14,7 +14,7 @@ from auth.dependencies import get_current_user, require_permission
 from core.rate_limit import limiter
 from generation.application.dto import CreateJobInput, ResumeJobInput
 from generation.container import GenerationUseCases, build_generation
-from generation.domain.errors import GenerationError
+from generation.domain.errors import GenerationError, JobNotFound
 from generation.interface.http.error_map import generation_error_to_response
 from generation.jobs.jobs_helpers import (
     ResumeRequest,
@@ -83,18 +83,28 @@ def start_job(
     )
 
 
+def _no_job(ova_id: str) -> dict:
+    return {"job_id": None, "ova_id": ova_id, "status": "none", "resources": []}
+
+
 @router.get("", summary="Buscar un trabajo por criterios")
 def find_job(
     ova_id: str,
     current_user: User = Depends(get_current_user),
     uc: GenerationUseCases = Depends(build_generation),
 ):
-    """Locate the latest job of an OVA owned by the user (for HU-023)."""
+    """Locate the latest job of an OVA owned by the user (for HU-023).
+
+    Un OVA sin generación propia (duplicado, importado) NO es un error: responde
+    200 con `job_id: null` y sin recursos, en vez de un 404 que el navegador
+    registra como fallo en cada apertura del editor."""
     parsed = _parse_uuid(ova_id)
     if parsed is None:
-        return _not_found("job_not_found", "No hay generación para este OVA.")
+        return _no_job(ova_id)
     try:
         view = uc.find_job_by_ova.execute(parsed, current_user.id)
+    except JobNotFound:
+        return _no_job(ova_id)
     except GenerationError as err:
         return generation_error_to_response(err)
     return view.as_dict()

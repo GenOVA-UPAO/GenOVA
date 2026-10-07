@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -35,20 +37,65 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_exercises"]
-    return f"""[ROL] Diseñador de laboratorios de código SQL y PL/SQL de Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Crea {n} ejercicios de código sobre «{concept}» al estilo de examen (p. ej. «crea un índice por LAST_NAME y EMAIL en EMPLOYEES»), de dificultad creciente.
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        f"""[ROL] Diseñador de laboratorios de código SQL{d.si_oracle(" y PL/SQL de Oracle", " estándar")}.""",
+        f"""[ROL] Diseñador de laboratorios de ejercicios prácticos para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Crea {n} ejercicios de código sobre «{concept}» al estilo de examen (p. ej. «crea un índice por LAST_NAME y EMAIL en EMPLOYEES»), de dificultad creciente.""",
+        f"""[TAREA] Crea {n} ejercicios prácticos sobre «{concept}» al estilo de examen, de dificultad creciente, que se resuelvan escribiendo una respuesta corta (cálculo, expresión, procedimiento o frase completa).""",
+    )
+    _l3 = d.pick(
+        """- objetivo: objetivo de aprendizaje observable («Al terminar podrás escribir…»).""",
+        """- objetivo: objetivo de aprendizaje observable («Al terminar podrás resolver…»).""",
+    )
+    _l4 = d.pick(
+        """- ejemplo: un ejemplo trabajado DISTINTO a los ejercicios: `titulo`, `pasos` (3-4 pasos de razonamiento, ≤25 palabras cada uno) y `codigo` (la sentencia resuelta).""",
+        """- ejemplo: un ejemplo trabajado DISTINTO a los ejercicios: `titulo`, `pasos` (3-4 pasos de razonamiento, ≤25 palabras cada uno) y `codigo` (la respuesta resuelta).""",
+    )
+    _l5 = d.pick(
+        """  * `enunciado`: lo que se pide, con tabla y columnas concretas (≤40 palabras).""",
+        """  * `enunciado`: lo que se pide, con datos concretos (≤40 palabras).""",
+    )
+    _l6 = d.pick(
+        """  * `codigo_inicial`: la sentencia INCOMPLETA con huecos marcados como ___ (varias líneas si hace falta).""",
+        """  * `codigo_inicial`: la respuesta INCOMPLETA con huecos marcados como ___ (varias líneas si hace falta).""",
+    )
+    _l7 = d.pick(
+        """  * `palabras_clave`: 2-6 fragmentos o tokens literales de código SQL (en minúsculas o mayúsculas) que aparecen DENTRO de la sentencia solucion (p. ej. «create index», «employees», «last_name»). NO uses palabras descriptivas ni conceptuales que no estén presentes en el código SQL.""",
+        """  * `palabras_clave`: 2-6 fragmentos, números o símbolos literales que aparecen DENTRO de `solucion`. NO uses palabras descriptivas que no estén presentes en la solución.""",
+    )
+    _l8 = d.pick(
+        """  * `solucion`: la sentencia correcta completa.""",
+        """  * `solucion`: la respuesta correcta completa.""",
+    )
+    _l9 = d.pick(
+        """- cierre: consolida la sintaxis y cuándo aplicarla.""",
+        """- cierre: consolida el procedimiento y cuándo aplicarlo.""",
+    )
+    _l10 = d.pick(
+        f"""[RESTRICCIONES] Sintaxis {d.si_oracle("Oracle", "SQL estándar")} válida. Las palabras clave deben estar presentes textualmente dentro de `solucion`.""",
+        f"""[RESTRICCIONES] Notación y resultados correctos. Las palabras clave deben estar presentes textualmente dentro de `solucion`. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del laboratorio.
-- objetivo: objetivo de aprendizaje observable («Al terminar podrás escribir…»).
-- ejemplo: un ejemplo trabajado DISTINTO a los ejercicios: `titulo`, `pasos` (3-4 pasos de razonamiento, ≤25 palabras cada uno) y `codigo` (la sentencia resuelta).
+{_l3}
+{_l4}
 - ejercicios: EXACTAMENTE {n}; cada uno con:
-  * `enunciado`: lo que se pide, con tabla y columnas concretas (≤40 palabras).
-  * `codigo_inicial`: la sentencia INCOMPLETA con huecos marcados como ___ (varias líneas si hace falta).
-  * `palabras_clave`: 2-6 fragmentos o tokens literales de código SQL (en minúsculas o mayúsculas) que aparecen DENTRO de la sentencia solucion (p. ej. «create index», «employees», «last_name»). NO uses palabras descriptivas ni conceptuales que no estén presentes en el código SQL.
-  * `solucion`: la sentencia correcta completa.
+{_l5}
+{_l6}
+{_l7}
+{_l8}
   * `error_comun`: el error más frecuente en este ejercicio y por qué ocurre (≤30 palabras).
-- cierre: consolida la sintaxis y cuándo aplicarla.
-[RESTRICCIONES] Sintaxis Oracle válida. Las palabras clave deben estar presentes textualmente dentro de `solucion`.
+{_l9}
+{_l10}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -79,7 +126,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<h3 id="lc-h{k}" style="margin:0">{esc(x["enunciado"])}</h3>'
         f'<label for="lc-a{k}" class="k-label">Editor (completa los ___)</label>'
         f'<textarea id="lc-a{k}" class="k-code-in" rows="5" spellcheck="false" autocapitalize="off" autocomplete="off">{esc(x["codigo_inicial"])}</textarea>'
-        f'<div class="k-row"><button type="button" class="k-btn main lc-run">▶ Ejecutar</button>'
+        f'<div class="k-row"><button type="button" class="k-btn main lc-run">{icon("play")} Ejecutar</button>'
         f'<button type="button" class="k-btn lc-reset">Restablecer</button>'
         f'<button type="button" class="k-btn lc-sol k-hide">Ver solución</button></div>'
         f'<div class="lc-out k-hide" aria-live="polite"></div></section>'

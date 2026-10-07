@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS
+from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_competencias", 4, min=3, max=6, help="Número de competencias que certifica el diploma"),
+    Param("num_competencias", 4, min=2, max=5, help="Número de competencias que certifica el diploma"),
     Param(
         "estilo",
         "clasico",
@@ -24,7 +26,7 @@ _CSS = """
 .dp-paper{background:#fff;color:#1b2437;text-align:center;padding:var(--space-5,32px) var(--space-4,24px);border-radius:var(--radius,12px);border:6px double var(--primary,#0A3D91);box-shadow:var(--shadow,0 4px 16px rgba(10,61,145,.15))}
 .dp-paper.is-moderno{border:0;border-top:14px solid var(--primary,#0A3D91);border-bottom:14px solid var(--accent,#F47A20);border-radius:6px}
 .dp-seal{font-size:2.6rem;line-height:1}
-.dp-kicker{letter-spacing:.2em;text-transform:uppercase;font-size:.8rem;color:var(--text-muted,#5b6578);margin:0}
+.dp-kicker{letter-spacing:.2em;text-transform:uppercase;font-size:.8rem;color:#52617A;margin:0}
 .dp-title{font-size:clamp(1.3rem,4.5vw,2rem);color:var(--primary,#0A3D91);margin:8px 0;overflow-wrap:anywhere}
 .dp-name{display:inline-block;max-width:100%;font-size:clamp(1.5rem,6vw,2.4rem);font-weight:800;color:var(--primary,#0A3D91);border-bottom:3px solid var(--accent,#F47A20);padding:0 16px 4px;margin:12px 0;overflow-wrap:anywhere}
 .dp-name.is-empty{color:#8a93a6;font-weight:500}
@@ -89,16 +91,17 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_competencias"]
-    return f"""[ROL] Diseñador de diplomas y certificados de logro académico.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Redacta el texto de un diploma profesional por haber completado la unidad «{concept}».
+    return f"""[ROL] Diseñador de diplomas y certificados de logro académico para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Redacta el texto de un diploma de logro por haber completado la unidad «{concept}».
 - titulo: título formal del diploma (≤20 palabras, ej. «Diploma de Logro en …»).
 - descripcion_logro: qué logró el estudiante, en tercera persona impersonal, sin nombre propio (≤50 palabras).
 - competencias: exactamente {n} competencias medibles que certifica, cada una iniciando con un verbo en infinitivo observable (≤18 palabras).
-- firma: cargo o nombre simulado de quien firma (ej. «Coordinación Académica — Sistemas de BD», ≤8 palabras).
-- reflexion: mensaje reflexivo para el estudiante sobre cómo usar estos logros en su práctica profesional (≤40 palabras).
-[RESTRICCIONES] Tono formal y motivador. No inventes nombres de personas, instituciones reales ni fechas.
+- firma: cargo o nombre simulado de quien firma (ej. «Coordinación Académica», ≤8 palabras).
+- reflexion: mensaje reflexivo para el estudiante sobre cómo usar estos logros en {d.practica} (≤40 palabras).
+[RESTRICCIONES] Tono formal y motivador. No inventes nombres de personas, instituciones reales ni fechas. Adapta el lenguaje al nivel ({d.audiencia}): no hables de práctica profesional si no corresponde. Mantente en el tema y el nivel indicados.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -118,7 +121,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 </section>
 <section class="ev-card" id="diploma-wrap" aria-label="Diploma">
   <article class="dp-paper is-{esc(estilo)}" id="diploma">
-    <div class="dp-seal" aria-hidden="true">🏆</div>
+    <div class="dp-seal" aria-hidden="true">{icon('trophy')}</div>
     <p class="dp-kicker">Se otorga a</p>
     <p class="dp-name is-empty" id="d-name" aria-live="polite">Tu nombre aparecerá aquí</p>
     <h2 class="dp-title">{esc(data["titulo"])}</h2>
@@ -132,7 +135,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <div class="ev-row"><button type="button" class="ev-btn" id="btn-print">Imprimir / guardar como PDF</button><button type="button" class="ev-btn is-ghost" id="btn-edit">Cambiar nombre</button></div>
   <div class="ev-fb" role="status" aria-live="polite"><strong>Reflexión.</strong> {esc(data["reflexion"])}</div>
 </section>
-<div class="no-print"><upao-summary title="Cierre">Has completado la unidad de {esc(ctx.concept)}. Lleva estas competencias a tu práctica profesional.<upao-complete slot="actions" label="Finalizar" locked></upao-complete></upao-summary></div>
+<div class="no-print"><upao-summary title="Cierre">Has completado la unidad de {esc(ctx.concept)}. Sigue aplicando estas competencias en lo que aprendas a continuación.<upao-complete slot="actions" label="Finalizar" locked></upao-complete></upao-summary></div>
 {json_data({"n": len(data["competencias"])})}
 {script(PROGRESS_JS)}
 {script(_JS)}
@@ -167,4 +170,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("competencias", "num_competencias"),
 )

@@ -1,7 +1,7 @@
 import { Icon } from "@/core/components/icon";
+import { phaseIconName } from "@/core/lib/resource-icons";
 
 import { type PhaseGroup } from "../../lib/ova-job-view-model";
-import { phaseIconName } from "../../lib/resource-icons";
 import { CreationResourceRow } from "./creation-resource-row";
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   onPreview?: (id: string) => void;
   /** Muestra las casillas de los fallidos (para reintentarlos en bloque). */
   selectable?: boolean;
+  retryAllowed?: boolean;
 }
 
 export function CreationResourceList({
@@ -23,6 +24,7 @@ export function CreationResourceList({
   onRetryOne,
   onPreview,
   selectable = true,
+  retryAllowed = true,
 }: Readonly<Props>) {
   const selected = new Set(selectedIds);
   return (
@@ -39,6 +41,7 @@ export function CreationResourceList({
                 resource={resource}
                 selected={selected.has(resource.id)}
                 selectable={selectable}
+                retryAllowed={retryAllowed}
                 active={activeId === resource.id}
                 onToggle={() => {
                   onToggle(resource.id);

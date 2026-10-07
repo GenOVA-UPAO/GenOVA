@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS
+from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
     Param("num_questions", 3, min=2, max=5, help="Número de preguntas abiertas"),
@@ -96,10 +97,13 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
+    rol = d.pick("Evaluador universitario de bases de datos.", f"Evaluador de {d.topic} para {d.audiencia}. {d.guia_nivel}")
+    exigir = d.pick(f"justificar una decisión del DBA o escribir y explicar una sentencia {d.si_oracle('Oracle', 'SQL')}.", "justificar una decisión, explicar un razonamiento o resolver un problema propio del tema.")
     n = p["num_questions"]
-    return f"""[ROL] Evaluador universitario de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Redacta {n} preguntas de desarrollo (respuesta abierta) sobre «{concept}» que exijan justificar una decisión del DBA o escribir y explicar una sentencia Oracle.
+    return f"""[ROL] {rol}
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Redacta {n} preguntas de desarrollo (respuesta abierta) sobre «{concept}» que exijan {exigir}
 - titulo: título corto.
 - instrucciones: una frase (escribe tu respuesta, compárala con el modelo y marca los criterios que cumpliste).
 - preguntas: exactamente {n}. Cada una con:
@@ -200,4 +204,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    normalize=trim_to_param("preguntas", "num_questions"),
 )

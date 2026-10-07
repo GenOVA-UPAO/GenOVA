@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -29,6 +31,7 @@ export function OwnKeyStatusAlert({
   onRetry,
   onFixKey,
 }: Readonly<OwnKeyStatusAlertProps>) {
+  const { t } = useTranslation("llm-settings");
   const failing = failingOwnProviders(status);
   if (failing.length === 0) return null;
   const codeOf = (provider: string) => status?.[provider]?.error ?? "error";
@@ -42,7 +45,9 @@ export function OwnKeyStatusAlert({
       <Icon name="warning" size="text-lg" className="hidden shrink-0 text-accent-brand sm:block" />
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-medium">
-          No pudimos obtener tus modelos de {joinList(failing.map(providerLabel))}
+          {t("credentials.couldNotGetYourModels", {
+            providers: joinList(failing.map(providerLabel)),
+          })}
         </p>
         {failing.length === 1 ? (
           <p className="text-muted-foreground">{ownKeyErrorText(codeOf(failing[0]))}</p>
@@ -64,7 +69,7 @@ export function OwnKeyStatusAlert({
             onFixKey(keyProblem);
           }}
         >
-          Revisar clave de {providerLabel(keyProblem)}
+          {t("credentials.reviewKey", { provider: providerLabel(keyProblem) })}
         </Button>
       ) : (
         <Button
@@ -74,7 +79,7 @@ export function OwnKeyStatusAlert({
           loading={refreshing}
         >
           <Icon name="arrow-clockwise" size="text-sm" />
-          Reintentar
+          {t("credentials.retry")}
         </Button>
       )}
     </div>

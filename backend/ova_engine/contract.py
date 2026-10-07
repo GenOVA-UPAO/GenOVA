@@ -77,6 +77,10 @@ class TemplateSpec:
     # Personaje recurrente (clave de `llm.images.style_guide.CHARACTERS`): su descripción fija
     # se antepone a TODOS los `prompt_imagen` del recurso para que no cambie de viñeta a viñeta.
     image_character: str = ""
+    # Normaliza el JSON del LLM frente a los `params` (recorta si hay más elementos de los
+    # pedidos, ajusta contadores). Función pura `(data, params) -> data`; se aplica tras
+    # `generate_json` y también sobre `sample`. None = sin normalización.
+    normalize: Callable[[dict, dict], dict] | None = None
 
     @property
     def key(self) -> str:

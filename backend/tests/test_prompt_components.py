@@ -12,8 +12,9 @@ CONTEXT = "Estudiantes de primer ciclo"
 @pytest.mark.parametrize("phase", PHASES)
 def test_all_phases_have_complete_recursos_meta(phase):
     mod = importlib.import_module(f"prometheus.prompts.{phase}_prompts")
-    assert set(mod.RECURSOS_META) == set(range(1, 11))
-    for n in range(1, 11):
+    assert set(mod.RECURSOS_META) == set(range(1, len(mod.RECURSOS_META) + 1))
+    assert len(mod.RECURSOS_META) >= 10
+    for n in mod.RECURSOS_META:
         meta = mod.RECURSOS_META[n]
         assert "tipo" in meta and meta["tipo"]
         assert "duracion" in meta and meta["duracion"]

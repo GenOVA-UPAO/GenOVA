@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import i18n from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,10 +40,10 @@ function useConfirmationState(params: ConfirmationStateParams) {
     params.setComposedSpec(buildInitialSpec(newBlocks));
     setPendingConfirmation(null);
     params.setStatusMessage(
-      `Intención confirmada y aplicada en ${trace.elapsedMs.toString()} ms (${trace.backend}).`
+      i18n.t("workspace:changeApplied", { instruction: (instruction ?? "").trim() })
     );
     toast.success(
-      `Cambio confirmado y aplicado con éxito (${Math.round(intent.confianza * 100).toString()}% conf.).`
+      i18n.t("workspace:cambio_confirmado_y_aplicado_con_exito_value_conf", { p0: Math.round(intent.confianza * 100).toString() })
     );
 
     if (params.ovaId) {
@@ -73,8 +74,8 @@ function useConfirmationState(params: ConfirmationStateParams) {
       }).catch(ignoreError);
     }
     setPendingConfirmation(null);
-    params.setStatusMessage("Acción cancelada.");
-    toast.info("Acción cancelada.");
+    params.setStatusMessage(i18n.t("workspace:accion_cancelada"));
+    toast.info(i18n.t("workspace:accion_cancelada"));
   };
 
   return { pendingConfirmation, setPendingConfirmation, handleConfirmPending, handleCancelPending };
@@ -133,7 +134,7 @@ function performUndo(
   phaseId?: string
 ) {
   if (st.history.length === 0) {
-    toast.error("No hay cambios anteriores para deshacer.");
+    toast.error(i18n.t("workspace:no_hay_cambios_anteriores_para_deshacer"));
     return;
   }
   const previous = st.history[st.history.length - 1];
@@ -143,8 +144,8 @@ function performUndo(
   const previousIntent = st.lastIntent;
   const previousBackend = st.lastTrace?.backend;
   st.setLastIntent(null);
-  st.setStatusMessage("Se restauró el estado anterior de bloques.");
-  toast.info("Cambio deshecho. Estado anterior restaurado.");
+  st.setStatusMessage(i18n.t("workspace:se_restauro_el_estado_anterior_de_bloques"));
+  toast.info(i18n.t("workspace:cambio_deshecho_estado_anterior_restaurado"));
 
   if (ovaId) {
     void recordEditorFeedback(ovaId, {
@@ -169,7 +170,7 @@ async function persistPhaseVersion(params: PersistParams): Promise<boolean> {
     params.ovaId,
     params.phaseIdToApply,
     params.blocksToApply,
-    params.instruction ?? "Edición en editor visual"
+    params.instruction ?? i18n.t("workspace:edicion_en_editor_visual")
   );
   if (ok) {
     await Promise.all([
@@ -202,7 +203,7 @@ export function useVisualComposer(ovaId: string, phaseId?: string) {
   const handleEdit = (baseBlocks: ResourceBlock[], overridePhaseId?: string) => {
     const targetPhaseId = overridePhaseId ?? phaseId;
     if (!targetPhaseId) {
-      toast.error("No se ha seleccionado una fase.");
+      toast.error(i18n.t("workspace:no_se_ha_seleccionado_una_fase"));
       return;
     }
     return executeComposerEdit({

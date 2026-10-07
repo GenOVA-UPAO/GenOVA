@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import i18n from "i18next";
 import { useState } from "react";
 
 import { fetchTemporaryFiles, removeTemporaryFile, uploadTemporaryFiles } from "../api/uploads.api";
@@ -61,7 +62,7 @@ export function useOvaUploads(ovaId?: string) {
       const result = await upload.mutateAsync(candidates);
       setUploadError(result.errors?.map((error) => error.message).join(' ') ?? '');
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : 'Error al subir archivo.');
+      setUploadError(error instanceof Error ? error.message : i18n.t("workspace:error_al_subir_archivo"));
     } finally {
       setPending([]);
     }

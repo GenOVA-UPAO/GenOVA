@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { cn } from "@/core/lib/cn";
 
@@ -26,7 +28,8 @@ export function TrashedOvaRow({
   onRestore,
   onPermanentDelete,
 }: Readonly<TrashedOvaRowProps>) {
-  const title = ova.title?.trim() ? ova.title : "Sin título";
+  const { t } = useTranslation();
+  const title = ova.title?.trim() ? ova.title : t("ova-library:sin_titulo");
 
   return (
     <li
@@ -40,13 +43,13 @@ export function TrashedOvaRow({
       <Checkbox
         checked={isSelected}
         onCheckedChange={() => onToggleSelect?.(ova.id)}
-        aria-label={`Seleccionar ${title}`}
+        aria-label={t("ova-library:seleccionar_value", { p0: title })}
       />
       <div className="min-w-0 flex-1 basis-48 space-y-0.5">
         <h3 className="line-clamp-2 text-sm font-medium text-foreground" title={title}>
           {title}
         </h3>
-        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={trashedAt(ova)} />
+        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={trashedAt(ova, undefined, t)} />
       </div>
       <TrashedOvaRowActions
         isRestoring={isRestoring}

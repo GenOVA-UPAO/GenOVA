@@ -54,6 +54,10 @@ CREATE TABLE ova_error_logs (
   message TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE ovas (
+  license TEXT NOT NULL DEFAULT 'CC BY-SA 4.0', language TEXT NOT NULL DEFAULT 'es',
+  keywords JSON NOT NULL DEFAULT '[]', educational_level TEXT NOT NULL DEFAULT '',
+  audience TEXT NOT NULL DEFAULT '', typical_learning_time TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '',
+  package_theme VARCHAR(24) NOT NULL DEFAULT 'upao',
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL,
   description TEXT, status VARCHAR(20) NOT NULL DEFAULT 'borrador',
   file_path TEXT, storage_key TEXT, current_version_id TEXT, deleted_at TIMESTAMP,
@@ -101,6 +105,17 @@ def Sess(engine, monkeypatch):
     from generation.jobs import jobs_materialize
 
     monkeypatch.setattr(jobs_materialize, "_persist_scorm", lambda *a, **k: None)
+    # El autor por defecto ahora se resuelve desde la relación con users.
+    from tests import _sqlite_db  # noqa: F401 — registra JSONB para SQLite
+
+    saved = {column: column.server_default for column in models.User.__table__.columns}
+    for column in saved:
+        column.server_default = None
+    try:
+        models.User.__table__.create(engine)
+    finally:
+        for column, default in saved.items():
+            column.server_default = default
     return factory
 
 
@@ -563,7 +578,7 @@ def job_ligado_ova(db, ctx):
     job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
     assert job.ova_id is not None
     ova = db.execute(select(Ova).where(Ova.id == job.ova_id)).scalar_one_or_none()
-    assert ova is not None and ova.status == "borrador"
+    assert ova is not None and ova.status == "listo"
     phases = db.execute(select(OvaPhase)).scalars().all()
     assert len(phases) >= 1
     ctx["ova_phases"] = phases

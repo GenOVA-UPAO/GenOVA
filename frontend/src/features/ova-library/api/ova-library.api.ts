@@ -1,12 +1,14 @@
-import { triggerDownloadFromResponse } from "@/core/lib/download";
-import { apiFetch, apiJson } from "@/core/lib/http";
+import { apiJson } from "@/core/lib/http";
 
+import type { MetadataInput } from "../lib/metadata-schema";
 import type { OvaListItem } from "../lib/types";
 
 export interface OvaListParams {
   page: number;
   search?: string;
   status?: string;
+  /** Solo el administrador: «all» trae los OVAs de todos los usuarios. */
+  scope?: "mine" | "all";
 }
 
 export interface OvaListPage {
@@ -20,10 +22,11 @@ const PAGE_SIZE = "12";
 const json = (body: unknown) => JSON.stringify(body);
 
 export const ovaLibraryApi = {
-  list: ({ page, search = "", status = "" }: OvaListParams): Promise<OvaListPage> => {
+  list: ({ page, search = "", status = "", scope = "mine" }: OvaListParams): Promise<OvaListPage> => {
     const qs = new URLSearchParams({ page: String(page), limit: PAGE_SIZE });
     if (search.trim()) qs.set("search", search.trim());
     if (status.trim()) qs.set("status", status.trim());
+    if (scope === "all") qs.set("scope", "all");
     return apiJson(`/api/ovas?${qs.toString()}`);
   },
   trash: (page: number): Promise<OvaListPage> => {
@@ -57,14 +60,6 @@ export const ovaLibraryApi = {
     apiJson<{ message?: string; edit_url: string }>(`/api/ovas/${id}/duplicar`, {
       method: "POST",
     }),
-  updateMetadata: (id: string, payload: { title?: string; description?: string }) =>
+  updateMetadata: (id: string, payload: MetadataInput) =>
     apiJson(`/api/ovas/${id}/metadata`, { method: "PATCH", body: json(payload) }),
-  async download(id: string, title = "ova"): Promise<void> {
-    const res = await apiFetch(`/api/ovas/${id}/download`);
-    if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(data.message ?? "No se pudo descargar el archivo.");
-    }
-    await triggerDownloadFromResponse(res, `${title}.zip`);
-  },
 };

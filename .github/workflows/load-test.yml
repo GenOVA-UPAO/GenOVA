@@ -3,14 +3,13 @@
 #
 #   gh workflow run load-test.yml
 #   gh workflow run load-test.yml -f users=50 -f duration=3m
-#   gh workflow run load-test.yml -f target=develop      # solo reporte, sin gate
 #   gh run watch && gh run download -n locust-report
 #
 # Modo local (default): levanta el backend en el runner con RATE_LIMIT_ENABLED=0
 # y LLM_FAKE=1 (el encolado de generación no llama a proveedores LLM) y aplica el
 # gate P90 <= 278 ms (RN-001) sobre los endpoints no-LLM.
-# Modo develop: apunta al backend real de Railway SOLO como reporte informativo
-# (free tier + rate limit activo distorsionan; no aplica gate).
+# Ya no hay modo develop: ese despliegue (Railway) dejó de existir y producción
+# (Render free) no debe recibir carga sintética.
 
 name: Load test (Locust)
 
@@ -26,11 +25,11 @@ on:
         required: false
         default: '2m'
       target:
-        description: 'local (backend en el runner, con gate) | develop (Railway, solo reporte)'
+        description: 'local (backend en el runner, con gate)'
         required: false
         default: 'local'
         type: choice
-        options: [local, develop]
+        options: [local]
 
 jobs:
   locust:
@@ -87,9 +86,6 @@ jobs:
           LOAD_GENERATION: ${{ env.TARGET == 'local' && '1' || '0' }}
         run: |
           HOST=http://localhost:8000
-          if [ "$TARGET" = "develop" ]; then
-            HOST=https://genova-backend-develop.up.railway.app
-          fi
           locust -f tests/load/locustfile.py --headless \
             -u "$USERS" -r 5 -t "$DURATION" --host "$HOST" \
             --csv tests/load/report --html tests/load/report.html \
@@ -98,12 +94,6 @@ jobs:
       - name: Gate RN-001 (P90 <= 278 ms, solo modo local)
         if: env.TARGET == 'local'
         run: python tests/load/check_thresholds.py tests/load/report_stats.csv | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - name: Resumen (develop, informativo)
-        if: env.TARGET == 'develop'
-        run: |
-          echo "## Load test vs develop (informativo, sin gate)" >> "$GITHUB_STEP_SUMMARY"
-          python tests/load/check_thresholds.py tests/load/report_stats.csv >> "$GITHUB_STEP_SUMMARY" || true
 
       - uses: actions/upload-artifact@v7
         if: always()

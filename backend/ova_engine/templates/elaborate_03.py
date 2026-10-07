@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     PROGRESS_JS,
     esc,
@@ -12,6 +13,7 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -40,22 +42,55 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_deliverables"]
-    return f"""[ROL] Diseñador de proyectos de bases de datos para un curso universitario.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña un mini-proyecto de 8-10 minutos donde el estudiante aplique «{concept}» en una pequeña empresa ficticia con Oracle.
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        """[ROL] Diseñador de proyectos de bases de datos para un curso universitario.""",
+        f"""[ROL] Diseñador de proyectos para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Diseña un mini-proyecto de 8-10 minutos donde el estudiante aplique «{concept}» en una pequeña empresa ficticia con {d.motor_corto if d.is_oracle else "un SGBD relacional"}.""",
+        f"""[TAREA] Diseña un mini-proyecto de 8-10 minutos donde el estudiante aplique «{concept}» en una situación ficticia propia del área del tema.""",
+    )
+    _l3 = d.pick(
+        f"""- dataset_sugerido: el caso de la pequeña empresa en ≤80 palabras: al menos 4 tablas con sus claves, filas estimadas, {d.si_oracle("tablespaces y ", "")}usuarios involucrados.""",
+        """- dataset_sugerido: el caso o material de partida en ≤80 palabras: datos, elementos o fuentes con los que se trabaja y las personas o roles involucrados.""",
+    )
+    _l4 = d.pick(
+        """  * tipo "diagrama" para flujos, modelos entidad-relación o arquitecturas del proyecto (incluye objeto `diagrama` con tipo: "flujo"|"er"|"capas"|"arbol", titulo, nodos, aristas).""",
+        """  * tipo "diagrama" para flujos, esquemas o relaciones del proyecto (incluye objeto `diagrama` con tipo: "flujo"|"er"|"capas"|"arbol", titulo, nodos, aristas).""",
+    )
+    _l5 = d.pick(
+        """  * tipo "foto" ÚNICAMENTE para hardware, servidores o infraestructura física real (consulta en inglés enfocada en hardware/datacenters).""",
+        """  * tipo "foto" ÚNICAMENTE para objetos, lugares o instalaciones físicas reales (consulta en inglés).""",
+    )
+    _l6 = d.pick(
+        f"""  * tipo "logo" para la tecnología o motor del proyecto (ej. {d.si_oracle("Oracle, PostgreSQL", "PostgreSQL, MySQL")}).""",
+        """  * tipo "logo" para una marca o herramienta reconocible del proyecto, si la hay.""",
+    )
+    _l7 = d.pick(
+        """[RESTRICCIONES] Entregables alcanzables en el tiempo; rúbrica con diferencias claras entre niveles.""",
+        f"""[RESTRICCIONES] Entregables alcanzables en el tiempo; rúbrica con diferencias claras entre niveles. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del proyecto.
 - objetivo: qué debe lograr el estudiante y con qué resultado verificable (≤50 palabras).
 - entregables: EXACTAMENTE {n} entregables concretos, realizables en pocos minutos y ordenados (cada uno ≤25 palabras, empieza con un verbo: «Define…», «Crea…», «Documenta…»).
-- dataset_sugerido: el caso de la pequeña empresa en ≤80 palabras: al menos 4 tablas con sus claves, filas estimadas, tablespaces y usuarios involucrados.
+{_l3}
 - rubrica: EXACTAMENTE 4 criterios; cada uno con `criterio` (nombre corto) y tres descripciones observables de nivel `basico`, `competente` y `avanzado` (≤22 palabras cada una).
 - cierre: cómo transferir el proyecto a un caso real.
 - imagen (opcional): si añade valor conceptual sobre «{concept}» o el proyecto:
-  * tipo "diagrama" para flujos, modelos entidad-relación o arquitecturas del proyecto (incluye objeto `diagrama` con tipo: "flujo"|"er"|"capas"|"arbol", titulo, nodos, aristas).
-  * tipo "foto" ÚNICAMENTE para hardware, servidores o infraestructura física real (consulta en inglés enfocada en hardware/datacenters).
-  * tipo "logo" para la tecnología o motor del proyecto (ej. Oracle, PostgreSQL).
+{_l4}
+{_l5}
+{_l6}
   * tipo "escena" para ilustraciones pedagógicas de la situación.
   Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
-[RESTRICCIONES] Entregables alcanzables en el tiempo; rúbrica con diferencias claras entre niveles.
+{_l7}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -96,7 +131,7 @@ fieldset.mp-crit{{margin:0 0 12px}}
 {progress(n + 1, "Entregables y autoevaluación")}
 <article class="ova-card ova-stack" aria-labelledby="mp-ds-h"><h2 id="mp-ds-h">Caso y datos de partida</h2>{paragraphs(data["dataset_sugerido"])}</article>
 <div class="k-row"><upao-timer id="tmr" seconds="600" label="Tiempo sugerido (10 min)"></upao-timer>
-<button type="button" class="k-btn" id="mp-start">▶ Iniciar cronómetro</button></div>
+<button type="button" class="k-btn" id="mp-start">{icon('play')} Iniciar cronómetro</button></div>
 <section class="ova-stack" aria-labelledby="mp-ent-h"><h2 id="mp-ent-h">Entregables</h2><ol class="mp-list">{ent_html}</ol></section>
 <section class="ova-card ova-stack" aria-labelledby="mp-rub-h"><h2 id="mp-rub-h">Autoevalúa tu trabajo con la rúbrica</h2>
 <p class="ova-muted">Elige el nivel que mejor describe tu entregable en cada criterio.</p>

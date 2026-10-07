@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { type Draft, type EffectiveConfig, toDraft } from "./llm-config-draft";
 import { taskMeta } from "./task-meta";
 
@@ -29,13 +31,14 @@ export function modelUsage(
   for (const task of tasks) {
     const chain = draft?.[task];
     if (!chain) continue;
+
     const label = taskMeta(task).label;
     if (!(skip?.task === task && skip.index === -1)) {
       add(chain.default.provider, chain.default.model_id, label);
     }
     chain.fallbacks.forEach((entry, index) => {
       if (skip?.task === task && skip.index === index) return;
-      add(entry.provider, entry.model_id, `${label} (respaldo)`);
+      add(entry.provider, entry.model_id, `${label} (${t("llm-settings:tasks.fallbackSuffix")})`);
     });
   }
   return usage;
@@ -44,8 +47,14 @@ export function modelUsage(
 /** «Texto», «Texto y Código / HTML», «Texto, Código / HTML y 2 más». */
 export function usageSummary(labels: readonly string[]): string {
   if (labels.length <= 1) return labels[0] ?? "";
-  if (labels.length === 2) return `${labels[0]} y ${labels[1]}`;
-  return `${labels[0]}, ${labels[1]} y ${String(labels.length - 2)} más`;
+  if (labels.length === 2) {
+    return t("llm-settings:tasks.usageTwo", { first: labels[0], second: labels[1] });
+  }
+  return t("llm-settings:tasks.usageMany", {
+    first: labels[0],
+    second: labels[1],
+    count: labels.length - 2,
+  });
 }
 
 /** Uso según una configuración guardada (la de la plataforma), sin borrador delante. */

@@ -148,3 +148,68 @@ def test_new_resource_prefers_the_request_instructions(monkeypatch):
 def test_new_resource_concept_without_instructions_keeps_topic():
     assert regen_edit.new_resource_concept("Tema", "  ") == "Tema"
     assert regen_edit.new_resource_concept("", "solo esto") == "solo esto"
+
+
+# ── Edición por parches (M7) ─────────────────────────────────────────────────
+
+_PATCHABLE = (
+    "<!DOCTYPE html><html><head></head><body><h1>Quiz</h1><button id='go'>Enviar</button>"
+    + "x" * 400
+    + "</body></html>"
+)
+
+
+def test_edicion_por_parches_aplica_solo_los_fragmentos_y_pide_poca_salida(monkeypatch):
+    calls = []
+
+    def fake_generar(prompt, tarea, max_tokens, *a, **kw):
+        calls.append(max_tokens)
+        return '{"edits": [{"old": "Enviar", "new": "Responder"}]}'
+
+    monkeypatch.setattr(regen_edit, "generar_texto", fake_generar)
+    out = edit_phase_content("tema", "cambia el texto del botón", _PATCHABLE)
+
+    assert "Responder" in out and "Enviar" not in out and "<h1>Quiz</h1>" in out
+    # Una sola llamada y con una salida por debajo del umbral de «thinking» (6k).
+    assert len(calls) == 1 and calls[0] < 6000
+
+
+def test_parche_invalido_cae_a_reescribir_el_documento(monkeypatch):
+    calls = []
+
+    def fake_generar(prompt, tarea, max_tokens, *a, **kw):
+        calls.append(max_tokens)
+        if len(calls) == 1:
+            return "no es json"
+        return "<!DOCTYPE html><html><body>" + "y" * 500 + "</body></html>"
+
+    monkeypatch.setattr(regen_edit, "generar_texto", fake_generar)
+    out = edit_phase_content("tema", "cambio", _PATCHABLE)
+
+    assert out and out.strip().lower().endswith("</html>")
+    assert len(calls) == 2 and calls[1] > calls[0]
+
+
+def test_parche_con_fragmento_repetido_o_inexistente_se_descarta():
+    assert regen_edit.apply_edits("<p>a</p><p>a</p></html>", [("a", "b")]) is None
+    assert regen_edit.apply_edits("<p>a</p></html>", [("zzz", "b")]) is None
+    assert regen_edit.apply_edits("<p>a</p></html>", [("a", "a")]) is None
+    assert regen_edit.apply_edits("<p>a</p></html>", [("<p>a</p>", "<p>b</p>")]) == "<p>b</p></html>"
+
+
+def test_parche_que_rompe_el_cierre_del_documento_se_descarta():
+    assert regen_edit.apply_edits("<p>a</p></html>", [("</html>", "")]) is None
+
+
+def test_si_el_modelo_falla_en_el_parche_se_intenta_el_documento_entero(monkeypatch):
+    calls = []
+
+    def fake_generar(*a, **kw):
+        calls.append(1)
+        if len(calls) == 1:
+            raise RuntimeError("EmptyContentError")
+        return "<!DOCTYPE html><html><body>" + "z" * 500 + "</body></html>"
+
+    monkeypatch.setattr(regen_edit, "generar_texto", fake_generar)
+    assert edit_phase_content("tema", "cambio", _PATCHABLE)
+    assert len(calls) == 2

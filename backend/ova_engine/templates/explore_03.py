@@ -9,6 +9,7 @@ Soporta interacción mediante Drag & Drop HTML5 nativo y botones accesibles para
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, obj, s
 
@@ -54,12 +55,14 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_rounds"]
-    return f"""[ROL] Diseñador pedagógico de minijuegos interactivos de clasificación para administración de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña un juego drag & drop de clasificación en el que el estudiante debe clasificar {n} elementos en 2 categorías fundamentales e ilustrativas de «{concept}» (por ejemplo: SGA vs PGA, estructura lógica vs física, privilegios de sistema vs de objeto, backup en frío vs en caliente, DDL vs DML, bloqueo compartido vs exclusivo).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador pedagógico de minijuegos interactivos de clasificación para administración de bases de datos.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un juego drag & drop de clasificación en el que el estudiante debe clasificar {n} elementos en 2 categorías fundamentales e ilustrativas de «{concept}» (por ejemplo: {d.si_oracle("SGA vs PGA, ", "")}estructura lógica vs física, privilegios de sistema vs de objeto, backup en frío vs en caliente, DDL vs DML; elige solo lo que encaje con «{concept}»).
 - titulo: título motivador del juego de clasificación (≤10 palabras).
 - categoria_a: primera categoría conceptual, con:
-  * `id`: identificador alfanumérico corto sin espacios (ej. 'cat_a' o 'sga', ≤10 caracteres).
+  * `id`: identificador alfanumérico corto sin espacios (ej. 'cat_a' o 'logica', ≤10 caracteres).
   * `nombre`: nombre representativo de la categoría (≤4 palabras).
   * `descripcion`: definición o criterio distintivo de esta categoría (≤15 palabras).
 - categoria_b: segunda categoría conceptual contrastante, con:
@@ -74,6 +77,29 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `feedback`: explicación concisa de por qué pertenece a esa categoría y cómo opera (≤20 palabras).
 - sintesis: conclusión pedagógica que resuma la complementariedad y diferencia esencial entre ambas categorías (≤35 palabras).
 [RESTRICCIONES] Sin jerga vacía. Cada item debe pertenecer de forma objetiva y justificable a su categoría asignada. Sin repeticiones. No generes HTML ni hagas mención al esquema JSON.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador pedagógico de minijuegos interactivos de clasificación sobre «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un juego drag & drop de clasificación en el que el estudiante debe clasificar {n} elementos en 2 categorías fundamentales e ilustrativas de «{concept}» (por ejemplo, dos grupos que se contraponen en el tema, como causa vs efecto, antes vs después o propiedad A vs propiedad B).
+- titulo: título motivador del juego de clasificación (≤10 palabras).
+- categoria_a: primera categoría conceptual, con:
+  * `id`: identificador alfanumérico corto sin espacios (ej. 'cat_a' o 'causa', ≤10 caracteres).
+  * `nombre`: nombre representativo de la categoría (≤4 palabras).
+  * `descripcion`: definición o criterio distintivo de esta categoría (≤15 palabras).
+- categoria_b: segunda categoría conceptual contrastante, con:
+  * `id`: identificador alfanumérico corto sin espacios diferente a categoria_a (ej. 'cat_b' o 'pga', ≤10 caracteres).
+  * `nombre`: nombre representativo de la categoría (≤4 palabras).
+  * `descripcion`: definición o criterio distintivo de esta categoría (≤15 palabras).
+- items: exactamente {n} elementos técnicos para clasificar. Reparte los items de forma equilibrada entre ambas categorías, ordenados de menor a mayor dificultad, incluyendo al menos un caso sutil o desafiante. Cada item debe tener:
+  * `id`: identificador único breve (ej. 'item-1', 'item-2').
+  * `texto`: elemento, componente, sentencia o mecanismo concreto a clasificar (≤10 palabras).
+  * `contexto`: situación práctica o función en la que interviene en el tema (≤18 palabras).
+  * `categoria`: el `id` exacto de la categoría a la que pertenece (`categoria_a.id` o `categoria_b.id`).
+  * `feedback`: explicación concisa de por qué pertenece a esa categoría y cómo opera (≤20 palabras).
+- sintesis: conclusión pedagógica que resuma la complementariedad y diferencia esencial entre ambas categorías (≤35 palabras).
+[RESTRICCIONES] Sin jerga vacía. Cada item debe pertenecer de forma objetiva y justificable a su categoría asignada. Sin repeticiones. No generes HTML ni hagas mención al esquema JSON.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -613,7 +639,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     )
 
     return f"""{_STYLE}
-<upao-header eyebrow="JUEGO DE CLASIFICACIÓN" title="{esc(data["titulo"])}">
+<upao-header eyebrow="JUEGO DRAG &amp; DROP" title="{esc(data["titulo"])}">
   <p>Arrastra cada elemento a su categoría correcta o utiliza los botones de selección directa para jugar con teclado o móvil.</p>
 </upao-header>
 

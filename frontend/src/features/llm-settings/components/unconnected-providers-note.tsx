@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -17,6 +19,7 @@ export function UnconnectedProvidersNote({
   catalogStatus,
   onConnect,
 }: Readonly<UnconnectedProvidersNoteProps>) {
+  const { t } = useTranslation("llm-settings");
   const pending = unconnectedProviders(catalogStatus);
   if (pending.length === 0) return null;
   const first = pending[0];
@@ -27,10 +30,8 @@ export function UnconnectedProvidersNote({
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center">
       <Icon name="link" size="text-lg" className="hidden shrink-0 text-muted-foreground sm:block" />
       <p className="min-w-0 flex-1 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">Sin conectar: {names}.</span>{" "}
-        {single
-          ? "Añade su clave de plataforma para usar sus modelos."
-          : "Añade sus claves de plataforma para usar sus modelos."}
+        <span className="font-medium text-foreground">{t("credentials.unconnected")} {names}.</span>{" "}
+        {t("credentials.addPlatformKey", { count: pending.length })}
       </p>
       <Button
         variant="outline"
@@ -39,7 +40,9 @@ export function UnconnectedProvidersNote({
           onConnect(first);
         }}
       >
-        {single ? `Conectar ${providerLabel(first)}` : "Conectar proveedores"}
+        {single
+          ? t("credentials.connectProvider", { provider: providerLabel(first) })
+          : t("credentials.connectProviders")}
       </Button>
     </div>
   );

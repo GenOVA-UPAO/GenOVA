@@ -33,7 +33,7 @@ export function MisOvasModals({ page: p }: Readonly<MisOvasModalsProps>) {
       )}
       {editingOva && (
         <EditMetadataModal
-          initial={{ title: editingOva.title ?? "", description: editingOva.description }}
+          initial={{ ...editingOva, title: editingOva.title ?? "" }}
           isLoading={actions.metadataSaving}
           onSave={p.handleSaveMetadata}
           onCancel={() => { p.setEditingOva(null); }}

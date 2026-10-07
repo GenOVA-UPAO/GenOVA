@@ -1,9 +1,12 @@
+import i18n from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { exportOva } from "@/core/export/api/ova-export.api";
+import type { ExportFormatId } from "@/core/export/lib/formats";
+
 import { ovaLibraryApi } from "../api/ova-library.api";
 import type { MetadataInput } from "../lib/metadata-schema";
-import { ovaCountPhrase } from "../lib/ova-count";
 import { useOvaMutation } from "./use-ova-library";
 
 /** Maneja las mutaciones y acciones de las tarjetas de OVA con sonner toasts. */
@@ -17,18 +20,18 @@ export function useOvaActions() {
   const trashMut = useOvaMutation(ovaLibraryApi.moveToTrash);
   const bulkTrashMut = useOvaMutation(ovaLibraryApi.batchMoveToTrash);
   const duplicateMut = useOvaMutation(ovaLibraryApi.duplicate);
-  const metaMut = useOvaMutation(
-    ({ id, data }: { id: string; data: MetadataInput }) => ovaLibraryApi.updateMetadata(id, data),
+  const metaMut = useOvaMutation(({ id, data }: { id: string; data: MetadataInput }) =>
+    ovaLibraryApi.updateMetadata(id, data),
   );
 
   const moveToTrash = async (id: string) => {
     setMovingId(id);
     try {
       await trashMut.mutateAsync(id);
-      toast.success("OVA movido a la papelera");
+      toast.success(i18n.t("ova-library:ova_movido_a_la_papelera"));
       return true;
     } catch {
-      toast.error("No se pudo mover el OVA a la papelera");
+      toast.error(i18n.t("ova-library:no_se_pudo_mover_el_ova_a_la_papelera"));
       return false;
     } finally {
       setMovingId(null);
@@ -39,10 +42,10 @@ export function useOvaActions() {
     setBulkLoading(true);
     try {
       await bulkTrashMut.mutateAsync(ids);
-      toast.success(ovaCountPhrase(ids.length, "movido a la papelera", "movidos a la papelera"));
+      toast.success(i18n.t("ova-library:moved", { count: ids.length }));
       return true;
     } catch {
-      toast.error("No se pudieron mover los OVAs a la papelera");
+      toast.error(i18n.t("ova-library:no_se_pudieron_mover_los_ovas_a_la_papelera"));
       return false;
     } finally {
       setBulkLoading(false);
@@ -53,21 +56,23 @@ export function useOvaActions() {
     setDuplicatingId(id);
     try {
       await duplicateMut.mutateAsync(id);
-      toast.success("OVA duplicado correctamente");
+      toast.success(i18n.t("ova-library:duplicated"));
     } catch {
-      toast.error("No se pudo duplicar el OVA");
+      toast.error(i18n.t("ova-library:no_se_pudo_duplicar_el_ova"));
     } finally {
       setDuplicatingId(null);
     }
   };
 
-  const downloadOva = async (id: string, title: string) => {
+  const downloadOva = async (id: string, format: ExportFormatId) => {
     setDownloadingId(id);
     try {
-      await ovaLibraryApi.download(id, title);
-      toast.success("Descarga iniciada");
+      await exportOva(id, format);
+      toast.success(i18n.t("ova-library:descarga_iniciada"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudo descargar el archivo.");
+      toast.error(
+        err instanceof Error ? err.message : i18n.t("ova-library:no_se_pudo_descargar_el_archivo"),
+      );
     } finally {
       setDownloadingId(null);
     }
@@ -77,10 +82,10 @@ export function useOvaActions() {
     setMetadataSaving(true);
     try {
       await metaMut.mutateAsync({ id, data });
-      toast.success("Metadatos actualizados");
+      toast.success(i18n.t("ova-library:metadatos_actualizados"));
       return true;
     } catch {
-      toast.error("No se pudieron actualizar los metadatos");
+      toast.error(i18n.t("ova-library:no_se_pudieron_actualizar_los_metadatos"));
       return false;
     } finally {
       setMetadataSaving(false);

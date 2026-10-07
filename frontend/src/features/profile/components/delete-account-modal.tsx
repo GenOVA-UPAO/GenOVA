@@ -1,4 +1,5 @@
 import { type SyntheticEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -27,6 +28,7 @@ export function DeleteAccountModal({
   onDelete,
   onClose,
 }: Readonly<DeleteAccountModalProps>) {
+  const { t } = useTranslation("profile");
   const [password, setPassword] = useState("");
   const [touched, setTouched] = useState(false);
   const showError = touched && password === "";
@@ -47,15 +49,14 @@ export function DeleteAccountModal({
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>¿Eliminar tu cuenta?</DialogTitle>
+          <DialogTitle>{t("delete.modalTitle")}</DialogTitle>
           <DialogDescription>
-            Se desactivará tu cuenta y se anonimizarán tus datos personales. Tus OVAs se conservan,
-            pero sin tu autoría. Esta acción no se puede deshacer.
+            {t("delete.modalDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <Label htmlFor="delete-password">Escribe tu contraseña para confirmar</Label>
+            <Label htmlFor="delete-password">{t("delete.passwordLabel")}</Label>
             <PasswordInput
               id="delete-password"
               autoComplete="current-password"
@@ -69,17 +70,17 @@ export function DeleteAccountModal({
             />
             {showError && (
               <p id="delete-password-error" className="text-xs text-destructive">
-                Escribe tu contraseña para confirmar.
+                {t("delete.passwordRequired")}
               </p>
             )}
           </div>
           <ErrorAlert message={serverError} />
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancelar
+              {t("delete.cancel")}
             </Button>
             <Button type="submit" variant="danger" loading={isSubmitting}>
-              Eliminar cuenta
+              {t("delete.button")}
             </Button>
           </DialogFooter>
         </form>

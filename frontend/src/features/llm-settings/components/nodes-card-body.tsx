@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { EngineNode } from "../hooks/nodes-config.types";
 import type { useNodesConfig } from "../hooks/use-nodes-config";
 import { criticRoundsVisible } from "../lib/nodes-config-draft";
@@ -24,6 +26,8 @@ export function NodesCardBody({
   alwaysOn,
   nodes,
 }: Readonly<NodesCardBodyProps>) {
+  const { t } = useTranslation("llm-settings");
+
   if (loading || !ready) {
     return <SettingListSkeleton rows={3} />;
   }
@@ -32,7 +36,7 @@ export function NodesCardBody({
   }
   return (
     <div className="space-y-6">
-      <EngineNodeGroup title="Se pueden pausar">
+      <EngineNodeGroup title={t("nodes.canPause")}>
         {configurable.map((node) => (
           <ConfigurableNodeRow
             key={node.id}
@@ -48,7 +52,7 @@ export function NodesCardBody({
           />
         ))}
       </EngineNodeGroup>
-      <EngineNodeGroup title="Siempre activos">
+      <EngineNodeGroup title={t("nodes.alwaysActive")}>
         {alwaysOn.map((node) => (
           <AlwaysOnNodeRow key={node.id} node={node} />
         ))}
@@ -56,3 +60,4 @@ export function NodesCardBody({
     </div>
   );
 }
+

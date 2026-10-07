@@ -71,6 +71,13 @@ def _retrieve_rag_context(prompt: str, upload_ids: list) -> str:
 
 
 def concierge_node(state: OvaGenerationState) -> dict:
+    from ova_engine.domain_context import area_scope
+
+    with area_scope(state.get("topic_area")):
+        return _concierge_node(state)
+
+
+def _concierge_node(state: OvaGenerationState) -> dict:
     prompt = state.get("prompt", "")
     enabled_models = state.get("enabled_models", [])
     upload_ids = state.get("upload_ids", [])
@@ -161,7 +168,7 @@ def _intentions_to_phases(intentions: list[dict]) -> tuple[dict, list[str], int]
 
 
 def _llm_decompose(prompt: str) -> dict | None:
-    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para el curso universitario Sistemas de Gestión de Base de Datos (administración de bases de datos Oracle: arquitectura, almacenamiento, objetos, concurrencia, seguridad, auditoría, backup/recovery, optimización y automatización de tareas).
+    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para el tema y el nivel educativo que indica el usuario (secundaria, universitario o posgrado; cualquier área del conocimiento). No asumas un curso ni una disciplina que el usuario no haya mencionado.
 [TAREA] Diseña la secuencia 5E para el concepto del usuario. Selecciona entre 2 y 4 recursos por fase (IDs numéricos del catálogo) que mejor enseñen ESE concepto concreto.
 
 Catálogo de recursos disponibles:
@@ -181,7 +188,9 @@ Reglas de selección:
 
 [SALIDA] JSON puro sin markdown: {{"engage": [ids], "explore": [ids], "explain": [ids], "elaborate": [ids], "evaluate": [ids]}}"""
 
-    full = f"{sys_prompt}\n\nConcepto del usuario: {prompt}"
+    from ova_engine.domain_context import with_area
+
+    full = with_area(f"{sys_prompt}\n\nConcepto del usuario: {prompt}")
     try:
         raw = generar_texto(full, "orquestador", max_tokens=4096)
         data = parse_json(raw)

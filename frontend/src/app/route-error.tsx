@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { isRouteErrorResponse, Link, useRouteError } from "react-router";
 
 import { Button } from "@/core/components/ui/button";
@@ -14,6 +15,7 @@ function isChunkLoadError(error: unknown): boolean {
 }
 
 export function RouteError() {
+  const { t } = useTranslation();
   const error = useRouteError();
   const chunk = isChunkLoadError(error);
   if (!isRouteErrorResponse(error)) captureException(error);
@@ -21,12 +23,12 @@ export function RouteError() {
   return (
     <main className="flex h-dvh overflow-y-auto flex-col items-center justify-center gap-4 p-6 text-center">
       <h1 className="font-display text-3xl font-semibold sm:text-4xl">
-        {chunk ? "Hay una versión nueva" : "Algo salió mal"}
+        {chunk ? t("shell:hay_una_version_nueva") : t("shell:algo_salio_mal")}
       </h1>
       <p className="max-w-md text-sm text-muted-foreground">
         {chunk
-          ? "La aplicación se actualizó mientras la tenías abierta. Recarga para continuar."
-          : "Ocurrió un error inesperado. Recarga la página o vuelve al inicio."}
+          ? t("shell:routeError.updateHint")
+          : t("shell:routeError.unexpectedHint")}
       </p>
       <div className="mt-2 flex flex-col gap-3 sm:flex-row">
         <Button
@@ -35,11 +37,10 @@ export function RouteError() {
             location.reload();
           }}
         >
-          Recargar
-        </Button>
+          {t("shell:recargar")} </Button>
         {!chunk && (
           <Button asChild size="lg" variant="outline">
-            <Link to="/dashboard">Volver al inicio</Link>
+            <Link to="/dashboard">{t("shell:volver_al_inicio")}</Link>
           </Button>
         )}
       </div>

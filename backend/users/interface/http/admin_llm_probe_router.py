@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from auth.dependencies import require_admin
 from core.database import get_db
 from core.rate_limit import limiter
+from llm.catalog.key_check_store import save_check
 from llm.catalog.provider_check import check_provider_key
 from llm.clients.key_resolver import resolve_platform_key
 from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
@@ -79,4 +80,6 @@ def check_platform_provider(
     if provider not in ALL_PROVIDERS:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proveedor desconocido.")
     key, source = resolve_platform_key(provider, db)
-    return check_provider_key(provider, key, key_source=source)
+    result = check_provider_key(provider, key, key_source=source)
+    save_check(db, provider, key, result)
+    return result

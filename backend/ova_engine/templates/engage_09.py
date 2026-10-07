@@ -8,7 +8,9 @@ un candado y desbloquea el siguiente paso hasta abrir la puerta final.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -45,8 +47,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_puzzles"]
-    return f"""[ROL] Diseñador de escape rooms educativas digitales para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de escape rooms educativas digitales para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un Escape Room Virtual con {n} acertijos lógicos encadenados cuya intuición y mecánica reflejen fielmente el concepto sin jerga técnica.
 - titulo: título temático e intrigante del escape room (≤10 palabras).
 - mision: premisa narrativa de la misión de escape y desafío inicial (≤30 palabras).
@@ -58,7 +62,24 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `respuesta_correcta`: 'A' o 'B'.
   * `explicacion_conexion`: breve explicación (≤30 palabras) que revela el paralelismo directo entre la lógica del acertijo y cómo funciona «{concept}».
 - epilogo: desenlace narrativo triunfal al abrir la compuerta final, resumiendo el valor del concepto (≤40 palabras).
-[RESTRICCIONES] Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+[RESTRICCIONES] Cada acertijo tiene UNA sola respuesta correcta defendible con lógica o con hechos del tema; nunca pidas ordenar o elegir por «importancia», «utilidad» u otro criterio subjetivo, y la opción incorrecta debe ser claramente errónea y explicable. Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de escape rooms educativas digitales para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un Escape Room Virtual con {n} acertijos lógicos encadenados cuya intuición y mecánica reflejen fielmente el concepto sin jerga técnica.
+- titulo: título temático e intrigante del escape room (≤10 palabras).
+- mision: premisa narrativa de la misión de escape y desafío inicial (≤30 palabras).
+- acertijos: exactamente {n} acertijos lógicos secuenciales donde descifrar cada uno abre un candado hacia la salida. Por cada acertijo:
+  * `numero`: índice del acertijo (1 a {n}).
+  * `escenario`: situación lógica o dilema cotidiano concreto (≤55 palabras).
+  * `opcion_A`: primera opción de respuesta (≤18 palabras).
+  * `opcion_B`: segunda opción de respuesta (≤18 palabras).
+  * `respuesta_correcta`: 'A' o 'B'.
+  * `explicacion_conexion`: breve explicación (≤30 palabras) que revela el paralelismo directo entre la lógica del acertijo y cómo funciona «{concept}».
+- epilogo: desenlace narrativo triunfal al abrir la compuerta final, resumiendo el valor del concepto (≤40 palabras).
+[RESTRICCIONES] Cada acertijo tiene UNA sola respuesta correcta defendible con lógica o con hechos del tema; nunca pidas ordenar o elegir por «importancia», «utilidad» u otro criterio subjetivo, y la opción incorrecta debe ser claramente errónea y explicable. Respuestas deducibles por pura lógica e intuición cotidiana. Tono inmersivo de intriga y urgencia narrativa. Sin jerga técnica pesada ni fórmulas en los escenarios de los acertijos.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -448,7 +469,7 @@ _ESCAPE_JS = """
             doorChip.setAttribute('aria-label', 'Puerta de escape: Abierta');
           }
           if (doorState) {
-            doorState.textContent = 'Abierta 🔓';
+            doorState.innerHTML = 'Abierta ' + ovaIcon('unlock');
           }
           if (doorBanner) {
             doorBanner.hidden = false;
@@ -561,7 +582,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<upao-status id="status-{idx}" state="info">Selecciona tu respuesta para comprobar la combinación.</upao-status>'
             f'</div>'
             f'<div class="ova-puzzle-explanation" id="explanation-{idx}" hidden>'
-            f'<h4 class="ova-explanation-title">🔓 Mecanismo descifrado:</h4>'
+            f'<h4 class="ova-explanation-title">{icon("unlock")} Mecanismo descifrado:</h4>'
             f'<p class="ova-explanation-text">{explicacion}</p>'
             f'</div>'
             f'<div class="ova-puzzle-nav">'
@@ -579,7 +600,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <upao-progress id="prog" current="0" total="{total_puzzles}" label="Candados superados" show-fraction></upao-progress>
 
 <section class="ova-card ova-lock-dashboard">
-  <h2 class="ova-dashboard-title">🔐 Mecanismo de Seguridad: Candados de Acceso</h2>
+  <h2 class="ova-dashboard-title">{icon('lock')} Mecanismo de Seguridad: Candados de Acceso</h2>
   <p class="ova-dashboard-desc">Descifra la lógica de cada acertijo para abrir los candados y desbloquear la compuerta de escape.</p>
   <div class="ova-lock-track" role="region" aria-label="Estado de los candados">
     {track_html}
@@ -594,7 +615,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <upao-nav id="nav" total="{total_puzzles}" current="1" prev-label="Acertijo anterior" next-label="Siguiente acertijo"></upao-nav>
 
 <section class="ova-door-banner" id="door-banner" hidden>
-  <div class="ova-door-banner-icon" aria-hidden="true">🎉🚪</div>
+  <div class="ova-door-banner-icon" aria-hidden="true">{icon('star')}{icon('door')}</div>
   <div>
     <h3 class="ova-door-banner-title">¡Compuerta Abierta! Has completado el Escape Room</h3>
     <p class="ova-door-banner-desc">{esc(data["epilogo"])}</p>

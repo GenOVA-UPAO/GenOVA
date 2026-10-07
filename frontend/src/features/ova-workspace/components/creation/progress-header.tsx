@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 interface HeaderProps {
@@ -11,13 +13,13 @@ interface HeaderProps {
 }
 
 export function ProgressHeader(props: Readonly<HeaderProps>) {
+  const { t } = useTranslation();
   return (
     <div>
       <div className="flex items-center justify-between gap-2 text-sm">
         <span className="font-medium text-foreground">{props.headline}</span>
         <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-          {props.done} de {String(props.total)} listos
-        </span>
+          {props.done} {t("workspace:de")} {String(props.total)} {t("workspace:listos")} </span>
       </div>
       <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
         <div
@@ -35,8 +37,7 @@ export function ProgressHeader(props: Readonly<HeaderProps>) {
             className="-mr-2.5 text-muted-foreground max-sm:h-11"
             onClick={props.onCancel}
           >
-            Cancelar generación
-          </Button>
+            {t("workspace:cancelar_generacion")} </Button>
           )}
         </div>
       )}

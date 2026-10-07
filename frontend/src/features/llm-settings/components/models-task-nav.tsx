@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 import type { Draft } from "../lib/llm-config-draft";
@@ -25,6 +27,7 @@ export function ModelsTaskNav({
   hidden,
   onSelect,
 }: Readonly<ModelsTaskNavProps>) {
+  const { t } = useTranslation("llm-settings");
   const shared = sharedWith(tasks, draft, defaults);
   const summary = sharingSummary(tasks, draft, defaults);
   return (
@@ -38,7 +41,7 @@ export function ModelsTaskNav({
         className="flex flex-col gap-1"
         role="tablist"
         aria-orientation="vertical"
-        aria-label="Tipos de tarea"
+        aria-label={t("page.taskTypesAria")}
         aria-describedby={summary ? "task-nav-summary" : undefined}
       >
         {tasks.map((task) => (
@@ -46,7 +49,7 @@ export function ModelsTaskNav({
             key={task}
             task={task}
             selected={selectedTask === task}
-            subtitle={taskSubtitle(task, draft, adminModels, defaults)}
+            subtitle={taskSubtitle(task, draft, adminModels, defaults) ?? t("tasks.noModel")}
             shared={shared[task]}
             onSelect={onSelect}
           />
@@ -61,10 +64,10 @@ function taskSubtitle(
   draft: Draft | null,
   adminModels: ChipModel[],
   defaults: Record<string, EnabledModel>,
-): string {
+): string | null {
   const assigned = draft?.[task]?.default;
   if (assigned?.provider && assigned.model_id) return chipLabel(assigned, adminModels);
   const fallback = Object.hasOwn(defaults, task) ? defaults[task] : undefined;
   if (fallback) return chipLabel(fallback, adminModels);
-  return "Sin modelo";
+  return null;
 }

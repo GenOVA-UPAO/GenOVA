@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderMeta } from "./platform-key-meta";
 import { PlatformKeyState } from "./platform-key-state";
 import { hasCheck, type ProviderCheckState } from "./platform-provider-check";
@@ -18,6 +20,7 @@ export function PlatformKeyRowHeader({
   serverKey,
   check,
 }: Readonly<PlatformKeyRowHeaderProps>) {
+  const { t } = useTranslation();
   return (
     <div className="min-w-0 flex-1">
       <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
@@ -31,7 +34,7 @@ export function PlatformKeyRowHeader({
       </p>
       <p className="mt-0.5 text-xs text-muted-foreground">
         {meta.desc}
-        {meta.compat ? ". Compatible con OpenAI" : null}
+        {meta.compat ? t("shared:compatible_con_openai") : null}
       </p>
     </div>
   );

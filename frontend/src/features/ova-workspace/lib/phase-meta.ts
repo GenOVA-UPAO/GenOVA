@@ -1,3 +1,4 @@
+import i18n, { type TFunction } from "i18next";
 /**
  * Metadatos canónicos de las fases 5E (label + clases de tab/badge).
  * Fuente única: antes existían dos copias con las mismas clases — PHASE_META
@@ -16,27 +17,27 @@ const ACCENT_BADGE = "bg-accent-brand/10 text-accent-brand border-accent-brand/2
 
 const META: Record<string, PhaseMeta> = {
   engage: {
-    label: "Enganche",
+    label: "workspace:enganche",
     tab: "bg-primary text-primary-foreground",
     badge: PRIMARY_BADGE,
   },
   explore: {
-    label: "Exploración",
+    label: "workspace:exploracion",
     tab: "bg-primary/85 text-primary-foreground",
     badge: PRIMARY_BADGE,
   },
   explain: {
-    label: "Explicación",
+    label: "workspace:explicacion",
     tab: "bg-primary/70 text-primary-foreground",
     badge: PRIMARY_BADGE,
   },
   elaborate: {
-    label: "Elaboración",
+    label: "workspace:elaboracion",
     tab: "bg-accent-brand/85 text-primary-foreground",
     badge: ACCENT_BADGE,
   },
   evaluate: {
-    label: "Evaluación",
+    label: "workspace:evaluacion",
     tab: "bg-accent-brand text-primary-foreground",
     badge: ACCENT_BADGE,
   },
@@ -58,9 +59,9 @@ export const DEFAULT_PHASE_META: PhaseMeta = {
 };
 
 /** Metadatos de una fase por clave en inglés o español; fallback neutro con la clave como label. */
-export function phaseMeta(key: string): PhaseMeta {
+export function phaseMeta(key: string, t: TFunction = i18n.t): PhaseMeta {
   const canonicalKey = ALIASES[key] ?? key;
   return Object.hasOwn(META, canonicalKey)
-    ? META[canonicalKey]
+    ? { ...META[canonicalKey], label: t(META[canonicalKey].label) }
     : { ...DEFAULT_PHASE_META, label: key };
 }

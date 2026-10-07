@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -16,6 +17,7 @@ interface ModelFavoriteToggleProps {
  * salen primero al elegir modelo. Los modelos base lo son siempre.
  */
 export function ModelFavoriteToggle({ provider, modelId }: Readonly<ModelFavoriteToggleProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useContext(LlmSettingsContext);
   const favorites = useFavoriteActions();
   if (!store || store.isDefaultModel(provider, modelId)) return null;
@@ -36,7 +38,8 @@ export function ModelFavoriteToggle({ provider, modelId }: Readonly<ModelFavorit
         weight={favorite ? "fill" : "regular"}
         className={favorite ? "text-accent-brand" : undefined}
       />
-      {favorite ? "En favoritos" : "Añadir a favoritos"}
+      {favorite ? t("favorites.inFavorites") : t("favorites.addFavorite")}
     </Button>
   );
 }
+

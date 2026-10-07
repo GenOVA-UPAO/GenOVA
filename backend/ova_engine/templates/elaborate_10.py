@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, paragraphs, script
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -29,17 +30,34 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_criteria"]
-    return f"""[ROL] Diseñador de retos de arquitectura y diseño de bases de datos Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        f"""[ROL] Diseñador de retos de arquitectura y diseño de bases de datos {d.bd_adj}.""",
+        f"""[ROL] Diseñador de retos de diseño para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        """- enunciado: ≈80 palabras: el cliente ficticio, el problema, y las restricciones (presupuesto, ventana de mantenimiento, volumen de datos, disponibilidad…).""",
+        """- enunciado: ≈80 palabras: el cliente o comunidad ficticia, el problema, y las restricciones (presupuesto, tiempo, recursos disponibles…).""",
+    )
+    _l3 = d.pick(
+        f"""[RESTRICCIONES] Datos y términos {d.si_oracle("de Oracle ", "del tema ")}correctos; la solución de referencia es UNA opción defendible, no la única.""",
+        f"""[RESTRICCIONES] Datos y términos correctos para el tema; la solución de referencia es UNA opción defendible, no la única. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
 [TAREA] Plantea un reto de diseño abierto donde aplicar «{concept}» exija equilibrar requisitos en conflicto, sin una solución óptima obvia.
 - titulo: título corto del reto.
-- enunciado: ≈80 palabras: el cliente ficticio, el problema, y las restricciones (presupuesto, ventana de mantenimiento, volumen de datos, disponibilidad…).
+{_l2}
 - criterios: EXACTAMENTE {n} criterios con los que se juzgará un diseño, cada uno con `nombre` (≤4 palabras) y `descripcion` (qué se valora, ≤25 palabras). Algunos deben estar en tensión entre sí.
 - guia_evaluacion: descripción GENERAL de tres niveles de logro aplicable a cada criterio: `basico`, `competente` y `avanzado` (≤30 palabras cada una).
 - solucion_referencia: una solución razonada de ≈100 palabras que justifique las decisiones.
 - tradeoffs: 2 o 3 decisiones clave de la solución, cada una con `decision`, `ganancia` (qué se gana) y `costo` (qué se sacrifica), ≤20 palabras cada campo.
 - cierre: cómo transferir este razonamiento a otros diseños.
-[RESTRICCIONES] Datos y términos de Oracle correctos; la solución de referencia es UNA opción defendible, no la única.
+{_l3}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

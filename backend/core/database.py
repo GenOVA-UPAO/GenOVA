@@ -1,3 +1,5 @@
+import os
+
 import structlog
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
@@ -8,7 +10,8 @@ from core.config import settings
 
 _logger = structlog.get_logger(__name__)
 
-load_dotenv()
+if not os.getenv("GENOVA_TESTING"):  # los tests no leen el .env del desarrollador
+    load_dotenv()
 
 database_url = settings.database_url
 if not database_url:

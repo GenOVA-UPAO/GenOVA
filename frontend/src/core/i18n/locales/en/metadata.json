@@ -1,0 +1,52 @@
+{
+  "title": "Edit OVA metadata",
+  "description": "Set how your educational material appears and how it can be reused.",
+  "descriptionLabel": "Description",
+  "optional": "(optional)",
+  "descriptionHint": "Up to 2000 characters.",
+  "exportHint": "Changes are included in every export format.",
+  "cancel": "Cancel",
+  "saving": "Saving…",
+  "save": "Save changes",
+  "fieldset": "License and educational metadata",
+  "license": "License",
+  "licenseSummary": "License: {{license}}",
+  "discardTitle": "Discard changes?",
+  "discardDescription": "Your metadata changes have not been saved yet.",
+  "keepEditing": "Keep editing",
+  "discard": "Discard changes",
+  "fields": {
+    "author": { "label": "Author", "hint": "Leave blank to use the owner's name." },
+    "language": { "label": "Language", "hint": "Language code: es, es-PE, en…" },
+    "keywords": { "label": "Keywords", "hint": "Separate with commas; up to 30 keywords." },
+    "educational_level": { "label": "Education level", "hint": "For example: higher education." },
+    "audience": { "label": "Target audience", "hint": "For example: first-year students." },
+    "typical_learning_time": {
+      "label": "Typical learning time",
+      "hint": "Type minutes (45) or hours and minutes (1 h 30 min). It is stored in a standard format."
+    }
+  },
+  "licenses": {
+    "by": "Allows sharing and adaptation with attribution to the author.",
+    "bySa": "Allows sharing and adaptation with attribution and the same license.",
+    "byNc": "Allows sharing and adaptation with attribution, for noncommercial use only.",
+    "byNcSa": "Noncommercial use only; requires attribution and the same license.",
+    "byNd": "Allows sharing with attribution, but not distribution of adaptations.",
+    "byNcNd": "Allows sharing with attribution, but not commercial use or adaptations.",
+    "cc0": "Public domain dedication with no restrictions on reuse.",
+    "reservedLabel": "All rights reserved",
+    "reserved": "Reuse requires permission from the rights holder."
+  },
+  "validation": {
+    "description": "The description can contain up to 2000 characters.",
+    "license": "Select a valid license.",
+    "language": "Use a language code such as es or es-PE.",
+    "keyword": "Each keyword must contain between 1 and 100 characters.",
+    "keywords": "Use up to 30 keywords.",
+    "educationalLevel": "The education level can contain up to 120 characters.",
+    "audience": "The target audience can contain up to 255 characters.",
+    "learningTime": "Type minutes (45) or hours and minutes (1 h 30 min).",
+    "author": "The author can contain up to 255 characters.",
+    "theme": "Select a valid theme."
+  }
+}

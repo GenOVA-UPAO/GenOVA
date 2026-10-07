@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -34,19 +35,48 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_problems"]
-    return f"""[ROL] Facilitador de análisis de incidencias de bases de datos Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Crea {n} incidencias de sectores distintos (banca, salud, retail, educación, logística…) cuyo diagnóstico dependa de «{concept}». El estudiante deberá emparejar cada incidencia con su diagnóstico, así que los {n} diagnósticos deben ser claramente DISTINTOS entre sí.
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        f"""[ROL] Facilitador de análisis de incidencias de bases de datos {d.bd_adj}.""",
+        f"""[ROL] Facilitador de análisis de casos para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Crea {n} incidencias de sectores distintos (banca, salud, retail, educación, logística…) cuyo diagnóstico dependa de «{concept}». El estudiante deberá emparejar cada incidencia con su diagnóstico, así que los {n} diagnósticos deben ser claramente DISTINTOS entre sí.""",
+        f"""[TAREA] Crea {n} situaciones problemáticas de contextos distintos (familia, escuela, comunidad, salud, comercio, ambiente…) cuyo diagnóstico dependa de «{concept}». El estudiante deberá emparejar cada situación con su diagnóstico, así que los {n} diagnósticos deben ser claramente DISTINTOS entre sí.""",
+    )
+    _l3 = d.pick(
+        """  * `sector`: sector o empresa (≤4 palabras).""",
+        """  * `sector`: contexto o ámbito (≤4 palabras).""",
+    )
+    _l4 = d.pick(
+        """  * `sintomas`: 3 síntomas observables (lentitud medible, errores ORA-, disco lleno, esperas…; ≤15 palabras cada uno).""",
+        """  * `sintomas`: 3 señales observables de la situación (≤15 palabras cada una).""",
+    )
+    _l5 = d.pick(
+        """  * `diagnostico`: causa raíz formulada como etiqueta corta (≤15 palabras, p. ej. «Consulta sin índice adecuado»), sin repetir palabras de los síntomas.""",
+        """  * `diagnostico`: causa raíz formulada como etiqueta corta (≤15 palabras), sin repetir palabras de las señales.""",
+    )
+    _l6 = d.pick(
+        """[RESTRICCIONES] Los síntomas deben ser coherentes con UNA sola causa; evita diagnósticos intercambiables.""",
+        f"""[RESTRICCIONES] Las señales deben ser coherentes con UNA sola causa; evita diagnósticos intercambiables. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto del mapa.
 - intro: instrucción breve para el estudiante (≤25 palabras).
 - problemas: EXACTAMENTE {n}; cada uno con:
-  * `sector`: sector o empresa (≤4 palabras).
+{_l3}
   * `contexto`: la situación en ≈40 palabras.
-  * `sintomas`: 3 síntomas observables (lentitud medible, errores ORA-, disco lleno, esperas…; ≤15 palabras cada uno).
-  * `diagnostico`: causa raíz formulada como etiqueta corta (≤15 palabras, p. ej. «Contención por bloqueos sin COMMIT»), sin repetir palabras de los síntomas.
+{_l4}
+{_l5}
   * `solucion_recomendada`: cómo aplicar «{concept}» para resolverlo y por qué funciona (≈45 palabras).
 - cierre: patrón común para diagnosticar con «{concept}».
-[RESTRICCIONES] Los síntomas deben ser coherentes con UNA sola causa; evita diagnósticos intercambiables.
+{_l6}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

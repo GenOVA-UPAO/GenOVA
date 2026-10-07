@@ -24,6 +24,7 @@ def regenerate_phase_content(
     image_settings: dict | None = None,
     contexto: str = "",
     theme: dict | None = None,
+    area: str | None = None,
 ) -> str | None:
     """Genera HTML fresco para un recurso con el pipeline unificado.
 
@@ -36,9 +37,10 @@ def regenerate_phase_content(
         logger.warning("unknown phase_type for regen", phase_type=phase_type)
         return None
     try:
+        from prometheus.engine.activity_store import record_activity
         from prometheus.plans.generate import generate_resource
 
-        return generate_resource(
+        result = generate_resource(
             phase_type,
             resource_type,
             concept,
@@ -47,7 +49,10 @@ def regenerate_phase_content(
             image_settings=image_settings,
             contexto=contexto,
             theme=theme,
-        ).html
+            area=area,
+        )
+        record_activity(result.html, getattr(result, "activity", None))
+        return result.html
     except Exception:
         logger.exception(
             "regen failed",

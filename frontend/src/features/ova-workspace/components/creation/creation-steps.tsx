@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -9,7 +11,6 @@ interface Props {
 
 type StepState = "done" | "current" | "upcoming";
 
-const STEPS = ["Describe", "Elige recursos", "Genera"] as const;
 
 /** El paso actual es el primero sin cumplir; «Genera» pasa a actual cuando lo demás está listo. */
 function stepStates(describeDone: boolean, resourcesDone: boolean): StepState[] {
@@ -38,9 +39,11 @@ function stepMarker(state: StepState, index: number) {
 
 /** Progreso de la creación en tres pasos; el número vive solo en el círculo. */
 export function CreationSteps({ describeDone, resourcesDone, generateReady }: Readonly<Props>) {
+  const { t } = useTranslation();
+  const STEPS = [t("workspace:describe"), t("workspace:elige_recursos"), t("workspace:genera")];
   const states = stepStates(describeDone, resourcesDone);
   return (
-    <ol aria-label="Pasos para crear un OVA" className="flex items-center gap-2 sm:gap-3">
+    <ol aria-label={t("workspace:pasos_para_crear_un_ova")} className="flex items-center gap-2 sm:gap-3">
       {STEPS.map((label, index) => {
         const state = states[index];
         return (
@@ -58,7 +61,7 @@ export function CreationSteps({ describeDone, resourcesDone, generateReady }: Re
               )}
             >
               {label}
-              {state === "done" && <span className="sr-only"> (completado)</span>}
+              {state === "done" && <span className="sr-only"> {t("workspace:completado")}</span>}
             </span>
             {index < STEPS.length - 1 && (
               <span

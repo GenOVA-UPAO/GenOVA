@@ -1,13 +1,16 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
 import { markClass, resourceStatusLabel } from "../../lib/progress-view-model";
 
 export function CreationStatusBadge({ resource }: Readonly<{ resource: ResourceVM }>) {
+  const { t } = useTranslation();
   return (
     <span
       className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${markClass(resource.status)}`}
-      aria-label={resourceStatusLabel(resource.status)}
+      aria-label={resourceStatusLabel(resource.status, t)}
     >
       {resource.status === "check" && <Icon name="check-circle" size="text-sm" />}
       {resource.status === "X" && <Icon name="x" size="text-sm" />}

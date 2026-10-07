@@ -8,7 +8,13 @@ from auth.dependencies import get_current_user
 from core.database import get_db
 from core.http_errors import forbidden_response
 from core.rate_limit import limiter
-from generation.regen.regen_jobs import recover_orphan_regen, regen_progress_dto, start_regen
+from generation.regen.regen_jobs import (
+    active_regen_id,
+    recover_orphan_regen,
+    regen_progress_dto,
+    request_cancel,
+    start_regen,
+)
 from generation.regen.regen_launcher import launch_regen
 from generation.regen.regen_rag import attach_to_ova
 from models import Ova, OvaPhase, OvaVersion, User
@@ -192,3 +198,58 @@ def get_regen_progress(
             },
         )
     return progress
+
+
+def _owned_ova(ova_id: str, user: User, db: Session):
+    """(ova, None) si el usuario puede tocarlo; (None, respuesta de error) si no."""
+    ova = db.execute(
+        select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+    ).scalar_one_or_none()
+    if not ova:
+        return None, JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": "not_found", "message": "OVA no encontrado."},
+        )
+    if not is_ova_owner(ova, user):
+        return None, forbidden_response()
+    return ova, None
+
+
+@router.get("/{ova_id}/regenerar/activa", summary="Regeneración en curso del OVA, si la hay")
+def get_active_regen(
+    ova_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Permite al editor retomar (progreso y cancelación) una regeneración que
+    empezó antes de abrirlo, p. ej. tras recargar la página."""
+    ova, error = _owned_ova(ova_id, current_user, db)
+    if error:
+        return error
+    return {"job_id": active_regen_id(ova_id)}
+
+
+@router.post("/{ova_id}/regenerar/{job_id}/cancelar", summary="Cancelar una regeneración")
+@limiter.limit("20/minute")
+def cancel_regen(
+    request: Request,
+    ova_id: str,
+    job_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Cancela la regeneración. Se comprueba entre recursos: los que ya están en
+    vuelo terminan, pero TODO lo editado se descarta (no se crea versión nueva) y
+    el OVA conserva su versión actual."""
+    ova, error = _owned_ova(ova_id, current_user, db)
+    if error:
+        return error
+    state = request_cancel(job_id, ova_id)
+    if state is None:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": "job_not_found", "message": "Job de regeneración no encontrado."},
+        )
+    return JSONResponse(
+        status_code=status.HTTP_202_ACCEPTED, content={"job_id": job_id, "status": state}
+    )

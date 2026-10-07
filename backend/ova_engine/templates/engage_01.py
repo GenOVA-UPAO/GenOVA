@@ -5,6 +5,7 @@ PLANTILLA DE REFERENCIA del motor: las demás siguen esta misma forma
 """
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, b, obj, s
 
@@ -38,8 +39,10 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
-    return f"""[ROL] Guionista de cómics educativos para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Guionista de cómics educativos para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Escribe un cómic de {p["num_panels"]} viñetas, tono {p["tone"]}, protagonizado por «Max», un robot DBA de una pequeña empresa. Usa una analogía cotidiana concreta que refleje FIELMENTE cómo funciona «{concept}» y construye una progresión hasta un clímax que despierte curiosidad.
 - titulo: título corto del cómic.
 - gancho: una frase que invite a leer.
@@ -47,6 +50,18 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - pregunta: una pregunta de enganche sobre la analogía con 3-4 opciones; exactamente UNA con `correcta: true`; cada `feedback` explica por qué.
 - cierre: frase que conecte la historia con lo que se aprenderá.
 [RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Guionista de cómics educativos para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Escribe un cómic de {p["num_panels"]} viñetas, tono {p["tone"]}, protagonizado por «Max», un robot curioso y simpático que ayuda a entender el tema. Usa una analogía cotidiana concreta que refleje FIELMENTE cómo funciona «{concept}» y construye una progresión hasta un clímax que despierte curiosidad.
+- titulo: título corto del cómic.
+- gancho: una frase que invite a leer.
+- vinetas: por cada viñeta, `dialogo` (lo que DICE Max, ≤18 palabras, sin acotaciones), `descripcion_visual` (la escena, ≤25 palabras) y `prompt_imagen` (escena en inglés, sin texto en la imagen; di solo la acción y el decorado, incluyendo «Max» por su nombre: el sistema añade su aspecto y el estilo visual, idénticos en todas las viñetas).
+- pregunta: una pregunta de enganche sobre la analogía con 3-4 opciones; exactamente UNA con `correcta: true`; cada `feedback` explica por qué.
+- cierre: frase que conecte la historia con lo que se aprenderá.
+[RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

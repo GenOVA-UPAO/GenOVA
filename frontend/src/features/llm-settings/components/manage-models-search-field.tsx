@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { SearchInput } from "@/core/components/search-input";
 
 interface ManageModelsSearchFieldProps {
@@ -9,14 +11,17 @@ export function ManageModelsSearchField({
   value,
   onSearch,
 }: Readonly<ManageModelsSearchFieldProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <SearchInput
       className="min-w-0 flex-1"
       value={value}
       onValueChange={onSearch}
-      placeholder="Buscar por nombre, proveedor o descripción…"
-      ariaLabel="Buscar modelo"
+      placeholder={t("catalog.searchPlaceholderExtended")}
+      ariaLabel={t("catalog.searchModel")}
       inputClassName="h-9 max-sm:h-11 max-sm:text-base"
     />
   );
 }
+

@@ -8,7 +8,9 @@ y bloqueos, llenado de almacenamiento, o costo con/sin índices).
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
@@ -50,9 +52,11 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_controls"]
-    return f"""[ROL] Diseñador de simuladores intuitivos y experiencias interactivas para ingeniería de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña los parámetros conceptuales para un simulador interactivo de {n} control(es) que permita al estudiante descubrir relaciones causa-efecto fundamentales sobre «{concept}» (p. ej. tamaño del buffer cache frente a lecturas en disco, sesiones concurrentes que compiten por filas y generan bloqueos, tasa de inserción frente al llenado de un tablespace, o selectividad de un índice frente al costo de escaneo).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Diseñador de simuladores intuitivos y experiencias interactivas para ingeniería de bases de datos.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña los parámetros conceptuales para un simulador interactivo de {n} control(es) que permita al estudiante descubrir relaciones causa-efecto fundamentales sobre «{concept}» (p. ej. {d.si_oracle("tamaño del buffer cache", "tamaño de la caché")} frente a lecturas en disco, selectividad de un índice frente al costo de escaneo, {d.si_oracle("tasa de inserción frente al llenado de un tablespace", "volumen de filas frente al tiempo de una consulta")}; elige solo lo que encaje con «{concept}»).
 - titulo: título evocador del simulador (≤10 palabras).
 - objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras, qué descubrirá al manipular los controles).
 - controles: exactamente {n} control(es) manipulable(s) con respuesta intuitiva. Por cada control:
@@ -67,7 +71,28 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `paso`: acción concreta de manipulación sugerida (≤20 palabras).
   * `resultado`: observación y deducción causa-efecto del sistema (≤22 palabras).
 - cierre_conceptual: síntesis de transferencia que consolida el principio de causa-efecto descubierto y su impacto real en producción (≤45 palabras).
-[RESTRICCIONES] Enfatiza la intuición física/lógica de causa y efecto. Sin código SQL extenso ni fórmulas matemáticas densas. Tono didáctico universitario.
+[RESTRICCIONES] Enfatiza la intuición física/lógica de causa y efecto. Sin código SQL extenso ni fórmulas matemáticas densas. Tono didáctico adecuado a {d.audiencia}.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Diseñador de simuladores intuitivos y experiencias interactivas para el estudio de «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña los parámetros conceptuales para un simulador interactivo de {n} control(es) que permita al estudiante descubrir relaciones causa-efecto fundamentales sobre «{concept}» (p. ej. dos magnitudes propias del tema cuya relación el estudiante pueda variar y observar).
+- titulo: título evocador del simulador (≤10 palabras).
+- objetivo: objetivo de aprendizaje observable en una frase (≤25 palabras, qué descubrirá al manipular los controles).
+- controles: exactamente {n} control(es) manipulable(s) con respuesta intuitiva. Por cada control:
+  * `id`: identificador técnico breve en minúsculas sin espacios (≤15 caracteres, ej. "temperatura", "tamano").
+  * `etiqueta`: nombre legible del parámetro visible al estudiante (≤6 palabras).
+  * `min`: valor entero mínimo razonable para la escala (ej. 10).
+  * `max`: valor entero máximo razonable para la escala (ej. 250).
+  * `default`: valor entero por defecto dentro del rango [min, max].
+  * `unidad`: unidad de medida o magnitud (≤10 caracteres, ej. "MB", "sesiones", "ms", "%").
+  * `descripcion`: explicación de qué representa este control y qué efecto causa en el sistema al variarlo (≤18 palabras).
+- ejemplo_trabajado: un caso resuelto de referencia guiada antes de interactuar:
+  * `paso`: acción concreta de manipulación sugerida (≤20 palabras).
+  * `resultado`: observación y deducción causa-efecto del sistema (≤22 palabras).
+- cierre_conceptual: síntesis de transferencia que consolida el principio de causa-efecto descubierto y su impacto real en producción (≤45 palabras).
+[RESTRICCIONES] Enfatiza la intuición física/lógica de causa y efecto. Sin código extenso ni fórmulas matemáticas densas. Tono didáctico adecuado a {d.audiencia}.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -475,11 +500,11 @@ def _render_svg(controles: list[dict]) -> str:
 <!-- Flujos de conexión -->
 {flows_svg}
 
-<!-- Nodo Central: Motor SGBD -->
+<!-- Nodo Central -->
 <circle id="svg-core-halo" cx="340" cy="160" r="48" fill="none" stroke="var(--primary, #0A3D91)" stroke-width="2" opacity="0.3"/>
 <circle id="svg-core" cx="340" cy="160" r="40" fill="var(--surface, #ffffff)" stroke="var(--primary, #0A3D91)" stroke-width="3" filter="url(#sim-glow)"/>
 <path d="M 324 150 C 324 144, 356 144, 356 150 C 356 156, 324 156, 324 150 Z M 324 150 L 324 168 C 324 174, 356 174, 356 168 L 356 150 M 324 159 C 324 165, 356 165, 356 159" fill="none" stroke="var(--primary, #0A3D91)" stroke-width="2" stroke-linecap="round"/>
-<text x="340" y="182" font-size="9" font-weight="700" text-anchor="middle" fill="var(--foreground, #0f172a)">MOTOR SGBD</text>
+<text x="340" y="182" font-size="9" font-weight="700" text-anchor="middle" fill="var(--foreground, #0f172a)">SISTEMA</text>
 <text id="svg-core-rate" x="340" y="222" font-size="10" font-weight="600" text-anchor="middle" fill="var(--primary, #0A3D91)">Procesando</text>
 
 <!-- Conector hacia Salida -->
@@ -569,7 +594,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 </upao-example>
 
 <section class="ova-card">
-  <h2>🛠️ Panel de Experimentación</h2>
+  <h2>{icon('tools')} Panel de Experimentación</h2>
   <p class="ova-muted" style="margin-bottom:12px;font-size:0.9rem">
     Ajusta cada control deslizante o pulsa los botones (+/−) para alterar los parámetros y analizar la respuesta reactiva del sistema.
   </p>

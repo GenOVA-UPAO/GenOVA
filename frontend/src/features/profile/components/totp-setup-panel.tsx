@@ -1,4 +1,5 @@
 import { type SyntheticEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
@@ -27,6 +28,7 @@ export function TotpSetupPanel({
   onConfirm,
   onCancel,
 }: Readonly<TotpSetupPanelProps>) {
+  const { t } = useTranslation("profile");
   const [code, setCode] = useState("");
   const [touched, setTouched] = useState(false);
   const error = totpCodeError(code);
@@ -46,14 +48,14 @@ export function TotpSetupPanel({
 
   return (
     <ProfileSection
-      title="Configura tu app autenticadora"
-      description="Añade GenOVA a tu app autenticadora y confirma con el código que genera."
+      title={t("totp.setupTitle")}
+      description={t("totp.setupDescription")}
     >
       <TotpEnrollment uri={data.provisioning_uri} secret={data.secret} />
       <BackupCodesBox codes={data.backup_codes} />
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="sm:w-56">
-          <FormField id="code" label="Código de 6 dígitos de tu app" error={fieldError}>
+          <FormField id="code" label={t("totp.setupCodeLabel")} error={fieldError}>
             <Input
               id="code"
               type="text"
@@ -73,10 +75,10 @@ export function TotpSetupPanel({
         <ErrorAlert message={serverError} />
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
           <Button type="button" variant="outline" className="max-sm:h-11" onClick={onCancel}>
-            Cancelar
+            {t("totp.cancel")}
           </Button>
           <Button type="submit" className="max-sm:h-11" loading={isSubmitting}>
-            Confirmar y activar
+            {t("totp.setupConfirm")}
           </Button>
         </div>
       </form>
