@@ -98,16 +98,17 @@ rep=document.getElementById('repeat'),fill=document.getElementById('fill'),
 track=document.getElementById('track'),cur=document.getElementById('cur'),
 dur=document.getElementById('dur'),wave=document.getElementById('wave'),
 status=document.getElementById('status'),done=false;
+var ICON_PLAY='<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px"><path d="M7 4v16l13-8z"/></svg>',ICON_PAUSE='<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>';
 function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 aud.addEventListener('loadedmetadata',function(){dur.textContent=fmt(aud.duration);});
 aud.addEventListener('timeupdate',function(){
 fill.style.width=((aud.currentTime/aud.duration)*100||0)+'%';
 cur.textContent=fmt(aud.currentTime);});
 play.addEventListener('click',function(){if(aud.paused){aud.play();}else{aud.pause();}});
-aud.addEventListener('play',function(){play.textContent='⏸ Pausar';wave.classList.add('on');});
-aud.addEventListener('pause',function(){play.textContent='▶ Reproducir';wave.classList.remove('on');});
+aud.addEventListener('play',function(){play.innerHTML=ICON_PAUSE+' Pausar';wave.classList.add('on');});
+aud.addEventListener('pause',function(){play.innerHTML=ICON_PLAY+' Reproducir';wave.classList.remove('on');});
 aud.addEventListener('ended',function(){
-play.textContent='▶ Reproducir';wave.classList.remove('on');
+play.innerHTML=ICON_PLAY+' Reproducir';wave.classList.remove('on');
 if(!done){done=true;status.textContent='✓ Podcast escuchado';_scormComplete();}});
 rep.addEventListener('click',function(){aud.currentTime=0;aud.play();});
 track.addEventListener('click',function(e){
@@ -134,7 +135,7 @@ def build_podcast_html(
         media = (
             f'<audio id="aud" preload="auto" src="data:{mime};base64,' + audio_b64 + '"></audio>'
             '<div class="controls">'
-            '<button class="btn" id="play">▶ Reproducir</button>'
+            '<button class="btn" id="play"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px"><path d="M7 4v16l13-8z"/></svg> Reproducir</button>'
             '<button class="btn ghost" id="repeat">↺ Repetir</button></div>'
             '<div class="progress" id="track"><div class="fill" id="fill"></div></div>'
             '<p class="meta"><span id="cur">0:00</span> / <span id="dur">0:00</span></p>'
