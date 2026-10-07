@@ -21,7 +21,7 @@ class IntentInterpreterPort(Protocol):
         blocks: list[ResourceBlock],
         options: dict[str, Any] | None = None,
     ) -> tuple[Intent, IntentTrace]:
-        ...
+        raise NotImplementedError
 
 
 class ScopeGuardPort(Protocol):
@@ -32,7 +32,7 @@ class ScopeGuardPort(Protocol):
         instruction: str,
         options: dict[str, Any] | None = None,
     ) -> GuardCheckResult:
-        ...
+        raise NotImplementedError
 
 
 class PostVerifierPort(Protocol):
@@ -46,30 +46,30 @@ class PostVerifierPort(Protocol):
         intent: Intent,
         options: dict[str, Any] | None = None,
     ) -> tuple[bool, float, str | None]:
-        ...
+        raise NotImplementedError
 
 
 class EditorFeedbackRepositoryPort(Protocol):
     """Puerto para persistencia de telemetría de feedback docente."""
 
     def save_feedback(self, data: dict[str, Any]) -> str:
-        ...
+        raise NotImplementedError
 
 
 class EditorPhaseRepositoryPort(Protocol):
     """Puerto para acceso y persistencia de contenido y versiones de fases."""
 
     def can_edit(self, ova_id: str, actor_id: str, is_admin: bool) -> bool:
-        ...
+        raise NotImplementedError
 
     def get_ova_owner(self, ova_id: str) -> str | None:
-        ...
+        raise NotImplementedError
 
     def phase_exists(self, ova_id: str, phase_id: str) -> bool:
-        ...
+        raise NotImplementedError
 
     def get_phase_content(self, ova_id: str, phase_id: str) -> str | None:
-        ...
+        raise NotImplementedError
 
     def update_phase_and_create_version(
         self,
@@ -78,4 +78,4 @@ class EditorPhaseRepositoryPort(Protocol):
         html_content: str,
         instruction: str,
     ) -> dict[str, Any]:
-        ...
+        raise NotImplementedError
