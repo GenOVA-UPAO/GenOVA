@@ -25,6 +25,22 @@ Vite (`webServer`, reutiliza uno ya activo en `http://localhost:4200`); en CI co
 contra el frontend y backend que el job `e2e` de `.github/workflows/ci.yml` levanta
 (Postgres efímero + `uvicorn` en `:8000`, proxy de Vite `/api -> :8000`).
 
+### Flujos principales (FP-001..006)
+
+`tests/features/e2e/FP-*.feature` (steps en `steps/e2e/flujos-principales.steps.js`):
+editor (aplicar a un recurso, regenerar, añadir, cancelar), exportar en los 7 formatos,
+área temática, reintento de generación y metadatos/tema del paquete. Con `LLM_FAKE=1`
+usan estos marcadores deterministas (solo actúan en modo fake, ver `fake_invoke.py`):
+
+- `[fallo-e2e]` en el prompt del job: la primera generación falla; el reintento funciona.
+- `[lento-e2e]` en una instrucción de edición: tarda unos segundos para poder cancelarla.
+- Con un área temática activa, el clasificador fake rechaza un prompt que no comparte
+  ninguna palabra (4+ letras) con el área (`input_guardrail._fake_classifier`).
+
+Los escenarios `@global-config` (área temática, configuración global) corren en el
+proyecto `e2e-global-config` de `playwright.config.js`, que espera a que termine el
+resto. Para iterar sobre un solo feature: `playwright test --no-deps <archivo>`.
+
 ### LLM_FAKE=1 es obligatorio para la suite completa
 
 Los escenarios de generación (HU-002 generación completa, HU-004, HU-006, HU-012,

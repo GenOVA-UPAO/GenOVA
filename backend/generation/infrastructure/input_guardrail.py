@@ -10,6 +10,7 @@ No se pasa `deadline` a generar_texto: el router corta la cadena si quedan
 
 from __future__ import annotations
 
+import json
 import threading
 import time
 from uuid import UUID
@@ -54,6 +55,16 @@ Reglas:
 Prompt del usuario:
 {prompt}
 """
+
+
+def _fake_classifier(prompt: str, area: str) -> str:
+    """Clasificador determinista de LLM_FAKE=1 (sin red): el prompt está en el área
+    si comparte alguna palabra de 4+ letras con ella; si no, topic=block. El
+    lenguaje siempre es ok (la lista de términos ya actúa antes como suelo)."""
+    words = {w for w in fold_text(area).split() if len(w) >= 4}
+    text = fold_text(prompt)
+    in_area = not words or any(w in text for w in words)
+    return json.dumps({"language": "ok", "topic": "ok" if in_area else "block"})
 
 
 _cache: dict[tuple, tuple[float, LlmVerdict]] = {}
@@ -167,6 +178,10 @@ class InputGuardrailChecker:
         return verdict
 
     def _call_llm(self, prompt: str, area: str, model: tuple[str, str] | None) -> str:
+        from core.config import settings
+
+        if settings.llm_fake:
+            return _fake_classifier(prompt, area)
         from llm.router import generar_texto
 
         body = _CLASSIFIER_PROMPT.format(area=area or "(sin restricción)", prompt=prompt)
