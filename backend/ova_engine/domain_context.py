@@ -55,6 +55,23 @@ _DB_TERMS = (
     r"postgres",
     r"mysql",
 )
+# Términos que indican Oracle en concreto (no cualquier SGBD): solo con ellos el motor habla
+# de Oracle, de sus hechos de referencia y de ejemplos como la SGA o los tablespaces.
+_ORACLE_TERMS = (
+    r"oracle",
+    r"pl/?sql",
+    r"tablespaces?",
+    r"rman",
+    r"ora-\d+",
+    r"sga",
+    r"pga",
+    r"buffer cache",
+    r"redo log",
+    r"data ?guard",
+    r"v\$\w+",
+    r"dbms_\w+",
+)
+_ORACLE_RE = re.compile(r"(?<!\w)(?:" + "|".join(f"(?:{t})" for t in _ORACLE_TERMS) + r")(?!\w)")
 # Siempre como palabra completa: sin `\b`, «t-rman-sforman» activaba `rman` y un OVA de
 # fotosíntesis salía con Oracle (QA 2026-10-06).
 _DB_RE = re.compile(r"\b(?:" + "|".join(f"(?:{t})" for t in _DB_TERMS) + r")\b")
@@ -128,7 +145,10 @@ def area_block(area: str, topic: str = "") -> str:
     return (
         f"[ÁREA DEL CURSO] Todos los recursos pertenecen al área «{area}».{tema} "
         "Los ejemplos, casos, analogías, personajes y preguntas deben ser del área; "
-        "no uses analogías de otras disciplinas como tema principal."
+        "no uses analogías de otras disciplinas como tema principal. "
+        "El tema concreto es el FOCO del recurso: el área solo lo desambigua y aporta ejemplos; "
+        "NO cambies el tema por otro del área (p. ej. «Seguridad» no es «transacciones», "
+        "«Árboles» no es «interbloqueos»)."
     )
 
 
@@ -143,6 +163,11 @@ def with_area(prompt: str, topic: str = "", area: str | None = None) -> str:
 def is_db_text(text: str) -> bool:
     """¿El texto trata de Oracle o de bases de datos? Palabras clave, sin LLM."""
     return bool(_DB_RE.search(_fold(text)))
+
+
+def is_oracle_text(text: str) -> bool:
+    """¿El texto menciona Oracle en concreto (o PL/SQL, tablespace, SGA, RMAN, ORA-…)?"""
+    return bool(_ORACLE_RE.search(_fold(text)))
 
 
 def detect_level(text: str) -> str:
@@ -163,10 +188,36 @@ class DomainContext:
     level: str  # secundaria | universitario | posgrado | general
     is_db: bool
     area: str = ""  # área temática fijada por el admin; vacía si no hay
+    is_oracle: bool = False  # el tema, el pedido o el área nombran Oracle
 
     def pick(self, db: str, generic: str) -> str:
-        """`db` si el tema es de Oracle/bases de datos; `generic` en cualquier otro."""
+        """`db` si el tema es de bases de datos; `generic` en cualquier otro. Los textos `db`
+        no deben nombrar Oracle: para eso `pick3` o `motor`."""
         return db if self.is_db else generic
+
+    def pick3(self, oracle: str, db: str, generic: str) -> str:
+        """`oracle` si el tema/área es de Oracle, `db` si es de BD en general, `generic` si no."""
+        if self.is_oracle:
+            return oracle
+        return db if self.is_db else generic
+
+    @property
+    def motor(self) -> str:
+        """«Oracle» solo si el tema o el área lo piden; si no, un SGBD relacional genérico."""
+        return "Oracle" if self.is_oracle else "un SGBD relacional (SQL estándar)"
+
+    @property
+    def motor_corto(self) -> str:
+        return "Oracle" if self.is_oracle else "el SGBD"
+
+    @property
+    def bd_adj(self) -> str:
+        """Para «bases de datos {…}»: «Oracle» o «relacionales»."""
+        return "Oracle" if self.is_oracle else "relacionales"
+
+    def si_oracle(self, oracle: str, otro: str = "") -> str:
+        """`oracle` solo si el tema/área es de Oracle; si no, `otro` (SQL estándar)."""
+        return oracle if self.is_oracle else otro
 
     @property
     def docente(self) -> str:
@@ -188,8 +239,10 @@ class DomainContext:
 
     @property
     def curso(self) -> str:
-        """Línea de curso: solo para temas de bases de datos."""
-        return "curso: Sistemas de Gestión de Base de Datos, Oracle" if self.is_db else f"nivel: {self.audiencia}"
+        """Línea de curso: solo para temas de bases de datos (Oracle solo si se nombra)."""
+        if not self.is_db:
+            return f"nivel: {self.audiencia}"
+        return "curso: Sistemas de Gestión de Base de Datos" + (", Oracle" if self.is_oracle else "")
 
     def rules(self) -> str:
         """Bloque de dominio y nivel para el prompt."""
@@ -218,4 +271,5 @@ def domain_for(concept: str, contexto: str = "", area: str | None = None) -> Dom
         level=level,
         is_db=is_db_text(f"{concept} {pedido} {area}"),
         area=area,
+        is_oracle=is_oracle_text(f"{concept} {pedido} {area}"),
     )

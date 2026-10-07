@@ -99,7 +99,7 @@ def generate_with_template(
             llm_config=llm_config,
             enabled_models=enabled_models,
             deadline=deadline,
-            db_facts=domain_for(concept, prompt_ctx).is_db,
+            db_facts=domain_for(concept, prompt_ctx).is_oracle,
         )
     )
     if spec.normalize is not None:

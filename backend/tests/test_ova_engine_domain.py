@@ -57,12 +57,14 @@ def test_prompt_de_tema_bd_conserva_el_dominio(spec):
     assert "tablespaces en Oracle" in prompt
 
 
-def test_hechos_de_oracle_solo_en_temas_de_bd():
+def test_hechos_de_oracle_solo_si_se_nombra_oracle():
     schema = {"type": "object"}
-    assert "Hechos de Oracle" in text_mod._full_prompt("Explica tablespaces en Oracle", schema)
-    assert "Hechos de Oracle" not in text_mod._full_prompt("Explica la fotosíntesis", schema)
-    assert "Hechos de Oracle" in text_mod._full_prompt("x", schema, db_facts=True)
-    assert "Hechos de Oracle" not in text_mod._full_prompt("Oracle", schema, db_facts=False)
+    assert "Hechos de referencia de Oracle" in text_mod._full_prompt("Explica tablespaces en Oracle", schema)
+    assert "Hechos de referencia de Oracle" not in text_mod._full_prompt("Explica la fotosíntesis", schema)
+    # Un tema de BD sin Oracle (tarea 36) tampoco lleva los hechos.
+    assert "Hechos de referencia de Oracle" not in text_mod._full_prompt("Explica los índices en bases de datos", schema)
+    assert "Hechos de referencia de Oracle" in text_mod._full_prompt("x", schema, db_facts=True)
+    assert "Hechos de referencia de Oracle" not in text_mod._full_prompt("Oracle", schema, db_facts=False)
 
 
 def test_podcast_no_hereda_el_curso_de_oracle():

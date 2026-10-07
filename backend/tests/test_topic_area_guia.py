@@ -25,7 +25,9 @@ def test_area_bd_con_tema_ambiguo_es_bd_y_el_bloque_va_en_rules():
     assert "[ÁREA DEL CURSO]" in rules
     assert f"«{AREA_BD}»" in rules
     assert "Interpreta el tema «Árboles» dentro de esa área" in rules
-    assert "Hechos de Oracle" in _full_prompt("x", {"type": "object"}, d.is_db)
+    # Un área de BD no implica Oracle (tarea 36): sin hechos de Oracle.
+    assert not d.is_oracle
+    assert "Hechos de referencia de Oracle" not in _full_prompt("x", {"type": "object"}, d.is_oracle)
 
 
 def test_area_ml_con_arboles_no_trae_hechos_oracle():
@@ -33,7 +35,7 @@ def test_area_ml_con_arboles_no_trae_hechos_oracle():
     assert not d.is_db
     assert "[ÁREA DEL CURSO]" in d.rules()
     assert "«machine learning»" in d.rules()
-    assert "Hechos de Oracle" not in _full_prompt("x", {"type": "object"}, d.is_db)
+    assert "Hechos de referencia de Oracle" not in _full_prompt("x", {"type": "object"}, d.is_oracle)
 
 
 def test_sin_area_todo_igual_que_antes():
@@ -81,7 +83,7 @@ def test_toda_plantilla_recibe_el_area_en_su_prompt(spec, monkeypatch):
         pipeline.generate_with_template(spec, "Árboles")
     assert "[ÁREA DEL CURSO]" in seen["prompt"]
     assert f"«{AREA_BD}»" in seen["prompt"]
-    assert seen["db_facts"] is True
+    assert seen["db_facts"] is False  # área de BD sin Oracle: sin hechos de Oracle
 
 
 class _Source:
