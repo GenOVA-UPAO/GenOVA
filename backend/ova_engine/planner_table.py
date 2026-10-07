@@ -113,3 +113,28 @@ TABLE: dict[str, dict[int, Resource]] = {
 
 ATTRS = ("historico", "compara", "procedimiento", "etico", "tuning", "abstracto", "codigo",
          "fallo", "componentes", "diagnostico", "clasificacion", "matematico", "avanzado")
+
+
+# Sesgo por ÁREA temática del curso (`domain_context.current_area()`). Es un empujón
+# pequeño (menor que REQ_PENALTY): desempata entre recursos parecidos, nunca salta los
+# requisitos duros de la tabla. Cada regla: patrón sobre el área sin tildes -> bonus por
+# (fase, n). Sin área, o sin coincidencia, no cambia nada.
+AREA_BONUS_SCALE = 0.35
+
+AREA_BONUS: tuple[tuple[str, dict[tuple[str, int], float]], ...] = (
+    # Bases de datos / SQL: simuladores y laboratorios de código.
+    (
+        r"base[s]? de datos|\bsgbd\b|\bdbms\b|\bsql\b|oracle|postgres|mysql|relacional",
+        {("explore", 1): 1.0, ("explore", 7): 1.0, ("elaborate", 7): 1.5, ("evaluate", 5): 0.5},
+    ),
+    # Machine learning / IA: sliders de hiperparámetros y diagramas.
+    (
+        r"machine learning|aprendizaje (automatico|profundo)|inteligencia artificial|\bia\b|redes neuronales|ciencia de datos|data science",
+        {("explore", 6): 1.5, ("elaborate", 4): 0.5, ("explain", 8): 1.0, ("explain", 3): 0.5, ("explore", 3): 0.5},
+    ),
+    # Programación / software: laboratorio de código y proyecto.
+    (
+        r"programaci|desarrollo de software|ingenieria de software|algoritm",
+        {("elaborate", 7): 1.0, ("elaborate", 3): 0.5, ("explore", 7): 0.5, ("evaluate", 5): 0.5},
+    ),
+)

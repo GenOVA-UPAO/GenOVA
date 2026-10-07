@@ -22,7 +22,15 @@ import unicodedata
 import httpx
 import structlog
 
-from ova_engine.planner_table import ATTRS, REQ_PENALTY, REQ_THRESHOLD, TABLE, Resource
+from ova_engine.planner_table import (
+    AREA_BONUS,
+    AREA_BONUS_SCALE,
+    ATTRS,
+    REQ_PENALTY,
+    REQ_THRESHOLD,
+    TABLE,
+    Resource,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -201,9 +209,25 @@ _DIVERSITY_PENALTY = 0.25  # por cada recurso ya elegido de la misma familia
 _MAX_PER_MODAL = 2
 
 
-def select_phase(phase: str, profile: dict[str, float], per_phase: int = 3) -> list[int]:
+def area_bonus(area: str | None) -> dict[tuple[str, int], float]:
+    """Empujón por área temática: (fase, n) -> bonus. Vacío sin área o sin coincidencia."""
+    folded = _fold(area or "")
+    out: dict[tuple[str, int], float] = {}
+    if not folded.strip():
+        return out
+    for pattern, bonuses in AREA_BONUS:
+        if re.search(pattern, folded):
+            for key, w in bonuses.items():
+                out[key] = out.get(key, 0.0) + w * AREA_BONUS_SCALE
+    return out
+
+
+def select_phase(
+    phase: str, profile: dict[str, float], per_phase: int = 3, area: str | None = None
+) -> list[int]:
     table = TABLE[phase]
-    base = {n: score_resource(r, profile) for n, r in table.items()}
+    bonus = area_bonus(area)
+    base = {n: score_resource(r, profile) + bonus.get((phase, n), 0.0) for n, r in table.items()}
     chosen: list[int] = []
     while len(chosen) < per_phase:
         best = None
@@ -223,8 +247,10 @@ def select_phase(phase: str, profile: dict[str, float], per_phase: int = 3) -> l
     return sorted(chosen, key=lambda n: (table[n].nivel, n))
 
 
-def select_plan(profile: dict[str, float], per_phase: int = 3) -> dict[str, list[int]]:
-    return {p: select_phase(p, profile, per_phase) for p in PHASES}
+def select_plan(
+    profile: dict[str, float], per_phase: int = 3, area: str | None = None
+) -> dict[str, list[int]]:
+    return {p: select_phase(p, profile, per_phase, area) for p in PHASES}
 
 
 def plan_by_attributes(concept: str, mode: str = "hibrido", url: str | None = None, per_phase: int = 3) -> dict | None:
@@ -241,6 +267,9 @@ def plan_by_attributes(concept: str, mode: str = "hibrido", url: str | None = No
             prof = kw
         else:
             prof = laya if mode == "laya" else blend(laya, kw)
-    plan = select_plan(prof, per_phase)
-    logger.info("ova planner atributos", concept=core, profile={k: round(v, 2) for k, v in prof.items() if v}, plan=plan)
+    from ova_engine.domain_context import current_area
+
+    area = current_area()
+    plan = select_plan(prof, per_phase, area)
+    logger.info("ova planner atributos", concept=core, area=area, profile={k: round(v, 2) for k, v in prof.items() if v}, plan=plan)
     return plan
