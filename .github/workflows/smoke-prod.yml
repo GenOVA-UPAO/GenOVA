@@ -111,4 +111,5 @@ jobs:
 
       - name: Resultado
         if: always()
-        run: echo "- Estado final del job: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "- Estado final del job: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
