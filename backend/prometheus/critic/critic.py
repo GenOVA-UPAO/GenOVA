@@ -48,7 +48,7 @@ _PROMPT_TMPL = """\
    una sola palabra del titular acentuada en otro color/cursiva; texto de
    relleno con pinta de contenido que no enseña nada. NO marcar como defecto
    estas decisiones de marca del proyecto: el badge/eyebrow con el tipo de
-   actividad, los emoji como iconos y la paleta UPAO fija.
+   actividad, la paleta UPAO fija. Los emoji usados como iconos SÍ son un defecto (dependen de la fuente del sistema y no siguen el tema): inclúyelos en `problemas`.
 [VEREDICTO] "revisar" SOLO si el recurso hay que REHACERLO: incumple su función
 pedagógica, error grave de contenido, o el tipo exige interactividad y falta.
 Si es funcional pero mejorable → "aceptar" con la lista de problemas y un
