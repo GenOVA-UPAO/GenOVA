@@ -1,0 +1,96 @@
+name: QA con LLM real
+
+# Semanal: genera OVAs con un LLM real (OpenRouter, modelo barato por defecto)
+# y comprueba heurísticamente el CONTENIDO (tema, área, configuración, SCORM).
+# Es lo que LLM_FAKE=1 no puede ver. Gasto acotado: la clave tiene tope y el
+# script aborta si una corrida pasa de US$0.10.
+on:
+  schedule:
+    - cron: '0 6 * * 1' # lunes 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-llm-real
+  cancel-in-progress: false
+
+jobs:
+  qa:
+    name: QA contenido (LLM real)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: genova_qa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/genova_qa
+      JWT_SECRET: qa-solo-para-github-actions-no-es-un-secreto-real
+      DB_POOL_SIZE: '5'
+      DB_MAX_OVERFLOW: '5'
+      RATE_LIMIT_ENABLED: '0'
+      EMAIL_VERIFICATION_ENABLED: '0'
+      AUTH_ACCEPT_BEARER: '1'
+      # LLM real: modelo por defecto de la plataforma (deepseek/deepseek-v4-flash
+      # vía OpenRouter); no hace falta fijar la cadena de modelos sin UI.
+      LLM_FAKE: '0'
+      OPENROUTER_API_KEY: ${{ secrets.QA_OPENROUTER_API_KEY }}
+      OVA_TEXT_BACKEND: router
+      OVA_DECISION_BACKEND: rules
+      LOCAL_IMAGE_URL: ''
+      OVA_MAX_GENERATED_IMAGES: '0'
+      LAYA_URL: ''
+      LANGSMITH_TRACING: 'false'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with: { python-version: '3.11' }
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with: { enable-cache: true }
+
+      - name: Install backend deps
+        run: uv pip install --system -r requirements-dev.txt
+        working-directory: backend
+
+      - name: Heurísticas (tests sin red)
+        run: python -m pytest -q tests/test_qa_llm_real_checks.py
+        working-directory: backend
+
+      - name: Start backend
+        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
+        working-directory: backend
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health && echo "backend ready" && exit 0
+            sleep 5
+          done
+          cat /tmp/backend.log
+          exit 1
+
+      - name: QA con LLM real
+        run: python -m scripts.qa_llm_real --base-url http://localhost:8000 --out-dir "$GITHUB_WORKSPACE/qa-llm-real-out"
+        working-directory: backend
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: qa-llm-real
+          path: |
+            qa-llm-real-out
+            /tmp/backend.log
