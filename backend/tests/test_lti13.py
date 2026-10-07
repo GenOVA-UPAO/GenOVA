@@ -613,3 +613,19 @@ def test_tool_key_from_environment(env, monkeypatch):
     jwks = env["client"].get("/lti/jwks").json()
     assert [k["kid"] for k in jwks["keys"]] == ["genova-2026"]
     assert env["db"].query(LtiToolKey).count() == 0
+
+
+# --- redirección /play/{token} → /play/{token}/ ----------------------------------------
+
+
+def test_play_without_slash_redirects_valid_token_to_same_host(env):
+    token = "aaa.bbb_-.ccc-_"
+    response = env["client"].get(f"/lti/play/{token}", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == f"/lti/play/{token}/"
+
+
+@pytest.mark.parametrize("token", ["no-es-jwt", "a.b", "a.b.c.d", "a.b.c%20d", "a.b.c$"])
+def test_play_without_slash_rejects_malformed_token(env, token):
+    response = env["client"].get(f"/lti/play/{token}", follow_redirects=False)
+    assert response.status_code == 404

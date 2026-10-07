@@ -155,12 +155,6 @@ def test_el_worker_pasa_el_area_del_estado_a_generate_resource(monkeypatch):
 
     seen = {}
 
-    class _Result:
-        html = "<html></html>"
-        defects: list = []
-        raw_json = None
-        activity = None
-
     def fake_generate_resource(*_a, **kw):
         seen.update(kw)
         raise RuntimeError("stop")

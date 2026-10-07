@@ -9,7 +9,7 @@ from ova_engine.schema import arr, i, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_decisions", 4, min=2, max=5, help="Número de decisiones del escenario"),
+    Param("num_decisions", 3, min=2, max=5, help="Número de decisiones del escenario"),
 )
 
 _CSS = """

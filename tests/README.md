@@ -25,6 +25,22 @@ Vite (`webServer`, reutiliza uno ya activo en `http://localhost:4200`); en CI co
 contra el frontend y backend que el job `e2e` de `.github/workflows/ci.yml` levanta
 (Postgres efímero + `uvicorn` en `:8000`, proxy de Vite `/api -> :8000`).
 
+### Flujos principales (FP-001..006)
+
+`tests/features/e2e/FP-*.feature` (steps en `steps/e2e/flujos-principales.steps.js`):
+editor (aplicar a un recurso, regenerar, añadir, cancelar), exportar en los 7 formatos,
+área temática, reintento de generación y metadatos/tema del paquete. Con `LLM_FAKE=1`
+usan estos marcadores deterministas (solo actúan en modo fake, ver `fake_invoke.py`):
+
+- `[fallo-e2e]` en el prompt del job: la primera generación falla; el reintento funciona.
+- `[lento-e2e]` en una instrucción de edición: tarda unos segundos para poder cancelarla.
+- Con un área temática activa, el clasificador fake rechaza un prompt que no comparte
+  ninguna palabra (4+ letras) con el área (`input_guardrail._fake_classifier`).
+
+Los escenarios `@global-config` (área temática, configuración global) corren en el
+proyecto `e2e-global-config` de `playwright.config.js`, que espera a que termine el
+resto. Para iterar sobre un solo feature: `playwright test --no-deps <archivo>`.
+
 ### LLM_FAKE=1 es obligatorio para la suite completa
 
 Los escenarios de generación (HU-002 generación completa, HU-004, HU-006, HU-012,
@@ -116,6 +132,24 @@ set "E2E_EXTERNAL=1" & set "BASE_URL=http://localhost:4300" & set "E2E_API_ORIGI
 
 > Ojo: en un `.cmd`/`.bat`, invoca `pnpm` con `call` (es otro `.cmd`) y evita pasar
 > argumentos por `%*` si vienen de WSL; usa variables de entorno o un script por paso.
+
+### Capturas de las plantillas (`tests/templates`)
+
+Las referencias de `tests/templates/snapshots` deben generarse en la misma imagen que CI
+(`mcr.microsoft.com/playwright:v1.63.0-noble`), no en el SO local. El script lo hace sin
+bind mounts (entra y sale por `tar | docker cp`) y detecta `docker` o `docker.exe` (WSL):
+
+```bash
+tests/scripts/snapshots-docker.sh                    # solo las capturas que cambian
+tests/scripts/snapshots-docker.sh -g "explain-02"    # solo las que coinciden con el patrón
+MODE=all tests/scripts/snapshots-docker.sh           # reescribe todas
+```
+
+`MODE` es el valor de `--update-snapshots` (`changed` por defecto). **Hace falta `MODE=all`
+cuando cambian iconos u otros detalles pequeños que quedan bajo la tolerancia**
+(`maxDiffPixelRatio: 0.005`): con `changed` Playwright no los considera cambiados y la
+referencia quedaría vieja, aunque el HTML ya sea distinto. Después revisa
+`git status tests/templates/snapshots` y commitea solo lo esperado.
 
 ### Lighthouse (rendimiento por página)
 

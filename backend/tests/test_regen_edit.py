@@ -6,7 +6,9 @@ INSTRUCCIÓN sobre el HTML actual y el tema se conserva.
 """
 
 import generation.regen.regen_edit as regen_edit
-from generation.regen.regen_edit import _regen_one_phase, edit_phase_content
+
+_regen_one_phase = regen_edit._regen_one_phase
+edit_phase_content = regen_edit.edit_phase_content
 
 _BASE_HTML = "<!DOCTYPE html><html><head></head><body>" + "x" * 400 + "</body></html>"
 

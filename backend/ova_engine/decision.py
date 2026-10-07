@@ -64,14 +64,10 @@ def build_questions(spec: TemplateSpec) -> dict:
 
 
 def build_state(spec: TemplateSpec, concept: str, contexto: str = "") -> str:
-    state = (
-        f"Recurso educativo «{spec.title}» (fase 5E {spec.phase}) para enseñar "
-        f"«{concept}» a universitarios del curso Sistemas de Gestión de Base de Datos."
-    )
-    from ova_engine.domain_context import current_area
+    from ova_engine.domain_context import domain_for
 
-    if current_area():
-        state += f" Área temática del curso: «{current_area()}»: el tema se interpreta dentro de ella."
+    d = domain_for(concept, contexto)
+    state = f"Recurso educativo «{spec.title}» (fase 5E {spec.phase}) para enseñar «{concept}» a {d.para_state}."
     if contexto:
         state += f"\nMaterial del docente (extracto): {contexto[:1500]}"
     return state

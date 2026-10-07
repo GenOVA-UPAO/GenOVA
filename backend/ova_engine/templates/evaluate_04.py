@@ -9,7 +9,7 @@ from ova_engine.schema import arr, b, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_questions", 6, min=5, max=12, help="Número de preguntas del examen"),
+    Param("num_questions", 8, min=5, max=12, help="Número de preguntas del examen"),
 )
 
 _TIPOS = ("conceptual", "aplicacion", "analisis", "relacion")

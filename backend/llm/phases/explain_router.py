@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
+from core.topic_area import active_topic_area
 from llm.phases._rag import retrieve_phase_context
 from models import User
 from prometheus.plans.generate import generate_resource
@@ -51,7 +52,9 @@ def generate_explain_resource(
     )
 
     try:
-        result = generate_resource("explain", n, concept, contexto=contexto)
+        result = generate_resource(
+            "explain", n, concept, contexto=contexto, area=active_topic_area()
+        )
         return {
             **meta,
             "resource_type": n,

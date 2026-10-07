@@ -9,7 +9,7 @@ from ova_engine.icons import icon
 from ova_engine.schema import arr, i, obj, s
 
 PARAMS = (
-    Param("num_zones", 3, min=3, max=4, help="Número de zonas operativas"),
+    Param("num_zones", 3, min=2, max=4, help="Número de zonas operativas"),
 )
 
 

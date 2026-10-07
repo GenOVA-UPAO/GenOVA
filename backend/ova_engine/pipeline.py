@@ -20,6 +20,7 @@ from ova_engine.domain_context import domain_for, with_area
 from ova_engine.html import document
 from ova_engine.planner_attrs import normalize_topic
 from ova_engine.review import review_and_fix
+from ova_engine.sample_data import neutral_sample
 from ova_engine.text import generate_json
 
 logger = structlog.get_logger(__name__)
@@ -91,7 +92,7 @@ def generate_with_template(
     concept, prompt_ctx = _split_request(concept, contexto)
     params = _params(spec, concept, contexto, resource_config, fake)
     data = (
-        spec.sample(concept, params)
+        neutral_sample(spec, concept, params)
         if fake
         else generate_json(
             with_area(spec.prompt(concept, prompt_ctx, params), concept),

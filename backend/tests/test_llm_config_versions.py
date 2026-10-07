@@ -5,6 +5,7 @@ BD de roles es SQLite en memoria (require_admin corre de verdad).
     uv run pytest tests/test_llm_config_versions.py -v
 """
 
+import importlib  # noqa: E402
 import os
 import uuid
 
@@ -18,7 +19,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401 — registra los modelos ORM
+importlib.import_module("models")  # registra los modelos ORM  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from core.rate_limit import limiter  # noqa: E402

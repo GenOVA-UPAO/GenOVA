@@ -13,7 +13,7 @@ from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.icons import icon
 from ova_engine.schema import arr, b, obj, s
 
-PARAMS = (Param("num_trials", 3, min=3, max=5, help="Número de pruebas experimentales"),)
+PARAMS = (Param("num_trials", 3, min=2, max=5, help="Número de pruebas experimentales"),)
 
 
 def schema(p: dict) -> dict:

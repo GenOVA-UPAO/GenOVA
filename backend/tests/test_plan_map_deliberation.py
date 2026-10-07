@@ -1,8 +1,11 @@
 """F3 — fuente única de planes, dispatch por intención y señales→beliefs."""
 
 import prometheus.engine.workpool as wp
+
+collect_node = wp.collect_node
+fan_out = wp.fan_out
+resource_worker = wp.resource_worker
 from prometheus.engine.bdi import deliberar, generate_desires
-from prometheus.engine.workpool import collect_node, fan_out, resource_worker
 from prometheus.plans.plan_map import degraded_plan, plan_for
 
 

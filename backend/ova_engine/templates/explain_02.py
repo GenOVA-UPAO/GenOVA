@@ -22,7 +22,7 @@ from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
-    Param("num_sections", 3, min=3, max=4, help="Número de secciones de la lectura"),
+    Param("num_sections", 3, min=2, max=5, help="Número de secciones de la lectura"),
 )
 
 
@@ -325,7 +325,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'</div>'
             f'<div class="sec-card sec-ejemplo-card">'
             f'<div class="sec-card-header">'
-            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">{icon("search")} Ejemplo Razonado{d.pick(" (Oracle)", "")}</span>'
+            f'<span class="sec-card-tag tag-ejemplo" aria-hidden="true">{icon("search")} Ejemplo Razonado{d.si_oracle(" (Oracle)", "")}</span>'
             f'</div>'
             f'<p class="sec-text">{esc(sec["ejemplo_razonado"])}</p>'
             f'</div>'
@@ -444,7 +444,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <div class="ova-reading-container">
   <upao-header eyebrow="LECTURA GUIADA" title="{esc(data["titulo"])}">
-    <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado{d.pick(" en Oracle", "")} y comprueba tu comprensión.</p>
+    <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado{d.si_oracle(" en Oracle", "")} y comprueba tu comprensión.</p>
   </upao-header>
 
   <upao-progress id="prog" current="0" total="{n}" label="Progreso de la lectura" show-fraction></upao-progress>
@@ -475,7 +475,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       <span class="dba-icon-badge" aria-hidden="true">{icon('tools')}</span>
       <div>
         <span class="dba-eyebrow">{d.pick("EN PRODUCCIÓN · ROL DBA", "EN LA PRÁCTICA")}</span>
-        <h2 id="dba-panel-heading" class="dba-title">{d.pick("Aplicación Concreta para el DBA (Oracle)", "Aplicación concreta en " + d.practica)}</h2>
+        <h2 id="dba-panel-heading" class="dba-title">{d.pick3("Aplicación Concreta para el DBA (Oracle)", "Aplicación concreta para el DBA", "Aplicación concreta en " + d.practica)}</h2>
       </div>
     </div>
     <div class="dba-body">
@@ -570,6 +570,17 @@ def sample(concept: str, p: dict) -> dict:
             )[:200],
         },
     ]
+    # El rango configurable llega a 5 secciones: se completan con secciones genéricas.
+    for k in range(len(base_secciones) + 1, n + 1):
+        base_secciones.append(
+            {
+                "subtitulo": f"Aspecto {k} de {concept}"[:60],
+                "idea_central": f"{concept} se explica en el aspecto {k} mediante una idea central adicional."[:250],
+                "ejemplo_razonado": f"Caso razonado del aspecto {k} que muestra {concept} en una situación real."[:250],
+                "pregunta_comprobacion": f"¿Qué aporta el aspecto {k} a la comprensión de {concept}?"[:180],
+                "respuesta_modelo": f"Aporta una perspectiva complementaria que consolida la comprensión de {concept}."[:200],
+            }
+        )
 
     return {
         "titulo": f"Lectura guiada: {concept} en Oracle"[:70],

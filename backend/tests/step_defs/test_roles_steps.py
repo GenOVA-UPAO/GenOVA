@@ -8,6 +8,7 @@ es reproducible y asserta el body real de cada endpoint.
 según el step Given; `require_admin` corre de verdad contra la BD (prueba el 403).
 """
 
+import importlib  # noqa: E402
 import os
 import sys
 import uuid
@@ -24,7 +25,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401 — registra los modelos ORM
+importlib.import_module("models")  # registra los modelos ORM  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from roles.interface.http.router import router as roles_router  # noqa: E402

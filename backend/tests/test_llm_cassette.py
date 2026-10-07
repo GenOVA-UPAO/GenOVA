@@ -14,9 +14,10 @@ import openai
 import pytest
 
 import llm.router as router
+
+generar_texto = router.generar_texto
 from llm import cassette as cs
 from llm.cassette import RECORD, Cassette, CassetteMissError, use_cassette
-from llm.router import generar_texto
 from llm.utils import llm_config_store
 
 CHAIN = [("opencode", "oc-1"), ("openrouter", "or-1"), ("groq", "gq-1")]

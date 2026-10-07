@@ -43,3 +43,33 @@ def test_lab_esqueleto_detectado():
     joined = " ".join(defects)
     assert "placeholder" in joined
     assert "escaso" in joined
+
+
+def test_visible_text_ignora_script_style_y_etiquetas():
+    from prometheus.engine.validate import _visible_text
+
+    html = "<style>p{color:red}</style><p>Hola <b>mundo</b></p><script>var x=1;</script>fin"
+    assert _visible_text(html).split() == ["Hola", "mundo", "fin"]
+
+
+def test_entrada_maliciosa_se_procesa_en_tiempo_lineal():
+    import time
+
+    from prometheus.engine.js_check import script_syntax_errors
+    from prometheus.engine.validate import _visible_text
+
+    for evil in ("<style" + " a" * 50000, "<script " * 50000, "<" * 100000, "<script>" + "<" * 100000):
+        start = time.perf_counter()
+        _visible_text(evil)
+        script_syntax_errors(evil)
+        assert time.perf_counter() - start < 0.5
+
+
+def test_inline_scripts_cierre_con_atributos_y_filtros():
+    from prometheus.engine.js_check import _inline_scripts
+
+    html = (
+        '<script>var a=1</script foo="x"><script src="x.js">q</script>'
+        '<script type="text/plain">z</script><SCRIPT type="module">var b</SCRIPT>'
+    )
+    assert _inline_scripts(html) == ["var a=1", "var b"]

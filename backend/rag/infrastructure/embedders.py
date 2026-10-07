@@ -38,8 +38,6 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any
 
-import structlog
-
 from rag.application.errors import EmbedderError
 from rag.infrastructure.embed_retry import (
     RetryPolicy,
@@ -47,8 +45,6 @@ from rag.infrastructure.embed_retry import (
     document_policy,
     query_policy,
 )
-
-logger = structlog.get_logger(__name__)
 
 VECTOR_DIM = 768  # Matches the pgvector(768) column in migration 011.
 

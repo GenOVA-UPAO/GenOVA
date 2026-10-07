@@ -12,11 +12,12 @@
 from __future__ import annotations
 
 import mimetypes
+import re
 from typing import Annotated
 from urllib.parse import quote
 
 import structlog
-from fastapi import APIRouter, Body, Depends, Form, Request
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
@@ -38,6 +39,9 @@ from lti.service import (
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/lti", tags=[TAG_LTI])
+
+# Token de sesión LTI = JWT HS256: tres segmentos base64url separados por puntos.
+_SESSION_TOKEN = re.compile(r"[A-Za-z0-9_-]{1,2048}\.[A-Za-z0-9_-]{1,2048}\.[A-Za-z0-9_-]{1,512}")
 
 _STATE_COOKIE_PREFIX = "lti_state_"
 _STATE_COOKIE_MAX_AGE = 600
@@ -218,7 +222,10 @@ def deep_link_submit(
 @router.get("/play/{token}", include_in_schema=False)
 def play_without_slash(token: str):
     # Las rutas relativas del reproductor (content/…, score) necesitan la barra final.
-    # Ruta relativa al mismo host y token escapado: no puede redirigir fuera de GenOVA.
+    # El token es un JWT (tres segmentos base64url): cualquier otra cosa es 404, así
+    # que el destino es siempre una ruta del propio host y no puede salir de GenOVA.
+    if not _SESSION_TOKEN.fullmatch(token):
+        raise HTTPException(status_code=404)
     return RedirectResponse(f"/lti/play/{quote(token, safe='')}/", status_code=307)
 
 

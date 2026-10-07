@@ -18,7 +18,9 @@ from generation.domain.execution import build_graph_state, seed_plan
 from generation.infrastructure.heartbeat import start_heartbeat
 from generation.infrastructure.prometheus_engine import invoke_generation
 from generation.jobs.jobs_progress import (
-    MAX_ATTEMPTS,  # noqa: F401 — re-exported for test/monkeypatch access
+    MAX_ATTEMPTS as MAX_ATTEMPTS,  # noqa: F401 — re-exported for test/monkeypatch access
+)
+from generation.jobs.jobs_progress import (
     _finish_job,
     _has_done_resource,
     _persist_results,

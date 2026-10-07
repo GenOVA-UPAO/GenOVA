@@ -17,7 +17,7 @@ PARAMS = (
     Param(
         "num_markers",
         4,
-        min=3,
+        min=2,
         max=5,
         help="Número de marcadores del storyboard",
     ),

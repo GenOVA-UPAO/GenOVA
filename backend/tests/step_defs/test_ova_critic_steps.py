@@ -29,7 +29,6 @@ _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "
 FEATURE = os.path.join(_FEATURES, "setup", "EN-015_critico.feature")
 
 _STUB_HTML = "<html><body>recurso mock</body></html>"
-_STUB_HTML_V2 = "<html><body>recurso regenerado con feedback</body></html>"
 
 
 def _make_state():

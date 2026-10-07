@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import os
 from contextlib import asynccontextmanager
 
@@ -17,7 +18,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from sqlalchemy.exc import DataError
 
-import models  # noqa: F401  — imported for side-effect of registering ORM models
+importlib.import_module("models")  # imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
 from auth.interface.http.router import router as auth_router
 from core.config import settings
@@ -28,7 +29,10 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from core.sentry_setup import init_sentry
+from core.topic_area import set_topic_area_provider
 from editor.interface.http import router as editor_router
+from generation.infrastructure.guardrails_store import active_topic_area
 from generation.interface.http.admin_guardrails_router import public_router as topic_area_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
@@ -63,16 +67,7 @@ logger = structlog.get_logger(__name__)
 _IS_PROD = settings.env.lower() == "production"
 
 # Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
-if settings.sentry_dsn:
-    import sentry_sdk
-
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        environment=settings.env,
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
-    )
-    logger.info("Sentry inicializado", environment=settings.env)
+init_sentry()
 
 
 def _background_rag_purge() -> None:
@@ -301,6 +296,8 @@ def admin_refresh_catalog(
         ) from exc
 
 
+# `llm` no puede importar `generation`: el área temática se le inyecta como proveedor.
+set_topic_area_provider(active_topic_area)
 app.include_router(agents_router, prefix="/api/agents")
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(rag_router, prefix="/api/rag")

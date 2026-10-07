@@ -9,7 +9,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, NORM_JS, trim_to_param
 
 PARAMS = (
-    Param("num_sentences", 5, min=4, max=12, help="Número de oraciones con hueco"),
+    Param("num_sentences", 8, min=4, max=12, help="Número de oraciones con hueco"),
     Param("word_bank", "si", choices=("si", "no"), help="Mostrar banco de palabras como ayuda"),
 )
 

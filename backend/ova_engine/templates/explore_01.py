@@ -17,7 +17,7 @@ PARAMS = (
     Param(
         "num_iterations",
         3,
-        min=3,
+        min=2,
         max=5,
         help="Número de iteraciones mínimas del laboratorio",
     ),
