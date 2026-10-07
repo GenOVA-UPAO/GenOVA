@@ -40,6 +40,14 @@ def _resolve_resume_targets(*args, **kwargs):
     return _impl_resolve_resume_targets(*args, **kwargs)
 
 
+def _active_area(uc: GenerationUseCases) -> str:
+    source = uc.create_job.topic_area
+    try:
+        return source.active_area() if source is not None else ""
+    except Exception:  # el área solo inclina el plan: nunca debe romper la creación
+        return ""
+
+
 @router.post("", summary="Encolar un trabajo de generación de OVA")
 @limiter.limit("10/minute")
 def start_job(
@@ -49,7 +57,7 @@ def start_job(
     uc: GenerationUseCases = Depends(build_generation),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
-    autoplan_resources(payload)
+    autoplan_resources(payload, _active_area(uc))
     try:
         result = uc.create_job.execute(
             CreateJobInput(

@@ -18,7 +18,7 @@ PARAMS = (
         "context_words",
         70,
         min=50,
-        max=90,
+        max=100,
         help="Palabras del contexto de rol",
     ),
 )

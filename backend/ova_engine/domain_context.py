@@ -244,6 +244,15 @@ class DomainContext:
             return f"nivel: {self.audiencia}"
         return "curso: Sistemas de Gestión de Base de Datos" + (", Oracle" if self.is_oracle else "")
 
+    @property
+    def para_state(self) -> str:
+        """Descripción corta del público y del curso para el `state` del motor de decisión y del
+        planner: audiencia, tema/curso (BD solo si el tema o el área lo son) y área activa."""
+        out = f"{self.audiencia} ({self.curso})"
+        if self.area:
+            out += f". Área temática del curso: «{self.area}»: el tema se interpreta dentro de ella"
+        return out
+
     def rules(self) -> str:
         """Bloque de dominio y nivel para el prompt."""
         base = (

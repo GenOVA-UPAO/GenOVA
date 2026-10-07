@@ -10,7 +10,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
 PARAMS = (
-    Param("num_exercises", 3, min=2, max=4, help="Número de ejercicios de código"),
+    Param("num_exercises", 3, min=2, max=5, help="Número de ejercicios de código"),
 )
 
 

@@ -25,9 +25,9 @@ from ova_engine.schema import arr, b, obj, s
 PARAMS = (
     Param(
         "num_records",
-        6,
-        min=4,
-        max=8,
+        8,
+        min=6,
+        max=15,
         help="Número de registros en la tabla de datos",
     ),
 )
@@ -140,6 +140,14 @@ def sample(concept: str, p: dict) -> dict:
             "observacion": "Saturación sostenida que degrada todo el sistema.",
         },
     ]
+    # El rango configurable llega a 15 filas: se completan siguiendo la tendencia de carga creciente.
+    for k in range(len(base_filas) + 1, n + 1):
+        base_filas.append(
+            {
+                "valores": [f"TX-{100 + k} (Carga {k})", f"{2800 + 300 * (k - 8)} req/s", f"{3400 + 600 * (k - 8)} ms"],
+                "observacion": "La saturación continúa y el tiempo de respuesta sigue creciendo.",
+            }
+        )
     return {
         "titulo": f"El patrón de rendimiento en {concept}"[:70],
         "lectura": (

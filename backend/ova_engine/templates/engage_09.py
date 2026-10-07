@@ -17,8 +17,8 @@ PARAMS = (
     Param(
         "num_puzzles",
         3,
-        min=3,
-        max=4,
+        min=2,
+        max=5,
         help="Número de acertijos lógicos encadenados",
     ),
 )

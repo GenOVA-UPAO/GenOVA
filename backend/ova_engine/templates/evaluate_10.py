@@ -10,7 +10,7 @@ from ova_engine.schema import arr, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_competencias", 4, min=2, max=5, help="Número de competencias que certifica el diploma"),
+    Param("num_competencias", 3, min=2, max=5, help="Número de competencias que certifica el diploma"),
     Param(
         "estilo",
         "clasico",

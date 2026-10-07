@@ -16,7 +16,7 @@ from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
-    Param("num_nodes", 6, min=5, max=8, help="Número de nodos del mapa conceptual"),
+    Param("num_nodes", 7, min=5, max=10, help="Número de nodos del mapa conceptual"),
 )
 
 
@@ -119,6 +119,17 @@ def sample(concept: str, p: dict) -> dict:
             "ejemplo": "Persistencia de cambios en disco mediante el proceso de fondo LGWR tras un COMMIT.",
         },
     ]
+    # El rango configurable llega a 10 nodos: se completan con nodos genéricos.
+    for k in range(len(base_nodes) + 1, n + 1):
+        base_nodes.append(
+            {
+                "id": f"nodo-{k}",
+                "etiqueta": f"Componente {k}"[:50],
+                "relacion": "se relaciona con el concepto central",
+                "explicacion": f"Aspecto {k} de {concept}: aporta una relación adicional al mapa conceptual."[:220],
+                "ejemplo": f"Situación real en la que interviene el componente {k}."[:140],
+            }
+        )
 
     return {
         "titulo": f"Mapa Conceptual: Arquitectura y Relaciones de {concept}"[:70],

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
+from core.topic_area import active_topic_area
 from llm.images.image_providers import build_image_settings
 from llm.phases._rag import retrieve_phase_context
 from models import User
@@ -54,7 +55,8 @@ def generate_engage_resource(
 
     try:
         result = generate_resource(
-            "engage", n, concept, contexto=contexto, image_settings=image_settings
+            "engage", n, concept, contexto=contexto, image_settings=image_settings,
+            area=active_topic_area(),
         )
         return {
             **meta,

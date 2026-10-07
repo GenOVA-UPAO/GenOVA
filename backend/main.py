@@ -30,7 +30,9 @@ from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
 from core.sentry_setup import init_sentry
+from core.topic_area import set_topic_area_provider
 from editor.interface.http import router as editor_router
+from generation.infrastructure.guardrails_store import active_topic_area
 from generation.interface.http.admin_guardrails_router import public_router as topic_area_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
@@ -294,6 +296,8 @@ def admin_refresh_catalog(
         ) from exc
 
 
+# `llm` no puede importar `generation`: el área temática se le inyecta como proveedor.
+set_topic_area_provider(active_topic_area)
 app.include_router(agents_router, prefix="/api/agents")
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(rag_router, prefix="/api/rag")

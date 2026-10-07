@@ -16,7 +16,7 @@ from ova_engine.schema import arr, i, obj, s
 PARAMS = (
     Param(
         "num_controls",
-        2,
+        1,
         min=1,
         max=3,
         help="Número de controles manipulables",

@@ -17,7 +17,7 @@ PARAMS = (
     Param(
         "num_rounds",
         6,
-        min=4,
+        min=3,
         max=8,
         help="Número de items a clasificar",
     ),

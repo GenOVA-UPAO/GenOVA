@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ova_engine.pipeline import render_resource  # noqa: E402
 from ova_engine.registry import all_specs  # noqa: E402
+from ova_engine.sample_data import neutral_sample  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "ova_engine"
 
@@ -40,7 +41,7 @@ def main() -> None:
         else:
             concept = "Índices B-tree"
             params = spec.resolve_params({})
-            data = spec.sample(concept, params)
+            data = neutral_sample(spec, concept, params)
         html = render_resource(spec, data, concept, params)
         path = out / f"{spec.phase}_{spec.rt:02d}.html"
         path.write_text(html, encoding="utf-8")

@@ -9,8 +9,8 @@ from ova_engine.schema import arr, b, obj, s
 from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
 
 PARAMS = (
-    Param("num_questions", 5, min=4, max=10, help="Número de preguntas del desafío"),
-    Param("time_seconds", 90, min=30, max=180, help="Tiempo total del desafío en segundos"),
+    Param("num_questions", 8, min=4, max=10, help="Número de preguntas del desafío"),
+    Param("time_seconds", 90, min=30, max=120, help="Tiempo total del desafío en segundos"),
 )
 
 

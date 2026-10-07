@@ -10,7 +10,7 @@ from ova_engine.html import PROGRESS_JS, esc, script
 from ova_engine.schema import arr, b, obj, s
 
 PARAMS = (
-    Param("num_panels", 4, min=3, max=6, help="Número de viñetas que necesita la historia"),
+    Param("num_panels", 5, min=3, max=8, help="Número de viñetas que necesita la historia"),
     Param(
         "tone",
         "humor",
