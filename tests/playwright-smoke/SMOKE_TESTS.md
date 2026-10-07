@@ -7,12 +7,14 @@ Tests manuales ejecutados con `playwright-cli` contra producción o develop.
 
 | Env | Frontend | Backend |
 |-----|----------|---------|
-| **develop** | `https://gen-ova-frontend-git-develop-gen-ova-s-projects.vercel.app` | `https://genova-backend-develop.up.railway.app` |
-| **prod** | `https://gen-ova-frontend.vercel.app` | `https://genova-backend-production.up.railway.app` |
+| **local** | `http://localhost:4200` (Vite) | `http://localhost:8000` (uvicorn) |
+| **prod** | `https://gen-ova-frontend.vercel.app` (Vercel, rama `main`) | `https://genova-backend-lbdr.onrender.com` (Render free, se duerme) |
 
-> **Nota:** Las URLs de preview de Vercel están protegidas con Deployment Protection.
-> Para testear `develop` con playwright-cli, el usuario debe desactivar temporalmente la
-> protección en el Vercel dashboard, o configurar `VERCEL_AUTOMATION_BYPASS_SECRET`.
+> **Nota:** No existe despliegue de `develop` (las antiguas URLs de Railway y del
+> preview `-git-develop-` de Vercel están muertas). `develop` se prueba levantando la
+> app local, ver `tests/README.md` (E2E nocturno autónomo y humo de producción).
+> El backend de Render tarda más de 60 s en la primera petición tras dormirse:
+> haz `curl` a `/health` y espera antes de empezar el guion.
 
 ## Cuentas seed
 
@@ -756,10 +758,10 @@ W-12  En workspace /ova/:id/workspace (via Editar) → badge "AG / Admin" persis
 **Objetivo:** smoke mínimo post-merge a main.
 
 ```
-X-1   curl https://genova-backend-production.up.railway.app/health
+X-1   curl https://genova-backend-lbdr.onrender.com/health
       → {"status": "ok"}
 
-X-2   curl https://genova-backend-production.up.railway.app/api/health
+X-2   curl https://genova-backend-lbdr.onrender.com/api/health
       → 200
 
 X-3   Login admin en frontend prod → POST /auth/login → 200
