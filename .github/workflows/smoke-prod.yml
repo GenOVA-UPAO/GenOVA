@@ -1,0 +1,114 @@
+# Humo de PRODUCCIÓN (solo lectura): backend en Render, frontend en Vercel.
+#
+#   gh workflow run smoke-prod.yml
+#   gh workflow run smoke-prod.yml -f backend_url=https://... -f frontend_url=https://...
+#
+# 1. Despierta el backend de Render (plan free, se duerme) con reintentos sobre /health.
+# 2. Frontend de Vercel responde 200 y su HTML apunta al backend esperado.
+# 3. Opcional (secrets SMOKE_USER_EMAIL / SMOKE_USER_PASSWORD): login por API y
+#    GET /api/ovas. NO crea nada en producción.
+# Si algo falla el job falla y GitHub avisa por correo a quien creó el workflow.
+
+name: Smoke prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: 'Backend (Render)'
+        required: false
+        default: 'https://genova-backend-lbdr.onrender.com'
+      frontend_url:
+        description: 'Frontend (Vercel)'
+        required: false
+        default: 'https://gen-ova-frontend.vercel.app'
+  schedule:
+    # Diario 12:00 UTC.
+    - cron: '0 12 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-prod:
+    name: Humo de producción
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BACKEND_URL: ${{ inputs.backend_url || 'https://genova-backend-lbdr.onrender.com' }}
+      FRONTEND_URL: ${{ inputs.frontend_url || 'https://gen-ova-frontend.vercel.app' }}
+      SMOKE_USER_EMAIL: ${{ secrets.SMOKE_USER_EMAIL }}
+      SMOKE_USER_PASSWORD: ${{ secrets.SMOKE_USER_PASSWORD }}
+    steps:
+      - name: Resumen inicial
+        run: |
+          {
+            echo "## Humo de producción"
+            echo "- Backend: $BACKEND_URL"
+            echo "- Frontend: $FRONTEND_URL"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 1. Despertar backend (Render) con reintentos
+        run: |
+          # Render free se duerme: el primer arranque supera 60 s. ~3 min de margen.
+          start=$(date +%s)
+          for i in $(seq 1 18); do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 30 "$BACKEND_URL/health" || true)
+            echo "intento $i/18: HTTP ${code:-000}"
+            if [ "$code" = "200" ] && grep -q '"ok"' /tmp/health.json; then
+              echo "- [x] Backend /health OK en $(( $(date +%s) - start )) s (intento $i)" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "- [ ] Backend /health NO respondió 200 en ~3 min (último HTTP ${code:-000})" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: 2. Frontend (Vercel) responde y apunta al backend
+        run: |
+          code=$(curl -s -o /tmp/index.html -w '%{http_code}' --max-time 30 -L "$FRONTEND_URL/" || true)
+          if [ "$code" != "200" ]; then
+            echo "- [ ] Frontend HTTP ${code:-000} (se esperaba 200)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "- [x] Frontend HTTP 200" >> "$GITHUB_STEP_SUMMARY"
+          # index.html referencia el backend (preconnect) y el bundle lo inyecta en build.
+          if grep -qF "$BACKEND_URL" /tmp/index.html; then
+            echo "- [x] El HTML apunta a $BACKEND_URL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- [ ] El HTML del frontend NO menciona $BACKEND_URL (¿cambió el backend?)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: 3. Login por API y GET /api/ovas (opcional)
+        run: |
+          if [ -z "$SMOKE_USER_EMAIL" ] || [ -z "$SMOKE_USER_PASSWORD" ]; then
+            echo "- [ ] Paso 3 OMITIDO: faltan los secrets SMOKE_USER_EMAIL / SMOKE_USER_PASSWORD" >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Paso 3 omitido: configura SMOKE_USER_EMAIL y SMOKE_USER_PASSWORD"
+            exit 0
+          fi
+          jq -n --arg e "$SMOKE_USER_EMAIL" --arg p "$SMOKE_USER_PASSWORD" '{email:$e,password:$p}' > /tmp/login.json
+          code=$(curl -s -o /tmp/login.out -w '%{http_code}' --max-time 60 -c /tmp/jar \
+            -H 'Content-Type: application/json' -H "Origin: $FRONTEND_URL" \
+            --data @/tmp/login.json "$BACKEND_URL/api/auth/login" || true)
+          rm -f /tmp/login.json
+          if [ "$code" != "200" ]; then
+            echo "- [ ] Login HTTP ${code:-000}" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if grep -q '"totp_required"' /tmp/login.out; then
+            echo "- [ ] El usuario de humo tiene 2FA activo; usa una cuenta sin TOTP" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "- [x] Login OK" >> "$GITHUB_STEP_SUMMARY"
+          code=$(curl -s -o /tmp/ovas.json -w '%{http_code}' --max-time 60 -b /tmp/jar "$BACKEND_URL/api/ovas" || true)
+          if [ "$code" != "200" ]; then
+            echo "- [ ] GET /api/ovas HTTP ${code:-000}" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "- [x] GET /api/ovas HTTP 200" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Resultado
+        if: always()
+        run: echo "- Estado final del job: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
