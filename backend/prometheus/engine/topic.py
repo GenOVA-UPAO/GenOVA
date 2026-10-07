@@ -80,6 +80,31 @@ _STOP = frozenset(
         "cada",
         "nivel",
         "tema",
+        # Nivel educativo y audiencia: no son el tema. Con «Fotosíntesis para
+        # secundaria», «secundaria» hacía que un tema de una palabra pasara el
+        # filtro y un cómic titulado «Max y la Fábrica Solar» se marcaba desviado.
+        "educativo",
+        "educativa",
+        "secundaria",
+        "primaria",
+        "inicial",
+        "iniciales",
+        "basica",
+        "bachillerato",
+        "universitario",
+        "universitaria",
+        "universitarios",
+        "pregrado",
+        "posgrado",
+        "postgrado",
+        "maestria",
+        "doctorado",
+        "ciclo",
+        "ciclos",
+        "grado",
+        "curso",
+        "estudiantes",
+        "alumnos",
     }
 )
 

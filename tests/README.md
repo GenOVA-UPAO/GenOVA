@@ -185,6 +185,30 @@ node run-lighthouse.mjs --no-build        # reutiliza frontend/dist sin recompil
   cambiable con `GENOVA_LH_PORT`. Si el puerto está ocupado el runner falla
   avisando, para no auditar por error otro server.
 
+### QA semanal con LLM real (`qa-llm-real.yml`)
+
+Los tests con `LLM_FAKE=1` no ven fallos de CONTENIDO (todo sale de Oracle, los
+recursos ignoran la configuración o el área, se salen del tema). El workflow
+`.github/workflows/qa-llm-real.yml` corre cada lunes 06:00 UTC (y por
+`workflow_dispatch`): levanta Postgres + backend con `LLM_FAKE=0`, OpenRouter
+(`secrets.QA_OPENROUTER_API_KEY`, modelo por defecto `deepseek/deepseek-v4-flash`)
+y ejecuta `backend/scripts/qa_llm_real.py`.
+
+- 3 casos de 3 recursos (engage:1, explain:1, evaluate:1): (a) sin área,
+  «Fotosíntesis para secundaria»; (b) área «machine learning», tema «Árboles»;
+  (c) área «SGBD con Oracle», tema «Seguridad» con el quiz en 4 preguntas (default 6).
+- Comprobaciones heurísticas (umbrales, no exactitud): recursos `done`, sin
+  «Oracle»/«SGBD» en (a)/(b), términos de árboles de decisión en (b) y de
+  seguridad en (c) sin que dominen botánica/transacciones, nº de preguntas del
+  quiz, scorm12 válido y rechazo `400 prompt_off_topic` de «Fotosíntesis» con el área ML.
+- Gasto: lee `https://openrouter.ai/api/v1/key` antes y después; aborta si la
+  corrida pasa de US$0.10 (una corrida real cuesta ~US$0.001-0.02).
+- Salida: informe en `$GITHUB_STEP_SUMMARY` y artefacto `qa-llm-real` con el
+  texto y HTML de cada recurso. Si falla una comprobación, el job falla.
+- Tests de las heurísticas (sin red): `cd backend && pytest tests/test_qa_llm_real_checks.py`.
+- Local: backend con `LLM_FAKE=0` y `OPENROUTER_API_KEY` real, luego
+  `cd backend && python -m scripts.qa_llm_real --base-url http://localhost:8000 --out-dir out`.
+
 ### Verificación del backend
 
 ```bash
