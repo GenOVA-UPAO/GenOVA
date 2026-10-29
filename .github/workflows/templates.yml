@@ -36,7 +36,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
       - name: Dependencias y render de fixtures reales
         run: |
