@@ -282,7 +282,7 @@ def test_render_item_figure_without_image_returns_empty():
 
 
 _IMAGE_TEMPLATES = (
-    "elaborate:1", "engage:5", "engage:6", "explain:2", "explain:6",
+    "elaborate:1", "elaborate:3", "engage:5", "engage:6", "explain:2", "explain:6",
     "explain:8", "explain:9", "explain:10", "explore:5",
 )
 
