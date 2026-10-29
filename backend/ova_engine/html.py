@@ -250,6 +250,53 @@ def _format_figure_caption(credit: Any, default_prov: str = "origen") -> str:
     )
 
 
+# Fuentes propias o con licencia de marca (``ImageResult.source``): no exigen crédito.
+_CREDIT_EXEMPT_SOURCES = frozenset({"diagrama", "logo", "generada", "personaje"})
+# Sin fuente conocida (datos antiguos, llamadas directas) decide la pista ``tipo`` del LLM.
+_CREDIT_EXEMPT_TIPOS = frozenset({"diagrama", "logo", "escena", "personaje"})
+_CREDIT_EXEMPT_FLAGS = ("is_diagram", "is_logo", "is_generated", "diagrama")
+
+
+def _is_credit_exempt(img_data: Any, src: Any, kwargs: dict[str, Any]) -> bool:
+    """Si la imagen puede mostrarse sin crédito de terceros.
+
+    Manda la fuente real (``image_source``): un 'foto' que el decisor resolvió con IA
+    (``generada``) no lleva crédito y se muestra; uno de ``busqueda`` lo exige aunque la
+    pista ``tipo`` dijera 'logo'. ``tipo`` y los indicadores solo deciden sin fuente.
+    """
+    data = img_data if isinstance(img_data, dict) else {}
+    source = str(kwargs.get("image_source") or kwargs.get("source") or data.get("source") or data.get("image_source") or "")
+    if source:
+        return source in _CREDIT_EXEMPT_SOURCES
+    tipo = str(kwargs.get("tipo") or data.get("tipo") or "")
+    return (
+        tipo in _CREDIT_EXEMPT_TIPOS
+        or any(kwargs.get(flag) for flag in _CREDIT_EXEMPT_FLAGS)
+        or bool(data.get("diagrama"))
+        or (isinstance(src, str) and src.startswith("data:image/svg"))
+    )
+
+
+def render_item_figure(item: Any, **kwargs: Any) -> str:
+    """Figura de la imagen de un ítem enriquecido por ``llm.images.image_enrich``.
+
+    Lee del mismo dict la petición (``imagen``), el marcador (``image_placeholder``),
+    el crédito y la fuente real (``image_source``), para que ninguna plantilla olvide
+    pasar la fuente: sin ella, una 'foto' generada con IA (sin crédito) se descartaría.
+    ``kwargs`` (``alt_fallback``, ``extra_class``, ``concept``…) van a ``render_image_figure``.
+    """
+    if not isinstance(item, dict):
+        return ""
+    imagen = item.get("imagen")
+    return render_image_figure(
+        imagen if isinstance(imagen, dict) else None,
+        item.get("image_placeholder"),
+        item.get("image_credit"),
+        image_source=item.get("image_source") or "",
+        **kwargs,
+    )
+
+
 def render_image_figure(
     img_data: dict | None = None,
     src: str | None = None,
@@ -278,22 +325,7 @@ def render_image_figure(
     alt = esc((img_data or {}).get("descripcion") or alt_fallback)
     cls = f"ova-image-figure {extra_class}".strip()
 
-    source = kwargs.get("image_source") or kwargs.get("source") or ""
-    tipo = kwargs.get("tipo") or ""
-    if isinstance(img_data, dict):
-        source = source or img_data.get("source") or img_data.get("image_source") or ""
-        tipo = tipo or img_data.get("tipo") or ""
-
-    is_exempt = (
-        source in ("diagrama", "logo", "generada", "personaje")
-        or tipo in ("diagrama", "logo", "escena", "personaje")
-        or bool(kwargs.get("is_diagram"))
-        or bool(kwargs.get("is_logo"))
-        or bool(kwargs.get("is_generated"))
-        or bool(kwargs.get("diagrama"))
-        or (isinstance(img_data, dict) and bool(img_data.get("diagrama")))
-        or (isinstance(src, str) and src.startswith("data:image/svg"))
-    )
+    is_exempt = _is_credit_exempt(img_data, src, kwargs)
 
     if not credit and isinstance(img_data, dict):
         credit = img_data.get("image_credit") or img_data.get("credit")
