@@ -20,6 +20,8 @@ from typing import Any
 
 import structlog
 
+from llm.images.query_builder import is_infrastructure_topic
+
 logger = structlog.get_logger(__name__)
 
 # Umbrales calibrados para CLIP ViT-B-32
@@ -266,6 +268,9 @@ class ClipReranker:
 
         from llm.images import image_cache
 
+        # Depende solo del tema, no de la candidata: una vez por lote.
+        is_infra = is_infrastructure_topic(concept, description)
+
         for c in candidates:
             url = c.get("url")
             title = c.get("title", "")
@@ -353,9 +358,6 @@ class ClipReranker:
                 )
 
                 # Penalización / descarte de sala de servidores fuera de infraestructura
-                from llm.images.query_builder import is_infrastructure_topic
-
-                is_infra = is_infrastructure_topic(concept, description)
                 top_sr_score = 0.0
                 sr_penalty = 0.0
                 if self.server_room_embeddings is not None and not is_infra:
@@ -524,8 +526,6 @@ class ClipReranker:
         )
 
         # Control de sala de servidores para temas que no son de infraestructura
-        from llm.images.query_builder import is_infrastructure_topic
-
         is_infra = is_infrastructure_topic(concept, subject_prompt)
         top_sr_score = 0.0
         if self.server_room_embeddings is not None and not is_infra:
