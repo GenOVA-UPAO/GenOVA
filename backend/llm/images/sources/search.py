@@ -26,7 +26,14 @@ from urllib3.util.retry import Retry
 from llm.images import image_cache
 from llm.images.clip_rerank import ClipReranker
 from llm.images.image_compress import compress_data_uri
-from llm.images.sources.contract import Credit, ImageRequest, ImageResult
+from llm.images.sources.contract import (
+    Credit,
+    ImageRequest,
+    ImageResult,
+    is_generic_attribution,
+    is_http_url,
+    is_valid_third_party_credit,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -65,42 +72,6 @@ _FORBIDDEN_LICENSE_TOKENS = (
     "unknown",
     "desconocida",
 )
-
-_GENERIC_CREDIT_TOKENS = {
-    "autor",
-    "author",
-    "licencia libre",
-    "free license",
-    "licencia",
-    "license",
-    "web",
-    "cache",
-    "fuente libre",
-    "licencia libre verificada",
-    "comunidad libre",
-    "desconocido",
-    "desconocida",
-    "unknown",
-    "anonimo",
-    "anónimo",
-    "anonymous",
-    "colaborador de wikimedia",
-    "autor openverse",
-    "n/a",
-    "none",
-    "null",
-    "undefined",
-    "#",
-    "imagen",
-    "image",
-}
-
-
-def is_generic_credit_token(val: str | None) -> bool:
-    if not val or not isinstance(val, str):
-        return True
-    clean = val.strip().lower()
-    return not clean or clean in _GENERIC_CREDIT_TOKENS
 
 # Regex para detectar scripts no latinos (hebreo, árabe, cirílico, asiáticos, etc.)
 _NON_LATIN_SCRIPTS_RE = re.compile(
@@ -439,13 +410,13 @@ def filter_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
         # 1. Licencia permitida y no genérica
         lic = (c.get("license") or "").strip()
-        if not is_allowed_license(lic) or is_generic_credit_token(lic):
+        if not is_allowed_license(lic) or is_generic_attribution(lic):
             continue
         author = c.get("author")
-        if author is not None and is_generic_credit_token(str(author)):
+        if author is not None and is_generic_attribution(str(author)):
             continue
         src_url = c.get("source_url") or c.get("url")
-        if src_url is not None and not (str(src_url).startswith("http://") or str(src_url).startswith("https://")):
+        if src_url is not None and not is_http_url(str(src_url)):
             continue
 
         # 2. Idioma: descartar si hay caracteres o menciones explícitas de idioma ajeno
@@ -681,15 +652,8 @@ class SearchSource:
                     src_url = (c_meta.get("source_url") or "").strip()
                     lic_url = (c_meta.get("license_url") or "").strip()
 
-                    is_generic = (
-                        not author
-                        or is_generic_credit_token(author)
-                        or not lic
-                        or is_generic_credit_token(lic)
-                        or not src_url
-                        or not (src_url.startswith("http://") or src_url.startswith("https://"))
-                        or is_generic_credit_token(src_url)
-                        or prov.lower() == "cache"
+                    is_generic = prov.lower() == "cache" or not is_valid_third_party_credit(
+                        {"author": author, "license": lic, "source_url": src_url}
                     )
                     if not is_generic:
                         logger.info("search image cache hit with real credit", query=query, author=author, license=lic)
@@ -792,14 +756,7 @@ class SearchSource:
         author = (best_candidate.get("author") or "").strip()
         license_name = (best_candidate.get("license") or "").strip()
         source_url = (best_candidate.get("source_url") or best_candidate.get("url") or "").strip()
-        if (
-            not author
-            or is_generic_credit_token(author)
-            or not license_name
-            or is_generic_credit_token(license_name)
-            or not source_url
-            or not (source_url.startswith("http://") or source_url.startswith("https://"))
-        ):
+        if not is_valid_third_party_credit({"author": author, "license": license_name, "source_url": source_url}):
             logger.warning("best candidate lacks complete attribution, discarding", title=best_candidate.get("title"))
             return None
 

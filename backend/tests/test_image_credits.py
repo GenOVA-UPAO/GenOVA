@@ -9,10 +9,9 @@ Verifica:
 
 import pytest
 
+from llm.images.sources.contract import is_generic_credit_value, is_valid_third_party_credit
 from ova_engine.contract import RenderContext
 from ova_engine.html import (
-    is_generic_credit_value,
-    is_valid_third_party_credit,
     render_credits_section,
     render_image_figure,
     render_item_figure,
@@ -30,6 +29,8 @@ def test_is_generic_credit_value():
     assert is_generic_credit_value("#") is True
     assert is_generic_credit_value("Desconocido") is True
     assert is_generic_credit_value("Colaborador de Wikimedia") is True
+    assert is_generic_credit_value("Comunidad libre") is True
+    assert is_generic_credit_value("Creative Commons") is True
     assert is_generic_credit_value("Autor Openverse") is True
     assert is_generic_credit_value("") is True
     assert is_generic_credit_value(None) is True

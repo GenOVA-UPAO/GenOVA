@@ -13,6 +13,13 @@ import json
 import re
 from typing import Any
 
+from llm.images.sources.contract import (
+    credit_field,
+    is_generic_credit_value,
+    is_http_url,
+    is_valid_third_party_credit,
+)
+
 from .icons import js_prelude
 
 
@@ -161,18 +168,6 @@ IMAGE_FIGURE_CSS = """
 """
 
 
-# Textos de relleno: nunca son un autor, una licencia ni una URL de origen reales.
-GENERIC_CREDIT_VALUES: frozenset[str] = frozenset({
-    "autor", "author", "licencia libre", "free license", "licencia", "license", "web", "cache",
-    "fuente libre", "licencia libre verificada", "desconocido", "desconocida", "unknown",
-    "anonimo", "anónimo", "anonymous", "colaborador de wikimedia", "autor openverse",
-    "internet", "google", "cc", "creative commons", "n/a", "none", "null", "undefined", "#",
-    "imagen", "image",
-})
-# Plataformas de donde sale la imagen: son un proveedor legítimo, pero nunca su autor.
-CREDIT_PROVIDER_NAMES: frozenset[str] = frozenset({
-    "wikimedia", "wikimedia commons", "wikipedia", "openverse", "flickr", "pexels", "unsplash",
-})
 _PROVIDER_LABELS = {
     "wikimedia": "Wikimedia Commons",
     "openverse": "Openverse",
@@ -183,41 +178,6 @@ _PROVIDER_LABELS = {
 }
 
 
-def is_generic_credit_value(val: Any) -> bool:
-    """Verifica si un campo de crédito es nulo, vacío o un texto de relleno inventado."""
-    if not val or not isinstance(val, str):
-        return True
-    clean = val.strip().lower()
-    return not clean or clean in GENERIC_CREDIT_VALUES
-
-
-def _credit_field(credit: Any, *names: str) -> str:
-    """Primer campo no vacío del crédito (``Credit`` o dict), sin espacios."""
-    for name in names:
-        val = credit.get(name) if isinstance(credit, dict) else getattr(credit, name, None)
-        if val:
-            return str(val).strip()
-    return ""
-
-
-def _is_http_url(url: str) -> bool:
-    return url.startswith(("http://", "https://"))
-
-
-def is_valid_third_party_credit(credit: Any) -> bool:
-    """Valida si un crédito de terceros tiene autor, licencia y URL de origen legítimos (no genéricos)."""
-    if not credit:
-        return False
-    # El nombre de la plataforma no es ni el autor ni la licencia de la obra.
-    author, lic = _credit_field(credit, "author"), _credit_field(credit, "license")
-    src_url = _credit_field(credit, "source_url", "url")
-    return (
-        not any(is_generic_credit_value(v) or v.lower() in CREDIT_PROVIDER_NAMES for v in (author, lic))
-        and not is_generic_credit_value(src_url)
-        and _is_http_url(src_url)
-    )
-
-
 def _credit_parts(credit: Any, default_provider: str) -> dict[str, str]:
     """Campos escapados de un crédito válido para el pie y la sección de créditos.
 
@@ -225,18 +185,18 @@ def _credit_parts(credit: Any, default_provider: str) -> dict[str, str]:
     al origen (nunca a ``#``). El proveedor conserva su nombre real (Wikimedia
     Commons, Openverse…) y solo si falta o es genérico se usa ``default_provider``.
     """
-    source_url = _credit_field(credit, "source_url", "url")
-    license_url = _credit_field(credit, "license_url")
-    provider = _credit_field(credit, "provider")
+    source_url = credit_field(credit, "source_url", "url")
+    license_url = credit_field(credit, "license_url")
+    provider = credit_field(credit, "provider")
     label = (
         default_provider
         if is_generic_credit_value(provider)
         else _PROVIDER_LABELS.get(provider.lower(), provider)
     )
     return {
-        "author": esc(_credit_field(credit, "author")),
-        "license": esc(_credit_field(credit, "license")),
-        "license_url": esc(license_url if _is_http_url(license_url) else source_url),
+        "author": esc(credit_field(credit, "author")),
+        "license": esc(credit_field(credit, "license")),
+        "license_url": esc(license_url if is_http_url(license_url) else source_url),
         "source_url": esc(source_url),
         "provider": esc(label),
     }
@@ -388,7 +348,7 @@ def render_credits_section(data: dict | list | None) -> str:
             continue
 
         c = _credit_parts(credit, "origen")
-        raw_title = _credit_field(credit, "title")
+        raw_title = credit_field(credit, "title")
         title = esc(raw_title) if not is_generic_credit_value(raw_title) else "Fotografía técnica"
         valid_entries.append((title, c["author"], c["license_url"], c["license"], c["source_url"], c["provider"]))
 
