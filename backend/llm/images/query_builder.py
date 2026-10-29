@@ -74,7 +74,7 @@ _GLOSSARY_MAP: list[tuple[str, str]] = [
     (r"\b(?:telecomunicaciones|switches?|conmutador)\b", "telecommunications network switch router equipment"),
     (r"\b(?:fibra [oó]ptica)\b", "fiber optic optical network cables"),
     # 2. Inteligencia Artificial / Machine Learning / Robótica
-    (r"\b(?:inteligencia artificial|\bia\b|aprendizaje profundo|deep learning|machine learning|redes? neuronales?)\b", "illustrated artificial neural network graph robot"),
+    (r"\b(?:inteligencia artificial|\bia\b|aprendizaje profundo|deep learning|machine learning|red(?:es)? neuronal(?:es)?)\b", "illustrated artificial neural network graph robot"),
     (r"\b(?:superc[oó]mputo|clusters? de gpu para ia|clusters? de gpu)\b", "gpu accelerator compute processor technology"),
     # 3. POO / Programación / Desarrollo de Software
     (r"\b(?:programaci[oó]n orientada a objetos|\bpoo\b|clases y objetos)\b", "object oriented programming computer screen code dark mode"),
@@ -305,13 +305,15 @@ def build_concrete_scene_subject(concept: str, descripcion: str = "") -> str:
     if is_infrastructure_topic(concept, descripcion):
         return "servers in a modern datacenter rack with glowing status indicator lights and cable management"
 
-    # 2. Redes / 5G / Telecomunicaciones: antenas de telefonía, routers
-    if re.search(r"\b(?:5g|antenas?|telecomunicaciones|switches?|fibra\s+[oó]ptica|cableado|wifi|redes?|conmutador)\b", norm):
-        return "cellular telecommunication tower antennas and enterprise router with fiber optic cables"
-
-    # 3. Inteligencia Artificial / Machine Learning: red neuronal ilustrada, robot
-    if re.search(r"\b(?:inteligencia\s+artificial|ia\b|aprendizaje\s+profundo|deep\s+learning|machine\s+learning|redes?\s+neuronales?|robotica|robot)\b", norm):
+    # 2. Inteligencia Artificial / Machine Learning: red neuronal ilustrada, robot.
+    # Va ANTES que redes: «Redes neuronales» no es un tema de telecomunicaciones.
+    if re.search(r"\b(?:inteligencia\s+artificial|ia\b|aprendizaje\s+profundo|deep\s+learning|machine\s+learning|red(?:es)?\s+neuronal(?:es)?|robotica|robot)\b", norm):
         return "an illustrated artificial neural network graph with glowing interconnected nodes and a modern robotic arm"
+
+    # 3. Redes / 5G / Telecomunicaciones: antenas de telefonía, routers. «Red(es)» suelta solo
+    # cuenta como red de comunicaciones si no es otro tipo de red (social, bayesiana…).
+    if re.search(r"\b(?:5g|antenas?|telecomunicaciones|switches?|fibra\s+[oó]ptica|cableado|wifi|conmutador|redes?(?!\s+(?:neuronal(?:es)?|sociales?|bayesianas?|semanticas?)\b))\b", norm):
+        return "cellular telecommunication tower antennas and enterprise router with fiber optic cables"
 
     # 4. Metodologías Ágiles / Scrum / Kanban: tablero ágil
     if re.search(r"\b(?:agil|scrum|kanban|metodolog[ií]as?)\b", norm):

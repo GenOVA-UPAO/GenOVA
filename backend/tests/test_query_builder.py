@@ -1,5 +1,7 @@
 """Tests unitarios para el validador y constructor determinista de consultas y sujetos."""
 
+import pytest
+
 from llm.images.query_builder import (
     build_concrete_scene_subject,
     build_deterministic_query,
@@ -150,6 +152,41 @@ def test_build_concrete_scene_subject_ten_areas_variety_no_servers():
     # Caso de infraestructura física: ÚNICA que debe usar servidores
     infra_subject = build_concrete_scene_subject("Infraestructura de Centros de Datos y Servidores en Rack")
     assert "servers in a modern datacenter rack" in infra_subject
+
+
+_NEURAL = "neural network"
+_TELECOM = "telecommunication tower"
+
+
+@pytest.mark.parametrize(
+    "concept",
+    [
+        "Redes neuronales",
+        "Redes neuronales convolucionales",
+        "Seguridad en redes neuronales",
+        "Introducción a una red neuronal artificial",
+    ],
+)
+def test_build_concrete_scene_subject_neural_networks_are_not_telecom(concept):
+    """«Redes neuronales» es IA: no debe caer en la rama de redes/5G por la palabra «redes»."""
+    subject = build_concrete_scene_subject(concept)
+    assert _NEURAL in subject
+    assert _TELECOM not in subject
+    assert "neural network" in build_deterministic_query(concept)
+
+
+@pytest.mark.parametrize(
+    "concept",
+    ["Redes de computadoras", "5G", "Redes", "Seguridad en redes de computadoras"],
+)
+def test_build_concrete_scene_subject_real_networking_topics_stay_telecom(concept):
+    subject = build_concrete_scene_subject(concept)
+    assert _TELECOM in subject
+    assert _NEURAL not in subject
+
+
+def test_build_concrete_scene_subject_social_networks_are_not_telecom():
+    assert _TELECOM not in build_concrete_scene_subject("Redes sociales y privacidad")
 
 
 def test_sanitize_image_request_replaces_garbage_and_records_trace():
