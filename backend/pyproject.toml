@@ -30,7 +30,7 @@ dependencies = [
     "openai==3.3.0",
     "groq==1.7.0",
     "lameenc==1.9.0",
-    "pillow==12.3.0",
+    "pillow==13.0.0",
     "instructor==1.17.0",
     "supabase==2.33.0",
     "google-genai==2.32.0",
