@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Checkbox } from "@/core/components/ui/checkbox";
 
 interface ApplyFallbacksOptionProps {
@@ -13,6 +15,8 @@ export function ApplyFallbacksOption({
   names,
   onChange,
 }: Readonly<ApplyFallbacksOptionProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div className="flex items-start gap-3 px-1 py-1 text-sm">
       <Checkbox
@@ -24,11 +28,12 @@ export function ApplyFallbacksOption({
         }}
       />
       <label htmlFor="apply-with-fallbacks" className="cursor-pointer">
-        Copiar también los respaldos
+        {t("tasks.copyFallbacksAlso")}
         <span className="block text-xs text-muted-foreground">
-          Sustituye los de esas tareas por: {names.join(", ")}.
+          {t("tasks.replaceTasksFallbacksWith")} {names.join(", ")}.
         </span>
       </label>
     </div>
   );
 }
+

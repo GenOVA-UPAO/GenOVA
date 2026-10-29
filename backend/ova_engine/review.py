@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 import httpx
 import structlog
 
+from ova_engine.domain_context import with_area
 from ova_engine.schema import arr, b, obj, s, validate
 from ova_engine.text import generate_json
 
@@ -39,11 +40,11 @@ REVIEW_SCHEMA = obj(
     revision=arr(obj(n={"type": "integer"}, veredicto={"type": "string", "enum": ["ok", *TIPOS]}))
 )
 
-_PROMPT = """[ROL] Eres un revisor técnico estricto de material didáctico universitario de Bases de Datos.
+_PROMPT = """[ROL] Eres un revisor técnico estricto de material didáctico (el nivel educativo y el área son los del tema indicado).
 [CONCEPTO] «{concept}»
 [TAREA] Para CADA campo de la lista (por su número entre corchetes), en orden, da un veredicto:
 - ok: el texto trata sobre «{concept}» (o es un detalle, paso o ejemplo razonable de él) y es correcto.
-- fuera_de_tema: el texto trata de OTRO tema de bases de datos distinto a «{concept}» (otro componente, otra técnica).
+- fuera_de_tema: el texto trata de OTRO tema distinto a «{concept}» (otro componente, otra técnica).
 - incorrecto: contiene una afirmación técnicamente falsa o engañosa sobre «{concept}».
 - incoherente: se contradice con el resto o no tiene sentido.
 - vacio: no dice nada útil (relleno, repetición).
@@ -142,7 +143,7 @@ def _prefilter(concept: str, fields: list[tuple[str, str]]) -> set[str]:
     questions = {
         f"q{n}": {
             "type": "noul",
-            "instructions": f"Is this text about «{concept}» (a database topic), without drifting to another topic?",
+            "instructions": f"Is this text about «{concept}» (an educational topic), without drifting to another topic?",
             "criteria": {"true": f"The text is about {concept}", "false": "The text is about a different topic"},
         }
         for n in range(len(long_))
@@ -197,7 +198,7 @@ def review_fields(
         return []
     listing = "\n".join(f"[{n}] ({p}) {t}" for n, (p, t) in enumerate(fields))
     out = _llm_json(
-        _PROMPT.format(concept=concept, fields=listing),
+        with_area(_PROMPT.format(concept=concept, fields=listing), concept),
         REVIEW_SCHEMA,
         deadline=deadline,
         llm_config=llm_config,
@@ -250,7 +251,7 @@ def _verify(concept: str, problem: dict, text: str, *, deadline, llm_config, ena
         return ""  # sin verificación, se conserva la sospecha
 
 
-_VERIFY_PROMPT = """[ROL] Eres un profesor de Bases de Datos que evalúa un fragmento de un recurso didáctico.
+_VERIFY_PROMPT = """[ROL] Eres un docente experto en el tema que evalúa un fragmento de un recurso didáctico.
 [CONCEPTO DEL RECURSO] «{concept}»
 [TEXTO DEL CAMPO «{campo}»]
 {texto}
@@ -261,12 +262,12 @@ _VERIFY_SCHEMA = obj(motivo=s(200), respuesta_si=b())
 # «sí» = el texto está bien; «no» confirma la sospecha del revisor.
 _PREGUNTA = {
     "fuera_de_tema": "¿El texto trata sobre «{concept}» (o es un detalle, paso o ejemplo suyo), en vez de explicar otro tema distinto?",
-    "incorrecto": "¿Son técnicamente correctas todas las afirmaciones del texto sobre bases de datos?",
+    "incorrecto": "¿Son correctas (conceptual y técnicamente) todas las afirmaciones del texto sobre «{concept}»?",
     "incoherente": "¿El texto es coherente y tiene sentido como parte de un recurso sobre «{concept}»?",
     "vacio": "¿El texto aporta información útil para estudiar «{concept}»?",
 }
 
-_FIX_PROMPT = """[ROL] Eres redactor de material didáctico universitario de Bases de Datos.
+_FIX_PROMPT = """[ROL] Eres redactor de material didáctico (nivel y área del tema indicado).
 [CONCEPTO] «{concept}»
 [TAREA] El recurso JSON de abajo tiene problemas de contenido en algunos campos. Reescribe SOLO esos campos
 para que traten correctamente sobre «{concept}», sean técnicamente correctos y mantengan la función del campo
@@ -292,8 +293,11 @@ def fix_fields(
     Solo se aceptan cambios en las rutas afectadas y el resultado debe validar."""
     plist = "\n".join(f"- {p['campo']} ({p['tipo']}): {p['explicacion']}" for p in problems)
     new = generate_json(
-        _FIX_PROMPT.format(
-            concept=concept, problems=plist, current=json.dumps(data, ensure_ascii=False, indent=1)
+        with_area(
+            _FIX_PROMPT.format(
+                concept=concept, problems=plist, current=json.dumps(data, ensure_ascii=False, indent=1)
+            ),
+            concept,
         ),
         schema,
         llm_config=llm_config,

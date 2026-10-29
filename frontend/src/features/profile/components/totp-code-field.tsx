@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
@@ -11,10 +12,11 @@ interface TotpCodeFieldProps {
 
 /** Código 2FA exigido al cambiar el correo de una cuenta con TOTP activo. */
 export function TotpCodeField({ value, disabled, onChange }: Readonly<TotpCodeFieldProps>) {
+  const { t } = useTranslation("profile");
   const id = useId();
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id}>Código de verificación (2FA)</Label>
+      <Label htmlFor={id}>{t("totpField.label")}</Label>
       <Input
         id={id}
         inputMode="numeric"
@@ -27,7 +29,7 @@ export function TotpCodeField({ value, disabled, onChange }: Readonly<TotpCodeFi
           onChange(e.target.value.replace(/\D/g, ""));
         }}
       />
-      <p className="text-xs text-muted-foreground">El de tu app de autenticación.</p>
+      <p className="text-xs text-muted-foreground">{t("totpField.hint")}</p>
     </div>
   );
 }

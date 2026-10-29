@@ -51,7 +51,8 @@ __all__ = [
 
 
 class AuthUserRepository(Protocol):
-    def find_by_normalized_email(self, normalized_email: str) -> AuthUser | None: ...
+    def find_by_normalized_email(self, normalized_email: str) -> AuthUser | None:
+        raise NotImplementedError
 
     def record_failed_attempt(
         self, user_id: str, attempts: int, locked_until: datetime | None
@@ -63,36 +64,44 @@ class AuthUserRepository(Protocol):
 
 
 class PasswordVerifier(Protocol):
-    def verify(self, raw: str, hashed: str) -> bool: ...
+    def verify(self, raw: str, hashed: str) -> bool:
+        raise NotImplementedError
 
     def verify_dummy(self) -> None:
         """Gasta un hash falso para nivelar el tiempo de respuesta."""
 
 
 class LoginThrottle(Protocol):
-    def is_throttled(self, normalized_email: str) -> bool: ...
+    def is_throttled(self, normalized_email: str) -> bool:
+        raise NotImplementedError
 
 
 class TotpTicketIssuer(Protocol):
-    def issue(self, user_id: str, *, remember_me: bool) -> str: ...
+    def issue(self, user_id: str, *, remember_me: bool) -> str:
+        raise NotImplementedError
 
 
 class PasswordHasher(Protocol):
-    def hash(self, raw: str) -> str: ...
+    def hash(self, raw: str) -> str:
+        raise NotImplementedError
 
 
 class PasswordPolicy(Protocol):
-    def accepts(self, raw: str) -> bool: ...
+    def accepts(self, raw: str) -> bool:
+        raise NotImplementedError
 
 
 class TokenGenerator(Protocol):
-    def generate(self) -> str: ...
+    def generate(self) -> str:
+        raise NotImplementedError
 
 
 class EmailSender(Protocol):
-    def send_verification(self, user: EmailRecipient, token: str) -> None: ...
+    def send_verification(self, user: EmailRecipient, token: str) -> None:
+        raise NotImplementedError
 
-    def send_password_reset(self, user: PasswordResetUser, token: str) -> None: ...
+    def send_password_reset(self, user: PasswordResetUser, token: str) -> None:
+        raise NotImplementedError
 
 
 class RegistrationRepository(Protocol):
@@ -106,59 +115,79 @@ class RegistrationRepository(Protocol):
         email_verified: bool,
         verification_token: str | None,
         verification_expires_at: datetime | None,
-    ) -> RegisteredUser: ...
+    ) -> RegisteredUser:
+        raise NotImplementedError
 
 
 class PasswordResetTokenRepository(Protocol):
-    def find_active_user(self, normalized_email: str) -> PasswordResetUser | None: ...
+    def find_active_user(self, normalized_email: str) -> PasswordResetUser | None:
+        raise NotImplementedError
 
-    def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None: ...
+    def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None:
+        raise NotImplementedError
 
-    def find_by_token(self, token: str) -> PasswordResetTokenRecord | None: ...
+    def find_by_token(self, token: str) -> PasswordResetTokenRecord | None:
+        raise NotImplementedError
 
-    def delete(self, token: str) -> None: ...
+    def delete(self, token: str) -> None:
+        raise NotImplementedError
 
-    def find_user(self, user_id: UUID) -> bool: ...
+    def find_user(self, user_id: UUID) -> bool:
+        raise NotImplementedError
 
-    def apply_new_password(self, user_id: UUID, password_hash: str) -> None: ...
+    def apply_new_password(self, user_id: UUID, password_hash: str) -> None:
+        raise NotImplementedError
 
 
 class EmailVerificationTokenRepository(Protocol):
-    def find_by_token(self, token: str) -> EmailVerificationTokenRecord | None: ...
+    def find_by_token(self, token: str) -> EmailVerificationTokenRecord | None:
+        raise NotImplementedError
 
-    def delete(self, token: str) -> None: ...
+    def delete(self, token: str) -> None:
+        raise NotImplementedError
 
-    def find_user(self, user_id: UUID) -> EmailVerificationUser | None: ...
+    def find_user(self, user_id: UUID) -> EmailVerificationUser | None:
+        raise NotImplementedError
 
-    def mark_verified(self, user_id: UUID) -> None: ...
+    def mark_verified(self, user_id: UUID) -> None:
+        raise NotImplementedError
 
     def find_user_by_normalized_email(
         self, normalized_email: str
-    ) -> EmailVerificationUser | None: ...
+    ) -> EmailVerificationUser | None:
+        raise NotImplementedError
 
-    def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None: ...
+    def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None:
+        raise NotImplementedError
 
 
 class SessionTokenDecoder(Protocol):
-    def decode_for_revocation(self, token: str) -> TokenRevocation | None: ...
+    def decode_for_revocation(self, token: str) -> TokenRevocation | None:
+        raise NotImplementedError
 
 
 class RevokedTokenRepository(Protocol):
-    def exists(self, jti: str) -> bool: ...
+    def exists(self, jti: str) -> bool:
+        raise NotImplementedError
 
-    def add(self, revocation: TokenRevocation) -> None: ...
+    def add(self, revocation: TokenRevocation) -> None:
+        raise NotImplementedError
 
 
 class SessionUserRepository(Protocol):
-    def access_for(self, user_id: UUID) -> UserAccess: ...
+    def access_for(self, user_id: UUID) -> UserAccess:
+        raise NotImplementedError
 
 
 class TotpAuthenticator(Protocol):
-    def create_enrollment(self, email: str) -> TotpEnrollment: ...
+    def create_enrollment(self, email: str) -> TotpEnrollment:
+        raise NotImplementedError
 
-    def verify(self, secret: str, code: str) -> bool: ...
+    def verify(self, secret: str, code: str) -> bool:
+        raise NotImplementedError
 
-    def verify_backup(self, code: str, hashed: str) -> bool: ...
+    def verify_backup(self, code: str, hashed: str) -> bool:
+        raise NotImplementedError
 
 
 class TotpUserRepository(Protocol):
@@ -167,24 +196,31 @@ class TotpUserRepository(Protocol):
         user_id: UUID,
         secret: str,
         hashed_backup_codes: list[dict[str, object]],
-    ) -> None: ...
+    ) -> None:
+        raise NotImplementedError
 
-    def enable(self, user_id: UUID) -> None: ...
+    def enable(self, user_id: UUID) -> None:
+        raise NotImplementedError
 
-    def disable(self, user_id: UUID) -> None: ...
+    def disable(self, user_id: UUID) -> None:
+        raise NotImplementedError
 
 
 class TotpTicketConsumer(Protocol):
-    def consume(self, ticket: str) -> TotpLoginTicket | None: ...
+    def consume(self, ticket: str) -> TotpLoginTicket | None:
+        raise NotImplementedError
 
 
 class TotpLoginUserRepository(Protocol):
-    def find_by_id(self, user_id: str) -> TotpLoginUser | None: ...
+    def find_by_id(self, user_id: str) -> TotpLoginUser | None:
+        raise NotImplementedError
 
     def save_backup_codes(
         self, user_id: UUID, backup_codes: list[dict[str, object]]
-    ) -> None: ...
+    ) -> None:
+        raise NotImplementedError
 
 
 class TotpAdminRepository(Protocol):
-    def disable_by_id(self, user_id: str) -> bool: ...
+    def disable_by_id(self, user_id: str) -> bool:
+        raise NotImplementedError

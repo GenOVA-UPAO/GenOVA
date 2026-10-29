@@ -1,4 +1,5 @@
 import type { Ref } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -30,15 +31,16 @@ export function UserKeyRowActions({
   onCancel,
   onSave,
 }: Readonly<UserKeyRowActionsProps>) {
-  const startLabel = configured ? "Cambiar clave" : "Añadir clave";
+  const { t } = useTranslation("llm-settings");
+  const startLabel = configured ? t("credentials.changeKey") : t("credentials.addKey");
   if (editing) {
     return (
       <div className="flex gap-2">
         <Button variant="outline" className="max-sm:h-11 max-sm:flex-1" onClick={onCancel}>
-          Cancelar
+          {t("credentials.cancel")}
         </Button>
         <Button className="max-sm:h-11 max-sm:flex-1" loading={saving} onClick={onSave}>
-          Guardar clave
+          {t("credentials.saveKey")}
         </Button>
       </div>
     );
@@ -50,10 +52,10 @@ export function UserKeyRowActions({
           variant="ghost"
           className="max-sm:h-11"
           loading={checking}
-          aria-label={label ? `Probar conexión con ${label}` : undefined}
+          aria-label={label ? t("credentials.testConnectionWith", { provider: label }) : undefined}
           onClick={onCheck}
         >
-          Probar conexión
+          {t("credentials.testConnection")}
         </Button>
       ) : null}
       <Button
@@ -61,7 +63,7 @@ export function UserKeyRowActions({
         variant="outline"
         className="shrink-0 max-sm:h-11"
         data-key-edit=""
-        aria-label={label ? `${startLabel} de ${label}` : undefined}
+        aria-label={label ? t("credentials.keyActionFor", { action: startLabel, provider: label }) : undefined}
         onClick={onStart}
       >
         {startLabel}

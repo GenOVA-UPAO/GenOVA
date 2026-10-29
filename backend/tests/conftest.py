@@ -1,5 +1,10 @@
 import os
 
+# Antes de importar la app: ni Settings ni load_dotenv leen el backend/.env local.
+os.environ["GENOVA_TESTING"] = "1"
+os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+
 import pytest
 import requests
 from pytest_bdd import when
@@ -61,6 +66,11 @@ def _legacy_generation_by_default(request, monkeypatch):
     # nunca salen a la red por esa vía.
     monkeypatch.setenv("OVA_TEXT_BACKEND", "router")
     monkeypatch.setenv("OVA_DECISION_BACKEND", "rules")
+    # Producción lo activa (render.yaml); los tests del revisor lo encienden ellos mismos.
+    monkeypatch.setenv("OVA_CONTENT_REVIEW", "0")
+    # Con claves reales en el .env local, los recursos con imágenes las generaban de
+    # verdad (red y coste) dentro de los tests.
+    monkeypatch.setenv("OVA_MAX_GENERATED_IMAGES", "0")
     monkeypatch.delenv("LOCAL_IMAGE_URL", raising=False)
     monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path_factory_dir(request)))
     if "ova_engine" not in request.node.nodeid:

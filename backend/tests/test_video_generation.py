@@ -400,7 +400,7 @@ def test_el_scorm_saca_el_video_a_un_archivo_aparte():
     assert info.compress_type == ZIP_STORED
     page = z.read("resources/recurso_1.html").decode()
     assert 'src="media/recurso_1_video_1.mp4"' in page
-    assert "base64" not in page and len(page) < 2000
+    assert "base64" not in page and len(page) < 2500  # el CSS del tema ocupa ~2 KB
     assert 'href="resources/media/recurso_1_video_1.mp4"' in z.read("imsmanifest.xml").decode()
 
 

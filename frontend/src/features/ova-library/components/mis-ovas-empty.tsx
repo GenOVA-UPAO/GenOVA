@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
@@ -12,29 +14,37 @@ interface MisOvasEmptyProps {
   onClearFilters: () => void;
 }
 
-function noResultsDescription(search: string, status: string): string {
-  const byStatus = status === "all" ? "" : ` en estado «${statusLabel(status)}»`;
-  if (search) return `No hay OVAs${byStatus} cuyo título contenga «${search}».`;
-  return `No hay OVAs${byStatus}.`;
+function noResultsDescription(search: string, status: string, t: TFunction): string {
+  const byStatus =
+    status === "all" ? "" : t("ova-library:withStatus", { status: statusLabel(status, t) });
+  if (search)
+    return t("ova-library:no_hay_ovasvalue_cuyo_titulo_contenga_value", {
+      p0: byStatus,
+      p1: search,
+    });
+  return t("ova-library:no_hay_ovasvalue", { p0: byStatus });
 }
 
 function clearLabel(search: string, status: string): string {
-  if (status === "all") return "Limpiar búsqueda";
-  return search ? "Limpiar filtros" : "Ver todos los estados";
+  if (status === "all") return "ova-library:limpiar_busqueda";
+  return search
+    ? "ova-library:limpiar_filtros"
+    : "ova-library:ver_todos_los_estados";
 }
 
 /** Estado vacío de la biblioteca: sin OVAs todavía o sin resultados para el filtro. */
 export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOvasEmptyProps>) {
+  const { t } = useTranslation();
   const trimmed = search.trim();
   if (trimmed !== "" || status !== "all") {
     return (
       <EmptyState
         icon="magnifying-glass-minus"
-        title="Sin resultados"
-        description={noResultsDescription(trimmed, status)}
+        title={t("ova-library:sin_resultados")}
+        description={noResultsDescription(trimmed, status, t)}
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            {clearLabel(trimmed, status)}
+            {t(clearLabel(trimmed, status))}
           </Button>
         }
       />
@@ -43,13 +53,15 @@ export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOva
   return (
     <EmptyState
       icon="folder"
-      title="Aún no has creado ningún OVA"
-      description="Describe un tema y el asistente generará tu primer objeto virtual de aprendizaje, listo para editar y descargar."
+      title={t("ova-library:aun_no_has_creado_ningun_ova")}
+      description={t(
+        "ova-library:describe_un_tema_y_el_asistente_generara_tu_primer_objeto_virtual_de_aprendizaje_listo_par",
+      )}
       action={
         <Button asChild>
           <Link to="/crear">
             <Icon name="plus" size="text-base" />
-            Crear mi primer OVA
+            {t("ova-library:crear_mi_primer_ova")}{" "}
           </Link>
         </Button>
       }

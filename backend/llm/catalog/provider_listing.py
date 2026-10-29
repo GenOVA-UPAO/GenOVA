@@ -52,7 +52,9 @@ def _status_of(exc: Exception) -> int | None:
 def classify_error(exc: Exception) -> str:
     """Traduce una excepción de SDK/httpx a un código estable para la UI."""
     status = _status_of(exc)
-    if status in (401, 403):
+    from llm.auth_errors import is_provider_auth_error
+
+    if status in (401, 403) or is_provider_auth_error(exc):
         return INVALID_KEY
     if status == 429:
         return RATE_LIMITED

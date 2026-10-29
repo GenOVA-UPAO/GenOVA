@@ -86,7 +86,8 @@ def test_full_document_resource_passes_through():
     phases = [{"type": "engage", "order": 1, "content": doc}]
     z = ZipFile(BytesIO(build_scorm_zip_bytes(phases=phases)))
     res = z.read("resources/recurso_1.html").decode("utf-8")
-    assert res == doc
+    assert res.endswith("<body><h1>X</h1></body></html>")
+    assert 'id="genova-package-theme"' in res
 
 
 def test_manifest_declares_every_packaged_file():
@@ -130,7 +131,8 @@ def test_embedded_document_in_prose_is_extracted():
     phases = [{"type": "evaluate", "order": 1, "content": content}]
     z = ZipFile(BytesIO(build_scorm_zip_bytes(phases=phases)))
     res = z.read("resources/recurso_1.html").decode("utf-8")
-    assert res == doc
+    assert res.endswith("<body><h1>Quiz</h1></body></html>")
+    assert 'id="genova-package-theme"' in res
     assert "Here is the quiz" not in res
 
 
@@ -159,4 +161,3 @@ def test_scorm_js_survives_cross_origin_frames():
 def test_single_resource_ova_does_not_autocomplete_on_open():
     js = _zip().read("resources/app.js").decode("utf-8")
     assert "tabs.length > 1" in js
-

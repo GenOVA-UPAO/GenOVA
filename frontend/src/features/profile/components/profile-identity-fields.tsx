@@ -1,10 +1,10 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 
 import { describedBy } from "../lib/described-by";
 import type { ProfileFormValues } from "../lib/types";
 import { FormField } from "./form-field";
-
-const UNI_HINT = "Solo números, sin espacios ni guiones.";
 
 interface ProfileIdentityFieldsProps {
   values: ProfileFormValues;
@@ -21,13 +21,15 @@ export function ProfileIdentityFields({
   onBlur,
   disabled,
 }: Readonly<ProfileIdentityFieldsProps>) {
+  const { t } = useTranslation("profile");
   const nameError = errorFor("full_name");
   const emailError = errorFor("email");
   const uniError = errorFor("university_id");
+  const uniHint = t("fields.universityIdHint");
 
   return (
     <>
-      <FormField id="fullName" label="Nombre completo" error={nameError}>
+      <FormField id="fullName" label={t("fields.fullName")} error={nameError}>
         <Input
           id="fullName"
           type="text"
@@ -45,7 +47,7 @@ export function ProfileIdentityFields({
         />
       </FormField>
 
-      <FormField id="email" label="Correo electrónico" error={emailError}>
+      <FormField id="email" label={t("fields.email")} error={emailError}>
         <Input
           id="email"
           type="email"
@@ -65,8 +67,8 @@ export function ProfileIdentityFields({
 
       <FormField
         id="universityId"
-        label="Código universitario (UPAO)"
-        hint={UNI_HINT}
+        label={t("fields.universityId")}
+        hint={uniHint}
         error={uniError}
       >
         <Input
@@ -77,7 +79,7 @@ export function ProfileIdentityFields({
           value={values.university_id}
           disabled={disabled}
           aria-invalid={uniError ? true : undefined}
-          aria-describedby={describedBy("universityId", uniError, UNI_HINT)}
+          aria-describedby={describedBy("universityId", uniError, uniHint)}
           onChange={(event) => {
             onChange("university_id", event.target.value);
           }}

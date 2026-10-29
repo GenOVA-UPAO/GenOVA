@@ -1,3 +1,7 @@
+import { t } from "i18next";
+
+import { formatDate as formatLocalizedDate } from "@/core/i18n/format";
+
 import type { ProfileData, ProfileFormValues } from "./types";
 
 const EMPTY_FORM: ProfileFormValues = {
@@ -17,18 +21,16 @@ export function getInitials(fullName?: string | null): string {
 
 export function formatDate(isoString?: string | null): string {
   if (isoString === null || isoString === undefined || isoString === "") return "-";
-  return new Date(isoString).toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return formatLocalizedDate(isoString, { day: "numeric", month: "long", year: "numeric" });
 }
 
 /** Rol legible: «administrador» → «Administrador», «usuarios_prueba» → «Usuarios prueba». */
 export function formatRole(role: string): string {
   const spaced = role.replaceAll("_", " ").trim();
-  if (spaced === "") return "Usuario";
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  if (spaced === "") return t("profile:role.usuario");
+  const capitalized = spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  // Roles conocidos traducidos; los personalizados (creados por el admin) se muestran tal cual.
+  return t(`profile:role.${role}`, { defaultValue: capitalized });
 }
 
 function resolveGender(value: string | null | undefined): string {

@@ -18,11 +18,22 @@ class EditView:
     def editor(self, data: VersionInput) -> dict:
         ova = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin)
         if ova.status == "generando":
-            raise OvaGenerating("No disponible mientras se genera el OVA.")
-        active = self.repo.get_or_create_active_version(ova)
+            # Una regeneración (chat del editor) ya tiene versión activa: el editor
+            # se sigue viendo, con `status: "generando"`. Solo la generación
+            # inicial, que aún no tiene versión, no tiene nada que mostrar.
+            active = self.repo.get_active_version(ova.id)
+            if active is None:
+                raise OvaGenerating("No disponible mientras se genera el OVA.")
+        else:
+            active = self.repo.get_active_version(ova.id)
+            if active is None:
+                raise OvaEditError(409, "generation_no_version", "Este OVA no tiene recursos guardados. Reintenta la generación desde Mis OVAs.")
+        active = self.repo.get_version(active.id, ova.id, with_phases=True)
         return {
             "ova_id": ova.id,
             "title": ova.title,
+            "description": ova.description,
+            "package_theme": ova.package_theme,
             "status": ova.status,
             # El editor se muestra en solo lectura a quien no es el autor (el admin).
             "can_edit": can_edit_ova(ova.owner_id, data.actor),

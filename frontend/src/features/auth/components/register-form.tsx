@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { authApi } from "@/core/auth/auth.service";
 import { authStore } from "@/core/auth/auth-store";
 
-import { CONNECT_ERROR } from "../lib/auth-copy";
+import { connectError } from "../lib/auth-copy";
 import { registerSchema } from "../lib/auth-schemas";
 import { registerNeedsNotice } from "../lib/login-outcome";
 import { onFormSubmit } from "../lib/on-form-submit";
@@ -16,6 +17,7 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onRegistered }: Readonly<RegisterFormProps>) {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const form = useAuthForm(registerSchema, { full_name: "", email: "", password: "" });
   const [serverError, setServerError] = useState("");
@@ -43,9 +45,9 @@ export function RegisterForm({ onRegistered }: Readonly<RegisterFormProps>) {
         void navigate("/dashboard");
         return;
       }
-      setServerError(data.message ?? "No se pudo completar el registro.");
+      setServerError(data.message ?? t("register.failed"));
     } catch {
-      setServerError(CONNECT_ERROR);
+      setServerError(connectError());
     } finally {
       setSubmitting(false);
     }

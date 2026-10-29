@@ -10,7 +10,11 @@ interface ProfileHeaderProps {
   isLoading: boolean;
 }
 
+import { useTranslation } from "react-i18next";
+
 export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHeaderProps>) {
+  const { t } = useTranslation("profile");
+
   if (isLoading) {
     return (
       <div className="space-y-2.5" aria-hidden="true">
@@ -30,14 +34,14 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
       </div>
       <PageHeader
         className="min-w-0 flex-1"
-        title={profile?.full_name ?? "Mi perfil"}
+        title={profile?.full_name ?? t("header.defaultTitle")}
         subtitle={
           // El rol va junto a los datos de la cuenta: como badge suelto a la derecha
           // quedaba lejos del nombre y no se asociaba a nada.
           <>
             <span className="block [overflow-wrap:anywhere]">{profile?.email ?? ""}</span>
             <span className="block">
-              {formatRole(role)} · Miembro desde {formatDate(profile?.created_at)}
+              {formatRole(role)} · {t("header.memberSince", { date: formatDate(profile?.created_at) })}
             </span>
           </>
         }

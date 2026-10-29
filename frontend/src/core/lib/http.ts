@@ -1,4 +1,7 @@
+import { apiErrorText } from "@/core/i18n/api-error";
+
 import { AuthExpiredBus } from "./auth-expired-bus";
+import { isServerWarm, markServerResponded, planRequest } from "./server-wakeup";
 import { firstNonBlank } from "./text";
 
 /** Valores de `GENOVA_API_BASE_*` inyectados en build por vite.config.ts. */
@@ -90,8 +93,12 @@ function buildHeaders(init: RequestInit): Record<string, string> {
 export async function apiFetch(
   path: string,
   init: RequestInit = {},
-  { timeoutMs = DEFAULT_TIMEOUT_MS }: { timeoutMs?: number } = {},
+  opts: { timeoutMs?: number } = {},
 ): Promise<Response> {
+  // Auth y la primera petición tras inactividad pueden pillar el servidor
+  // dormido (Render free): más margen y aviso al usuario si tarda.
+  const coldCandidate = isAuthEndpoint(path) || !isServerWarm();
+  const { timeoutMs, done: endTracking } = planRequest(coldCandidate, opts.timeoutMs, DEFAULT_TIMEOUT_MS);
   const ctrl = new AbortController();
   const t = setTimeout(() => {
     ctrl.abort();
@@ -105,6 +112,7 @@ export async function apiFetch(
       credentials: "include",
       signal: ctrl.signal,
     });
+    markServerResponded();
 
     // 401 on protected endpoint → session expired; AuthGuard will redirect.
     if (res.status === 401 && !isAuthEndpoint(path)) {
@@ -114,6 +122,7 @@ export async function apiFetch(
     return res;
   } finally {
     clearTimeout(t);
+    endTracking?.();
   }
 }
 
@@ -138,10 +147,17 @@ export async function apiJson<T = unknown>(
   const body = await readJsonBody(res);
 
   if (!res.ok) {
+    const code = body?.error ?? "";
+    // Código de error conocido → texto traducido; si no, `message` del backend; si no, el respaldo.
     const message =
-      firstNonBlank(body?.message, detailText(body?.detail), opts.fallbackMsg) ??
+      firstNonBlank(
+        apiErrorText(code, res.status),
+        body?.message,
+        detailText(body?.detail),
+        opts.fallbackMsg,
+      ) ??
       `HTTP ${String(res.status)}`;
-    throw new HttpError(message, { status: res.status, code: body?.error ?? "", body });
+    throw new HttpError(message, { status: res.status, code, body });
   }
 
   return (body ?? {}) as T;

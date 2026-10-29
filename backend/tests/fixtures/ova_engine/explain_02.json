@@ -29,7 +29,7 @@
         "respuesta_modelo": "La vista V$AUDIT se usa para revisar y monitorear las acciones registradas en los registros de auditoría de la base de datos."
       }
     ],
-    "aplicacion_dba": "El DBA puede usar sentencias como SELECT * FROM V$AUDIT para revisar registros de auditoría y ajustar parámetros de seguridad, garantizando el control de accesos y cumplimiento normativo.",
+    "aplicacion_practica": "El DBA puede usar sentencias como SELECT * FROM V$AUDIT para revisar registros de auditoría y ajustar parámetros de seguridad, garantizando el control de accesos y cumplimiento normativo.",
     "cierre": "La auditoría en Oracle es un mecanismo clave para garantizar seguridad y cumplimiento. Su aplicación práctica permite al DBA controlar accesos, detectar actividades no autorizadas y mantener la integridad de la base de datos."
   }
 }

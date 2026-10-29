@@ -7,6 +7,7 @@ sirve los bytes del archivo). Asserts deterministas (exactamente 4, orden desc,
 content-type application/zip).
 """
 
+import importlib  # noqa: E402
 import os
 import sys
 import uuid
@@ -23,7 +24,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401
+importlib.import_module("models")  # registra los modelos ORM  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from ova.interface.http.history_router import router as ova_history_router  # noqa: E402
@@ -39,6 +40,10 @@ FEATURE_DB = os.path.join(_FEATURES, "setup", "EN-008_base-datos.feature")
 
 _DDL = """
 CREATE TABLE ovas (
+  license TEXT NOT NULL DEFAULT 'CC BY-SA 4.0', language TEXT NOT NULL DEFAULT 'es',
+  keywords JSON NOT NULL DEFAULT '[]', educational_level TEXT NOT NULL DEFAULT '',
+  audience TEXT NOT NULL DEFAULT '', typical_learning_time TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '',
+  package_theme VARCHAR(24) NOT NULL DEFAULT 'upao',
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL, description TEXT,
   status VARCHAR(20) NOT NULL DEFAULT 'borrador', file_path TEXT, storage_key TEXT,
   current_version_id TEXT, deleted_at TIMESTAMP,

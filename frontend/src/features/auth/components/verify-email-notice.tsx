@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
-import { AUTH_LINK_CLASS, BACK_TO_LOGIN } from "../lib/auth-copy";
+import { AUTH_LINK_CLASS } from "../lib/auth-copy";
 import { AuthStatusCard } from "./auth-status-card";
 
 interface VerifyEmailNoticeProps {
@@ -15,6 +16,7 @@ interface VerifyEmailNoticeProps {
 type ResendStatus = "idle" | "sending" | "sent";
 
 export function VerifyEmailNotice({ email, onResend }: Readonly<VerifyEmailNoticeProps>) {
+  const { t } = useTranslation("auth");
   const [status, setStatus] = useState<ResendStatus>("idle");
   const [message, setMessage] = useState("");
 
@@ -22,9 +24,9 @@ export function VerifyEmailNotice({ email, onResend }: Readonly<VerifyEmailNotic
     setStatus("sending");
     try {
       const msg = await onResend();
-      setMessage(msg === "" ? "Enlace reenviado." : msg);
+      setMessage(msg === "" ? t("notice.resent") : msg);
     } catch {
-      setMessage("No se pudo reenviar. Intenta de nuevo en un momento.");
+      setMessage(t("notice.resendFailed"));
     } finally {
       setStatus("sent");
     }
@@ -35,11 +37,14 @@ export function VerifyEmailNotice({ email, onResend }: Readonly<VerifyEmailNotic
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
         <Icon name="envelope-simple" size="text-2xl" className="text-primary" />
       </div>
-      <h1 className="font-display text-2xl font-semibold tracking-tight">Verifica tu correo</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">{t("notice.title")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Te enviamos un enlace de verificación a{" "}
-        <span className="break-words font-medium text-foreground">{email}</span>. Ábrelo para activar tu
-        cuenta.
+        <Trans
+          ns="auth"
+          i18nKey="notice.sent"
+          values={{ email }}
+          components={{ email: <span className="break-words font-medium text-foreground" /> }}
+        />
       </p>
       <div aria-live="polite" className="mt-4 min-h-5 text-sm text-primary">
         {message}
@@ -54,11 +59,11 @@ export function VerifyEmailNotice({ email, onResend }: Readonly<VerifyEmailNotic
         disabled={status === "sending"}
         loading={status === "sending"}
       >
-        {status === "sending" ? "Reenviando…" : "Reenviar enlace"}
+        {status === "sending" ? t("notice.resending") : t("notice.resend")}
       </Button>
       <p className="mt-5 text-sm text-muted-foreground">
         <Link to="/login" className={AUTH_LINK_CLASS}>
-          {BACK_TO_LOGIN}
+          {t("common.backToLogin")}
         </Link>
       </p>
     </AuthStatusCard>

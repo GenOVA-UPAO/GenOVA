@@ -11,6 +11,7 @@ from ova.application.use_cases.edit_phases import EditPhases
 from ova.application.use_cases.edit_subelement import EditSubelement
 from ova.application.use_cases.edit_view import EditView
 from ova.application.use_cases.editor_chat import EditorChat
+from ova.application.use_cases.export_package import ExportPackage
 from ova.application.use_cases.export_scorm import ExportScorm
 from ova.application.use_cases.list_ovas import ListOvas
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
@@ -37,6 +38,7 @@ __all__ = [
     "EditSubelement",
     "EditView",
     "EditorChat",
+    "ExportPackage",
     "ExportScorm",
     "ListOvas",
     "ListTrashedOvas",

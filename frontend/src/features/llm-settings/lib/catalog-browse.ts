@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { firstNonBlank } from "@/core/lib/text";
 
 import { sortModels } from "./catalog-sort";
@@ -15,11 +17,11 @@ import type { CatalogModel } from "./user-llm-settings.types";
 export type CatalogSort = "recommended" | "price-asc" | "price-desc" | "context-desc" | "name-asc";
 
 export const CATALOG_SORTS: { key: CatalogSort; label: string }[] = [
-  { key: "recommended", label: "En uso y favoritos primero" },
-  { key: "price-asc", label: "Más baratos primero" },
-  { key: "price-desc", label: "Más caros primero" },
-  { key: "context-desc", label: "Más contexto primero" },
-  { key: "name-asc", label: "Nombre (A-Z)" },
+  { key: "recommended", get label() { return t("llm-settings:sort.recommended"); } },
+  { key: "price-asc", get label() { return t("llm-settings:sort.priceAsc"); } },
+  { key: "price-desc", get label() { return t("llm-settings:sort.priceDesc"); } },
+  { key: "context-desc", get label() { return t("llm-settings:sort.contextDesc"); } },
+  { key: "name-asc", get label() { return t("llm-settings:sort.nameAsc"); } },
 ];
 
 export interface CatalogFilters {

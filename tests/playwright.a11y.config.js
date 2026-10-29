@@ -9,6 +9,8 @@ export default defineConfig({
   globalSetup: './a11y/global-setup.js',
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
+    // La interfaz detecta el idioma del navegador y los escenarios están en español.
+    locale: 'es-PE',
     screenshot: 'only-on-failure',
   },
   reporter: [['html', { outputFolder: 'playwright-report-a11y' }]],

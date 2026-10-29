@@ -45,3 +45,27 @@ NORM_JS = """
 function norm(t){return String(t==null?'':t).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/\\s+/g,' ').trim();}
 function say(el,text,kind){el.hidden=false;el.textContent=text;el.className='ev-fb'+(kind?' is-'+kind:'');}
 """
+
+
+def trim_to_param(key: str, param: str):
+    """Normalizador puro `(data, params) -> data`: si el LLM devuelve más elementos de
+    `key` que los pedidos en `params[param]`, recorta; si devuelve menos, los deja
+    (la plantilla se ajusta al número real)."""
+
+    def normalize(data: dict, params: dict) -> dict:
+        items = data.get(key)
+        n = params.get(param)
+        if isinstance(items, list) and isinstance(n, int) and len(items) > n:
+            return {**data, key: items[:n]}
+        return data
+
+    return normalize
+
+
+def normalize_bank(data: dict, params: dict) -> dict:
+    """Quiz adaptativo: recorta cada nivel del banco a `num_per_level`."""
+    banco = data.get("banco")
+    n = params.get("num_per_level")
+    if not isinstance(banco, dict) or not isinstance(n, int):
+        return data
+    return {**data, "banco": {k: (v[:n] if isinstance(v, list) else v) for k, v in banco.items()}}

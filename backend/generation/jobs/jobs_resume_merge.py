@@ -83,6 +83,15 @@ def merge_resumed_resources(db: Session, job: OvaJob, resource_ids: list[uuid.UU
     active = _active_version(db, ova.id)
     if not recovered or active is None:
         return False
+    if getattr(job, "status", None) == "canceled":
+        existing = {(p.phase_type, p.resource_type_id) for p in active.phases}
+        recovered = [
+            r for r in recovered
+            if (r.phase_type, resolve_resource_display(r.phase_type, r.resource_type)[0])
+            not in existing
+        ]
+        if not recovered:
+            return False
     rows = _merged_rows(list(active.phases), recovered)
     db.execute(
         update(OvaVersion)

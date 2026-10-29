@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -14,11 +15,6 @@ import type { Role } from "../lib/types";
 import { DeleteRoleBody } from "./delete-role-body";
 import { FormErrorAlert } from "./form-error-alert";
 
-function confirmLabel(needsReassign: boolean, isDeleting: boolean): string {
-  if (isDeleting) return "Eliminando…";
-  return needsReassign ? "Reasignar y eliminar" : "Eliminar rol";
-}
-
 interface DeleteRoleModalProps {
   role: Role;
   roles: Role[];
@@ -26,6 +22,16 @@ interface DeleteRoleModalProps {
   serverError: string;
   onConfirm: (reassignRoleId?: string) => void;
   onCancel: () => void;
+}
+
+function resolveConfirmText(isDeleting: boolean, needsReassign: boolean, t: (key: string) => string): string {
+  if (isDeleting) {
+    return t("roles.deleteModal.deleting");
+  }
+  if (needsReassign) {
+    return t("roles.deleteModal.reassignAndConfirm");
+  }
+  return t("roles.deleteModal.confirm");
 }
 
 export function DeleteRoleModal({
@@ -36,10 +42,13 @@ export function DeleteRoleModal({
   onConfirm,
   onCancel,
 }: Readonly<DeleteRoleModalProps>) {
+  const { t } = useTranslation("admin");
   const [reassignRoleId, setReassignRoleId] = useState("");
   const [tried, setTried] = useState(false);
   const needsReassign = (role.user_count ?? 0) > 0;
   const missingTarget = needsReassign && reassignRoleId === "";
+  const confirmText = resolveConfirmText(isDeleting, needsReassign, t);
+
 
   // El botón no se deshabilita en silencio: si falta el rol de destino, se dice junto al selector.
   const handleConfirm = () => {
@@ -60,27 +69,29 @@ export function DeleteRoleModal({
     >
       <DialogContent className="sm:max-w-lg" aria-describedby="delete-role-desc">
         <DialogHeader>
-          <DialogTitle>¿Eliminar el rol «{formatRoleName(role.name)}»?</DialogTitle>
+          <DialogTitle>
+            {t("roles.deleteModal.title", { name: formatRoleName(role.name) })}
+          </DialogTitle>
         </DialogHeader>
         <DeleteRoleBody
           role={role}
           roles={roles}
           reassignRoleId={reassignRoleId}
-          reassignError={tried && missingTarget ? "Elige a qué rol pasarán sus usuarios." : ""}
+          reassignError={tried && missingTarget ? t("roles.deleteModal.selectTargetError") : ""}
           isDeleting={isDeleting}
           onReassignChange={setReassignRoleId}
         />
         <FormErrorAlert message={serverError} />
         <DialogFooter>
           <Button variant="outline" onClick={onCancel} disabled={isDeleting}>
-            Cancelar
+            {t("roles.deleteModal.cancel")}
           </Button>
           <Button
             variant="danger"
             loading={isDeleting}
             onClick={handleConfirm}
           >
-            {confirmLabel(needsReassign, isDeleting)}
+            {confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
+from core.topic_area import active_topic_area
 from llm.phases._rag import retrieve_phase_context
 from models import User
 from prometheus.plans.generate import generate_resource
@@ -41,7 +42,7 @@ def generate_explore_resource(
     concept = payload.concept.strip()
 
     if n not in RECURSOS_META:
-        raise HTTPException(status_code=400, detail="resource_type debe estar entre 1 y 10.")
+        raise HTTPException(status_code=400, detail=f"resource_type debe estar entre 1 y {len(RECURSOS_META)}.")
     if len(concept) < 3:
         raise HTTPException(status_code=400, detail="El concepto debe tener al menos 3 caracteres.")
 
@@ -51,7 +52,9 @@ def generate_explore_resource(
     )
 
     try:
-        result = generate_resource("explore", n, concept, contexto=contexto)
+        result = generate_resource(
+            "explore", n, concept, contexto=contexto, area=active_topic_area()
+        )
         return {
             **meta,
             "resource_type": n,

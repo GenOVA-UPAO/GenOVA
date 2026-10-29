@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import i18n from "i18next";
 import { toast } from "sonner";
 
 import {
@@ -11,7 +12,6 @@ import {
 import type { FeedbackReason } from "../lib/resource-feedback";
 
 const feedbackKey = (ovaId: string) => ["ova-resource-feedback", ovaId] as const;
-const SAVE_ERROR = "No se pudo guardar tu valoración. Inténtalo de nuevo.";
 
 /** Valoración del docente sobre el recurso `phaseId` (idempotente por recurso en el servidor). */
 export function useResourceFeedback(ovaId: string, phaseId: string) {
@@ -27,7 +27,7 @@ export function useResourceFeedback(ovaId: string, phaseId: string) {
         saved,
       ]);
     },
-    onError: () => toast.error(SAVE_ERROR),
+    onError: () => toast.error(i18n.t("workspace:no_se_pudo_guardar_tu_valoracion_intentalo_de_nuevo")),
   });
   const remove = useMutation({
     mutationFn: () => deleteResourceFeedback(ovaId, phaseId),
@@ -36,7 +36,7 @@ export function useResourceFeedback(ovaId: string, phaseId: string) {
         (list ?? []).filter((item) => item.phase_id !== phaseId),
       );
     },
-    onError: () => toast.error("No se pudo quitar tu valoración."),
+    onError: () => toast.error(i18n.t("workspace:no_se_pudo_quitar_tu_valoracion")),
   });
   return {
     current,
@@ -48,7 +48,7 @@ export function useResourceFeedback(ovaId: string, phaseId: string) {
         remove.mutate();
         return;
       }
-      save.mutate({ rating: "up" }, { onSuccess: () => toast.success("Gracias por tu valoración.") });
+      save.mutate({ rating: "up" }, { onSuccess: () => toast.success(i18n.t("workspace:gracias_por_tu_valoracion")) });
     },
     sendDown: (reason: FeedbackReason | null, comment: string, done: () => void) => {
       save.mutate(
@@ -56,7 +56,7 @@ export function useResourceFeedback(ovaId: string, phaseId: string) {
         {
           onSuccess: () => {
             done();
-            toast.success("Gracias, usaremos tu opinión para mejorar los recursos.");
+            toast.success(i18n.t("workspace:gracias_usaremos_tu_opinion_para_mejorar_los_recursos"));
           },
         },
       );

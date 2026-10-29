@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { joinList } from "./join-list";
 import type { Draft, Entry, TaskDraft } from "./llm-config-draft";
 import { taskMeta } from "./task-meta";
@@ -24,16 +26,28 @@ export function validateTaskChain(task: TaskDraft | undefined): SlotIssue[] {
 
   task.fallbacks.forEach((f, i) => {
     if (!f.provider || !f.model_id) {
-      issues.push({ index: i, message: "Elige un modelo o quita esta fila.", kind: "empty" });
+      issues.push({
+        index: i,
+        message: t("llm-settings:chainValidation.chooseOrRemove"),
+        kind: "empty",
+      });
       return;
     }
     const key = `${f.provider}::${f.model_id}`;
     if (primaryKey && key === primaryKey) {
-      issues.push({ index: i, message: "Este modelo ya es el principal.", kind: "duplicate" });
+      issues.push({
+        index: i,
+        message: t("llm-settings:chainValidation.alreadyPrimary"),
+        kind: "duplicate",
+      });
       return;
     }
     if (seen.has(key)) {
-      issues.push({ index: i, message: "Este modelo ya está en la lista de respaldo.", kind: "duplicate" });
+      issues.push({
+        index: i,
+        message: t("llm-settings:chainValidation.alreadyInFallback"),
+        kind: "duplicate",
+      });
       return;
     }
     seen.add(key);
@@ -70,8 +84,8 @@ export function blockingMessage(issues: Record<string, SlotIssue[]>): string | n
   const duplicate = all.some((issue) => issue.kind === "duplicate");
   const where = joinList(tasks.map((task) => taskMeta(task).label));
   if (empty && duplicate) {
-    return `Para guardar, completa o quita los respaldos vacíos y cambia los modelos repetidos en ${where}.`;
+    return t("llm-settings:chainValidation.blockingBoth", { where });
   }
-  if (duplicate) return `Para guardar, cambia los modelos repetidos en ${where}.`;
-  return `Para guardar, elige un modelo o quita los respaldos vacíos en ${where}.`;
+  if (duplicate) return t("llm-settings:chainValidation.blockingDuplicate", { where });
+  return t("llm-settings:chainValidation.blockingEmpty", { where });
 }

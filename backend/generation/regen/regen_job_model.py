@@ -7,9 +7,9 @@ migración en Postgres, y los tests la crean con `create_all` sobre SQLite.
 
 import uuid
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, Text, Uuid
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, Text, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.sql import func
+from sqlalchemy.sql import false, func
 
 from core.database import Base
 
@@ -32,6 +32,8 @@ class RegenJob(Base):
     new_version_number = Column(Integer, nullable=True)
     rag = Column(_JSON, nullable=True)
     error = Column(Text, nullable=True)
+    # El docente pidió cancelar: el ejecutor lo comprueba entre recursos.
+    cancel_requested = Column(Boolean, nullable=False, default=False, server_default=false())
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     started_at = Column(DateTime(timezone=True), nullable=True)
     heartbeat_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())

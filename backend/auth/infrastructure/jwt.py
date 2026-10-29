@@ -16,7 +16,9 @@ from core.security import (  # noqa: F401 — re-export: decode_session_token vi
     JWT_ISSUER,
     JWT_REMEMBER_MINUTES,
     JWT_SECRET,
-    decode_session_token,
+)
+from core.security import (
+    decode_session_token as decode_session_token,
 )
 
 

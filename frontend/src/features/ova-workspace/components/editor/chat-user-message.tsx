@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import { type RegenChatMessage, splitAttachments } from "../../lib/regen-chat";
@@ -11,6 +13,7 @@ interface Props {
 
 /** Mensaje del docente: burbuja alineada a la derecha, con los recursos a los que se aplicó y sus adjuntos. */
 export function ChatUserMessage({ message, onRemove }: Readonly<Props>) {
+  const { t } = useTranslation();
   const labels = message.resourceLabels ?? [];
   const { text, attachments } = splitAttachments(message.text);
   return (
@@ -23,10 +26,10 @@ export function ChatUserMessage({ message, onRemove }: Readonly<Props>) {
         }}
       />
       <div className="min-w-0 max-w-[85%] rounded-xl rounded-tr-sm bg-primary/10 px-3 py-2 dark:bg-primary/20">
-        <span className="sr-only">Tú: </span>
+        <span className="sr-only">{t("workspace:tu")} </span>
         <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-foreground">{text}</p>
         {attachments.length > 0 && (
-          <ul aria-label="Archivos adjuntos" className="mt-1.5 flex flex-wrap gap-1">
+          <ul aria-label={t("workspace:archivos_adjuntos")} className="mt-1.5 flex flex-wrap gap-1">
             {attachments.map((name) => (
               <li
                 key={name}
@@ -39,7 +42,7 @@ export function ChatUserMessage({ message, onRemove }: Readonly<Props>) {
           </ul>
         )}
         {labels.length > 0 && (
-          <p className="mt-1 text-xs text-muted-foreground">Aplicado a: {labels.map(resourceDisplayName).join(", ")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("workspace:aplicado_a")} {labels.map((name) => resourceDisplayName(name, t)).join(", ")}</p>
         )}
       </div>
     </li>

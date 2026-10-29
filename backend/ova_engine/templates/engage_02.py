@@ -8,7 +8,9 @@ para generadores externos de video AI.
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -52,8 +54,10 @@ def schema(p: dict) -> dict:
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_scenes"]
     style = p["style"]
-    return f"""[ROL] Guionista audiovisual y diseñador de preproducción para EdTech universitario.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Guionista audiovisual y diseñador de preproducción para EdTech para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Crea un storyboard de preproducción para un video educativo de {n} escenas, estilo {style}, que despierte curiosidad inmediata sobre «{concept}». Usa una analogía visual cotidiana clara y cinematográfica que refleje fielmente cómo funciona «{concept}».
 - titulo: título atractivo del video educativo (≤10 palabras).
 - gancho: premisa intrigante que invite a explorar el guion (≤25 palabras).
@@ -66,6 +70,23 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - pregunta_reflexion: pregunta abierta intrigante que invite al estudiante a reflexionar sobre el reto planteado (≤25 palabras).
 - prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo, describiendo la progresión visual estilo {style}, sin texto en pantalla ni fórmulas.
 [RESTRICCIONES] Sin jerga técnica pesada ni fórmulas en el guion ni narración. Tono cinematográfico y empático. No describas ni propongas un reproductor ni simulación de video.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Guionista audiovisual y diseñador de preproducción para EdTech para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Crea un storyboard de preproducción para un video educativo de {n} escenas, estilo {style}, que despierte curiosidad inmediata sobre «{concept}». Usa una analogía visual cotidiana clara y cinematográfica que refleje fielmente cómo funciona «{concept}».
+- titulo: título atractivo del video educativo (≤10 palabras).
+- gancho: premisa intrigante que invite a explorar el guion (≤25 palabras).
+- escenas: exactamente {n} escenas secuenciales con marcadores de tiempo progresivos. Por cada escena:
+  * `tiempo`: marca temporal del segmento (ej. '0:00 - 0:10', '0:10 - 0:20').
+  * `titulo`: nombre breve de la escena (≤8 palabras).
+  * `descripcion_visual`: encuadre de cámara, analogía cotidiana y elementos visuales clave (≤35 palabras).
+  * `narracion`: locución de voz en off para este fragmento (≤25 palabras).
+- narracion_completa: texto continuo de la locución (voz en off fluida, ≤80 palabras) integrando todas las escenas y concluyendo con la pregunta reflexiva.
+- pregunta_reflexion: pregunta abierta intrigante que invite al estudiante a reflexionar sobre el reto planteado (≤25 palabras).
+- prompt_video: prompt cinematográfico en inglés (≤90 palabras) optimizado para un generador de video AI externo, describiendo la progresión visual estilo {style}, sin texto en pantalla ni fórmulas.
+[RESTRICCIONES] Sin jerga técnica pesada ni fórmulas en el guion ni narración. Tono cinematográfico y empático. No describas ni propongas un reproductor ni simulación de video.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -290,7 +311,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         scene_items.append(
             f'<li class="ova-scene-item" id="scene-item-{idx}" data-scene="{idx}">'
             f'<div class="ova-scene-head">'
-            f'<span class="ova-time-tag">⏱️ {tiempo}</span>'
+            f'<span class="ova-time-tag">{icon("clock")} {tiempo}</span>'
             f'<strong class="ova-scene-title">{titulo}</strong>'
             f'<span class="ova-scene-chip" id="chip-scene-{idx}" aria-hidden="true">Pendiente</span>'
             f"</div>"
@@ -299,7 +320,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="ova-scene-foot">'
             f'<button type="button" class="ova-btn ova-btn--ghost btn-scene-view" data-scene="{idx}" '
             f'aria-label="Marcar escena {idx} como vista">'
-            f'<span aria-hidden="true">👁️</span> <span id="btn-lbl-scene-{idx}">Marcar como vista</span>'
+            f'<span aria-hidden="true">{icon("eye")}</span> <span id="btn-lbl-scene-{idx}">Marcar como vista</span>'
             f"</button>"
             f"</div>"
             f"</li>"
@@ -316,10 +337,10 @@ def render(data: dict, ctx: RenderContext) -> str:
 
 <section class="ova-card">
   <div class="ova-scenes-header">
-    <h2>🎬 Secuencia del Storyboard ({total_scenes} escenas)</h2>
+    <h2>{icon('film')} Secuencia del Storyboard ({total_scenes} escenas)</h2>
     <div class="ova-scenes-controls">
       <button type="button" class="ova-btn ova-btn--ghost" id="btn-play-scenes" aria-label="Reproducir recorrido de escenas">
-        <span aria-hidden="true">▶️</span> <span id="play-btn-label">Reproducir recorrido</span>
+        <span aria-hidden="true">{icon('play')}</span> <span id="play-btn-label">Reproducir recorrido</span>
       </button>
       <button type="button" class="ova-btn ova-btn--ghost" id="btn-mark-all" aria-label="Marcar todas las escenas como vistas">
         <span aria-hidden="true">✓</span> <span>Marcar todas vistas</span>
@@ -337,21 +358,21 @@ def render(data: dict, ctx: RenderContext) -> str:
 </section>
 
 <section class="ova-card">
-  <h2>🎙️ Guion de locución continuo (Voz en off)</h2>
+  <h2>{icon('mic')} Guion de locución continuo (Voz en off)</h2>
   <blockquote style="margin-top:12px">
     <p>{esc(data["narracion_completa"])}</p>
   </blockquote>
 </section>
 
 <section class="ova-card">
-  <h2>🎬 Prompt de video para IA</h2>
+  <h2>{icon('film')} Prompt de video para IA</h2>
   <p class="ova-muted" style="font-size:0.875rem;margin-top:6px">
     Prompt técnico en inglés optimizado para generadores externos (Runway Gen-3, Luma Dream Machine, Sora, Pika):
   </p>
   <pre class="ova-prompt-box"><code id="prompt-video-text">{esc(data["prompt_video"])}</code></pre>
   <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap">
     <button type="button" class="ova-btn" id="btn-copy-prompt" aria-label="Copiar prompt de video al portapapeles">
-      <span aria-hidden="true">📋</span> <span id="copy-btn-label">Copiar prompt de video</span>
+      <span aria-hidden="true">{icon('clipboard')}</span> <span id="copy-btn-label">Copiar prompt de video</span>
     </button>
     <span id="copy-status" aria-live="polite" class="ova-muted" style="font-size:0.875rem"></span>
   </div>

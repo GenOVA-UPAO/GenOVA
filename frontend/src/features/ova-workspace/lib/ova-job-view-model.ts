@@ -5,10 +5,12 @@
 //   running → 'generando' · error → 'X' · done → 'check' · pending → 'pendiente'
 // Anything unknown falls back to 'pendiente'.
 
+import i18n, { type TFunction } from "i18next";
+
 import { phaseMeta } from "./phase-meta";
 import { resourceDisplayName } from "./resource-display-name";
 
-export type UiStatus = "pendiente" | "generando" | "check" | "X";
+export type UiStatus = "pendiente" | "generando" | "check" | "X" | "cancelado";
 
 export interface BackendResource {
   id: string | number;
@@ -21,6 +23,7 @@ export interface BackendResource {
   emoji?: string | null;
   status: string;
   error_id?: string | null;
+  error_code?: string | null;
 }
 
 export interface SelectionItem {
@@ -38,6 +41,7 @@ export interface ResourceVM {
   emoji: string;
   status: UiStatus;
   error_id: string | null;
+  error_code?: string | null;
   selectable: boolean;
 }
 
@@ -85,6 +89,7 @@ const STATUS_MAP: Record<string, UiStatus> = {
   // "pendiente" por defecto y se pintaría como si aún faltara por generar,
   // ocultando que salió defectuoso.
   degraded: "X",
+  canceled: "cancelado",
 };
 
 export function mapResourceStatus(backendStatus: string): UiStatus {
@@ -124,8 +129,8 @@ function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionI
 
 // Etiqueta cuando no hay catálogo ni tipo humanizable.
 // `resource_order` es por fase: sin el nombre de fase, dos "Recurso 1" colisionan. 
-function fallbackResourceLabel(phase: string, resourceOrder: number): string {
-  const phaseLabel = phaseMeta(phase).label || phase;
+function fallbackResourceLabel(phase: string, resourceOrder: number, t: TFunction): string {
+  const phaseLabel = phaseMeta(phase, t).label || phase;
   return `${phaseLabel} · ${String(resourceOrder + 1)}`;
 }
 
@@ -133,23 +138,25 @@ function resourceViewModel(
   resource: BackendResource,
   labels: Map<string, Partial<SelectionItem>>,
   seen: Map<string, number>,
+  t: TFunction,
 ): ResourceVM {
   const phase = resource.phase_type;
   const selection = labels.get(`${phase}:${String(resource.resource_type)}`) ?? {};
   const status = mapResourceStatus(resource.status);
   const catalogTitle = (resource.title ?? "").trim();
   const resourceType = humanizeResourceType(resource.resource_type);
-  const base = resourceDisplayName(resourceBase(selection, catalogTitle, resourceType, resource));
+  const base = resourceDisplayName(resourceBase(selection, catalogTitle, resourceType) || fallbackResourceLabel(phase, resource.resource_order, t), t);
   const count = (seen.get(base) ?? 0) + 1;
   seen.set(base, count);
   return {
     id: String(resource.id),
     phase,
-    phaseLabel: phaseMeta(phase).label || phase,
+    phaseLabel: phaseMeta(phase, t).label || phase,
     label: count > 1 ? `${base} (${String(count)})` : base,
     emoji: selection.emoji ?? resource.emoji ?? "",
     status,
     error_id: resource.error_id ?? null,
+    error_code: resource.error_code,
     selectable: status === "X",
   };
 }
@@ -158,25 +165,25 @@ function resourceBase(
   selection: Partial<SelectionItem>,
   catalogTitle: string,
   resourceType: string,
-  resource: BackendResource,
 ): string {
   const selectedType = selection.tipo?.trim();
   if (selectedType) return selectedType;
   if (catalogTitle) return catalogTitle;
   if (resourceType) return resourceType;
-  return fallbackResourceLabel(resource.phase_type, resource.resource_order);
+  return "";
 }
 
 export function toResourceViewModel(
   resources: BackendResource[] = [],
   selections: Selections = {},
+  t: TFunction = i18n.t,
 ): ResourceVM[] {
   const labels = buildLabelIndex(selections);
   const seen = new Map<string, number>();
   return resources
     .slice()
     .sort((a, b) => a.phase_order - b.phase_order || a.resource_order - b.resource_order)
-    .map((resource) => resourceViewModel(resource, labels, seen));
+    .map((resource) => resourceViewModel(resource, labels, seen, t));
 }
 
 export function failedResourceIds(viewModel: ResourceVM[] = []): string[] {
@@ -220,7 +227,7 @@ export const STALL_MS = 3 * 60 * 1000;
  * justo el caso que este botón existe para rescatar. Si se añade un estado
  * nuevo en `jobs_service.py`, hay que añadirlo aquí o el botón no aparecerá.
  */
-export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "running", "error", "degraded"]);
+export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "running", "error", "degraded", "canceled"]);
 
 export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
   if (!snapshot) return [];

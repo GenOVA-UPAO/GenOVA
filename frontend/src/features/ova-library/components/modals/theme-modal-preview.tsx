@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ThemeMiniPreview } from "./theme-mini-preview";
 import type { ThemeState } from "./theme-types";
 
@@ -7,6 +9,7 @@ interface ThemeModalPreviewProps {
 
 /** Vista previa aproximada del tema y la plantilla elegidos. */
 export function ThemeModalPreview({ theme }: Readonly<ThemeModalPreviewProps>) {
+  const { t } = useTranslation();
   return (
     <figure className="space-y-2">
       <ThemeMiniPreview
@@ -15,7 +18,7 @@ export function ThemeModalPreview({ theme }: Readonly<ThemeModalPreviewProps>) {
         palette={theme.palette}
       />
       <figcaption className="text-xs text-muted-foreground">
-        Vista previa aproximada de la estructura y los colores.
+        {t("ova-library:vista_previa_aproximada_de_la_estructura_y_los_colores")}{" "}
       </figcaption>
     </figure>
   );

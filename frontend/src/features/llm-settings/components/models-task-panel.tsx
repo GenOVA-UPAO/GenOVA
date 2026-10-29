@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -41,6 +43,7 @@ interface ModelsTaskPanelProps {
 }
 
 export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
+  const { t } = useTranslation("llm-settings");
   const meta = taskMeta(props.task);
   return (
     <div
@@ -55,7 +58,7 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
         className="-ml-1 inline-flex h-11 items-center gap-1 rounded-lg px-1 text-sm font-medium text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:hidden"
         onClick={props.onBack}
       >
-        <Icon name="caret-left" size="text-sm" /> Todas las tareas
+        <Icon name="caret-left" size="text-sm" /> {t("page.allTasks")}
       </button>
       <ModelsTaskHeading
         label={meta.label}

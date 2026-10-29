@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { EngineNode } from "../hooks/nodes-config.types";
 import { FlagSwitch } from "./flag-switch";
 
@@ -14,13 +16,16 @@ export function CapabilityControl({
   saving,
   onToggle,
 }: Readonly<CapabilityControlProps>) {
-  if (cap.always_on) return <span className="text-sm text-muted-foreground">Siempre activo</span>;
+  const { t } = useTranslation("llm-settings");
+
+  if (cap.always_on) return <span className="text-sm text-muted-foreground">{t("nodes.alwaysActiveSingle")}</span>;
   return (
     <>
       <span className="text-sm text-muted-foreground" aria-hidden="true">
-        {active ? "Activo" : "Pausado"}
+        {active ? t("nodes.activeStatus") : t("nodes.pausedStatus")}
       </span>
       <FlagSwitch checked={active} disabled={saving} label={cap.name} onToggle={onToggle} />
     </>
   );
 }
+

@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { useRef, useState } from "react";
 
 import { providerMeta } from "@/core/components/platform-key-meta";
@@ -108,10 +109,10 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
 const MIN_KEY_LENGTH = 8;
 
 function draftError(draft: string): string | null {
-  if (draft.trim() === "") return "Pega la clave antes de guardar.";
+  if (draft.trim() === "") return i18n.t("llm-settings:credentials.pasteKeyWarning");
   // El backend lo rechaza igual, pero con «La API key para 'groq'…».
   if (draft.trim().length < MIN_KEY_LENGTH) {
-    return "La clave es demasiado corta. Comprueba que la has copiado entera.";
+    return i18n.t("llm-settings:credentials.keyTooShort");
   }
   return null;
 }
@@ -119,7 +120,9 @@ function draftError(draft: string): string | null {
 function keyHint(label: string, placeholder: string): string {
   // Los placeholders con prefijo real acaban en «…» («gsk_…»); el resto es texto de ayuda.
   const prefix = placeholder.endsWith("…") ? placeholder.slice(0, -1).trim() : "";
-  return prefix === "" ? `Clave API de ${label}` : `Clave API de ${label}. Empieza por ${prefix}`;
+  return prefix === ""
+    ? i18n.t("llm-settings:credentials.keyAria", { provider: label })
+    : i18n.t("llm-settings:credentials.keyAriaPrefix", { provider: label, prefix });
 }
 
 function useKeyDraft(onClose: () => void, onSaved: () => void, onInvalid: () => void) {
@@ -161,7 +164,7 @@ function useKeyDraft(onClose: () => void, onSaved: () => void, onInvalid: () => 
         onClose();
         onSaved();
       } catch (err: unknown) {
-        setRowError(errorMessage(err, "Error al guardar."));
+        setRowError(errorMessage(err, i18n.t("llm-settings:credentials.saveError")));
         onInvalid();
       } finally {
         setSaving(false);

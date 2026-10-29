@@ -1,10 +1,12 @@
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import type { PhaseWithContent } from "../../lib/types";
 import { WorkspaceEditSections } from "./workspace-edit-sections";
 import { type OvaPanelTab, WorkspaceOvaPanelTabs } from "./workspace-ova-panel-tabs";
+import { WorkspacePackageTheme } from "./workspace-package-theme";
 import { WorkspaceRegenStatus } from "./workspace-regen-status";
 
 const WorkspaceHtmlPreview = lazy(() => import("./workspace-html-preview"));
@@ -21,6 +23,7 @@ interface Props {
 }
 
 export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<OvaPanelTab>("preview");
   // La edición se monta al abrirla y ya no se desmonta: cambiar a «Vista previa»
   // para comprobar algo no debe descartar el HTML que aún no se ha guardado.
@@ -33,28 +36,28 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
   return (
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <WorkspaceOvaPanelTabs tab={tab} onChange={changeTab} readOnly={readOnly} />
+      {!readOnly && workspace.data && <WorkspacePackageTheme ovaId={ovaId} ova={workspace.data} />}
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
         <div
           id="workspace-ova-preview"
           role="tabpanel"
-          aria-label="Vista previa"
+          aria-label={t("workspace:vista_previa")}
           hidden={tab !== "preview"}
           className="h-full"
         >
           <Suspense
             fallback={
               <p role="status" className="p-4 text-sm text-muted-foreground">
-                Cargando vista previa…
-              </p>
+                {t("workspace:cargando_vista_previa_186")} </p>
             }
           >
-            <WorkspaceHtmlPreview phases={phases} ovaId={ovaId} readOnly={readOnly} />
+            <WorkspaceHtmlPreview phases={phases} ovaId={ovaId} packageTheme={workspace.data?.package_theme} readOnly={readOnly} />
           </Suspense>
         </div>
         <div
           id="workspace-ova-edit"
           role="tabpanel"
-          aria-label="Editar"
+          aria-label={t("workspace:editar")}
           hidden={tab !== "edit"}
           className="h-full min-h-0 space-y-6 overflow-y-auto p-3 sm:p-4"
         >
@@ -63,7 +66,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
         <div
           id="workspace-ova-visual-editor"
           role="tabpanel"
-          aria-label="Editor visual (beta)"
+          aria-label={t("workspace:editor_visual_beta")}
           hidden={tab !== "visual_editor"}
           className="h-full min-h-0 overflow-y-auto"
         >
@@ -71,8 +74,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
             <Suspense
               fallback={
                 <p role="status" className="p-4 text-sm text-muted-foreground">
-                  Cargando editor visual…
-                </p>
+                  {t("workspace:cargando_editor_visual")} </p>
               }
             >
               <VisualEditorPanel ovaId={ovaId} phases={phases} />

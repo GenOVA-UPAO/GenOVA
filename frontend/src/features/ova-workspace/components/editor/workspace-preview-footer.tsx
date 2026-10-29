@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -32,20 +33,21 @@ export function WorkspacePreviewFooter({
   onNext,
   feedback,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   if (!active) return null;
-  const meta = phaseMeta(active.phase_type);
+  const meta = phaseMeta(active.phase_type, t);
   return (
     <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border py-1.5 pr-1.5 pl-3 text-xs text-muted-foreground">
       <span className={`shrink-0 rounded-full border px-2 py-0.5 font-medium ${meta.badge}`}>
-        Fase: {meta.label || active.phase_type}
+        {t("workspace:fase")} {meta.label || active.phase_type}
       </span>
       <span className="shrink-0 tabular-nums">
-        Recurso {position} de {total}
+        {t("workspace:recurso")} {position} {t("workspace:de")} {total}
       </span>
       {active.regenerated && (
         <span className="inline-flex min-w-0 items-center gap-1 font-medium text-foreground">
           <Icon name="sparkle" className="size-3.5 shrink-0 text-accent-brand" />
-          <span className="max-sm:sr-only">Regenerado</span>
+          <span className="max-sm:sr-only">{t("workspace:regenerado")}</span>
         </span>
       )}
       {feedback && <span className="ml-auto flex shrink-0 items-center">{feedback}</span>}
@@ -55,22 +57,22 @@ export function WorkspacePreviewFooter({
             variant="ghost"
             size="sm"
             className={NAV}
-            aria-label="Recurso anterior"
+            aria-label={t("workspace:recurso_anterior")}
             disabled={position <= 1}
             onClick={onPrevious}
           >
             <Icon name="caret-left" />
-            <span className="max-sm:sr-only">Anterior</span>
+            <span className="max-sm:sr-only">{t("workspace:anterior")}</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             className={NAV}
-            aria-label="Recurso siguiente"
+            aria-label={t("workspace:recurso_siguiente")}
             disabled={position >= total}
             onClick={onNext}
           >
-            <span className="max-sm:sr-only">Siguiente</span>
+            <span className="max-sm:sr-only">{t("workspace:siguiente")}</span>
             <Icon name="caret-right" />
           </Button>
         </span>

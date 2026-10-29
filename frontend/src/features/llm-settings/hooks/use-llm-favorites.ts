@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,7 +20,7 @@ export function useLlmFavorites(serverEnabled: EnabledModel[]) {
       await queryClient.invalidateQueries({ queryKey: llmSettingsKeys.all });
     },
     onError: (err: unknown) => {
-      toast.error(errorMessage(err, "No se pudo guardar el favorito."));
+      toast.error(errorMessage(err, t("llm-settings:api.saveFavoriteError")));
     },
   });
 

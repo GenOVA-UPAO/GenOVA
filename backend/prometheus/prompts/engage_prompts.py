@@ -1,7 +1,7 @@
 """Prompts for the 10 ENGAGE-phase resources (5E methodology).
 
 Each prompt fixes the resource FORMAT but adapts all content to whatever
-DBMS (Sistemas de Gestión de Base de Datos) concept is passed in `concept` —
+concept is passed in `concept` (any area; the level comes from the request) —
 no hardcoded subtopic.
 """
 
@@ -61,4 +61,4 @@ def prompt_texto(
     n: int, concept: str, contexto_usuario: str = "", config: dict | None = None
 ) -> str:
     """Prompt de texto para engage:3 (micro-podcast)."""
-    return with_user_context(render_texto("engage", n, concept, config), contexto_usuario)
+    return with_user_context(render_texto("engage", n, concept, config, contexto_usuario), contexto_usuario)

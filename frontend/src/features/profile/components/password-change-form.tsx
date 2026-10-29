@@ -1,4 +1,5 @@
 import type { SyntheticEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -20,6 +21,7 @@ interface PasswordChangeFormProps {
 }
 
 export function PasswordChangeForm({ isSubmitting, onSave }: Readonly<PasswordChangeFormProps>) {
+  const { t } = useTranslation("profile");
   const form = useForm(passwordSchema, EMPTY_PASSWORD);
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
@@ -34,8 +36,8 @@ export function PasswordChangeForm({ isSubmitting, onSave }: Readonly<PasswordCh
 
   return (
     <ProfileSection
-      title="Contraseña"
-      description="Usa una contraseña que no utilices en otros sitios."
+      title={t("password.title")}
+      description={t("password.description")}
     >
       <form
         noValidate
@@ -53,7 +55,7 @@ export function PasswordChangeForm({ isSubmitting, onSave }: Readonly<PasswordCh
         />
         <div className="flex justify-end border-t border-border pt-5">
           <Button type="submit" className="max-sm:h-11 max-sm:w-full" loading={isSubmitting}>
-            Actualizar contraseña
+            {t("password.submit")}
           </Button>
         </div>
       </form>

@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 import { QueryErrorState } from "@/core/components/query-error-state";
+import type { ExportFormatId } from "@/core/export/lib/formats";
 import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../lib/job-types";
@@ -24,7 +27,7 @@ interface MisOvasGridProps {
   onToggleSelect: (id: string) => void;
   onMoveToTrash: (ova: OvaListItem) => void;
   onEditMetadata: (ova: OvaListItem) => void;
-  onDownload: (id: string, title: string) => void;
+  onDownload: (id: string, format: ExportFormatId) => void;
   onDuplicate: (id: string) => void;
   onResume: (id: string) => void;
   onRetry: () => void;
@@ -53,10 +56,16 @@ export function MisOvasGrid({
   onRetry,
   onClearFilters,
 }: Readonly<MisOvasGridProps>) {
+  const { t } = useTranslation();
   if (isLoading) return <OvaCardSkeletonGrid />;
 
   if (error) {
-    return <QueryErrorState title="No se pudo cargar la biblioteca de OVAs" onRetry={onRetry} />;
+    return (
+      <QueryErrorState
+        title={t("ova-library:no_se_pudo_cargar_la_biblioteca_de_ovas")}
+        onRetry={onRetry}
+      />
+    );
   }
 
   if (ovas.length === 0) {
@@ -79,8 +88,8 @@ export function MisOvasGrid({
           isDuplicating={duplicatingId === ova.id}
           onToggleSelect={onToggleSelect}
           onMoveToTrash={onMoveToTrash}
-          onDownload={({ id, title }) => {
-            onDownload(id, title);
+          onDownload={({ id, format }) => {
+            onDownload(id, format);
           }}
           onDuplicate={onDuplicate}
           onEditMetadata={onEditMetadata}

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { PageHeader } from "@/core/components/page-header";
 
 import { DeactivateUserConfirm } from "../components/users/deactivate-user-confirm";
@@ -8,11 +10,12 @@ import { UsersToolbar } from "../components/users/users-toolbar";
 import { useAdminUsersPage } from "../hooks/use-admin-users-page";
 
 export function AdminUsersPage() {
+  const { t } = useTranslation("admin");
   const p = useAdminUsersPage();
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader title="Usuarios" subtitle={p.subtitle} />
+      <PageHeader title={t("users.title")} subtitle={p.subtitle} />
       <UsersToolbar
         search={p.search}
         onSearchChange={p.onSearchChange}

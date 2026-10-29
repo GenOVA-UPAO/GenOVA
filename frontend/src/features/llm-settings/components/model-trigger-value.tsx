@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import { priceSummary } from "../lib/model-facts";
@@ -5,7 +7,8 @@ import type { ModelOption } from "../lib/model-search";
 
 /** Lo que muestra el selector cerrado: favorito, nombre, proveedor y precio. */
 export function ModelTriggerValue({ option }: Readonly<{ option: ModelOption | undefined }>) {
-  if (!option) return <span className="flex-1 text-muted-foreground">Elige un modelo</span>;
+  const { t } = useTranslation("llm-settings");
+  if (!option) return <span className="flex-1 text-muted-foreground">{t("tasks.chooseModel")}</span>;
   const price = priceSummary(option.facts);
   return (
     <>

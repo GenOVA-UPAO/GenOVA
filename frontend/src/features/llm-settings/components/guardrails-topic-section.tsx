@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 
@@ -19,23 +21,24 @@ export function GuardrailsTopicSection({
   onToggle,
   onArea,
 }: Readonly<GuardrailsTopicSectionProps>) {
+  const { t } = useTranslation("llm-settings");
   const impact = topicImpact(draft);
   return (
     <SettingRow
-      title="Área temática permitida"
-      description="Limita los temas sobre los que se puede generar. Un área demasiado estrecha puede impedir que se genere nada."
+      title={t("guardrails.topicAreaTitle")}
+      description={t("guardrails.topicAreaDesc")}
       control={
         <FlagSwitch
           checked={draft.topicEnabled}
           disabled={saving}
-          label="Área temática permitida"
+          label={t("guardrails.topicAreaTitle")}
           onToggle={onToggle}
         />
       }
     >
       {draft.topicEnabled ? (
         <div className="space-y-2">
-          <Label htmlFor="guardrail-topic-area">Área permitida</Label>
+          <Label htmlFor="guardrail-topic-area">{t("guardrails.allowedArea")}</Label>
           <Input
             id="guardrail-topic-area"
             type="text"
@@ -46,15 +49,16 @@ export function GuardrailsTopicSection({
             }}
           />
           <p id="guardrail-topic-help" className="text-xs text-muted-foreground">
-            Describe el área en pocas palabras, por ejemplo «sistemas de gestión de bases de datos y Oracle».
+            {t("guardrails.topicAreaHelp")}
           </p>
         </div>
       ) : null}
       <p className="text-xs text-muted-foreground">
         {impact.restricted
-          ? `Ahora: solo se puede generar sobre «${impact.area}».`
-          : "Ahora: sin restricción, se puede generar sobre cualquier tema."}
+          ? t("guardrails.topicRestrictedNow", { area: impact.area })
+          : t("guardrails.topicUnrestrictedNow")}
       </p>
     </SettingRow>
   );
 }
+

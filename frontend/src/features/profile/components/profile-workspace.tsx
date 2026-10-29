@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+
+import { LanguageSelect } from "@/core/components/language-select";
 import { PlatformApiKeysCard } from "@/core/components/platform-api-keys-card";
 import { Tabs, TabsContent } from "@/core/components/ui/tabs";
 
@@ -6,6 +9,7 @@ import { DeleteAccountCard } from "./delete-account-card";
 import { PasswordChangeForm } from "./password-change-form";
 import { ProfileForm } from "./profile-form";
 import { ProfileHeader } from "./profile-header";
+import { ProfileSection } from "./profile-section";
 import { ProfileTabsList } from "./profile-tabs-list";
 import { TotpSetupCard } from "./totp-setup-card";
 
@@ -38,6 +42,7 @@ export function ProfileWorkspace({
   onTabChange,
   actions,
 }: Readonly<ProfileWorkspaceProps>) {
+  const { t } = useTranslation("profile");
   const role = profile.role ?? "usuario";
   const isAdmin = role === "administrador";
 
@@ -53,11 +58,17 @@ export function ProfileWorkspace({
             onSave={actions.handleSaveProfile}
           />
         </TabsContent>
-        {isAdmin && (
-          <TabsContent value={TAB_CONFIG} className="max-w-3xl space-y-6">
-            <PlatformApiKeysCard />
-          </TabsContent>
-        )}
+        <TabsContent value={TAB_CONFIG} className="max-w-3xl space-y-6">
+          <ProfileSection
+            title={t("language.title")}
+            description={t("language.description")}
+          >
+            <div className="max-w-xs">
+              <LanguageSelect />
+            </div>
+          </ProfileSection>
+          {isAdmin && <PlatformApiKeysCard />}
+        </TabsContent>
         <TabsContent value={TAB_SECURITY} className="max-w-3xl space-y-6">
           <TotpSetupCard totpEnabled={profile.totp_enabled === true} />
           <PasswordChangeForm

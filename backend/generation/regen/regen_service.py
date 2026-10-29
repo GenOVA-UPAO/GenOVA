@@ -19,15 +19,18 @@ from generation.infrastructure.regen_persist import (
 from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_heartbeat import JobHeartbeat
 from generation.regen.regen_jobs import (
+    RegenCancelled,
     RegenLost,
     claim_regen,
     fail_regen,
+    finish_cancelled,
+    is_cancel_requested,
     mark_regen_success,
     touch_regen,
 )
 from generation.regen.regen_rag import build_regen_material
 from llm.utils.ova_runtime import theme_of
-from models import Ova, OvaPhase, OvaVersion
+from models import Ova, OvaJob, OvaPhase, OvaVersion
 from ova import (
     ensure_version_exists,
     get_active_version,
@@ -52,6 +55,19 @@ def _ova_theme(phases: list) -> dict | None:
     return None
 
 
+def _ova_topic_area(db: Session, ova_id) -> str:
+    """Área temática con la que se generó el OVA (foto en los params de su job); "" si no tiene."""
+    try:
+        with db.begin_nested():  # savepoint: un fallo aquí no tumba la regeneración
+            params = db.execute(
+                select(OvaJob.params).where(OvaJob.ova_id == ova_id).order_by(OvaJob.created_at.desc()).limit(1)
+            ).scalar_one_or_none()
+    except Exception:
+        logger.warning("no se pudo leer el área temática del OVA; se regenera sin ella", ova_id=str(ova_id))
+        return ""
+    return str((params or {}).get("topic_area") or "")
+
+
 def _finalize_edit(job_id: str, ova_id: str) -> None:
     """Regenera las fases elegidas, crea la versión nueva y el SCORM.
 
@@ -74,6 +90,13 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             db.rollback()
             logger.warning("regen sin contenido", ova_id=str(ova_id), job_id=job_id)
             if fail_regen(job_id, str(exc)):
+                _release_ova(db, ova_id)
+        except RegenCancelled:
+            # El docente canceló: no se escribe versión (lo ya editado se descarta)
+            # y el OVA vuelve a «listo» con su versión actual intacta.
+            db.rollback()
+            logger.info("regen cancelada", ova_id=str(ova_id), job_id=job_id)
+            if finish_cancelled(job_id):
                 _release_ova(db, ova_id)
         except RegenLost:
             # Otro proceso la dio por interrumpida (y liberó el OVA) mientras este
@@ -104,6 +127,7 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
     if not ova:
         raise LookupError("OVA no encontrado")
 
+    area = _ova_topic_area(db, ova_id)
     llm_config = _owner_llm_config(db, ova.user_id)
     image_settings = _owner_image_settings(db, ova.user_id)
 
@@ -137,6 +161,11 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
     # usaría la misma sesión desde varios hilos (una sesión no es thread-safe).
     db.expire_on_commit = False
     db.commit()
+    def should_stop() -> bool:
+        return beat.lost.is_set() or is_cancel_requested(job_id)
+
+    if is_cancel_requested(job_id):
+        raise RegenCancelled(job_id)
     regen_content = regen_phases_parallel(
         to_regen,
         prompt,
@@ -145,7 +174,11 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
         image_settings=image_settings,
         contexto=material.contexto,
         fallback_theme=_ova_theme(current_phases),
+        should_stop=should_stop,
+        area=area,
     )
+    if not beat.lost.is_set() and is_cancel_requested(job_id):
+        raise RegenCancelled(job_id)
     if beat.lost.is_set() or not touch_regen(job_id, step="persist"):
         raise RegenLost(job_id)
     # Antes se cerraba como «success» con una versión idéntica: un recurso

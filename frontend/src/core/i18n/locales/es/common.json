@@ -1,0 +1,16 @@
+{
+  "language": {
+    "label": "Idioma de la interfaz",
+    "hint": "Se guarda en este navegador."
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "delete": "Eliminar",
+    "retry": "Reintentar",
+    "back": "Volver",
+    "continue": "Continuar",
+    "confirm": "Confirmar"
+  }
+}

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { Button } from "@/core/components/ui/button";
 
@@ -8,15 +10,17 @@ interface UsersEmptyProps {
 
 /** Vacío de usuarios: sin registros o sin coincidencias para el criterio. */
 export function UsersEmpty({ isFiltering, onClearFilters }: Readonly<UsersEmptyProps>) {
+  const { t } = useTranslation("admin");
+
   if (isFiltering) {
     return (
       <EmptyState
         icon="magnifying-glass-minus"
-        title="Sin resultados"
-        description="No hay coincidencias para ese criterio."
+        title={t("users.empty.filterTitle")}
+        description={t("users.empty.filterDesc")}
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            Quitar filtros
+            {t("users.empty.clearFilters")}
           </Button>
         }
       />
@@ -26,8 +30,8 @@ export function UsersEmpty({ isFiltering, onClearFilters }: Readonly<UsersEmptyP
   return (
     <EmptyState
       icon="users-three"
-      title="No hay usuarios"
-      description="Cuando se registren en la plataforma aparecerán aquí."
+      title={t("users.empty.emptyTitle")}
+      description={t("users.empty.emptyDesc")}
     />
   );
 }

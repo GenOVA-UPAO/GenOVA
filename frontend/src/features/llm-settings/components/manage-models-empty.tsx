@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { Button } from "@/core/components/ui/button";
 
@@ -9,14 +11,16 @@ interface ManageModelsEmptyProps {
 }
 
 export function ManageModelsEmpty({ kind, onAddKey, onClearFilters }: Readonly<ManageModelsEmptyProps>) {
+  const { t } = useTranslation("llm-settings");
+
   if (kind === "keys") {
     return (
       <EmptyState
         className="m-5 border-0"
         icon="lock"
-        title="Aún no tienes claves API"
-        description="Añade la clave de un proveedor para ver sus modelos y elegir tus favoritos."
-        action={<Button onClick={onAddKey}>Añadir clave API</Button>}
+        title={t("catalog.emptyNoKeysTitle")}
+        description={t("catalog.emptyNoKeysDesc")}
+        action={<Button onClick={onAddKey}>{t("catalog.addApiKey")}</Button>}
       />
     );
   }
@@ -25,9 +29,9 @@ export function ManageModelsEmpty({ kind, onAddKey, onClearFilters }: Readonly<M
       <EmptyState
         className="m-5 border-0"
         icon="squares-four"
-        title="El catálogo está vacío"
-        description="Ningún proveedor conectado ha dado su lista de modelos. Conecta uno o revisa su clave en Credenciales."
-        action={<Button onClick={onAddKey}>Ir a Credenciales</Button>}
+        title={t("catalog.emptyCatalogTitle")}
+        description={t("catalog.emptyCatalogDesc")}
+        action={<Button onClick={onAddKey}>{t("catalog.goToCredentials")}</Button>}
       />
     );
   }
@@ -35,13 +39,14 @@ export function ManageModelsEmpty({ kind, onAddKey, onClearFilters }: Readonly<M
     <EmptyState
       className="m-5 border-0"
       icon="magnifying-glass-minus"
-      title="Ningún modelo coincide"
-      description="Prueba con otra búsqueda o quita algún filtro."
+      title={t("catalog.emptyNoMatchTitle")}
+      description={t("catalog.emptyNoMatchDesc")}
       action={
         <Button variant="outline" onClick={onClearFilters}>
-          Quitar filtros
+          {t("catalog.clearFilters")}
         </Button>
       }
     />
   );
 }
+

@@ -16,19 +16,23 @@ interface ResetPasswordFormProps {
   onSubmit: FormSubmitHandler;
 }
 
+import { useTranslation } from "react-i18next";
+
 export function ResetPasswordForm({
   form,
   submitting,
   error,
   onSubmit,
 }: Readonly<ResetPasswordFormProps>) {
+  const { t } = useTranslation("auth");
+
   return (
     <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
       <AuthField
         id="new_password"
-        label="Nueva contraseña"
+        label={t("reset.newPassword")}
         error={form.errorFor("new_password")}
-        hint="Usa al menos 8 caracteres con letras y números."
+        hint={t("common.passwordHint")}
       >
         <PasswordInput
           id="new_password"
@@ -36,7 +40,7 @@ export function ResetPasswordForm({
           {...form.bind("new_password", { hint: true })}
         />
       </AuthField>
-      <AuthField id="confirm_password" label="Repite la nueva contraseña" error={form.errorFor("confirm_password")}>
+      <AuthField id="confirm_password" label={t("reset.repeatPassword")} error={form.errorFor("confirm_password")}>
         <PasswordInput
           id="confirm_password"
           autoComplete="new-password"
@@ -45,7 +49,7 @@ export function ResetPasswordForm({
       </AuthField>
       {error ? <ServerAlert>{error}</ServerAlert> : null}
       <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
-        {submitting ? "Guardando…" : "Guardar contraseña"}
+        {submitting ? t("reset.submitting") : t("reset.submit")}
       </Button>
     </form>
   );

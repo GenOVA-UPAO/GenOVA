@@ -1,6 +1,8 @@
+import { useTranslation } from "react-i18next";
+
+import { formatDateTime } from "@/core/i18n/format";
 import { cn } from "@/core/lib/cn";
 
-import { formatShortDate } from "../../lib/format-date";
 import type { PhaseMicroVersion } from "../../lib/version-history.types";
 
 interface Props {
@@ -11,8 +13,9 @@ interface Props {
 
 /** Lista de versiones de un recurso: una fila por versión, la elegida resaltada. */
 export function PhaseVersionList({ versions, selectedId, onSelect }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   return (
-    <ul aria-label="Versiones" className="divide-y divide-border overflow-hidden rounded-xl border border-border md:max-h-[45vh] md:overflow-y-auto">
+    <ul aria-label={t("resource.listLabel")} className="divide-y divide-border overflow-hidden rounded-xl border border-border md:max-h-[45vh] md:overflow-y-auto">
       {versions.map((version) => {
         const active = version.id === selectedId;
         return (
@@ -28,8 +31,8 @@ export function PhaseVersionList({ versions, selectedId, onSelect }: Readonly<Pr
                 active ? "bg-primary/10 font-semibold text-foreground" : "hover:bg-muted",
               )}
             >
-              <span>Versión {version.minor_number}</span>
-              {version.created_at && <span className="text-xs font-normal text-muted-foreground">{formatShortDate(version.created_at)}</span>}
+              <span>{t("resource.listItem", { number: version.minor_number })}</span>
+              {version.created_at && <span className="text-xs font-normal text-muted-foreground">{formatDateTime(version.created_at)}</span>}
             </button>
           </li>
         );

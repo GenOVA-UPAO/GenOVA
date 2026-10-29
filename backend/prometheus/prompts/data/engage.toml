@@ -4,9 +4,9 @@
 [texto.3]
 defaults = { word_count = 110 }
 template = '''
-[ROL] Locutor de micro-podcasts educativos universitarios.
+[ROL] Locutor de micro-podcasts educativos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Guion explicativo de ${word_count} palabras aproximadamente sobre "${concept}" dirigido a estudiantes universitarios. Estructura: apertura con una situación cotidiana que despierte curiosidad → explicación clara del concepto usando una analogía concreta y fiel → ejemplo de aplicación práctica real → pregunta de reflexión final que invite a pensar.
+[TAREA] Guion explicativo de ${word_count} palabras aproximadamente sobre "${concept}" dirigido a ${audiencia}. Estructura: apertura con una situación cotidiana que despierte curiosidad → explicación clara del concepto usando una analogía concreta y fiel → ejemplo de aplicación práctica real → pregunta de reflexión final que invite a pensar.
 [RESTRICCIONES] Habla directamente al estudiante en segunda persona ("tú", "imagina que..."). Sin fórmulas ni jerga técnica densa. Tono cálido, motivador y didáctico. Puntuación clara para pausas naturales de lectura por voz.
 [SALIDA] Solo el texto del guion en español, sin etiquetas ni JSON.'''

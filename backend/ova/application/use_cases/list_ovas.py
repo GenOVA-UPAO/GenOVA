@@ -10,9 +10,12 @@ from ova.domain.catalog import OvaListFilter
 
 
 def _filters(data: OvaListQuery) -> OvaListFilter:
+    # «Mis OVAs» son los propios, también para el admin; la vista de toda la
+    # plataforma es explícita (`all_users`) y solo existe para él.
+    everyone = data.actor.is_admin and data.all_users
     return OvaListFilter(
-        owner_id=None if data.actor.is_admin else data.actor.id,
-        include_owner=data.actor.is_admin,
+        owner_id=None if everyone else data.actor.id,
+        include_owner=everyone,
         search=data.search,
         status=data.status,
         page=data.page,

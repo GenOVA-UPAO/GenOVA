@@ -49,6 +49,8 @@ class OvaDuplicateSource:
     status: str
     prompt: str
     phases: tuple[OvaPhase, ...]
+    # Ajustes que la copia hereda (tema de paquete y metadatos educativos).
+    settings: dict | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +67,14 @@ class Ova:
     updated_at: datetime | None
     deleted_at: datetime | None
     owner: OvaOwner | None = None
+    license: str = "CC BY-SA 4.0"
+    language: str = "es"
+    keywords: tuple[str, ...] = ()
+    educational_level: str = ""
+    audience: str = ""
+    typical_learning_time: str = ""
+    author: str = ""
+    package_theme: str = "upao"
 
     def is_accessible_by(self, actor: OvaActor) -> bool:
         return can_read_ova(self.owner_id, actor)

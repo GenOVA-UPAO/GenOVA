@@ -83,8 +83,10 @@ Sink = Callable[[str, float, str], ApplyReport]
 class Claims(Protocol):
     """Reclamo entre procesos: solo un proceso espera cada trabajo."""
 
-    def acquire(self, job_id: str) -> bool: ...
-    def release(self, job_id: str) -> None: ...
+    def acquire(self, job_id: str) -> bool:
+        raise NotImplementedError
+    def release(self, job_id: str) -> None:
+        raise NotImplementedError
 
 
 _sink: Sink | None = None

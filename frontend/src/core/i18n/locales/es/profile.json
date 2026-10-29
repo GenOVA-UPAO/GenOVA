@@ -1,0 +1,151 @@
+{
+  "page": {
+    "loadError": "No se pudo cargar el perfil",
+    "emptyTitle": "No hay datos de perfil",
+    "emptyDescription": "Vuelve a cargar tu información para continuar.",
+    "retry": "Reintentar"
+  },
+  "header": {
+    "defaultTitle": "Mi perfil",
+    "memberSince": "Miembro desde {{date}}"
+  },
+  "role": {
+    "usuario": "Usuario",
+    "administrador": "Administrador"
+  },
+  "tabs": {
+    "info": "Información",
+    "config": "Configuración",
+    "security": "Seguridad"
+  },
+  "skeleton": {
+    "loading": "Cargando perfil"
+  },
+  "language": {
+    "title": "Idioma",
+    "description": "Elige el idioma de la interfaz. Se guarda en este navegador y se aplica a todas las pantallas de GenOVA."
+  },
+  "form": {
+    "title": "Datos personales",
+    "description": "Tu nombre y correo aparecen en los OVAs que creas y en los listados de la plataforma.",
+    "discard": "Descartar cambios",
+    "save": "Guardar cambios"
+  },
+  "fields": {
+    "fullName": "Nombre completo",
+    "email": "Correo electrónico",
+    "universityId": "Código universitario (UPAO)",
+    "universityIdHint": "Solo números, sin espacios ni guiones.",
+    "gender": "Sexo",
+    "genderMale": "Masculino",
+    "genderFemale": "Femenino",
+    "genderOther": "Otro o prefiero no decirlo",
+    "phone": "Teléfono de contacto",
+    "phoneHint": "Con prefijo de país, por ejemplo +51987285992."
+  },
+  "emailChange": {
+    "currentPassword": "Contraseña actual",
+    "currentPasswordHint": "Necesaria para cambiar el correo de tu cuenta.",
+    "passwordRequired": "Ingresa tu contraseña actual para cambiar el correo.",
+    "totpRequired": "Ingresa el código TOTP de 6 dígitos."
+  },
+  "totpField": {
+    "label": "Código de verificación (2FA)",
+    "hint": "El de tu app de autenticación."
+  },
+  "pendingEmail": {
+    "notice": "Tu correo actual sigue vigente. Enviamos un código a <strong>{{email}}</strong>: escríbelo aquí para completar el cambio.",
+    "codeLabel": "Código de confirmación",
+    "confirm": "Confirmar correo",
+    "failed": "No se pudo confirmar."
+  },
+  "password": {
+    "title": "Contraseña",
+    "description": "Usa una contraseña que no utilices en otros sitios.",
+    "current": "Contraseña actual",
+    "new": "Nueva contraseña",
+    "newHint": "Al menos 8 caracteres, con letras y números.",
+    "confirm": "Confirma la nueva contraseña",
+    "submit": "Actualizar contraseña",
+    "success": "Contraseña actualizada con éxito.",
+    "updateError": "Error al actualizar la contraseña."
+  },
+  "delete": {
+    "title": "Eliminar cuenta",
+    "description": "Se desactiva tu cuenta y se anonimizan tus datos personales. Tus OVAs se conservan sin tu autoría. No se puede deshacer.",
+    "button": "Eliminar cuenta",
+    "modalTitle": "¿Eliminar tu cuenta?",
+    "modalDescription": "Se desactivará tu cuenta y se anonimizarán tus datos personales. Tus OVAs se conservan, pero sin tu autoría. Esta acción no se puede deshacer.",
+    "passwordLabel": "Escribe tu contraseña para confirmar",
+    "passwordRequired": "Escribe tu contraseña para confirmar.",
+    "cancel": "Cancelar",
+    "error": "Error al eliminar la cuenta."
+  },
+  "totp": {
+    "title": "Verificación en dos pasos",
+    "idleDescription": "Además de tu contraseña, al entrar se te pedirá un código de una app autenticadora como Google Authenticator o Authy.",
+    "activate": "Activar verificación en dos pasos",
+    "enabledDescription": "Al entrar, además de tu contraseña, se te pide un código de tu app autenticadora.",
+    "enabled": "Activada",
+    "disable": "Desactivar",
+    "disableCodeLabel": "Código de tu app",
+    "disableCodeHint": "El código de 6 dígitos que muestra ahora tu app autenticadora.",
+    "disableCodeError": "Escribe los 6 dígitos del código.",
+    "disableSubmit": "Desactivar verificación",
+    "cancel": "Cancelar",
+    "setupTitle": "Configura tu app autenticadora",
+    "setupDescription": "Añade GenOVA a tu app autenticadora y confirma con el código que genera.",
+    "setupCodeLabel": "Código de 6 dígitos de tu app",
+    "setupConfirm": "Confirmar y activar",
+    "codeInvalid": "Escribe los 6 dígitos que muestra tu app.",
+    "connectError": "No se pudo conectar con el servidor.",
+    "enabledToast": "Verificación en dos pasos activada.",
+    "disabledToast": "Verificación en dos pasos desactivada.",
+    "setupStartError": "Error al iniciar la configuración.",
+    "wrongCode": "Código incorrecto.",
+    "step1": "Escanea el código con tu app (Google Authenticator, Authy, Microsoft Authenticator…).",
+    "step2": "Escribe abajo el código de 6 dígitos que aparece en la app.",
+    "manualHint": "¿No puedes escanearlo? Añade la cuenta a mano con esta clave:",
+    "secretLabel": "Clave secreta",
+    "copyKey": "Copiar clave",
+    "showUri": "Ver la URI de aprovisionamiento",
+    "uriLabel": "URI de aprovisionamiento",
+    "copyUri": "Copiar URI",
+    "qrGenerating": "Generando el código QR",
+    "qrTitle": "Código QR para añadir GenOVA a tu app autenticadora"
+  },
+  "copy": {
+    "copied": "Copiado"
+  },
+  "backupCodes": {
+    "title": "Códigos de respaldo",
+    "description": "Guárdalos ahora en un lugar seguro: no se volverán a mostrar. Cada uno sirve una vez si pierdes el acceso a tu app.",
+    "copied": "Copiados",
+    "copyAll": "Copiar códigos",
+    "liveCopied": "Códigos copiados al portapapeles"
+  },
+  "validation": {
+    "fullNameRequired": "El nombre completo es requerido.",
+    "fullNameMin": "El nombre debe tener al menos 3 caracteres.",
+    "emailInvalid": "Ingresa un correo electrónico válido.",
+    "universityIdDigits": "El código solo debe contener números.",
+    "universityIdMin": "El código debe ser mayor o igual a 1.",
+    "phoneFormat": "El teléfono solo debe contener dígitos y el signo +.",
+    "currentPasswordRequired": "La contraseña actual es requerida.",
+    "newPasswordRequired": "La nueva contraseña es requerida.",
+    "passwordMin": "Debe tener al menos 8 caracteres.",
+    "passwordFormat": "Debe contener letras y números.",
+    "confirmRequired": "Confirma tu nueva contraseña.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "deletePasswordRequired": "La contraseña es requerida para confirmar"
+  },
+  "api": {
+    "loadProfile": "No se pudo cargar la información de perfil.",
+    "updateProfile": "Error al actualizar el perfil.",
+    "invalidCode": "Código inválido o expirado."
+  },
+  "toast": {
+    "saved": "Datos personales guardados.",
+    "updateError": "Error al actualizar."
+  }
+}

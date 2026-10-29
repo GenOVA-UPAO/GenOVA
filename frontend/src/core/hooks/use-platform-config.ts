@@ -27,6 +27,7 @@ export function useSavePlatformKey() {
       queryClient.setQueryData<PlatformConfigResponse>(platformConfigKey, (prev) => ({
         ...prev,
         platform_config: result.platform_config ?? {},
+        checks: result.checks,
       }));
     },
   });

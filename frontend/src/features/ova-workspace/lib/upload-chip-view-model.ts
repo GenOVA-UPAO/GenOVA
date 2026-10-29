@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import type { UploadsPropBag } from "../components/editor/workspace-chat-panel.types";
 import type { UploadItem, UploadsProps } from "./upload-types";
 
@@ -9,7 +11,7 @@ export function validateFileAdd(
   max = UPLOAD_MAX_FILES,
 ): string | null {
   if (existingCount + incomingCount > max) {
-    return `Solo se permiten hasta ${String(max)} archivos en total.`;
+    return i18n.t("workspace:solo_se_permiten_hasta_value_archivos_en_total", { p0: String(max) });
   }
   return null;
 }

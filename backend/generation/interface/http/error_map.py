@@ -34,5 +34,5 @@ def generation_error_to_response(err: GenerationError) -> JSONResponse:
     status_code = _STATUS_BY_ERROR.get(type(err), status.HTTP_400_BAD_REQUEST)
     return JSONResponse(
         status_code=status_code,
-        content={"error": err.code, "message": str(err)},
+        content={"error": err.code, "message": err.public_message},
     )

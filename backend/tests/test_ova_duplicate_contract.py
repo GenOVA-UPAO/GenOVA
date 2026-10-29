@@ -1,6 +1,7 @@
 """Pruebas de contrato para la duplicación de OVA (sobres HTTP 201/404/403/409, estado y título)."""
 
 from collections.abc import Generator
+from dataclasses import replace
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
@@ -31,6 +32,8 @@ class DummyDuplicationRepository:
         self.added_phases: list[dict[str, Any]] = []
         self.current_versions: list[tuple[str, str]] = []
         self.committed: list[str] = []
+        self.packages: list[tuple[str, str, str]] = []
+        self.applied_settings: tuple[str, dict] | None = None
 
     def get_duplicate_source(self, ova_id: str) -> OvaDuplicateSource | None:
         if self.source is not None and ova_id == "ova-source-1":
@@ -67,6 +70,12 @@ class DummyDuplicationRepository:
     def set_current_version(self, ova_id: str, version_id: str) -> None:
         self.current_versions.append((ova_id, version_id))
 
+    def apply_settings(self, ova_id: str, settings: dict) -> None:
+        self.applied_settings = (ova_id, settings)
+
+    def build_package(self, ova_id: str, version_id: str, user_id: str) -> None:
+        self.packages.append((ova_id, version_id, user_id))
+
     def commit(self, operation: str) -> None:
         self.committed.append(operation)
 
@@ -89,7 +98,7 @@ def _build_source(
 # --- Pruebas de caso de uso unitario ---
 
 
-def test_duplicar_ova_nace_estrictamente_en_estado_borrador():
+def test_duplicar_ova_listo_nace_listo_y_con_su_paquete():
     repo = DummyDuplicationRepository(source=_build_source(owner_id="user-1"))
     use_case = DuplicateOva(repo=repo)
 
@@ -99,7 +108,32 @@ def test_duplicar_ova_nace_estrictamente_en_estado_borrador():
 
     assert result.id == "ova-duplicate-id"
     assert len(repo.created_ovas) == 1
+    assert repo.created_ovas[0]["status"] == "listo"
+    # El SCORM se genera al duplicar: la descarga queda habilitada.
+    assert repo.packages == [("ova-duplicate-id", "version-duplicate-id", "user-1")]
+
+
+@pytest.mark.parametrize("status", ["borrador", "error"])
+def test_duplicar_ova_que_no_esta_listo_nace_en_borrador_sin_paquete(status):
+    repo = DummyDuplicationRepository(source=_build_source(status=status))
+    DuplicateOva(repo=repo).execute(
+        DuplicateOvaInput(ova_id="ova-source-1", actor=OvaActor(id="user-1", is_admin=False))
+    )
     assert repo.created_ovas[0]["status"] == "borrador"
+    assert repo.packages == []
+
+
+def test_duplicar_ova_hereda_tema_de_paquete_y_metadatos():
+    source = _build_source()
+    source = replace(source, settings={"package_theme": "original", "educational_level": "secundaria"})
+    repo = DummyDuplicationRepository(source=source)
+    DuplicateOva(repo=repo).execute(
+        DuplicateOvaInput(ova_id="ova-source-1", actor=OvaActor(id="user-1", is_admin=False))
+    )
+    assert repo.applied_settings == (
+        "ova-duplicate-id",
+        {"package_theme": "original", "educational_level": "secundaria"},
+    )
 
 
 def test_duplicar_ova_asigna_sufijo_copia():

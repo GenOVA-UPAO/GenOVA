@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
@@ -23,16 +25,17 @@ export function UserFallbackSummary({
   num,
   task,
 }: Readonly<UserFallbackSummaryProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   if (fallbacks.length === 0) {
     return (
-      <p className="text-xs text-muted-foreground">Aún no tienes modelos de respaldo propios.</p>
+      <p className="text-xs text-muted-foreground">{t("tasks.userFallbackEmpty")}</p>
     );
   }
   const visible = fallbacks.slice(0, 4);
   const overflow = Math.max(0, fallbacks.length - 4);
   return (
-    <ol aria-label="Tus modelos de respaldo" className="flex flex-wrap items-center gap-1.5">
+    <ol aria-label={t("tasks.userFallbackTitle")} className="flex flex-wrap items-center gap-1.5">
       {visible.map((item, index) => (
         <li
           key={String(index)}
@@ -46,7 +49,7 @@ export function UserFallbackSummary({
           </span>
           <button
             type="button"
-            aria-label={`Quitar ${chipLabel(item, models)}`}
+            aria-label={t("tasks.removeAria", { row: chipLabel(item, models) })}
             onClick={() => {
               store.removeFallback(task, index);
             }}
@@ -58,9 +61,10 @@ export function UserFallbackSummary({
       ))}
       {overflow > 0 ? (
         <li className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-          y {overflow} más
+          {t("tasks.andMore", { count: overflow })}
         </li>
       ) : null}
     </ol>
   );
 }
+

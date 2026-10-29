@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { getAdminGuardrails, saveAdminGuardrails } from "@/core/services/platform-settings.api";
@@ -15,6 +16,7 @@ import { errorMessage } from "./error-message";
 import { adminLlmKeys } from "./query-keys";
 
 export function useGuardrails() {
+  const { t } = useTranslation("llm-settings");
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: adminLlmKeys.guardrails,
@@ -29,16 +31,16 @@ export function useGuardrails() {
     onSuccess: async () => {
       setLocalDraft(null);
       await queryClient.invalidateQueries({ queryKey: adminLlmKeys.guardrails });
-      toast.success("Guardrails guardados.");
+      toast.success(t("guardrails.saved"));
     },
     onError: (err: unknown) => {
-      toast.error(errorMessage(err, "No se pudo guardar la configuración de guardrails."));
+      toast.error(errorMessage(err, t("guardrails.saveError")));
     },
   });
 
   return {
     loading: query.isLoading,
-    error: query.error ? errorMessage(query.error, "No se pudo cargar la configuración de guardrails.") : "",
+    error: query.error ? errorMessage(query.error, t("guardrails.loadError")) : "",
     config,
     draft,
     saving: saveMutation.isPending,

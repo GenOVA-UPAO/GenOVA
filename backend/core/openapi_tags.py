@@ -25,6 +25,8 @@ TAG_ANALITICA = "Analítica"
 TAG_ADMIN_USUARIOS = "Admin · Usuarios"
 TAG_ADMIN_ROLES = "Admin · Roles"
 TAG_ADMIN_PLATAFORMA = "Admin · Plataforma"
+TAG_LTI = "LTI 1.3"
+TAG_ADMIN_LTI = "Admin · LTI 1.3"
 
 OPENAPI_TAGS: list[dict[str, str]] = [
     {
@@ -112,6 +114,17 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "description": (
             "Configuración global: modelos LLM, nodos del motor, modo de registro y refresco "
             "del catálogo."
+        ),
+    },
+    {
+        "name": TAG_ADMIN_LTI,
+        "description": "Plataformas LMS registradas para LTI 1.3 y datos de GenOVA como herramienta.",
+    },
+    {
+        "name": TAG_LTI,
+        "description": (
+            "Endpoints que llama el LMS: JWKS, login OIDC, launch, Deep Linking, reproductor "
+            "de la OVA y envío de notas (AGS)."
         ),
     },
 ]

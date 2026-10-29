@@ -1,3 +1,6 @@
+import i18n from "i18next";
+
+import { cancelledChatPatch } from "./regen-cancel";
 import type { RegenChatMessage, RegenRagReport } from "./regen-chat";
 import { finishChatPatch, progressChatPatch } from "./regen-chat";
 
@@ -18,6 +21,7 @@ interface PollDeps {
   onTerminal: () => void;
   onSuccess: () => void;
   onError: (msg: string) => void;
+  onCancelled?: () => void;
   schedule: (jobId: string) => void;
   fetchProgress: (jobId: string) => Promise<RegenProgressDto>;
 }
@@ -35,6 +39,13 @@ async function handleTerminalProgress(
   d: PollDeps,
   assistantId: string | null,
 ): Promise<void> {
+  if (progress.status === "cancelled") {
+    // Cancelada por el docente: no es un fallo, solo se avisa en el hilo.
+    if (assistantId) await d.patchChat(assistantId, cancelledChatPatch());
+    d.onTerminal();
+    d.onCancelled?.();
+    return;
+  }
   if (assistantId) {
     await d.patchChat(
       assistantId,
@@ -43,7 +54,11 @@ async function handleTerminalProgress(
   }
   d.onTerminal();
   if (progress.status === "success") d.onSuccess();
-  else d.onError("La regeneración falló.");
+  else d.onError(i18n.t("workspace:la_regeneracion_fallo"));
+}
+
+function isFinished(status: string | undefined): boolean {
+  return status === "success" || status === "error" || status === "cancelled";
 }
 
 /** Un tick de polling de regeneración; actualiza chat y reprograma si sigue. */
@@ -58,7 +73,7 @@ export async function handleRegenPollTick(jobId: string, d: PollDeps): Promise<v
     const asstId = d.getAssistantId();
     if (asstId) await d.patchChat(asstId, progressChatPatch(percentage, stage));
 
-    if (progress.status === "success" || progress.status === "error") {
+    if (isFinished(progress.status)) {
       await handleTerminalProgress(progress, d, asstId);
       return;
     }
@@ -67,9 +82,9 @@ export async function handleRegenPollTick(jobId: string, d: PollDeps): Promise<v
     if (!d.mounted()) return;
     await patchAssistantChat(d, {
       status: "error",
-      text: "Error al consultar el progreso de regeneración.",
+      text: i18n.t("workspace:error_al_consultar_el_progreso_de_regeneracion"),
     });
     d.onTerminal();
-    d.onError("Error al consultar el progreso de regeneración.");
+    d.onError(i18n.t("workspace:error_al_consultar_el_progreso_de_regeneracion"));
   }
 }

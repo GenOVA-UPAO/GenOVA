@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { apiFetch } from "@/core/lib/http";
 
 interface VerifyResponse {
@@ -16,7 +18,7 @@ export async function verifyEmail(token: string): Promise<VerifyResponse> {
   });
   const data = await readMessage(res);
   if (!res.ok) {
-    throw new Error(data.message ?? "No se pudo verificar el correo.");
+    throw new Error(data.message ?? t("auth:verify.failed"));
   }
   return data;
 }
@@ -27,5 +29,5 @@ export async function resendVerification(email: string): Promise<string> {
     body: JSON.stringify({ email }),
   });
   const data = await readMessage(res);
-  return data.message ?? "Si el correo está pendiente de verificar, te enviamos un nuevo enlace.";
+  return data.message ?? t("auth:notice.resendDefault");
 }

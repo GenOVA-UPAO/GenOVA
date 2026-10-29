@@ -25,6 +25,7 @@ from llm.catalog.catalog_refresh import (
     get_provider_status,
     refresh_catalog,
 )
+from llm.catalog.key_check_store import platform_checks
 from llm.catalog.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
@@ -109,6 +110,7 @@ def get_llm_settings(
     request: Request,
     current_user: User = Depends(get_current_user),
     users: UsersUseCases = Depends(build_users),
+    db=Depends(get_db),
 ):
     """Effective per-type config (user override or default) + filtered catalog +
     enabled_models + full catalog (search/category/paginated).
@@ -158,7 +160,7 @@ def get_llm_settings(
         "platform": _platform_config(),
         "enabled_models": current_user.enabled_models or [],
         "timeout_bounds": [TIMEOUT_MIN, TIMEOUT_MAX],
-        "catalog_status": get_provider_status(),
+        "catalog_status": _catalog_status(db),
         # Estado de las listas pedidas con las claves propias (None para el admin).
         "own_catalog_status": _own_status(current_user, uc, merged_full),
     }
@@ -166,6 +168,12 @@ def get_llm_settings(
 
 def _own_status(user: User, uc: UserCatalog, merged_full: list[dict]) -> dict | None:
     return None if _is_admin(user) else uc.status(merged_full)
+
+
+def _catalog_status(db) -> dict:
+    checks = platform_checks(db, TEXT_PROVIDERS)
+    return {p: {**entry, "credential_code": checks.get(p, {}).get("code", "unchecked")}
+            for p, entry in get_provider_status().items()}
 
 
 @router.post(
@@ -188,7 +196,7 @@ def refresh_llm_catalog(
     uc = _user_catalog(current_user, force=True)
     merged_full = uc.merge_full(get_full_catalog_entries())
     return {
-        "catalog_status": get_provider_status(),
+        "catalog_status": _catalog_status(db),
         "own_catalog_status": _own_status(current_user, uc, merged_full),
     }
 

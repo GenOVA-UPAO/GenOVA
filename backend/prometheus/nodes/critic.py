@@ -20,6 +20,13 @@ logger = structlog.get_logger(__name__)
 
 
 def critic_node(state: dict) -> dict:
+    from ova_engine.domain_context import area_scope
+
+    with area_scope(state.get("topic_area")):
+        return _critic_node(state)
+
+
+def _critic_node(state: dict) -> dict:
     phase_results = state.get("current_phase_results", [])
     last_phase = state.get("last_phase", "")
 

@@ -1,4 +1,6 @@
+import type { TFunction } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -14,34 +16,33 @@ interface Props {
   onClose: () => void;
 }
 
-function themeTitle(draft: OvaTheme): string {
-  if (draft.color === "custom" && draft.palette) return `Paleta ${draft.palette.name}`;
-  if (draft.color === "upao" && draft.design === "upao") return "Marca institucional UPAO";
-  if (draft.color === "free" && draft.design === "free") return "La IA elige colores y diseño";
-  return "Combinado";
+function themeTitle(draft: OvaTheme, t: TFunction): string {
+  if (draft.color === "custom" && draft.palette) return t("workspace:paleta_value", { p0: draft.palette.name });
+  if (draft.color === "upao" && draft.design === "upao") return t("workspace:marca_institucional_upao");
+  if (draft.color === "free" && draft.design === "free") return t("workspace:la_ia_elige_colores_y_diseno");
+  return t("workspace:combinado");
 }
 
 export default function OvaThemeModal({ theme, onChange, onClose }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState<OvaTheme>(theme);
   return (
     <WorkspaceModal
-      title="Tema visual del OVA"
-      description={themeTitle(draft)}
+      title={t("workspace:tema_visual_del_ova")}
+      description={themeTitle(draft, t)}
       size="md"
       onClose={onClose}
       footer={
         <ModalActions>
           <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
+            {t("workspace:cancelar")} </Button>
           <Button
             onClick={() => {
               onChange(draft);
               onClose();
             }}
           >
-            Aplicar tema
-          </Button>
+            {t("workspace:aplicar_tema")} </Button>
         </ModalActions>
       }
     >

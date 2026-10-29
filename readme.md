@@ -595,6 +595,20 @@ Hay redirecciones de URLs antiguas (`/crear-ova` → `/crear`, `/modelos` → `/
 - **Sin secretos hardcodeados.** `auth/infrastructure/email_adapters.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
 - **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 
+## Monitoreo de errores (Sentry, opcional)
+
+Sin DSN no se inicializa nada, no hay llamadas de red y el bundle no crece. Pasos:
+
+1. Crea la cuenta en [sentry.io](https://sentry.io) (plan gratuito).
+2. Crea dos proyectos: uno **FastAPI** (backend) y uno **React** (frontend). Copia el DSN de cada uno (Settings → Client Keys).
+3. Pon cada DSN donde corresponde (nunca en el repo):
+   - Render (servicio `genova-backend`) → variable `SENTRY_DSN`.
+   - Vercel (proyecto del frontend) → variable `VITE_SENTRY_DSN` y redeploy.
+   - Opcionales: `SENTRY_ENVIRONMENT` / `VITE_SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` (0 por defecto), `VITE_SENTRY_RELEASE`. La release del backend sale de `RENDER_GIT_COMMIT`.
+4. Activa las alertas por correo: en cada proyecto, Alerts → Create Alert → "Issues" → "A new issue is created" → acción "Send a notification to Member/Team" (correo).
+
+Privacidad: `send_default_pii=False`, sin cuerpos de petición, sin session replay; `before_send` / `beforeSend` eliminan cabeceras Authorization y Cookie, contraseñas, tokens y claves `sk-…`. Código: `backend/core/sentry_setup.py` y `frontend/src/core/lib/observability/sentry.ts`.
+
 ## Endpoints de salud
 
 ```

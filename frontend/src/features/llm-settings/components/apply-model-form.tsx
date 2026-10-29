@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -32,6 +33,7 @@ export function ApplyModelForm({
   onApply,
   onClose,
 }: Readonly<ApplyModelFormProps>) {
+  const { t } = useTranslation(["llm-settings", "common"]);
   const targets = applyTargets(tasks, source);
   const origin = draft[source];
   const sourceFallbacks = origin.fallbacks.filter((entry) => entry.provider && entry.model_id);
@@ -41,19 +43,19 @@ export function ApplyModelForm({
   const [picked, setPicked] = useState<string[]>(targets);
   const chosen = preview.filter((item) => picked.includes(item.task) && !item.unchanged);
   const name = (entry: Entry) =>
-    entry.provider && entry.model_id ? chipLabel(entry, models) : "Sin modelo";
+    entry.provider && entry.model_id ? chipLabel(entry, models) : t("tasks.noModel");
   const modelName = name(origin.default);
 
   return (
     <>
       <DialogHeader className="pr-8">
-        <DialogTitle>Usar {modelName} en otras tareas</DialogTitle>
+        <DialogTitle>{t("tasks.useInOtherTasksTitle", { model: modelName })}</DialogTitle>
         <DialogDescription>
-          Elige a qué tareas de texto se copia. Nada cambia hasta que pulses «Guardar cambios».
+          {t("tasks.applyToTasksDesc")}
         </DialogDescription>
       </DialogHeader>
       <fieldset className="space-y-2">
-        <legend className="sr-only">Tareas</legend>
+        <legend className="sr-only">{t("tasks.tasksTitle")}</legend>
         <ul className="divide-y divide-border rounded-xl border border-border">
           {preview.map((item) => (
             <ApplyModelRow
@@ -82,11 +84,11 @@ export function ApplyModelForm({
         {/* En móvil el pie apila los botones al revés: el aviso va el último para quedar encima. */}
         {chosen.length === 0 ? (
           <p className="text-xs text-muted-foreground max-sm:order-last sm:mr-auto sm:self-center">
-            Marca al menos una tarea que cambie.
+            {t("tasks.selectAtLeastOneTask")}
           </p>
         ) : null}
         <Button variant="outline" className="max-sm:h-11" onClick={onClose}>
-          Cancelar
+          {t("common:actions.cancel")}
         </Button>
         <Button
           className="max-sm:h-11"
@@ -96,14 +98,15 @@ export function ApplyModelForm({
             onApply(applyToTasks(draft, source, changed, withFallbacks), changed);
           }}
         >
-          {applyLabel(chosen.length)}
+          {applyLabel(chosen.length, t)}
         </Button>
       </DialogFooter>
     </>
   );
 }
 
-function applyLabel(count: number): string {
-  if (count === 0) return "Aplicar";
-  return count === 1 ? "Aplicar a 1 tarea" : `Aplicar a ${String(count)} tareas`;
+function applyLabel(count: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
+  if (count === 0) return t("tasks.apply");
+  return t("tasks.applyToTasks", { count });
 }
+

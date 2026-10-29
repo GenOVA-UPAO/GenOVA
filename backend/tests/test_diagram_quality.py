@@ -216,3 +216,24 @@ def test_autorrelacion_con_dos_fk_de_rol_conserva_dos_lineas():
     out = prepare_diagram(data, "Modelo ER de una red social")
     assert len(out["aristas"]) == 2
     assert sum("(FK)" in a for a in out["nodos"][1]["atributos"]) == 2
+
+
+def test_relacion_inversa_con_etiqueta_larga_tambien_se_deduplica():
+    data = {
+        "tipo": "er",
+        "nodos": [
+            {"id": "alumno", "etiqueta": "Alumno", "atributos": ["id_alumno (PK)"]},
+            {"id": "nota", "etiqueta": "Calificación", "atributos": ["id_nota (PK)", "nota"]},
+        ],
+        "aristas": [
+            {"origen": "alumno", "destino": "nota", "etiqueta": "tiene", "cardinalidad": "1:N"},
+            {
+                "origen": "nota",
+                "destino": "alumno",
+                "etiqueta": "pertenece al alumno evaluado",
+                "cardinalidad": "N:1",
+            },
+        ],
+    }
+    out = prepare_diagram(data, "Modelo ER de notas")
+    assert [(e["origen"], e["destino"]) for e in out["aristas"]] == [("alumno", "nota")]

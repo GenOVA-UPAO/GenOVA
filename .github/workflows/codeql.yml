@@ -15,6 +15,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      pull-requests: read
     strategy:
       fail-fast: false
       matrix:
@@ -36,3 +37,32 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: '/language:${{ matrix.language }}'
+
+      # Puerta de calidad: el check de CodeQL nunca falla por sí solo ante alertas.
+      # Este paso compara las alertas abiertas del PR con las de la rama base y
+      # falla si aparece alguna NUEVA de nivel «warning» o «error». Las de nivel
+      # «note» no bloquean. (Complementa, no sustituye, la regla de «Code scanning
+      # results» en los rulesets del repo: ver reportes/40-codeql.md.)
+      - name: Fail on new warning/error alerts
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_REF: refs/pull/${{ github.event.pull_request.number }}/merge
+          BASE_REF: refs/heads/${{ github.event.pull_request.base.ref }}
+          TOOL_CATEGORY: /language:${{ matrix.language }}
+        run: |
+          list() {
+            gh api --paginate "repos/$REPO/code-scanning/alerts?state=open&per_page=100&ref=$1" \
+              --jq ".[] | select(.most_recent_instance.category == \"$TOOL_CATEGORY\") | [.number, .rule.severity, .rule.id, .most_recent_instance.location.path, .most_recent_instance.location.start_line] | @tsv"
+          }
+          list "$BASE_REF" | cut -f3,4 | sort -u > base.txt
+          list "$PR_REF" | awk -F'\t' '$2=="warning" || $2=="error"' > pr.txt
+          # «Nueva» = misma regla y archivo sin alerta equivalente en la base.
+          new=$(awk -F'\t' 'NR==FNR {seen[$1 "\t" $2]=1; next} !(($3 "\t" $4) in seen)' base.txt pr.txt)
+          if [ -n "$new" ]; then
+            echo "::error::CodeQL: alertas nuevas de nivel warning/error en este PR"
+            printf '%s\n' "$new" | awk -F'\t' '{printf "  #%s [%s] %s %s:%s\n", $1, $2, $3, $4, $5}'
+            exit 1
+          fi
+          echo "Sin alertas nuevas de nivel warning/error."

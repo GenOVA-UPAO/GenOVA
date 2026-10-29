@@ -1,4 +1,4 @@
-import { AVAILABLE_PERMISSIONS, PERMISSION_GROUPS } from "../lib/permissions";
+import { AVAILABLE_PERMISSIONS, PERMISSION_GROUPS, permissionGroupLabel } from "../lib/permissions";
 import { RolePermissionOption } from "./role-permission-option";
 
 interface RolePermissionsFieldsetProps {
@@ -19,12 +19,12 @@ export function RolePermissionsFieldset({
   return (
     <div className="space-y-4">
       {PERMISSION_GROUPS.map((group) => (
-        <div key={group.id} role="group" aria-labelledby={`perm-group-${group.id}`}>
-          <p id={`perm-group-${group.id}`} className="mb-1.5 text-xs font-medium text-muted-foreground">
-            {group.label}
+        <div key={group} role="group" aria-labelledby={`perm-group-${group}`}>
+          <p id={`perm-group-${group}`} className="mb-1.5 text-xs font-medium text-muted-foreground">
+            {permissionGroupLabel(group)}
           </p>
           <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
-            {AVAILABLE_PERMISSIONS.filter((permission) => permission.group === group.id).map(
+            {AVAILABLE_PERMISSIONS.filter((permission) => permission.group === group).map(
               (permission) => (
                 <RolePermissionOption
                   key={permission.id}

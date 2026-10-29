@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -31,6 +33,7 @@ export function ProfileApplyDialog({
   onApply,
   onClose,
 }: Readonly<ProfileApplyDialogProps>) {
+  const { t } = useTranslation("llm-settings");
   return (
     <Dialog
       open={profile !== null}
@@ -40,23 +43,22 @@ export function ProfileApplyDialog({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="pr-8">
-          <DialogTitle>¿Aplicar «{profile?.name}»?</DialogTitle>
+          <DialogTitle>{t("profiles.applyTitle", { name: profile?.name })}</DialogTitle>
           <DialogDescription>
-            Cambia los modelos de toda la plataforma. Las generaciones lo notan en menos de un
-            minuto, y el cambio queda en el historial por si hay que deshacerlo.
+            {t("profiles.applyDesc")}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <p className="text-sm font-medium">Qué cambia</p>
+          <p className="text-sm font-medium">{t("profiles.whatChanges")}</p>
           <ConfigChangeList
             changes={profile?.changes ?? []}
             className="max-h-64 overflow-y-auto rounded-lg border border-border px-3 py-2.5"
           />
         </div>
-        {dirty ? <UnsavedNote>Se descartarán tus cambios sin guardar.</UnsavedNote> : null}
+        {dirty ? <UnsavedNote>{t("profiles.applyDiscardWarning")}</UnsavedNote> : null}
         <DialogFooter>
           <Button variant="outline" className="max-sm:h-11" disabled={applying} onClick={onClose}>
-            Cancelar
+            {t("credentials.cancel")}
           </Button>
           <Button
             className="max-sm:h-11"
@@ -65,7 +67,7 @@ export function ProfileApplyDialog({
               if (profile) onApply(profile);
             }}
           >
-            Aplicar perfil
+            {t("profiles.applyAction")}
           </Button>
         </DialogFooter>
       </DialogContent>

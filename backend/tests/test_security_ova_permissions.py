@@ -45,6 +45,7 @@ CASES = [
     (elaborate_router, "POST", "/generate", "create_ova"),
     (evaluate_router, "POST", "/generate", "create_ova"),
     (export_router, "GET", "/{ova_id}/export-scorm", "export_ova"),
+    (export_router, "GET", "/{ova_id}/export", "export_ova"),
     (history_router, "GET", "/{ova_id}/download", "export_ova"),
 ]
 

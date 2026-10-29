@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 
 import type { ConfigField } from "../../lib/resource-config";
@@ -12,6 +14,7 @@ interface Props {
 
 /** Un ajuste numérico: label arriba, ayuda con el rango debajo y el error bajo la ayuda. */
 export function ResourceConfigField({ id, field, value, error, onChange }: Readonly<Props>) {
+  const { t } = useTranslation();
   const describedBy = error ? `${id}-help ${id}-error` : `${id}-help`;
   return (
     <div className="space-y-1.5 py-3 first:pt-0 last:pb-0">
@@ -33,7 +36,7 @@ export function ResourceConfigField({ id, field, value, error, onChange }: Reado
         }}
       />
       <p id={`${id}-help`} className="text-xs leading-relaxed text-muted-foreground">
-        {field.description ? `${field.description}. ` : ""}Entre {field.min} y {field.max}.
+        {field.description ? `${field.description}. ` : ""}{t("workspace:configRange", { min: field.min, max: field.max })}
       </p>
       {error && (
         <p id={`${id}-error`} className="text-xs font-medium text-destructive">

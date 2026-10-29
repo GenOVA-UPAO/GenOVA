@@ -53,6 +53,7 @@ def build_graph_state(
         "theme": params.get("theme") or {"color": "upao", "design": "upao"},
         "image_settings": params.get("image_settings") or {},
         "resource_configs": params.get("resource_configs") or {},
+        "topic_area": params.get("topic_area") or "",
         "job_id": str(job_id),
         "phases": phases_seed,
         "phase_order": phase_order_seed,

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { toast } from "sonner";
 
 import {
@@ -45,7 +46,7 @@ export function useCreateRole() {
     mutationFn: (payload: RoleFormPayload) => submitRole(null, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.roles });
-      toast.success("Rol creado con éxito");
+      toast.success(t("admin:roles.toast.created"));
     },
   });
 }
@@ -57,7 +58,7 @@ export function useUpdateRole() {
       submitRole(roleId, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.roles });
-      toast.success("Rol actualizado con éxito");
+      toast.success(t("admin:roles.toast.updated"));
     },
   });
 }
@@ -69,7 +70,7 @@ export function useDeleteRole() {
       deleteRole(role.id, reassignToId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.roles });
-      toast.success("Rol eliminado con éxito");
+      toast.success(t("admin:roles.toast.deleted"));
     },
   });
 }

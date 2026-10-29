@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Icon } from "@/core/components/icon";
@@ -33,6 +34,7 @@ export function WorkspaceHeader({
   readOnly = false,
   canExport = true,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2 sm:px-4 md:h-14 md:flex-nowrap md:py-0">
       <div className="flex min-w-0 basis-full items-center gap-2 md:flex-1 md:basis-auto">
@@ -42,9 +44,9 @@ export function WorkspaceHeader({
           size="sm"
           className="-ml-1 shrink-0 text-muted-foreground max-sm:size-11 max-sm:px-0"
         >
-          <Link to="/mis-ovas" aria-label="Volver a Mis OVAs">
+          <Link to="/mis-ovas" aria-label={t("workspace:volver_a_mis_ovas")}>
             <Icon name="arrow-left" />
-            <span className="hidden sm:inline">Mis OVAs</span>
+            <span className="hidden sm:inline">{t("workspace:mis_ovas")}</span>
           </Link>
         </Button>
         <span aria-hidden="true" className="h-5 w-px shrink-0 bg-border" />
@@ -53,7 +55,7 @@ export function WorkspaceHeader({
         </h1>
         {version !== undefined && (
           <span
-            title={`Versión ${String(version)}`}
+            title={t("workspace:version_value", { p0: String(version) })}
             className="shrink-0 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground"
           >
             v{version}
@@ -62,12 +64,12 @@ export function WorkspaceHeader({
       </div>
       {!readOnly && (
         <SegmentedTabs
-          label="Vista del workspace"
+          label={t("workspace:vista_del_workspace")}
           className="md:hidden"
           value={mobileView}
           onChange={onMobileView}
           options={[
-            { value: "chat", label: "Instrucciones", controls: "workspace-chat-column" },
+            { value: "chat", label: t("workspace:instrucciones"), controls: "workspace-chat-column" },
             { value: "ova", label: "OVA", controls: "workspace-ova-column" },
           ]}
         />

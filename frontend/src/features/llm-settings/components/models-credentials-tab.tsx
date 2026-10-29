@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { PlatformApiKeysCard } from "@/core/components/platform-api-keys-card";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
@@ -9,17 +11,18 @@ import { UserApiKeysCard } from "./user-api-keys-card";
  * personales después, como algo opcional.
  */
 export function ModelsCredentialsTab({ isAdmin }: Readonly<{ isAdmin: boolean }>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   const personal = (
     <section className="space-y-4" aria-labelledby="claves-personales">
       <div>
         <h2 id="claves-personales" className="text-base font-semibold text-foreground">
-          {isAdmin ? "Tus claves personales" : "Tus claves"}
+          {isAdmin ? t("credentials.tab.titleAdmin") : t("credentials.tab.titleUser")}
         </h2>
         <p className="mt-0.5 max-w-prose text-sm text-muted-foreground">
           {isAdmin
-            ? "Opcionales. Solo se usan en los OVAs que generas tú, en lugar de las de la plataforma, y se pagan con tu cuenta."
-            : "Con tu clave de un proveedor puedes elegir tus propios modelos, que se pagan con tu cuenta. Donde no pongas la tuya, se usa la de la plataforma."}
+            ? t("credentials.tab.descAdmin")
+            : t("credentials.tab.descUser")}
         </p>
       </div>
       <UserApiKeysCard ownStatus={store.ownCatalogStatus} />

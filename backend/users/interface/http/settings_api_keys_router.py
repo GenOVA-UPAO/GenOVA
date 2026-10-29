@@ -11,12 +11,14 @@ from fastapi import APIRouter, Depends, Request
 from auth.dependencies import get_current_user
 from core.rate_limit import limiter
 from llm.catalog.user_catalog import invalidate_user_catalog
+from llm.clients.clients import _key_lock, _user_key_cache
 from llm.providers import ALL_PROVIDERS
 from models import User
 from users.application.dto import SaveApiKeysInput
 from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
 from users.interface.http.error_map import to_http_exception
+from users.interface.http.key_validation import validate_key_updates
 
 router = APIRouter(tags=["Ajustes de usuario"])
 
@@ -47,6 +49,7 @@ def put_api_keys(
     Unknown providers are ignored.
     """
     try:
+        checks = validate_key_updates(payload, ALL_PROVIDERS, source="own")
         api_keys = users.save_api_keys.execute(
             SaveApiKeysInput(user_id=current_user.id, payload=payload, providers=ALL_PROVIDERS)
         )
@@ -56,4 +59,6 @@ def put_api_keys(
     # La lista de modelos de ese proveedor se pidió con la clave anterior (o no
     # hay clave ya): se vuelve a pedir en la próxima carga.
     invalidate_user_catalog(current_user.id, set(payload) & set(ALL_PROVIDERS))
-    return {"api_keys": api_keys}
+    with _key_lock:
+        _user_key_cache.pop(str(current_user.id), None)
+    return {"api_keys": api_keys, "checks": checks}

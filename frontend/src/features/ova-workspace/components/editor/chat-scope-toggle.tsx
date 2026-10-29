@@ -1,20 +1,21 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
-
-function scopeLabel(selecting: boolean, count: number): string {
-  if (!selecting || count === 0) return "Aplicar a: todo el OVA";
-  return `Aplicar a: ${String(count)} recurso${count !== 1 ? "s" : ""}`;
-}
 
 interface Props {
   selecting: boolean;
   count: number;
   onToggle: () => void;
+  /** Quita la selección y vuelve a «todo el OVA». */
+  onClear: () => void;
 }
 
 /** Alcance de la instrucción: abre o cierra el selector de recursos. */
-export function ChatScopeToggle({ selecting, count, onToggle }: Readonly<Props>) {
+export function ChatScopeToggle({ selecting, count, onToggle, onClear }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
+    <>
     <Button
       variant="ghost"
       size="xs"
@@ -23,8 +24,14 @@ export function ChatScopeToggle({ selecting, count, onToggle }: Readonly<Props>)
       aria-controls="chat-resource-select"
       onClick={onToggle}
     >
-      {scopeLabel(selecting, count)}
+      {count > 0 ? t("workspace:chatScope", { count }) : t("workspace:aplicar_a_todo_el_ova")}
       <Icon name={selecting ? "caret-up" : "caret-down"} />
     </Button>
+    {count > 0 && (
+      <Button variant="ghost" size="xs" className="text-muted-foreground" onClick={onClear}>
+        {t("workspace:quitar_seleccion")}
+      </Button>
+    )}
+    </>
   );
 }

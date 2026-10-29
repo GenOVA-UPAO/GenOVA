@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
@@ -11,6 +13,7 @@ interface LlmSettingsFormTaskProps {
 }
 
 export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTaskProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   const cur = store.settings?.[tipo] ?? {};
   const label = TASK_LABELS[tipo] ?? tipo;
@@ -29,11 +32,11 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
               store.resetTipo(tipo);
             }}
           >
-            Usar el de la plataforma
+            {t("tasks.revertToPlatform")}
           </Button>
         ) : null}
         {!locked && cur.override !== true ? (
-          <span className="text-xs text-muted-foreground">De la plataforma</span>
+          <span className="text-xs text-muted-foreground">{t("form.fromPlatform")}</span>
         ) : null}
       </div>
       <div className="flex items-end gap-2">

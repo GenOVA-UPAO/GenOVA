@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ConfirmModal } from "@/core/components/confirm-modal";
@@ -31,6 +32,7 @@ export function HistorySheet({
   dirty,
   onDiscardDraft,
 }: Readonly<HistorySheetProps>) {
+  const { t } = useTranslation("llm-settings");
   const history = useConfigHistory(open);
   const feedback = useConfigApply();
   const [pending, setPending] = useState<PendingRestore | null>(null);
@@ -44,13 +46,13 @@ export function HistorySheet({
       } else {
         const res = await history.restore.mutateAsync(entry.id);
         await feedback.refresh();
-        feedback.announce("Configuración restaurada.", res);
+        feedback.announce(t("history.restored"), res);
       }
       onDiscardDraft();
       setPending(null);
       onOpenChange(false);
     } catch (err: unknown) {
-      toast.error(errorMessage(err, "No se pudo restaurar la configuración."));
+      toast.error(errorMessage(err, t("api.restoreConfigError")));
     } finally {
       setBusy(false);
     }
@@ -61,8 +63,8 @@ export function HistorySheet({
       <ModelsSideSheet
         open={open}
         onOpenChange={onOpenChange}
-        title="Historial de cambios"
-        description={`Cada vez que se guarda la configuración de modelos queda aquí. Se conservan los ${String(history.limit)} últimos cambios.`}
+        title={t("history.title")}
+        description={t("history.retentionDesc", { count: history.limit })}
       >
         <HistoryList
           history={history}
@@ -74,10 +76,10 @@ export function HistorySheet({
       <ConfirmModal
         open={pending !== null}
         danger={false}
-        title={pending?.undo ? "¿Deshacer el último cambio?" : "¿Restaurar esta versión?"}
-        message={restoreMessage(pending, dirty)}
-        confirmLabel={pending?.undo ? "Deshacer cambio" : "Restaurar versión"}
-        loadingLabel="Restaurando…"
+        title={pending?.undo ? t("history.undoLastConfirmTitle") : t("history.restoreVersionConfirmTitle")}
+        message={restoreMessage(pending, dirty, t)}
+        confirmLabel={pending?.undo ? t("history.undoActionConfirm") : t("history.restoreActionConfirm")}
+        loadingLabel={t("history.restoring")}
         isLoading={busy}
         onConfirm={() => {
           if (pending) void confirm(pending);
@@ -90,11 +92,17 @@ export function HistorySheet({
   );
 }
 
-function restoreMessage(pending: PendingRestore | null, dirty: boolean): string {
+function restoreMessage(
+  pending: PendingRestore | null,
+  dirty: boolean,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
   if (!pending) return "";
   const base = pending.undo
-    ? "La configuración vuelve a como estaba antes de ese cambio."
-    : `La configuración vuelve a como quedó ${whenLabel(pending.entry.at).toLowerCase()}.`;
-  const tail = " El cambio queda en el historial: podrás volver a la actual.";
-  return base + tail + (dirty ? "\nSe descartarán tus cambios sin guardar." : "");
+    ? t("history.undoLastConfirmDesc")
+    : t("history.restoreVersionConfirmDesc", {
+        time: whenLabel(pending.entry.at).toLowerCase(),
+      });
+  const tail = ` ${t("history.changeWillBeRecorded")}`;
+  return base + tail + (dirty ? `\n${t("profiles.applyDiscardWarning")}` : "");
 }

@@ -1,21 +1,56 @@
-def build_scorm_js() -> str:
-    return """(function (global) {
-  let api = null
+def build_scorm_js(preferred_version: str = "1.2") -> str:
+    """Runtime SCORM del shell: `window.GenovaScorm`.
 
-  function safeApi(win) {
+    Busca la API de SCORM 2004 (`API_1484_11`) y la de SCORM 1.2 (`API`) en la
+    cadena de ventanas padre/opener; prueba primero la de `preferred_version`
+    ("1.2" o "2004"). Sin API, todas las llamadas son no-op (devuelven false/'').
+
+    app.js habla el modelo de datos 1.2 (`cmi.core.*`); con una API 2004 se
+    traduce aquí: lesson_status → cmi.completion_status/cmi.success_status,
+    score → cmi.score.* (+ scaled), session_time → duración ISO 8601, exit '' →
+    'normal', y LMSFinish → Terminate.
+    """
+    if preferred_version not in ("1.2", "2004"):
+        raise ValueError(f"Versión SCORM no soportada: {preferred_version}")
+    return _SCORM_JS.replace("__PREFERRED_VERSION__", preferred_version)
+
+
+_SCORM_JS = """(function (global) {
+  const PREFERRED = '__PREFERRED_VERSION__'
+  const API_NAMES = { '1.2': 'API', '2004': 'API_1484_11' }
+  const METHODS = {
+    '1.2': {
+      initialize: 'LMSInitialize',
+      getValue: 'LMSGetValue',
+      setValue: 'LMSSetValue',
+      commit: 'LMSCommit',
+      finish: 'LMSFinish',
+    },
+    '2004': {
+      initialize: 'Initialize',
+      getValue: 'GetValue',
+      setValue: 'SetValue',
+      commit: 'Commit',
+      finish: 'Terminate',
+    },
+  }
+  let api = null
+  let version = null
+
+  function safeApi(win, name) {
     try {
-      return win.API || null
+      return win[name] || null
     } catch (error) {
       // Ventana de otro origen: su API no es legible, seguir con la cadena.
       return null
     }
   }
 
-  function findApi(win) {
+  function findApi(win, name) {
     let current = win
     let attempts = 0
     while (current && attempts < 500) {
-      const found = safeApi(current)
+      const found = safeApi(current, name)
       if (found) {
         return found
       }
@@ -28,58 +63,137 @@ def build_scorm_js() -> str:
     return null
   }
 
+  function locate(name) {
+    let found = findApi(global, name)
+    if (!found && global.opener) {
+      found = findApi(global.opener, name)
+    }
+    return found
+  }
+
   function getApi() {
     if (api) {
       return api
     }
-
-    api = findApi(global)
-
-    if (!api && global.opener) {
-      api = findApi(global.opener)
+    const order = PREFERRED === '2004' ? ['2004', '1.2'] : ['1.2', '2004']
+    for (let i = 0; i < order.length; i += 1) {
+      const found = locate(API_NAMES[order[i]])
+      if (found) {
+        api = found
+        version = order[i]
+        return api
+      }
     }
+    return null
+  }
 
-    return api
+  function rawCall(method, args) {
+    const handle = getApi()
+    const name = handle && METHODS[version][method]
+    if (!name || typeof handle[name] !== 'function') {
+      return null
+    }
+    try {
+      return handle[name].apply(handle, args)
+    } catch (error) {
+      return null
+    }
   }
 
   function call(method, args) {
-    const handle = getApi()
-    if (!handle || typeof handle[method] !== 'function') {
-      return false
+    const result = rawCall(method, args)
+    return result === true || result === 'true'
+  }
+
+  // --- Traducción del modelo de datos 1.2 (cmi.core.*) a SCORM 2004 ---
+
+  function toIsoDuration(value) {
+    // HHHH:MM:SS.SS -> PT#H#M#S
+    const match = /^(\\d+):(\\d{2}):(\\d{2}(?:\\.\\d+)?)$/.exec(String(value))
+    if (!match) {
+      return 'PT0S'
     }
-    try {
-      return handle[method].apply(handle, args) === 'true'
-    } catch (error) {
-      return false
+    return 'PT' + Number(match[1]) + 'H' + Number(match[2]) + 'M' + Number(match[3]) + 'S'
+  }
+
+  function set2004(element, value) {
+    return call('setValue', [element, String(value)])
+  }
+
+  function setValue2004(element, value) {
+    switch (element) {
+      case 'cmi.core.lesson_status':
+        if (value === 'passed' || value === 'failed') {
+          set2004('cmi.success_status', value)
+          return set2004('cmi.completion_status', 'completed')
+        }
+        if (value === 'completed' || value === 'incomplete') {
+          return set2004('cmi.completion_status', value)
+        }
+        return set2004('cmi.completion_status', 'unknown')
+      case 'cmi.core.score.raw': {
+        const raw = Number(value)
+        if (Number.isFinite(raw)) {
+          set2004('cmi.score.scaled', Math.max(-1, Math.min(1, raw / 100)))
+        }
+        return set2004('cmi.score.raw', value)
+      }
+      case 'cmi.core.score.min':
+        return set2004('cmi.score.min', value)
+      case 'cmi.core.score.max':
+        return set2004('cmi.score.max', value)
+      case 'cmi.core.session_time':
+        return set2004('cmi.session_time', toIsoDuration(value))
+      case 'cmi.core.exit':
+        return set2004('cmi.exit', value === '' ? 'normal' : value)
+      case 'cmi.core.lesson_location':
+        return set2004('cmi.location', value)
+      default:
+        return set2004(element, value)
     }
+  }
+
+  function getValue2004(element) {
+    if (element === 'cmi.core.lesson_status') {
+      const status = rawCall('getValue', ['cmi.completion_status']) || ''
+      return status === 'unknown' ? 'not attempted' : status
+    }
+    if (element === 'cmi.core.lesson_location') {
+      return rawCall('getValue', ['cmi.location']) || ''
+    }
+    return rawCall('getValue', [element]) || ''
   }
 
   function initialize() {
-    return call('LMSInitialize', [''])
+    return call('initialize', [''])
   }
 
   function getValue(element) {
-    const handle = getApi()
-    if (!handle || typeof handle.LMSGetValue !== 'function') {
+    if (!getApi()) {
       return ''
     }
-    try {
-      return handle.LMSGetValue(element) || ''
-    } catch (error) {
-      return ''
+    if (version === '2004') {
+      return getValue2004(element)
     }
+    return rawCall('getValue', [element]) || ''
   }
 
   function setValue(element, value) {
-    return call('LMSSetValue', [element, String(value)])
+    if (!getApi()) {
+      return false
+    }
+    if (version === '2004') {
+      return setValue2004(element, String(value))
+    }
+    return call('setValue', [element, String(value)])
   }
 
   function commit() {
-    return call('LMSCommit', [''])
+    return call('commit', [''])
   }
 
   function finish() {
-    return call('LMSFinish', [''])
+    return call('finish', [''])
   }
 
   global.GenovaScorm = {
@@ -88,6 +202,10 @@ def build_scorm_js() -> str:
     setValue,
     commit,
     finish,
+    version: function () {
+      getApi()
+      return version
+    },
   }
 })(window)
 """
@@ -99,6 +217,16 @@ def build_app_js() -> str:
   const completeButton = document.getElementById('complete-btn')
   const frame = document.getElementById('res-frame')
   const tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'))
+  const format = document.body.getAttribute('data-package-format')
+  // Web/IMS guardan el progreso en el navegador, salvo que haya una API de LMS: el
+  // reproductor LTI la expone para enviar la nota por AGS (sin ella la nota se perdería).
+  const lmsApi = Boolean(window.GenovaScorm && window.GenovaScorm.initialize())
+  const localMode = (format === 'html' || format === 'ims') && !lmsApi
+  const storageKey = 'genova-progress-v1:' + document.body.getAttribute('data-progress-key')
+  const resourceSources = tabs.map(function (tab) { return tab.getAttribute('data-src') })
+  const localCompleted = new Set()
+  let lastResource = null
+  let storageAvailable = true
   const visited = {}
   const completed = {}
   const startedAt = Date.now()
@@ -114,8 +242,39 @@ def build_app_js() -> str:
       pad(hours, 4) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(cs % 100, 2))
   }
 
-  const initialized = window.GenovaScorm && window.GenovaScorm.initialize()
-  const xapi = window.GenovaXapi || null
+  const initialized = lmsApi
+  const xapi = localMode ? null : window.GenovaXapi || null
+
+  function showLocalProgress() {
+    const prefix = storageAvailable ? 'Progreso local: ' : 'Progreso de esta sesión: '
+    statusNode.textContent = prefix + localCompleted.size + ' de ' + tabs.length + ' recursos completados.'
+  }
+
+  function saveLocalProgress() {
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify({
+        completed: Array.from(localCompleted), lastResource: lastResource,
+      }))
+    } catch (error) {
+      // file://, navegación privada o cuota llena: la navegación sigue funcionando.
+      storageAvailable = false
+    }
+    showLocalProgress()
+  }
+
+  if (localMode) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(storageKey))
+      if (saved && Array.isArray(saved.completed)) {
+        saved.completed.forEach(function (src) {
+          if (resourceSources.includes(src)) { localCompleted.add(src) }
+        })
+        if (resourceSources.includes(saved.lastResource)) { lastResource = saved.lastResource }
+      }
+    } catch (error) {
+      // Un registro inválido se ignora; no impide abrir el paquete.
+    }
+  }
 
   function selectTab(btn, focus) {
     tabs.forEach(function (t) {
@@ -128,23 +287,36 @@ def build_app_js() -> str:
       frame.setAttribute('aria-label', 'Contenido: ' + btn.textContent.trim())
       const src = btn.getAttribute('data-src')
       visited[src] = true
+      if (localMode) {
+        lastResource = src
+        saveLocalProgress()
+      }
       if (xapi) { xapi.experienced(btn.textContent.trim()) }
       if (focus) { btn.focus() }
     }
   }
 
   function markComplete() {
+    if (localMode) {
+      resourceSources.forEach(function (src) { localCompleted.add(src) })
+      saveLocalProgress()
+      return
+    }
     if (xapi) { xapi.completed() }
     if (!initialized) {
-      statusNode.textContent = 'OVA completado (modo vista previa).'
+      statusNode.textContent = 'OVA completado. Vista sin aula virtual: tu progreso no se enviará'
       return
     }
     window.GenovaScorm.setValue('cmi.core.lesson_status', 'completed')
     const scores = Object.values(completed)
-    const score = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 100
-    window.GenovaScorm.setValue('cmi.core.score.min', '0')
-    window.GenovaScorm.setValue('cmi.core.score.max', '100')
-    window.GenovaScorm.setValue('cmi.core.score.raw', score)
+    // Sin recursos puntuados solo se marca completado: un 100 inventado llegaría
+    // al libro de calificaciones (SCORM o AGS en LTI).
+    if (scores.length) {
+      const score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      window.GenovaScorm.setValue('cmi.core.score.min', '0')
+      window.GenovaScorm.setValue('cmi.core.score.max', '100')
+      window.GenovaScorm.setValue('cmi.core.score.raw', score)
+    }
     saveTime()
     window.GenovaScorm.commit()
     statusNode.textContent = 'Estado LMS: completado y guardado.'
@@ -177,11 +349,15 @@ def build_app_js() -> str:
     btn.addEventListener('keydown', onKeydown)
   })
 
-  if (tabs.length) { selectTab(tabs[0], false) }
+  if (tabs.length) {
+    selectTab(tabs.find(function (tab) { return tab.getAttribute('data-src') === lastResource }) || tabs[0], false)
+  }
 
-  if (!initialized) {
+  if (localMode) {
+    showLocalProgress()
+  } else if (!initialized) {
     statusNode.textContent =
-      'No se detectó API LMS (modo vista previa). El contenido sigue siendo navegable.'
+      'Vista sin aula virtual: tu progreso no se enviará'
   } else {
     const currentStatus = window.GenovaScorm.getValue('cmi.core.lesson_status')
     if (!currentStatus || currentStatus === 'not attempted') {
@@ -199,9 +375,16 @@ def build_app_js() -> str:
   // autenticar por la ventana del iframe activo, no por event.origin.
   window.addEventListener('message', function (event) {
     if (event.source !== frame.contentWindow || event.data?.type !== 'genova-resource-completed') return
+    const src = frame.getAttribute('src')
+    if (!resourceSources.includes(src)) return
+    if (localMode) {
+      localCompleted.add(src)
+      saveLocalProgress()
+      return
+    }
     const raw = Number(event.data.score)
     if (!Number.isFinite(raw)) return
-    completed[frame.getAttribute('src')] = Math.max(0, Math.min(100, raw))
+    completed[src] = Math.max(0, Math.min(100, raw))
     maybeComplete()
   })
 

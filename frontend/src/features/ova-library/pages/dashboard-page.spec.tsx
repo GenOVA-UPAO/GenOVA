@@ -20,7 +20,6 @@ vi.mock("../api/ova-library.api", () => ({
     batchDeleteForever: vi.fn(),
     duplicate: vi.fn(),
     updateMetadata: vi.fn(),
-    download: vi.fn(),
   },
 }));
 

@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { apiJson } from "@/core/lib/http";
 
 import type { CatalogStatus } from "../lib/catalog-status";
@@ -41,7 +43,7 @@ function withQuery(path: string, params: LlmSettingsParams): string {
 
 export function getLlmSettings(params: LlmSettingsParams = {}): Promise<LlmSettingsResponse> {
   return apiJson(withQuery("/api/users/me/llm-settings", params), {}, {
-    fallbackMsg: "No se pudo cargar la configuración.",
+    fallbackMsg: t("llm-settings:api.loadConfigError"),
   });
 }
 
@@ -49,7 +51,7 @@ export function saveLlmSettings(settings: SettingsMap): Promise<LlmSettingsRespo
   return apiJson(
     "/api/users/me/llm-settings",
     { method: "PUT", body: json({ settings: overridesPayload(settings) }) },
-    { fallbackMsg: "No se pudo guardar la configuración." },
+    { fallbackMsg: t("llm-settings:api.saveConfigError") },
   );
 }
 
@@ -62,7 +64,7 @@ export function refreshLlmCatalog(): Promise<RefreshCatalogResponse> {
   return apiJson(
     "/api/users/me/llm-settings/refresh-catalog",
     { method: "POST" },
-    { fallbackMsg: "No se pudo actualizar el catálogo." },
+    { fallbackMsg: t("llm-settings:api.refreshCatalogError") },
   );
 }
 
@@ -70,25 +72,25 @@ export function saveEnabledModels(models: EnabledModel[]): Promise<EnabledModels
   return apiJson(
     "/api/users/me/enabled-models",
     { method: "PUT", body: json({ models }) },
-    { fallbackMsg: "No se pudo guardar el favorito." },
+    { fallbackMsg: t("llm-settings:api.saveFavoriteError") },
   );
 }
 
 export function getUserApiKeys(): Promise<UserApiKeysResponse> {
-  return apiJson("/api/users/me/api-keys", {}, { fallbackMsg: "No se pudieron cargar tus claves." });
+  return apiJson("/api/users/me/api-keys", {}, { fallbackMsg: t("llm-settings:api.loadKeysError") });
 }
 
 export function saveUserApiKey(provider: string, key: string): Promise<UserApiKeysResponse> {
   return apiJson(
     "/api/users/me/api-keys",
     { method: "PUT", body: json({ [provider]: key }) },
-    { fallbackMsg: "No se pudo guardar la clave." },
+    { fallbackMsg: t("llm-settings:api.saveKeyError") },
   );
 }
 
 export function getImageModels(provider: string): Promise<ImageModelOption[]> {
   const path = `/api/users/me/image-models?provider=${encodeURIComponent(provider)}`;
   return apiJson<{ models?: ImageModelOption[] }>(path, {}, {
-    fallbackMsg: "No se pudieron cargar los modelos de imagen.",
+    fallbackMsg: t("llm-settings:api.loadImagesError"),
   }).then((data) => data.models ?? []);
 }

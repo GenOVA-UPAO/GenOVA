@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -28,6 +30,7 @@ export function PrimaryModelSelect({
   onChange,
   onApplyToOthers,
 }: Readonly<PrimarySelectProps>) {
+  const { t } = useTranslation("llm-settings");
   const labelId = `primary-model-${task}`;
   const summaryId = `primary-model-summary-${task}`;
   const { provider, model_id: modelId } = value.default;
@@ -37,9 +40,9 @@ export function PrimaryModelSelect({
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         <div>
           <p id={labelId} className="text-sm font-medium">
-            Modelo principal
+            {t("tasks.primaryModel")}
           </p>
-          <p className="text-xs text-muted-foreground">Se usa siempre que responda.</p>
+          <p className="text-xs text-muted-foreground">{t("tasks.primaryDesc")}</p>
         </div>
         {onApplyToOthers && chosen ? (
           <Button
@@ -50,7 +53,7 @@ export function PrimaryModelSelect({
             onClick={onApplyToOthers}
           >
             <Icon name="copy" size="text-sm" />
-            Usar en otras tareas
+            {t("tasks.useInOtherTasks")}
           </Button>
         ) : null}
       </div>
@@ -62,7 +65,7 @@ export function PrimaryModelSelect({
             modelId={modelId}
             disabled={disabled}
             usage={usage}
-            ariaLabel={`Modelo principal de ${taskMeta(task).label}`}
+            ariaLabel={t("tasks.primaryModelOf", { task: taskMeta(task).label })}
             describedBy={chosen ? summaryId : undefined}
             onChange={(next) => {
               onChange({

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -10,13 +12,16 @@ interface StarButtonProps {
 
 /** Estrella de favorito de una fila del catálogo; los modelos base la tienen fija. */
 export function CatalogStarButton({ name, base, favorite, onToggle }: Readonly<StarButtonProps>) {
-  const label = favorite ? `Quitar ${name} de favoritos` : `Añadir ${name} a favoritos`;
+  const { t } = useTranslation("llm-settings");
+  const label = favorite
+    ? t("catalog.unstarModel", { name })
+    : t("catalog.starModel", { name });
   return (
     <button
       type="button"
       aria-pressed={favorite}
-      aria-label={base ? `${name}: modelo base, siempre en favoritos` : label}
-      title={base ? "Los modelos base siempre están en favoritos" : label}
+      aria-label={base ? t("catalog.baseModelAlwaysFavorite", { name }) : label}
+      title={base ? t("catalog.baseModelsAlwaysFavorites") : label}
       disabled={base}
       onClick={onToggle}
       className={cn(

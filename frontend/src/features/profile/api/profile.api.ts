@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { apiJson } from "@/core/lib/http";
 
 import type { ChangePasswordValues, ProfileData, ProfileSaveValues } from "../lib/types";
@@ -14,7 +16,7 @@ export function fetchProfile(): Promise<ProfileData> {
   return apiJson<ProfileData>(
     "/api/auth/me",
     {},
-    { fallbackMsg: "No se pudo cargar la información de perfil." },
+    { fallbackMsg: t("profile:api.loadProfile") },
   );
 }
 
@@ -33,14 +35,14 @@ export function saveProfile(values: ProfileSaveValues): Promise<ProfileData> {
         ...(values.totp_code ? { totp_code: values.totp_code } : {}),
       }),
     },
-    { fallbackMsg: "Error al actualizar el perfil." },
+    { fallbackMsg: t("profile:api.updateProfile") },
   );
 }
 
 export function confirmEmailChange(token: string): Promise<ProfileData> {
   return apiJson<ProfileData>("/api/users/me/email/confirm", {
     method: "POST", body: json({ token }),
-  }, { fallbackMsg: "Código inválido o expirado." });
+  }, { fallbackMsg: t("profile:api.invalidCode") });
 }
 
 export function changePassword(values: ChangePasswordValues): Promise<void> {
@@ -54,7 +56,7 @@ export function changePassword(values: ChangePasswordValues): Promise<void> {
         confirm_password: values.confirmPassword,
       }),
     },
-    { fallbackMsg: "Error al actualizar la contraseña." },
+    { fallbackMsg: t("profile:password.updateError") },
   ).then(() => undefined);
 }
 
@@ -62,6 +64,6 @@ export function deleteAccount(password: string): Promise<void> {
   return apiJson(
     "/api/users/me",
     { method: "DELETE", body: json({ password }) },
-    { fallbackMsg: "Error al eliminar la cuenta." },
+    { fallbackMsg: t("profile:delete.error") },
   ).then(() => undefined);
 }

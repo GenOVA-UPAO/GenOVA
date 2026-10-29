@@ -1,4 +1,5 @@
 import { type Ref, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -25,6 +26,7 @@ export function ProfileRowMenu({
   onRename,
   onDelete,
 }: Readonly<ProfileRowMenuProps>) {
+  const { t } = useTranslation("llm-settings");
   // Al elegir «Renombrar», el foco va al campo del nombre: el menú no debe
   // devolverlo a su botón al cerrarse.
   const renaming = useRef(false);
@@ -36,7 +38,7 @@ export function ProfileRowMenu({
           variant="ghost"
           size="icon-sm"
           className="shrink-0 text-muted-foreground max-sm:size-11"
-          aria-label={`Más acciones para el perfil ${name}`}
+          aria-label={t("profiles.moreActions", { name })}
         >
           <Icon name="dots-three-vertical" size="text-base" />
         </Button>
@@ -56,12 +58,12 @@ export function ProfileRowMenu({
           }}
         >
           <Icon name="pencil-simple" size="text-sm" />
-          Renombrar
+          {t("profiles.rename")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={onDelete}>
           <Icon name="trash" size="text-sm" />
-          Borrar perfil
+          {t("profiles.deleteAction")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

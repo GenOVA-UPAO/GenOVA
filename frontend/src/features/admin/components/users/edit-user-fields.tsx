@@ -1,11 +1,11 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 
 import { fieldDescribedBy } from "../../lib/field-described-by";
 import type { UserFormErrors, UserFormValues } from "../../lib/user-form";
 import { FieldMessage } from "./field-message";
-
-const UNI_HINT = "Solo números, sin espacios ni guiones.";
 
 interface EditUserFieldsProps {
   values: UserFormValues;
@@ -20,10 +20,13 @@ export function EditUserFields({
   disabled,
   onChange,
 }: Readonly<EditUserFieldsProps>) {
+  const { t } = useTranslation("admin");
+  const uniHint = t("users.editFields.universityIdHint");
+
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="edit-full-name">Nombre completo</Label>
+        <Label htmlFor="edit-full-name">{t("users.editFields.fullName")}</Label>
         <Input
           id="edit-full-name"
           type="text"
@@ -40,7 +43,7 @@ export function EditUserFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-email">Correo electrónico</Label>
+        <Label htmlFor="edit-email">{t("users.editFields.email")}</Label>
         <Input
           id="edit-email"
           type="email"
@@ -58,21 +61,21 @@ export function EditUserFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-uni-id">Código universitario (UPAO)</Label>
+        <Label htmlFor="edit-uni-id">{t("users.editFields.universityId")}</Label>
         <Input
           id="edit-uni-id"
           type="text"
           inputMode="numeric"
           autoComplete="off"
           aria-invalid={errors.university_id !== undefined || undefined}
-          aria-describedby={fieldDescribedBy("edit-uni-id", errors.university_id, UNI_HINT)}
+          aria-describedby={fieldDescribedBy("edit-uni-id", errors.university_id, uniHint)}
           value={values.university_id}
           disabled={disabled}
           onChange={(event) => {
             onChange("university_id", event.target.value);
           }}
         />
-        <FieldMessage id="edit-uni-id" error={errors.university_id} hint={UNI_HINT} />
+        <FieldMessage id="edit-uni-id" error={errors.university_id} hint={uniHint} />
       </div>
     </>
   );

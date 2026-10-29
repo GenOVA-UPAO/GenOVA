@@ -1,10 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
 
-function messagePreview(text: string): string {
+function messagePreview(text: string, empty: string): string {
   const trimmed = text.trim();
-  if (!trimmed) return "sin texto";
+  if (!trimmed) return empty;
   return trimmed.length > 48 ? `${trimmed.slice(0, 48)}…` : trimmed;
 }
 
@@ -13,6 +15,7 @@ function messagePreview(text: string): string {
  * enfocar el mensaje) salvo en pantallas táctiles, donde siempre se ve.
  */
 export function ChatDeleteButton({ text, onDelete, className }: Readonly<{ text: string; onDelete: () => void; className?: string }>) {
+  const { t } = useTranslation();
   return (
     <Button
       variant="ghost"
@@ -21,7 +24,7 @@ export function ChatDeleteButton({ text, onDelete, className }: Readonly<{ text:
         "shrink-0 text-muted-foreground opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-destructive focus-visible:opacity-100 pointer-coarse:opacity-100",
         className,
       )}
-      aria-label={`Eliminar mensaje: ${messagePreview(text)}`}
+      aria-label={t("workspace:eliminar_mensaje_value", { p0: messagePreview(text, t("workspace:sin_texto")) })}
       onClick={onDelete}
     >
       <Icon name="trash" className="size-3.5" />

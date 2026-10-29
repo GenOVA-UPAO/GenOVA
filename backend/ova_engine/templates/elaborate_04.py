@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
@@ -10,7 +11,7 @@ from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summ
 ITERATIONS = 3
 
 PARAMS = (
-    Param("num_params", 3, min=3, max=4, help="Número de parámetros ajustables de la simulación"),
+    Param("num_params", 3, min=2, max=5, help="Número de parámetros ajustables de la simulación"),
 )
 
 
@@ -43,18 +44,47 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_params"]
-    return f"""[ROL] Diseñador de simulaciones de administración de bases de datos Oracle.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Diseña una simulación donde el estudiante aplique «{concept}» a un escenario Oracle realista (p. ej. dimensionar la SGA, planificar backups según el RPO, elegir índices) ajustando EXACTAMENTE {n} parámetros numéricos con sliders. Un valor ÓPTIMO interior a cada rango equilibra rendimiento y costo: ni todo al mínimo ni todo al máximo.
+    d = domain_for(concept, contexto)
+    _l0 = d.pick(
+        f"""[ROL] Diseñador de simulaciones de administración de bases de datos {d.bd_adj}.""",
+        f"""[ROL] Diseñador de simulaciones interactivas para {d.audiencia}.""",
+    )
+    _l1 = d.pick(
+        f"""[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).""",
+        f"""[CONCEPTO] «{concept}» ({d.curso}).""",
+    )
+    _l2 = d.pick(
+        f"""[TAREA] Diseña una simulación donde el estudiante aplique «{concept}» a un escenario {d.si_oracle("Oracle ", "")}realista (p. ej. {d.si_oracle("dimensionar la SGA", "dimensionar la memoria caché")}, planificar backups según el RPO, elegir índices) ajustando EXACTAMENTE {n} parámetros numéricos con sliders. Un valor ÓPTIMO interior a cada rango equilibra rendimiento y costo: ni todo al mínimo ni todo al máximo.""",
+        f"""[TAREA] Diseña una simulación donde el estudiante aplique «{concept}» a un escenario realista del área del tema ajustando EXACTAMENTE {n} parámetros numéricos con sliders. Un valor ÓPTIMO interior a cada rango equilibra beneficio y costo: ni todo al mínimo ni todo al máximo.""",
+    )
+    _l3 = d.pick(
+        """- escenario: la situación del DBA y la meta a lograr (≤45 palabras).""",
+        """- escenario: la situación del estudiante y la meta a lograr (≤45 palabras).""",
+    )
+    _l4 = d.pick(
+        """- metrica_rendimiento: nombre de la métrica de calidad que sube al acercarse al óptimo (p. ej. «Tasa de aciertos de caché»).""",
+        """- metrica_rendimiento: nombre de la métrica de calidad o logro que sube al acercarse al óptimo.""",
+    )
+    _l5 = d.pick(
+        """- metrica_costo: nombre del costo de recursos que sube con los valores altos (p. ej. «Memoria consumida»).""",
+        """- metrica_costo: nombre del costo o recurso que sube con los valores altos.""",
+    )
+    _l6 = d.pick(
+        f"""[RESTRICCIONES] Valores y unidades realistas {d.si_oracle("de Oracle", "del tema")}; los óptimos deben poder justificarse técnicamente.""",
+        f"""[RESTRICCIONES] Valores y unidades realistas del área; los óptimos deben poder justificarse con el concepto. Mantente estrictamente en el tema «{concept}» y en el nivel indicado ({d.audiencia}); {d.guia_nivel}""",
+    )
+    return f"""{_l0}
+{_l1}
+{_l2}
 - titulo: título corto de la simulación.
-- escenario: la situación del DBA y la meta a lograr (≤45 palabras).
+{_l3}
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás optimizar…»).
 - parametros: por cada parámetro: `nombre`, `unidad` (MB, %, min, sesiones…), `minimo`, `maximo` (enteros, minimo < maximo), `inicial` (valor de partida alejado del óptimo), `optimo` (entero dentro del rango, la mejor decisión técnica), `si_bajo` (qué problema ocurre si el valor queda por debajo del óptimo y por qué, ≤25 palabras) y `si_alto` (qué ocurre si queda por encima, ≤25 palabras).
-- metrica_rendimiento: nombre de la métrica de calidad que sube al acercarse al óptimo (p. ej. «Tasa de aciertos de caché»).
-- metrica_costo: nombre del costo de recursos que sube con los valores altos (p. ej. «Memoria consumida»).
+{_l4}
+{_l5}
 - ejemplo: un ejemplo trabajado breve de cómo ajustar un parámetro razonando causa y efecto (≤40 palabras).
 - cierre: patrón general que el estudiante debe llevarse.
-[RESTRICCIONES] Valores y unidades realistas de Oracle; los óptimos deben poder justificarse técnicamente.
+{_l6}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -178,6 +208,9 @@ refresh();
 def sample(concept: str, p: dict) -> dict:
     names = [("Tamaño de buffer cache", "MB", 64, 2048, 128, 1024), ("Sesiones máximas", "ses", 10, 500, 20, 200),
              ("Tamaño de shared pool", "MB", 32, 1024, 48, 384), ("Frecuencia de checkpoint", "min", 1, 60, 2, 15)]
+    # El rango configurable llega a 5 parámetros: se completa con parámetros genéricos.
+    while len(names) < p["num_params"]:
+        names.append((f"Parámetro {len(names) + 1}", "u", 10, 100, 20, 60))
     return {
         "titulo": f"Simulación de {concept}"[:70],
         "escenario": f"Dimensiona {concept} para una base de datos Oracle de ventas con picos al fin de mes.",

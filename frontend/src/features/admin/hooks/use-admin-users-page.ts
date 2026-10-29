@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { useState } from "react";
 
 import { useCurrentUser } from "@/core/auth/auth-store";
@@ -29,7 +30,7 @@ export function useAdminUsersPage() {
     setStatus: controller.setUserStatus,
   });
   const errorText = usersQuery.error
-    ? errorMessage(usersQuery.error, "Error al cargar usuarios.")
+    ? errorMessage(usersQuery.error, t("admin:users.toast.loadError"))
     : "";
 
   const saveEditedUser = (fields: UserEditPayload) => {

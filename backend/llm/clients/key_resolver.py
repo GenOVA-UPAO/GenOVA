@@ -19,6 +19,10 @@ logger = structlog.get_logger(__name__)
 _DB_KEY = "{}_api_key".format
 
 
+def environment_key(provider: str) -> str | None:
+    return os.getenv(ENV_VARS.get(provider, ""), "").strip() or None
+
+
 def _inherited_key(provider: str, user_id, db) -> str | None:
     if db is None or user_id is None:
         return None

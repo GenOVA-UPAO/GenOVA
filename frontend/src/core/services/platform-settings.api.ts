@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { apiJson } from "@/core/lib/http";
 
 const PLATFORM_CONFIG = "/api/admin/platform-config";
@@ -8,6 +10,7 @@ export interface PlatformConfigResponse {
   providers?: string[];
   /** Proveedores con clave en una variable de entorno del servidor. Se usa si no hay clave guardada. */
   server_keys?: string[];
+  checks?: Record<string, { provider: string; code: string; models: number | null; key_source?: string }>;
 }
 
 export function getPlatformConfig(): Promise<PlatformConfigResponse> {
@@ -15,7 +18,7 @@ export function getPlatformConfig(): Promise<PlatformConfigResponse> {
     PLATFORM_CONFIG,
     {},
     {
-      fallbackMsg: "No se pudo cargar la configuración de plataforma.",
+      fallbackMsg: i18n.t("shared:no_se_pudo_cargar_la_configuracion_de_plataforma"),
     },
   );
 }
@@ -27,7 +30,7 @@ export function savePlatformConfigKey(
   return apiJson<PlatformConfigResponse>(
     PLATFORM_CONFIG,
     { method: "PUT", body: JSON.stringify({ [provider]: key }) },
-    { fallbackMsg: "No se pudo guardar la API key de plataforma." },
+    { fallbackMsg: i18n.t("shared:no_se_pudo_guardar_la_api_key_de_plataforma") },
   );
 }
 
@@ -36,7 +39,7 @@ export function getAdminLlmConfig(): Promise<unknown> {
     "/api/admin/llm-config",
     {},
     {
-      fallbackMsg: "No se pudo cargar la configuración de modelos.",
+      fallbackMsg: i18n.t("shared:no_se_pudo_cargar_la_configuracion_de_modelos"),
     },
   );
 }
@@ -45,7 +48,7 @@ export function saveAdminLlmConfig(config: unknown): Promise<unknown> {
   return apiJson(
     "/api/admin/llm-config",
     { method: "PUT", body: JSON.stringify(config) },
-    { fallbackMsg: "No se pudo guardar la configuración de modelos." },
+    { fallbackMsg: i18n.t("shared:no_se_pudo_guardar_la_configuracion_de_modelos") },
   );
 }
 
@@ -54,7 +57,7 @@ export function getAdminNodesConfig(): Promise<unknown> {
     "/api/admin/nodes-config",
     {},
     {
-      fallbackMsg: "No se pudo cargar la configuración de nodos.",
+      fallbackMsg: i18n.t("shared:no_se_pudo_cargar_la_configuracion_de_nodos"),
     },
   );
 }
@@ -63,7 +66,7 @@ export function saveAdminNodesConfig(payload: unknown): Promise<unknown> {
   return apiJson(
     "/api/admin/nodes-config",
     { method: "PUT", body: JSON.stringify(payload) },
-    { fallbackMsg: "No se pudo guardar la configuración de nodos." },
+    { fallbackMsg: i18n.t("shared:no_se_pudo_guardar_la_configuracion_de_nodos") },
   );
 }
 
@@ -72,7 +75,7 @@ export function getAdminGuardrails(): Promise<unknown> {
     "/api/admin/guardrails",
     {},
     {
-      fallbackMsg: "No se pudo cargar la configuración de guardrails.",
+      fallbackMsg: i18n.t("shared:no_se_pudo_cargar_la_configuracion_de_guardrails"),
     },
   );
 }
@@ -81,6 +84,20 @@ export function saveAdminGuardrails(payload: unknown): Promise<unknown> {
   return apiJson(
     "/api/admin/guardrails",
     { method: "PUT", body: JSON.stringify(payload) },
-    { fallbackMsg: "No se pudo guardar la configuración de guardrails." },
+    { fallbackMsg: i18n.t("shared:no_se_pudo_guardar_la_configuracion_de_guardrails") },
+  );
+}
+
+export interface TopicAreaResponse {
+  /** Área temática que guía todos los OVAs; vacía si el administrador no fijó ninguna. */
+  area: string;
+}
+
+/** Área temática activa. La puede leer cualquier usuario autenticado (no es solo de admin). */
+export function getTopicArea(): Promise<TopicAreaResponse> {
+  return apiJson<TopicAreaResponse>(
+    "/api/config/topic-area",
+    {},
+    { fallbackMsg: i18n.t("shared:no_se_pudo_cargar_la_configuracion_de_plataforma") },
   );
 }

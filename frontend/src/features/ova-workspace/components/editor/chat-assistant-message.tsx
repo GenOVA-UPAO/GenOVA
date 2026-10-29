@@ -1,24 +1,29 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 import type { RegenChatMessage } from "../../lib/regen-chat";
+import type { RegenCancel } from "./cancel-regen-button";
 import { ChatDeleteButton } from "./chat-delete-button";
-import { ChatProgressBar } from "./chat-progress-bar";
+import { ChatRunningExtras } from "./chat-running-extras";
 
 const STATUS = {
-  running: { icon: "spinner", tone: "text-primary", spin: true, label: "En curso" },
-  error: { icon: "warning-circle", tone: "text-destructive", spin: false, label: "Error" },
-  success: { icon: "check-circle", tone: "text-success", spin: false, label: "Completado" },
+  running: { icon: "spinner", tone: "text-primary", spin: true, label: "workspace:en_curso" },
+  error: { icon: "warning-circle", tone: "text-destructive", spin: false, label: "workspace:error" },
+  success: { icon: "check-circle", tone: "text-success", spin: false, label: "workspace:completado_93" },
   idle: { icon: "sparkle", tone: "text-primary", spin: false, label: "GenOVA" },
 } as const;
 
 interface Props {
   message: RegenChatMessage;
   onRemove: (id: string) => void;
+  cancel?: RegenCancel;
 }
 
 /** Respuesta del sistema: alineada a la izquierda, sin burbuja, con icono de estado. */
-export function ChatAssistantMessage({ message, onRemove }: Readonly<Props>) {
+export function ChatAssistantMessage({ message, onRemove, cancel }: Readonly<Props>) {
+  const { t } = useTranslation();
   const status = STATUS[message.status ?? "idle"];
   const running = message.status === "running";
   return (
@@ -29,7 +34,7 @@ export function ChatAssistantMessage({ message, onRemove }: Readonly<Props>) {
           message.status === "error" && "bg-destructive/10",
         )}
       >
-        <Icon name={status.icon} label={status.label} className={cn("size-3.5", status.tone, status.spin && "animate-spin")} />
+        <Icon name={status.icon} label={message.status ? t(status.label) : status.label} className={cn("size-3.5", status.tone, status.spin && "animate-spin")} />
       </span>
       <div className="min-w-0 flex-1 pt-0.5">
         <p
@@ -40,9 +45,7 @@ export function ChatAssistantMessage({ message, onRemove }: Readonly<Props>) {
         >
           {message.text}
         </p>
-        {running && message.percentage !== undefined && (
-          <ChatProgressBar percentage={message.percentage} className="mt-1.5 max-w-60" />
-        )}
+        {running && <ChatRunningExtras percentage={message.percentage} cancel={cancel} />}
       </div>
       {!running && (
         <ChatDeleteButton

@@ -20,6 +20,7 @@ class EditorOva:
     title: str
     description: str | None
     status: str
+    package_theme: str = "upao"
 
 
 @dataclass(frozen=True, slots=True)

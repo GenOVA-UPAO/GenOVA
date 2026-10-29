@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Checkbox } from "@/core/components/ui/checkbox";
 
 import type { ApplyPreview } from "../lib/bulk-apply";
@@ -20,6 +22,7 @@ export function ApplyModelRow({
   name,
   onToggle,
 }: Readonly<ApplyRowProps>) {
+  const { t } = useTranslation("llm-settings");
   const id = `apply-${item.task}`;
   const fallbacksChange = withFallbacks && !item.unchanged;
   return (
@@ -37,12 +40,12 @@ export function ApplyModelRow({
         <span className="font-medium">{taskMeta(item.task).label}</span>
         {item.unchanged ? (
           <span className="block text-xs text-muted-foreground">
-            {withFallbacks ? "Ya usa este modelo y estos respaldos." : "Ya usa este modelo."}
+            {withFallbacks ? t("tasks.alreadyUsesModelAndFallbacks") : t("tasks.alreadyUsesModel")}
           </span>
         ) : (
           <span className="block text-xs text-muted-foreground">
-            Ahora: {name(item.from)}
-            {fallbacksChange ? `. Respaldos: ${listOrNone(item.fallbacksFrom, name)}` : ""}
+            {t("tasks.nowWithColon")} {name(item.from)}
+            {fallbacksChange ? t("tasks.fallbacksPrefix", { list: listOrNone(item.fallbacksFrom, name, t) }) : ""}
           </span>
         )}
       </label>
@@ -50,6 +53,7 @@ export function ApplyModelRow({
   );
 }
 
-function listOrNone(entries: Entry[], name: (entry: Entry) => string): string {
-  return entries.length > 0 ? entries.map(name).join(", ") : "ninguno";
+function listOrNone(entries: Entry[], name: (entry: Entry) => string, t: (key: string) => string): string {
+  return entries.length > 0 ? entries.map(name).join(", ") : t("tasks.none");
 }
+

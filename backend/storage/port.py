@@ -15,15 +15,19 @@ class StorageError(RuntimeError):
 
 
 class FileStoragePort(Protocol):
-    def is_configured(self) -> bool: ...
+    def is_configured(self) -> bool:
+        raise NotImplementedError
 
-    def upload_zip(self, object_key: str, zip_bytes: bytes) -> str: ...
+    def upload_zip(self, object_key: str, zip_bytes: bytes) -> str:
+        raise NotImplementedError
 
     def signed_url(
         self,
         object_key: str,
         ttl_seconds: int = 3600,
         download_as: str | None = None,
-    ) -> str: ...
+    ) -> str:
+        raise NotImplementedError
 
-    def delete_zip(self, object_key: str) -> None: ...
+    def delete_zip(self, object_key: str) -> None:
+        raise NotImplementedError

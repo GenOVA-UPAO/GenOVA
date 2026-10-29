@@ -1,6 +1,7 @@
 import { Icon } from "@/core/components/icon";
 
 import type { Permission } from "../lib/permissions";
+import { permissionDescription, permissionLabel } from "../lib/permissions";
 
 interface RolePermissionOptionProps {
   permission: Permission;
@@ -16,6 +17,7 @@ export function RolePermissionOption({
   disabled,
   onToggle,
 }: Readonly<RolePermissionOptionProps>) {
+  const desc = permissionDescription(permission);
   return (
     <label className="flex cursor-pointer items-start gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 has-disabled:cursor-not-allowed">
       <span className="relative mt-0.5 flex items-center justify-center">
@@ -37,10 +39,10 @@ export function RolePermissionOption({
         )}
       </span>
       <span className="flex flex-col">
-        <span className="text-sm font-medium">{permission.label}</span>
-        {permission.desc !== undefined && (
-          <span className="mt-0.5 text-xs text-muted-foreground">{permission.desc}</span>
-        )}
+        <span className="text-sm font-medium">{permissionLabel(permission)}</span>
+        {desc ? (
+          <span className="mt-0.5 text-xs text-muted-foreground">{desc}</span>
+        ) : null}
       </span>
     </label>
   );

@@ -59,7 +59,9 @@ def plan_ova_global(concept: str, contexto: str = "", per_phase: int = 3, timeou
         for p, items in catalog.items()
         for n, name in items.items()
     }
-    state = f"OVA 5E universitario (Sistemas de Gestión de Base de Datos) sobre «{concept}»."
+    from ova_engine.domain_context import domain_for
+
+    state = f"OVA 5E para {domain_for(concept, contexto).para_state} sobre «{concept}»."
     if contexto:
         state += f"\nMaterial del docente: {contexto[:1500]}"
     url, headers, extra = _endpoint()

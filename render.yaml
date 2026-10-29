@@ -99,6 +99,11 @@ services:
       - key: DB_MAX_OVERFLOW
         value: "5"
 
+      # ─── Sentry (opcional): sin SENTRY_DSN no se activa. Ver readme (Monitoreo). ──
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0"
       # ─── Proveedores LLM (al menos GROQ u OPENROUTER para generar OVA) ──────
       - key: GROQ_API_KEY
         sync: false

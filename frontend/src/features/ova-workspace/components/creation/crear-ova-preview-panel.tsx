@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { fetchJobResourceContent, type ResourceContent } from "../../api/ova-jobs.api";
 import type { ResourceVM } from "../../lib/ova-job-view-model";
@@ -28,6 +29,7 @@ function resourceHtml(data: ResourceContent & { html?: string }): string {
 }
 
 export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [tabId, setTabId] = useState<string>();
   const doneTabs = viewModel.filter((resource) => resource.status === "check");
   const pendingTabs = viewModel.filter((resource) => resource.status !== "check" && resource.status !== "X");
@@ -57,6 +59,7 @@ export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin
           loading={content.isPending}
           html={html}
           error={content.isError}
+          failed={viewModel.length > 0 && viewModel.every((r) => r.status === "X" || r.status === "cancelado")}
           onRetry={() => {
             void content.refetch();
           }}
@@ -65,7 +68,7 @@ export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin
       {active && (
         <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
           <span className={`shrink-0 rounded-full border px-2 py-0.5 font-medium ${phaseMeta(active.phase).badge}`}>
-            Fase: {phaseMeta(active.phase).label || active.phase}
+            {t("workspace:fase")} {phaseMeta(active.phase, t).label || active.phase}
           </span>
           <span className="truncate">{active.label}</span>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Icon } from "@/core/components/icon";
@@ -38,6 +39,7 @@ function rememberDismissed(jobId: string): void {
  * enlace lleva de vuelta a esa página, donde se pueden reintentar.
  */
 export function WorkspaceFailedJobNotice({ ovaId }: Readonly<{ ovaId: string }>) {
+  const { t } = useTranslation();
   const lookup = useOvaLatestJob(ovaId);
   const jobId = lookup.data?.job_id;
   const [dismissedId, setDismissedId] = useState<string | null>(null);
@@ -52,19 +54,18 @@ export function WorkspaceFailedJobNotice({ ovaId }: Readonly<{ ovaId: string }>)
       <p className="min-w-0 flex-1 text-muted-foreground">
         <span className="font-medium text-foreground">
           {failed === 1
-            ? "1 recurso no se pudo generar."
-            : `${String(failed)} recursos no se pudieron generar.`}
+            ? t("workspace:1_recurso_no_se_pudo_generar_163")
+            : t("workspace:value_recursos_no_se_pudieron_generar_164", { p0: String(failed) })}
         </span>{" "}
-        El OVA tiene solo lo que sí se generó.
-      </p>
+        {t("workspace:el_ova_tiene_solo_lo_que_si_se_genero")} </p>
       <div className="flex shrink-0 items-center gap-1">
         <Button asChild variant="outline" size="sm">
-          <Link to={`/crear?jobId=${encodeURIComponent(jobId)}`}>Revisar y reintentar</Link>
+          <Link to={`/crear?jobId=${encodeURIComponent(jobId)}`}>{t("workspace:revisar_y_reintentar")}</Link>
         </Button>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Descartar aviso"
+          aria-label={t("workspace:descartar_aviso")}
           onClick={() => {
             rememberDismissed(jobId);
             setDismissedId(jobId);

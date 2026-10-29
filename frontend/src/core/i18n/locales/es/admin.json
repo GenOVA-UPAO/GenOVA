@@ -1,0 +1,255 @@
+{
+  "api": {
+    "roles": {
+      "load": "No se pudieron cargar los roles.",
+      "duplicate": "Ya existe un rol con ese nombre.",
+      "updateUnexpected": "Ocurrió un error inesperado al actualizar el rol.",
+      "createUnexpected": "Ocurrió un error inesperado al crear el rol.",
+      "deleteUnexpected": "Ocurrió un error inesperado al eliminar el rol."
+    },
+    "registrationMode": {
+      "load": "No se pudo cargar el modo de registro.",
+      "save": "No se pudo guardar el modo de registro."
+    },
+    "users": {
+      "list": "No se pudo cargar la lista de usuarios.",
+      "updateRole": "Error al actualizar el rol.",
+      "updateProfile": "Error al actualizar el perfil.",
+      "updateStatus": "Error al actualizar el estado.",
+      "unlock": "Error al desbloquear al usuario.",
+      "sendEmail": "Error al enviar el correo."
+    }
+  },
+  "permissions": {
+    "groups": {
+      "ovas": "OVAs",
+      "admin": "Administración",
+      "ai": "Modelos de IA",
+      "links": "Docentes y alumnos"
+    },
+    "items": {
+      "createOva": {
+        "label": "Crear OVAs",
+        "desc": "Puede iniciar y generar nuevos objetos virtuales de aprendizaje."
+      },
+      "viewOva": {
+        "label": "Ver OVAs",
+        "desc": "Puede consultar OVAs a los que tenga acceso."
+      },
+      "exportOva": {
+        "label": "Exportar OVAs",
+        "desc": "Puede descargar OVAs en cualquiera de los formatos de exportación (SCORM, IMS, Web, EPUB, eXe, H5P) para el aula virtual."
+      },
+      "manageUsers": {
+        "label": "Gestionar usuarios",
+        "desc": "Puede listar, editar y administrar cuentas de usuario."
+      },
+      "manageRoles": {
+        "label": "Gestionar roles",
+        "desc": "Puede crear y modificar roles y sus permisos."
+      },
+      "viewAnalytics": {
+        "label": "Ver analíticas",
+        "desc": "Puede consultar métricas e informes de uso."
+      },
+      "modelsSelf": {
+        "label": "Configurar modelos propios",
+        "desc": "Puede elegir y ajustar sus propios modelos de IA."
+      },
+      "fallbackSelf": {
+        "label": "Configurar modelos de respaldo propios",
+        "desc": "Puede elegir qué modelos se usan si falla el principal."
+      },
+      "modelsPlatform": {
+        "label": "Configurar modelos de la plataforma",
+        "desc": "Puede elegir los modelos de IA que usa toda la plataforma."
+      },
+      "link": {
+        "label": "Vincular usuarios",
+        "desc": "Puede generar códigos para vincular alumnos a su cuenta."
+      },
+      "linkAdmin": {
+        "label": "Administrar vínculos",
+        "desc": "Puede administrar los vínculos entre docentes y alumnos."
+      }
+    }
+  },
+  "roles": {
+    "title": "Gestión de roles",
+    "subtitle": "Decide qué puede hacer cada perfil de usuario en GenOVA.",
+    "newRole": "Nuevo rol",
+    "loadError": "No se pudieron cargar los roles",
+    "emptyTitle": "Aún no hay roles",
+    "emptyDescription": "Crea un rol para decidir qué puede hacer cada perfil de usuario en GenOVA.",
+    "loading": "Cargando roles",
+    "listLabel": "Roles",
+    "systemBadge": "Sistema",
+    "thesisHint": "El modo tesis lo asigna a las cuentas nuevas, así que no se puede eliminar.",
+    "systemHint": "Los roles del sistema no se editan ni se eliminan.",
+    "editPermissions": "Editar permisos",
+    "delete": "Eliminar",
+    "noPermissions": "Sin permisos asignados",
+    "permissionsLabel": "Permisos",
+    "form": {
+      "createTitle": "Nuevo rol",
+      "editTitle": "Editar rol «{{name}}»",
+      "thesisHint": "El modo tesis asigna este rol por su nombre, así que no se puede cambiar.",
+      "createDescription": "Ponle un nombre y marca lo que podrán hacer sus usuarios.",
+      "editDescription": "Ajusta la descripción o los permisos. Los usuarios con este rol verán el cambio al recargar.",
+      "nameLabel": "Nombre del rol",
+      "nameHint": "Un nombre corto y único, por ejemplo «docente».",
+      "descriptionLabel": "Descripción (opcional)",
+      "nameRequired": "Escribe un nombre para el rol.",
+      "nameMaxLength": "El nombre no puede superar los 64 caracteres.",
+      "permissionsSection": "Permisos",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "create": "Crear rol",
+      "saving": "Guardando…",
+      "creating": "Creando…"
+    },
+    "deleteModal": {
+      "title": "¿Eliminar el rol «{{name}}»?",
+      "zeroUsers": "Ningún usuario tiene este rol, así que nadie perderá acceso. Esta acción no se puede deshacer.",
+      "hasUsers": "Este rol tiene {{count}} usuarios asignados. Elige a qué rol pasarán antes de eliminarlo. Esta acción no se puede deshacer.",
+      "targetLabel": "Pasar sus usuarios a",
+      "placeholder": "Elige un rol",
+      "selectTargetError": "Elige a qué rol pasarán sus usuarios.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar rol",
+      "deleting": "Eliminando…",
+      "reassignAndConfirm": "Reasignar y eliminar"
+    },
+    "toast": {
+      "created": "Rol creado con éxito",
+      "updated": "Rol actualizado con éxito",
+      "deleted": "Rol eliminado con éxito"
+    },
+    "connectError": "No se pudo conectar con el servidor. Intenta de nuevo.",
+    "utils": {
+      "noRole": "Sin rol",
+      "noUsers": "Sin usuarios",
+      "userCount_one": "1 usuario",
+      "userCount_other": "{{count}} usuarios"
+    }
+  },
+  "thesis": {
+    "title": "Modo tesis",
+    "enabledDesc": "Activado: las cuentas que se registren reciben el rol «Usuarios prueba», pensado para los participantes del estudio. Sus permisos se ajustan en la lista de roles.",
+    "disabledDesc": "Desactivado: las cuentas que se registren reciben el rol «Usuario», con acceso completo. Actívalo durante el estudio de tesis."
+  },
+  "users": {
+    "title": "Usuarios",
+    "subtitle": "Cuentas registradas en la plataforma",
+    "subtitleLoading": "Cargando usuarios…",
+    "subtitleCount_one": "1 usuario registrado en la plataforma",
+    "subtitleCount_other": "{{count}} usuarios registrados en la plataforma",
+    "loadError": "No se pudieron cargar los usuarios",
+    "loading": "Cargando usuarios",
+    "toolbar": {
+      "searchPlaceholder": "Buscar por nombre o email",
+      "filterRoleLabel": "Filtrar usuarios por rol",
+      "allRoles": "Todos los roles"
+    },
+    "table": {
+      "user": "Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "identity": {
+      "noName": "Sin nombre",
+      "you": "Tú",
+      "code": "Código"
+    },
+    "roleSelect": {
+      "noRole": "Sin rol",
+      "roleLabel": "Rol de {{name}}"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "locked": "Bloqueado",
+      "lockedUntil": "Bloqueado hasta {{date}}"
+    },
+    "row": {
+      "ownAccountHint": "Tu propia cuenta no se modifica desde aquí",
+      "adminOnlyHint": "Solo un administrador puede modificar esta cuenta"
+    },
+    "actions": {
+      "moreActions": "Más acciones",
+      "moreActionsFor": "Más acciones para {{name}}",
+      "editProfile": "Editar perfil",
+      "resetPasswordEmail": "Restablecer por correo",
+      "unlockAccount": "Desbloquear cuenta",
+      "deactivateAccount": "Desactivar cuenta",
+      "activateAccount": "Activar cuenta",
+      "notAvailable": "Acciones no disponibles."
+    },
+    "empty": {
+      "filterTitle": "Sin resultados",
+      "filterDesc": "No hay coincidencias para ese criterio.",
+      "clearFilters": "Quitar filtros",
+      "emptyTitle": "No hay usuarios",
+      "emptyDesc": "Cuando se registren en la plataforma aparecerán aquí."
+    },
+    "pagination": {
+      "ariaLabel": "Paginación de usuarios",
+      "page": "Página",
+      "of": "de",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "editModal": {
+      "title": "Editar perfil",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios"
+    },
+    "editFields": {
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "universityId": "Código universitario (UPAO)",
+      "universityIdHint": "Solo números, sin espacios ni guiones.",
+      "gender": "Sexo",
+      "genderMale": "Masculino",
+      "genderFemale": "Femenino",
+      "genderOther": "Otro o prefiero no decirlo",
+      "phone": "Teléfono de contacto",
+      "phoneHint": "Con prefijo de país, por ejemplo +51987285992."
+    },
+    "resetModal": {
+      "title": "¿Enviar a {{name}} un correo para restablecer su contraseña?",
+      "description": "Le llegará a {{email}} un enlace para elegir una contraseña nueva, válido 24 horas.",
+      "cancel": "Cancelar",
+      "confirm": "Enviar correo"
+    },
+    "deactivateModal": {
+      "activateTitle": "¿Activar la cuenta de {{name}}?",
+      "activateDesc": "Podrá volver a iniciar sesión con su correo y su contraseña.",
+      "activateConfirm": "Activar cuenta",
+      "activating": "Activando…",
+      "deactivateTitle": "¿Desactivar la cuenta de {{name}}?",
+      "deactivateDesc": "No podrá iniciar sesión hasta que vuelvas a activarla. Sus OVAs y sus datos se conservan.",
+      "deactivateConfirm": "Desactivar cuenta",
+      "deactivating": "Desactivando…",
+      "cancel": "Cancelar"
+    },
+    "toast": {
+      "roleUpdated": "Rol del usuario actualizado.",
+      "profileUpdated": "Perfil actualizado.",
+      "userActivated": "Usuario activado.",
+      "userDeactivated": "Usuario desactivado.",
+      "userUnlocked": "Usuario desbloqueado.",
+      "resetEmailSent": "Correo de restablecimiento en camino.",
+      "loadError": "Error al cargar usuarios."
+    },
+    "validation": {
+      "fullNameRequired": "El nombre completo es requerido.",
+      "fullNameMin": "El nombre debe tener al menos 3 caracteres.",
+      "emailInvalid": "Ingresa un correo electrónico válido.",
+      "universityIdDigits": "El código solo debe contener números.",
+      "universityIdMin": "El código debe ser mayor o igual a 1.",
+      "phoneFormat": "El teléfono solo debe contener dígitos y el signo +."
+    }
+  }
+}

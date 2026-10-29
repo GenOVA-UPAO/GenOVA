@@ -1,0 +1,53 @@
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import i18n from "i18next";
+import { describe, expect, it, vi } from "vitest";
+
+import { PackageThemeSelector } from "./package-theme-selector";
+
+const catalog = vi.hoisted(() => ({
+  data: {
+    themes: [
+      { id: "upao", label: "UPAO", tokens: { bg: "#ffffff", text: "#15233b", primary: "#0a3d91", accent: "#f47a20", action: "#b84b00", "on-action": "#ffffff", border: "#94a3b8", radius: "14px", "font-body": "system-ui" }, css: "" },
+      { id: "oscuro", label: "Oscuro", tokens: { bg: "#000000", text: "#ffffff", primary: "#767676", accent: "#ffae60", action: "#767676", "on-action": "#ffffff", border: "#888888", radius: "14px", "font-body": "system-ui" }, css: "" },
+    ],
+  },
+  isError: false,
+  refetch: vi.fn(),
+}));
+
+vi.mock("./use-package-themes", () => ({ usePackageThemes: () => catalog }));
+
+describe("PackageThemeSelector", () => {
+  it("traduce nombres del catálogo de API sin cambiar el identificador seleccionado", async () => {
+    render(<PackageThemeSelector value="oscuro" onChange={vi.fn()} />);
+    expect(screen.getByRole("option", { name: "Oscuro" })).toHaveValue("oscuro");
+    await act(() => i18n.changeLanguage("en"));
+    expect(screen.getByRole("combobox", { name: "Package theme" })).toHaveValue("oscuro");
+    expect(screen.getByRole("option", { name: "Dark" })).toHaveValue("oscuro");
+    expect(screen.getByText("Learning together")).toBeVisible();
+  });
+  it("ofrece selección accesible y una muestra del tema guardado", () => {
+    const change = vi.fn();
+    const { rerender } = render(<PackageThemeSelector value="upao" onChange={change} />);
+    const select = screen.getByRole("combobox", { name: "Tema del paquete" });
+    expect(select).toHaveAccessibleDescription("Se aplica a la vista previa y a todos los formatos exportados.");
+    fireEvent.change(select, { target: { value: "oscuro" } });
+    expect(change).toHaveBeenCalledWith("oscuro");
+    rerender(<PackageThemeSelector value="oscuro" onChange={change} />);
+    expect(select).toHaveValue("oscuro");
+    expect(screen.getByText("Aprender juntos").parentElement).toHaveStyle({ background: "#000000", color: "#ffffff" });
+  });
+
+  it("con «Paleta del OVA» explica que se conservan los colores y no pinta muestra", () => {
+    catalog.data.themes.push({ id: "original", label: "Paleta del OVA", tokens: { bg: "#ffffff" } as never, css: "" });
+    render(<PackageThemeSelector value="original" onChange={vi.fn()} />);
+    expect(screen.getByText(/Se conservan los colores con los que se generaron/)).toBeVisible();
+    expect(screen.queryByText("Aprender juntos")).not.toBeInTheDocument();
+    catalog.data.themes.pop();
+  });
+
+  it("impide cambios mientras se guarda", () => {
+    render(<PackageThemeSelector value="upao" onChange={vi.fn()} disabled />);
+    expect(screen.getByRole("combobox", { name: "Tema del paquete" })).toBeDisabled();
+  });
+});

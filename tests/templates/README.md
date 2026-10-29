@@ -1,4 +1,4 @@
-# Regresión de las 49 plantillas
+# Regresión de las 51 plantillas
 
 Desde la raíz del worktree:
 
@@ -10,7 +10,7 @@ pnpm --filter genova-tests exec playwright install --with-deps chromium
 pnpm --filter genova-tests test:templates
 ```
 
-La suite falla si el catálogo deja de contener exactamente 49 fixtures. Usa el
+La suite falla si el catálogo deja de contener exactamente 51 fixtures. Usa el
 render de producción, incluyendo CSS y Shadow DOM UPAO, y sirve estáticos en
 `127.0.0.1:8790`. No requiere backend, frontend, BD o proveedor LLM.
 
@@ -34,6 +34,11 @@ pnpm --filter genova-tests test:templates --grep referencias --update-snapshots
 CI ejecuta cuatro shards independientes con cuatro workers cada uno, sube
 trazas, auditorías y reporte HTML siempre, y corta a los diez minutos. Los
 paths incluyen plantillas, fixtures, runtime UPAO, fuentes y cambios de la suite.
+
+`templates/themes.spec.js` audita con axe las 51 plantillas en cada tema de paquete
+(upao, claro, oscuro, alto contraste e infantil; 0 fallos serious/critical). Usa las copias
+`tests/.ova-rendered/<tema>/<recurso>.html` que genera `ova_engine_render.py` con el mismo
+`inject_package_theme` del exportador.
 
 Para hosts con poca memoria: añadir `--workers=1`. Los servidores lanzados por
 Playwright se cierran automáticamente al finalizar normalmente la ejecución.

@@ -21,12 +21,21 @@ const testDir = defineBddConfig({
   tags: process.env.BDD_TAGS || undefined,
 })
 
+// Los escenarios @global-config cambian configuración GLOBAL de la plataforma (área
+// temática) y afectarían a cualquier otro escenario en paralelo: corren en su propio
+// proyecto, que solo arranca cuando el proyecto principal ha terminado.
 export default defineConfig({
   testDir,
   timeout: 180000,
+  projects: [
+    { name: 'e2e', grepInvert: /@global-config/ },
+    { name: 'e2e-global-config', grep: /@global-config/, dependencies: ['e2e'] },
+  ],
   workers: process.env.CI ? 2 : 1,
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
+    // La interfaz detecta el idioma del navegador y los escenarios están en español.
+    locale: 'es-PE',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     // Cada escenario deja su grabación en tests/test-results/<escenario>/video.webm:

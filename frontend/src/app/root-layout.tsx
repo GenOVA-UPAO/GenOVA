@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Outlet, useMatches, useNavigate } from "react-router";
 
 import { authStore } from "@/core/auth/auth-store";
@@ -9,14 +10,16 @@ import type { RouteHandle } from "./router";
 
 /** Page title = deepest route `handle.title` + brand suffix. */
 function useRouteTitle(): void {
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage;
   const matches = useMatches();
-  const title = [...matches]
-    .reverse()
-    .map((m) => (m.handle as RouteHandle | undefined)?.title)
-    .find(Boolean);
   useEffect(() => {
+    const title = [...matches]
+      .reverse()
+      .map((m) => (m.handle as RouteHandle | undefined)?.title)
+      .find(Boolean);
     document.title = title ? `${title} · GenOVA` : "GenOVA";
-  }, [title]);
+  }, [matches, language]);
 }
 
 export function RootLayout() {

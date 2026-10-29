@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { fetchVersionDiff, revertOvaVersion } from "../../api/ova-workspace.api";
 import { ovaWorkspaceKey, useOvaWorkspace } from "../../hooks/use-ova-workspace";
@@ -10,11 +11,48 @@ import { VersionDiff } from "./version-diff";
 import { VersionHistoryFooter } from "./version-history-footer";
 import { VersionHistoryList } from "./version-history-list";
 
+function toggleSelection(current: string[], id: string): string[] {
+  return current.includes(id)
+    ? current.filter((value) => value !== id)
+    : [...current, id].slice(0, 2);
+}
+
+interface RestoreConfirmOptions {
+  target: string | undefined;
+  versions: OvaVersionRow[];
+  isLoading: boolean;
+  onConfirm: (targetId: string) => void;
+  onCancel: () => void;
+}
+
+function renderRestoreConfirm({
+  target,
+  versions,
+  isLoading,
+  onConfirm,
+  onCancel,
+}: Readonly<RestoreConfirmOptions>) {
+  if (!target) return null;
+  const match = versions.find((version) => version.id === target);
+  const versionNumber = String(match?.version_number ?? "");
+  return (
+    <RestoreVersionConfirm
+      versionNumber={versionNumber}
+      isLoading={isLoading}
+      onConfirm={() => {
+        onConfirm(target);
+      }}
+      onCancel={onCancel}
+    />
+  );
+}
+
 export default function VersionHistoryPanel({
   ovaId,
   readOnly = false,
   onClose,
 }: Readonly<{ ovaId: string; readOnly?: boolean; onClose: () => void }>) {
+  const { t } = useTranslation("workspace-versioning");
   const workspace = useOvaWorkspace(ovaId);
   const client = useQueryClient();
   const versions = sortVersionsDesc(workspace.data?.version_history as OvaVersionRow[] | undefined);
@@ -29,18 +67,16 @@ export default function VersionHistoryPanel({
       onClose();
     },
   });
-  const toggle = (id: string, checked: boolean) => {
-    setSelected(checked ? [...selected, id].slice(0, 2) : selected.filter((value) => value !== id));
+  const toggle = (id: string) => {
+    setSelected(toggleSelection(selected, id));
     diff.reset();
   };
-  const targetNumber = String(
-    versions.find((version) => version.id === target)?.version_number ?? "",
-  );
   const error = diff.error ?? revert.error;
+  const descriptionKey = readOnly ? "history.descriptionReadOnly" : "history.description";
   return (
     <WorkspaceModal
-      title="Historial de versiones"
-      description={historyDescription(readOnly)}
+      title={t("history.title")}
+      description={t(descriptionKey)}
       size={diff.data ? "xl" : "lg"}
       onClose={onClose}
       footer={
@@ -72,18 +108,17 @@ export default function VersionHistoryPanel({
           {error.message}
         </p>
       )}
-      {target && (
-        <RestoreVersionConfirm
-          versionNumber={targetNumber}
-          isLoading={revert.isPending}
-          onConfirm={() => {
-            revert.mutate(target);
-          }}
-          onCancel={() => {
-            setTarget(undefined);
-          }}
-        />
-      )}
+      {renderRestoreConfirm({
+        target,
+        versions,
+        isLoading: revert.isPending,
+        onConfirm: (targetId) => {
+          revert.mutate(targetId);
+        },
+        onCancel: () => {
+          setTarget(undefined);
+        },
+      })}
     </WorkspaceModal>
   );
 }
@@ -104,11 +139,6 @@ function useVersionCompare(ovaId: string, selected: string[], versions: OvaVersi
     },
   });
   return { diff, diffRef };
-}
-
-function historyDescription(readOnly: boolean): string {
-  if (readOnly) return "Compara dos versiones del OVA.";
-  return "Compara dos versiones del OVA o restaura una anterior.";
 }
 
 /** Sin «Restaurar» cuando el OVA es de otra persona. */

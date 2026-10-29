@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Switch } from "@/core/components/ui/switch";
 
 interface RegistrationModeCardProps {
@@ -6,17 +8,14 @@ interface RegistrationModeCardProps {
   onToggle: () => void;
 }
 
-const TESIS_DESC =
-  "Activado: las cuentas que se registren reciben el rol «Usuarios prueba», pensado para los participantes del estudio. Sus permisos se ajustan en la lista de roles.";
-const OPEN_DESC =
-  "Desactivado: las cuentas que se registren reciben el rol «Usuario», con acceso completo. Actívalo durante el estudio de tesis.";
-
 /** Rol que reciben las cuentas nuevas (modo tesis) explicado junto al interruptor. */
 export function RegistrationModeCard({
   tesis,
   saving,
   onToggle,
 }: Readonly<RegistrationModeCardProps>) {
+  const { t } = useTranslation("admin");
+
   return (
     <section
       aria-labelledby="registration-mode-title"
@@ -24,16 +23,16 @@ export function RegistrationModeCard({
     >
       <div className="min-w-0 space-y-1">
         <h2 id="registration-mode-title" className="text-base font-semibold">
-          Modo tesis
+          {t("thesis.title")}
         </h2>
         <p id="registration-mode-desc" className="max-w-prose text-sm text-muted-foreground">
-          {tesis ? TESIS_DESC : OPEN_DESC}
+          {tesis ? t("thesis.enabledDesc") : t("thesis.disabledDesc")}
         </p>
       </div>
       <Switch
         checked={tesis}
         onCheckedChange={onToggle}
-        aria-label="Modo tesis"
+        aria-label={t("thesis.title")}
         aria-describedby="registration-mode-desc"
         aria-busy={saving || undefined}
         disabled={saving}

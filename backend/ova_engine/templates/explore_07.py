@@ -8,11 +8,13 @@ guiadas progresivas de observación que culminan en la revelación del mecanismo
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, b, i, obj, s
 
 PARAMS = (
-    Param("num_steps", 3, min=3, max=4, help="Número de pasos guiados"),
+    Param("num_steps", 4, min=3, max=6, help="Número de pasos guiados"),
 )
 
 
@@ -54,11 +56,13 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_steps"]
-    return f"""[ROL] Instructor de laboratorio de monitoreo y rendimiento de bases de datos para universitarios.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Instructor de laboratorio de monitoreo y rendimiento de bases de datos para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Diseña un experimento guiado de observación científica con {n} pasos progresivos para explorar «{concept}». Proporciona un dataset de métricas gráficas comparativas (ej. filas de la tabla vs costo de consulta con/sin índice, sesiones concurrentes vs tiempo de espera por bloqueos, o tasa de transacciones vs latencia de buffer pool):
 - titulo: título motivador del experimento guiado (≤10 palabras).
-- descripcion_dataset: descripción contextual de las métricas simuladas (de dónde provienen, ej. trazas de V$SQL_PLAN o V$SYSSTAT, qué representa el eje X y qué representa el eje Y, ≤45 palabras).
+- descripcion_dataset: descripción contextual de las métricas simuladas (de dónde provienen, ej. {d.si_oracle("trazas de V$SQL_PLAN o V$SYSSTAT", "planes de ejecución o estadísticas del motor")}, qué representa el eje X y qué representa el eje Y, ≤45 palabras).
 - puntos: entre 12 y 20 mediciones numéricas. Cada punto tiene coordenadas enteras `x` e `y` y un nombre de `grupo` comparativo (ej. "Sin índice" vs "Con índice", o "Cache frío" vs "Cache caliente"). Los puntos deben formar dos o tres series claramente contrastables que revelen el impacto observable de «{concept}».
 - preguntas: exactamente {n} preguntas de observación progresivas (paso 1 a {n}) que guíen al estudiante en el análisis visual del gráfico:
   * `paso`: número entero correlativo del paso (1 a {n}).
@@ -67,6 +71,22 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `opciones`: entre 2 y 3 opciones de respuesta; exactamente UNA con `correcta: true` y las demás `correcta: false`. Cada opción incluye `texto` (interpretación de lo observado, ≤14 palabras) y `feedback` que razona la observación (≤20 palabras).
 - revelacion: explicación pedagógica clara y fundamentada que conecta el patrón visual observado con el principio de funcionamiento de «{concept}» (≤50 palabras).
 [RESTRICCIONES] Las preguntas guían el razonamiento inductivo y la observación visual, no juzgan ni evalúan de forma punitiva. Sin código de programación visible ni sintaxis SQL. No generes etiquetas HTML ni menciones al esquema JSON.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Instructor de laboratorio de observación y análisis de datos sobre «{concept}» para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Diseña un experimento guiado de observación científica con {n} pasos progresivos para explorar «{concept}». Proporciona un dataset de métricas gráficas comparativas (dos magnitudes propias del tema que el estudiante pueda comparar, con series contrastables):
+- titulo: título motivador del experimento guiado (≤10 palabras).
+- descripcion_dataset: descripción contextual de las métricas simuladas (de dónde provienen, qué representa el eje X y qué representa el eje Y, ≤45 palabras).
+- puntos: entre 12 y 20 mediciones numéricas. Cada punto tiene coordenadas enteras `x` e `y` y un nombre de `grupo` comparativo (ej. "Condición A" vs "Condición B", con nombres propios del tema). Los puntos deben formar dos o tres series claramente contrastables que revelen el impacto observable de «{concept}».
+- preguntas: exactamente {n} preguntas de observación progresivas (paso 1 a {n}) que guíen al estudiante en el análisis visual del gráfico:
+  * `paso`: número entero correlativo del paso (1 a {n}).
+  * `pregunta`: enunciado que llama la atención sobre una tendencia, diferencia entre grupos o punto de divergencia en el gráfico (≤25 palabras).
+  * `pista`: sugerencia concreta sobre en qué cuadrante, rango o grupo fijar la atención (≤20 palabras).
+  * `opciones`: entre 2 y 3 opciones de respuesta; exactamente UNA con `correcta: true` y las demás `correcta: false`. Cada opción incluye `texto` (interpretación de lo observado, ≤14 palabras) y `feedback` que razona la observación (≤20 palabras).
+- revelacion: explicación pedagógica clara y fundamentada que conecta el patrón visual observado con el principio de funcionamiento de «{concept}» (≤50 palabras).
+[RESTRICCIONES] Las preguntas guían el razonamiento inductivo y la observación visual, no juzgan ni evalúan de forma punitiva. Sin código de programación visible ni código. No generes etiquetas HTML ni menciones al esquema JSON.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -164,6 +184,27 @@ def sample(concept: str, p: dict) -> dict:
         {"x": 130, "y": 29, "grupo": "Con optimización"},
         {"x": 160, "y": 32, "grupo": "Con optimización"},
     ]
+    # El rango configurable llega a 6 consignas: se completan con consignas genéricas.
+    for k in range(len(base_preguntas) + 1, n + 1):
+        base_preguntas.append(
+            {
+                "paso": k,
+                "pregunta": f"Observa de nuevo ambos grupos. ¿Qué conclusión adicional (n.º {k}) puedes extraer sobre {concept}?"[:160],
+                "pista": "Compara la separación entre los grupos en distintos valores de X."[:140],
+                "opciones": [
+                    {
+                        "texto": "La brecha entre los grupos se mantiene o crece al aumentar el volumen.",
+                        "feedback": "¡Correcto! Es coherente con la tendencia de los pasos anteriores.",
+                        "correcta": True,
+                    },
+                    {
+                        "texto": "Ambos grupos se vuelven idénticos al aumentar el volumen.",
+                        "feedback": "Incorrecto. Los puntos muestran lo contrario.",
+                        "correcta": False,
+                    },
+                ],
+            }
+        )
 
     return {
         "titulo": f"Experimento guiado: {concept}"[:70],
@@ -499,7 +540,7 @@ def _render_steps(preguntas: list[dict], num_steps: int) -> str:
             f'    {choices}'
             f'  </upao-question>'
             f'  <div class="step-hint">'
-            f'    <span class="hint-icon" aria-hidden="true">💡</span>'
+            f'    <span class="hint-icon" aria-hidden="true">{icon("bulb")}</span>'
             f'    <span class="hint-text"><strong>Pista:</strong> {esc(q.get("pista", ""))}</span>'
             f'  </div>'
             f'</section>'
@@ -547,7 +588,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     </div>
 
     <div id="chart-tooltip" class="chart-tooltip-box" aria-live="polite">
-      <span class="tooltip-icon" aria-hidden="true">🎯</span>
+      <span class="tooltip-icon" aria-hidden="true">{icon('target')}</span>
       <span id="tooltip-text">Pasa el cursor o selecciona un punto del gráfico para inspeccionar sus métricas.</span>
     </div>
   </section>
@@ -562,7 +603,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       <h2 id="revelacion-title" class="step-title">Revelación: Principio Operativo</h2>
     </div>
     <p class="revelacion-intro">¡Excelente trabajo de deducción visual! Este es el principio que fundamenta las mediciones:</p>
-    <upao-reveal id="upao-rev" label="Ver fundamento del experimento" icon="🔬">
+    <upao-reveal id="upao-rev" label="Ver fundamento del experimento" icon="{esc(icon('microscope'))}">
       <div class="revelacion-content">
         <p>{esc(data.get("revelacion", ""))}</p>
       </div>

@@ -5,7 +5,13 @@ import { completeResource } from './interactions.js';
 
 const fixtures = readdirSync(new URL('../../backend/tests/fixtures/ova_engine/', import.meta.url))
   .filter(f => /^(engage|explore|explain|elaborate|evaluate)_\d\d\.json$/.test(f)).sort();
-if (fixtures.length !== 49) throw new Error(`Se esperaban 49 fixtures, hay ${fixtures.length}`);
+if (fixtures.length !== 51) throw new Error(`Se esperaban 51 fixtures, hay ${fixtures.length}`);
+// Con GeoGebra bloqueado, adelanta el temporizador de carga hasta que se muestre el respaldo sin conexión.
+async function offlineFallback(page, id) {
+  if (id !== 'explore_11') return;
+  await page.clock.runFor(3000);
+  await expect(page.locator('#ggb-fallback')).toBeVisible();
+}
 const screenshotFonts = `
 @font-face{font-family:Reference;src:url(/templates/fonts/DejaVuSans.ttf);font-weight:400}
 @font-face{font-family:Reference;src:url(/templates/fonts/DejaVuSans-Bold.ttf);font-weight:600 900}
@@ -16,6 +22,8 @@ const screenshotFonts = `
 pre,pre *,code,code *,.k-code,.k-code-in{font-family:ReferenceMono,ReferenceEmoji!important}`;
 
 test.beforeEach(async ({ page }) => {
+  // Suite determinista y sin red: GeoGebra se bloquea y la plantilla muestra su respaldo sin conexión.
+  await page.route(/^https?:\/\/([^/]*\.)?geogebra\.org\//, route => route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
   await page.clock.install({ time: new Date('2026-01-01T12:00:00Z') });
   await page.addInitScript(() => {
     let seed = 42;
@@ -30,6 +38,7 @@ for (const fixture of fixtures) {
     page.on('pageerror', e => errors.push(e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
     await page.goto(`/.ova-rendered/${id}.html`);
+    await offlineFallback(page, id);
     await page.evaluate(() => document.fonts.ready);
     for (const width of [1280, 375]) {
       await page.setViewportSize({ width, height: 900 });
@@ -49,6 +58,7 @@ for (const fixture of fixtures) {
     page.on('pageerror', e => errors.push(e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
     await page.goto(`/.ova-rendered/${id}.html`);
+    await offlineFallback(page, id);
     await expect(page.locator('upao-complete button')).toBeDisabled();
     await completeResource(page, id);
     await expect(page.locator('upao-complete button')).toBeEnabled();

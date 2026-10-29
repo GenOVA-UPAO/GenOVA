@@ -15,5 +15,6 @@ RECURSOS_META = {
     8: {"tipo": "Preguntas de Desarrollo", "duracion": "4–5 min", "interactividad": "Baja", "emoji": "💬"},
     9: {"tipo": "Simulación Evaluativa", "duracion": "3–4 min", "interactividad": "Alta", "emoji": "🎯"},
     10: {"tipo": "Diploma de Logro", "duracion": "1–2 min", "interactividad": "Baja", "emoji": "🏆"},
+    11: {"tipo": "Quiz Adaptativo", "duracion": "3–5 min", "interactividad": "Alta", "emoji": "🧠"},
 }
 # fmt: on

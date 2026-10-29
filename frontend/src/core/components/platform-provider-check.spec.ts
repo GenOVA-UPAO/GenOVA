@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { describe, expect, it } from "vitest";
 
 import { hasCheck, providerCheckText } from "./platform-provider-check";
@@ -27,6 +28,13 @@ describe("providerCheckText", () => {
     expect(providerCheckText(result("rate_limited")).hint).toMatch(/minuto/);
     expect(providerCheckText(result("unchecked")).tone).toBe("neutral");
     expect(providerCheckText(result("rarísimo")).label).toBe("No se pudo comprobar");
+  });
+
+  it("traduce el plural y formatea cantidades al cambiar a inglés", async () => {
+    await i18n.changeLanguage("en");
+    expect(providerCheckText(result("connected", 12345)).label).toBe("Connected · 12,345 models");
+    expect(providerCheckText(result("connected", 1)).label).toBe("Connected · 1 model");
+    expect(providerCheckText(result("connected", 0)).label).toBe("Connected · 0 models");
   });
 });
 

@@ -1,10 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { cn } from "@/core/lib/cn";
+import { resourceIconName } from "@/core/lib/resource-icons";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
-import { resourceIconName } from "../../lib/resource-icons";
 import { CreationStatusBadge } from "./creation-status-badge";
 import { RowStateHint } from "./row-state-hint";
 
@@ -16,6 +18,7 @@ interface Props {
   onToggle: () => void;
   onRetry: () => void;
   onPreview?: () => void;
+  retryAllowed?: boolean;
 }
 
 export function CreationResourceRow({
@@ -26,7 +29,9 @@ export function CreationResourceRow({
   onToggle,
   onRetry,
   onPreview,
+  retryAllowed,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const icon = <Icon name={resourceIconName(resource.label)} className="shrink-0" size="text-sm" />;
   return (
     <li className="px-3 py-2">
@@ -35,7 +40,7 @@ export function CreationResourceRow({
           <Checkbox
             checked={selected}
             onCheckedChange={onToggle}
-            aria-label={`Seleccionar ${resource.label}`}
+            aria-label={t("workspace:seleccionar_value", { p0: resource.label })}
           />
         )}
         <CreationStatusBadge resource={resource} />
@@ -60,9 +65,8 @@ export function CreationResourceRow({
         )}
         <RowStateHint status={resource.status} canPreview={Boolean(onPreview)} />
         {resource.status === "X" && (
-          <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry}>
-            Reintentar
-          </Button>
+          <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry} disabled={retryAllowed === false}>
+            {t("workspace:reintentar")} </Button>
         )}
       </div>
       {resource.status === "X" && (
@@ -72,14 +76,18 @@ export function CreationResourceRow({
             selectable ? "pl-[3.75rem]" : "pl-[2.125rem]",
           )}
         >
-          No se pudo generar este recurso.
-          {resource.error_id && (
+          {t(resourceFailureKey(resource.error_code))} {resource.error_id && (
             <span className="block text-muted-foreground">
-              Código de error: <span className="font-mono">{resource.error_id}</span>
+              {t("workspace:codigo_de_error")} <span className="font-mono">{resource.error_id}</span>
             </span>
           )}
         </p>
       )}
     </li>
   );
+}
+
+function resourceFailureKey(code?: string | null): string {
+  if (code === "provider_auth") return "workspace:providerAuth";
+  return code === "provider_auth_personal" ? "workspace:providerAuthPersonal" : "workspace:no_se_pudo_generar_este_recurso";
 }

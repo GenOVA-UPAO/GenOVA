@@ -22,7 +22,15 @@ import unicodedata
 import httpx
 import structlog
 
-from ova_engine.planner_table import ATTRS, REQ_PENALTY, REQ_THRESHOLD, TABLE, Resource
+from ova_engine.planner_table import (
+    AREA_BONUS,
+    AREA_BONUS_SCALE,
+    ATTRS,
+    REQ_PENALTY,
+    REQ_THRESHOLD,
+    TABLE,
+    Resource,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -41,6 +49,7 @@ ATTRIBUTES: dict[str, str] = {
     "componentes": "¿El tema describe una arquitectura con varios componentes que interactúan entre sí?",
     "diagnostico": "¿El tema consiste en diagnosticar o analizar métricas, reportes o datos?",
     "clasificacion": "¿El tema reúne varias categorías o tipos que se pueden clasificar?",
+    "matematico": "¿El tema involucra matemáticas, geometría, funciones, álgebra o modelos cuantitativos?",
 }
 
 # ---------------------------------------------------------------- normalización
@@ -114,6 +123,7 @@ _KW: dict[str, tuple[str, ...]] = {
     "componentes": (r"arquitectura", r"componentes?", r"procesos?", r"estructuras?", r"almacenamiento", r"servicios?"),
     "diagnostico": (r"diagnos", r"monitor", r"analiz", r"reporte", r"metricas?", r"esperas?", r"trazas?", r"auditor[ií]a de rendimiento", r"planes?\b"),
     "clasificacion": (r"tipos? de", r"clases? de", r"categori", r"niveles", r"estrategias", r"modalidades", r"modos"),
+    "matematico": (r"matemat", r"geometr", r"algebra", r"calculo", r"funcion(es)?\b", r"grafic", r"trigonometr", r"vector", r"probabilidad", r"estadistic", r"ecuaci", r"polinom", r"derivada", r"integral", r"matriz|matrices", r"parabola", r"hiperbola", r"trigonometria"),
 }
 _KW_RE = {k: re.compile("|".join(v)) for k, v in _KW.items()}
 
@@ -150,7 +160,7 @@ def profile_laya(concept: str, advanced: bool = False, timeout: float = 6.0, url
     if url:
         endpoint = f"{url.rstrip('/')}/v1/systemone"
     questions = {a: {"type": "noul", "instructions": q} for a, q in ATTRIBUTES.items()}
-    state = f"Tema de enseñanza de bases de datos Oracle: {concept}"
+    state = f"Tema de enseñanza: {concept}"
     try:
         r = httpx.post(endpoint, json={"state": state, "questions": questions, **extra}, headers=headers, timeout=timeout)
         r.raise_for_status()
@@ -199,9 +209,25 @@ _DIVERSITY_PENALTY = 0.25  # por cada recurso ya elegido de la misma familia
 _MAX_PER_MODAL = 2
 
 
-def select_phase(phase: str, profile: dict[str, float], per_phase: int = 3) -> list[int]:
+def area_bonus(area: str | None) -> dict[tuple[str, int], float]:
+    """Empujón por área temática: (fase, n) -> bonus. Vacío sin área o sin coincidencia."""
+    folded = _fold(area or "")
+    out: dict[tuple[str, int], float] = {}
+    if not folded.strip():
+        return out
+    for pattern, bonuses in AREA_BONUS:
+        if re.search(pattern, folded):
+            for key, w in bonuses.items():
+                out[key] = out.get(key, 0.0) + w * AREA_BONUS_SCALE
+    return out
+
+
+def select_phase(
+    phase: str, profile: dict[str, float], per_phase: int = 3, area: str | None = None
+) -> list[int]:
     table = TABLE[phase]
-    base = {n: score_resource(r, profile) for n, r in table.items()}
+    bonus = area_bonus(area)
+    base = {n: score_resource(r, profile) + bonus.get((phase, n), 0.0) for n, r in table.items()}
     chosen: list[int] = []
     while len(chosen) < per_phase:
         best = None
@@ -221,8 +247,10 @@ def select_phase(phase: str, profile: dict[str, float], per_phase: int = 3) -> l
     return sorted(chosen, key=lambda n: (table[n].nivel, n))
 
 
-def select_plan(profile: dict[str, float], per_phase: int = 3) -> dict[str, list[int]]:
-    return {p: select_phase(p, profile, per_phase) for p in PHASES}
+def select_plan(
+    profile: dict[str, float], per_phase: int = 3, area: str | None = None
+) -> dict[str, list[int]]:
+    return {p: select_phase(p, profile, per_phase, area) for p in PHASES}
 
 
 def plan_by_attributes(concept: str, mode: str = "hibrido", url: str | None = None, per_phase: int = 3) -> dict | None:
@@ -239,6 +267,9 @@ def plan_by_attributes(concept: str, mode: str = "hibrido", url: str | None = No
             prof = kw
         else:
             prof = laya if mode == "laya" else blend(laya, kw)
-    plan = select_plan(prof, per_phase)
-    logger.info("ova planner atributos", concept=core, profile={k: round(v, 2) for k, v in prof.items() if v}, plan=plan)
+    from ova_engine.domain_context import current_area
+
+    area = current_area()
+    plan = select_plan(prof, per_phase, area)
+    logger.info("ova planner atributos", concept=core, area=area, profile={k: round(v, 2) for k, v in prof.items() if v}, plan=plan)
     return plan

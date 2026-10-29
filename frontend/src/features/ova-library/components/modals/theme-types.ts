@@ -7,12 +7,32 @@ export interface ThemeState {
 }
 
 export const COLOR_MODES = [
-  { key: "ai", label: "IA elige", desc: "La IA elige los colores según el tema del OVA" },
-  { key: "upao", label: "Paleta UPAO", desc: "Azul institucional y naranja de la UPAO" },
-  { key: "custom", label: "Personalizado", desc: "Elige una de las combinaciones de colores" },
+  {
+    key: "ai",
+    labelKey: "ova-library:aiChooses",
+    descKey: "ova-library:la_ia_elige_los_colores_segun_el_tema_del_ova",
+  },
+  {
+    key: "upao",
+    labelKey: "ova-library:paleta_upao",
+    descKey: "ova-library:azul_institucional_y_naranja_de_la_upao",
+  },
+  {
+    key: "custom",
+    labelKey: "ova-library:personalizado",
+    descKey: "ova-library:elige_una_de_las_combinaciones_de_colores",
+  },
 ] as const;
 
 export const DESIGN_MODES = [
-  { key: "ai", label: "IA elige", desc: "La IA decide la disposición, la tipografía y la estructura" },
-  { key: "upao", label: "Plantilla UPAO", desc: "Estructura académica con las fases 5E en pestañas" },
+  {
+    key: "ai",
+    labelKey: "ova-library:aiChooses",
+    descKey: "ova-library:la_ia_decide_la_disposicion_la_tipografia_y_la_estructura",
+  },
+  {
+    key: "upao",
+    labelKey: "ova-library:plantilla_upao",
+    descKey: "ova-library:estructura_academica_con_las_fases_5e_en_pestanas",
+  },
 ] as const;

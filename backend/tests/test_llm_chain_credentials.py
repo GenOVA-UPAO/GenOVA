@@ -8,7 +8,9 @@ API Key») y el recurso fallaba. Ahora los eslabones sin clave no se llaman.
 import pytest
 
 import llm.router as router
-from llm.router import LLMNoCredentialsError, generar_texto
+
+LLMNoCredentialsError = router.LLMNoCredentialsError
+generar_texto = router.generar_texto
 from llm.utils import llm_config_store
 from llm.utils.llm_helpers import OWNER_FIELD
 

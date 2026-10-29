@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/core/components/ui/popover";
@@ -29,6 +30,7 @@ export function ModelTestButton({
   modelId,
   disabled = false,
 }: Readonly<ModelTestButtonProps>) {
+  const { t } = useTranslation("llm-settings");
   const allowed = useOwnKeyProviders();
   const [open, setOpen] = useState(false);
   const test = useModelTest(provider, modelId);
@@ -49,7 +51,7 @@ export function ModelTestButton({
           className="shrink-0 max-sm:h-11"
           disabled={disabled || !modelId}
           aria-busy={test.running}
-          aria-label={`Probar el modelo ${modelId}`}
+          aria-label={t("test.testModelAria", { model: modelId })}
           onClick={(event) => {
             // Cada clic lanza una prueba nueva (no alterna el globo).
             event.preventDefault();
@@ -60,9 +62,9 @@ export function ModelTestButton({
           {/* Las dos etiquetas ocupan la misma celda: el botón no cambia de ancho al probar. */}
           <span className="grid">
             <span aria-hidden="true" className="invisible col-start-1 row-start-1">
-              Probando…
+              {t("test.testing")}
             </span>
-            <span className="col-start-1 row-start-1">{test.running ? "Probando…" : "Probar"}</span>
+            <span className="col-start-1 row-start-1">{test.running ? t("test.testing") : t("test.test")}</span>
           </span>
         </Button>
       </PopoverTrigger>

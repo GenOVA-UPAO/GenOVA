@@ -14,6 +14,8 @@ export interface PhaseWithContent extends Phase {
 
 export interface OvaData {
   title?: string;
+  description?: string | null;
+  package_theme?: string;
   status?: string;
   current_version?: {
     version_number?: number;

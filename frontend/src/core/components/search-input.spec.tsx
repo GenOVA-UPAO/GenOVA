@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import i18n from "i18next";
 import { useState } from "react";
 
 import { SearchInput } from "./search-input";
@@ -22,6 +23,13 @@ function Harness({
 }
 
 describe("SearchInput", () => {
+  it("actualiza los nombres accesibles sin desmontar al cambiar de idioma", async () => {
+    render(<SearchInput value="react" onValueChange={vi.fn()} />);
+    expect(screen.getByRole("searchbox", { name: "Buscar" })).toHaveAttribute("placeholder", "Buscar…");
+    await act(() => i18n.changeLanguage("en"));
+    expect(screen.getByRole("searchbox", { name: "Search" })).toHaveAttribute("placeholder", "Search…");
+    expect(screen.getByRole("button", { name: "Clear search" })).toBeInTheDocument();
+  });
   it("uses the given aria-label and default placeholder", () => {
     render(<Harness />);
     const input = screen.getByRole("searchbox", { name: "Buscar OVAs" });

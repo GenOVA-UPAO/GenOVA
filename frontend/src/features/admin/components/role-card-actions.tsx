@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import type { Role } from "../lib/types";
@@ -16,6 +18,8 @@ export function RoleCardActions({
   onEdit,
   onDelete,
 }: Readonly<RoleCardActionsProps>) {
+  const { t } = useTranslation("admin");
+
   return (
     <div className="flex shrink-0 items-center gap-2">
       <Button
@@ -25,7 +29,7 @@ export function RoleCardActions({
           onEdit(role);
         }}
       >
-        Editar permisos
+        {t("roles.editPermissions")}
       </Button>
       {deletable && (
         <Button
@@ -35,7 +39,7 @@ export function RoleCardActions({
             onDelete(role);
           }}
         >
-          Eliminar
+          {t("roles.delete")}
         </Button>
       )}
     </div>

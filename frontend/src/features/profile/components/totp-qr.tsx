@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { useTranslation } from "react-i18next";
 
 // Solo se descarga al activar la verificación en dos pasos.
 const QRCodeSVG = lazy(async () => {
@@ -14,6 +15,8 @@ const SIZE = 176;
  * un móvil. Fondo blanco fijo: con tema oscuro un QR invertido no se lee.
  */
 export function TotpQr({ uri }: Readonly<{ uri: string }>) {
+  const { t } = useTranslation("profile");
+
   return (
     <div className="w-fit shrink-0 rounded-xl border border-border bg-white p-3">
       <Suspense
@@ -22,7 +25,7 @@ export function TotpQr({ uri }: Readonly<{ uri: string }>) {
             className="animate-pulse rounded-md bg-muted"
             style={{ width: SIZE, height: SIZE }}
             role="status"
-            aria-label="Generando el código QR"
+            aria-label={t("totp.qrGenerating")}
           />
         }
       >
@@ -33,7 +36,7 @@ export function TotpQr({ uri }: Readonly<{ uri: string }>) {
           marginSize={0}
           bgColor="#ffffff"
           fgColor="#0b1b3a"
-          title="Código QR para añadir GenOVA a tu app autenticadora"
+          title={t("totp.qrTitle")}
         />
       </Suspense>
     </div>

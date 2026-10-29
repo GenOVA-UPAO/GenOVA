@@ -15,7 +15,16 @@ function clickAnchor(href: string, download?: string): void {
 
 function filenameFromDisposition(res: Response, fallback: string): string {
   const disposition = res.headers.get("Content-Disposition") ?? "";
-  const match = /filename="?([^"]+)"?/.exec(disposition);
+  // filename* (RFC 5987) lleva el nombre con tildes; filename es su versión ASCII.
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+  if (encoded) {
+    try {
+      return decodeURIComponent(encoded[1]);
+    } catch {
+      // nombre mal codificado: se usa filename
+    }
+  }
+  const match = /filename="?([^";]+)"?/.exec(disposition);
   return match ? match[1] : fallback;
 }
 

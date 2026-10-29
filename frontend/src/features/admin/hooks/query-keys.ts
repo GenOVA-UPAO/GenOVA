@@ -6,4 +6,6 @@ export const adminKeys = {
     [...adminKeys.usersAll, { page, search, roleId }] as const,
   roles: ["admin", "roles"] as const,
   registrationMode: ["admin", "registration-mode"] as const,
+  ltiTool: ["admin", "lti", "tool"] as const,
+  ltiPlatforms: ["admin", "lti", "platforms"] as const,
 };

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { useEmailChange } from "../hooks/use-email-change";
 import { PasswordField } from "./password-field";
 import { TotpCodeField } from "./totp-code-field";
@@ -14,13 +16,15 @@ export function EmailChangeFields({
   totpEnabled,
   disabled,
 }: Readonly<EmailChangeFieldsProps>) {
+  const { t } = useTranslation("profile");
+
   if (!emailChange.emailChanged) return null;
   return (
     <>
       <PasswordField
         id="emailChangePassword"
-        label="Contraseña actual"
-        hint="Necesaria para cambiar el correo de tu cuenta."
+        label={t("emailChange.currentPassword")}
+        hint={t("emailChange.currentPasswordHint")}
         value={emailChange.currentPassword}
         error={emailChange.passwordError}
         autoComplete="current-password"

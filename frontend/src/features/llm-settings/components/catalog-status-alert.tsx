@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -22,12 +24,13 @@ export function CatalogStatusAlert({
   canFixKeys,
   onRetry,
 }: Readonly<CatalogStatusAlertProps>) {
+  const { t } = useTranslation("llm-settings");
   const down = failedProviders(catalogStatus);
   if (down.length === 0) return null;
   const names = joinList(down.map(providerLabel));
   const hint = canFixKeys
-    ? "Vuelve a intentarlo; si sigue fallando, revisa su clave en Credenciales."
-    : "Vuelve a intentarlo en unos minutos.";
+    ? t("catalog.alertRetryHint")
+    : t("catalog.alertRetryLaterHint");
 
   return (
     <div
@@ -36,9 +39,9 @@ export function CatalogStatusAlert({
     >
       <Icon name="warning" size="text-lg" className="hidden shrink-0 text-accent-brand sm:block" />
       <div className="min-w-0 flex-1 text-sm">
-        <p className="font-medium">No pudimos obtener los modelos de {names}</p>
+        <p className="font-medium">{t("catalog.couldNotGetModelsFrom", { providers: names })}</p>
         <p className="text-muted-foreground">
-          Pueden faltar en las listas hasta que {down.length === 1 ? "responda" : "respondan"}.{" "}
+          {t("catalog.missingUntilResponds", { count: down.length })}{" "}
           {hint}
         </p>
       </div>
@@ -49,7 +52,7 @@ export function CatalogStatusAlert({
         loading={refreshing}
       >
         <Icon name="arrow-clockwise" size="text-sm" />
-        Reintentar
+        {t("credentials.retry")}
       </Button>
     </div>
   );

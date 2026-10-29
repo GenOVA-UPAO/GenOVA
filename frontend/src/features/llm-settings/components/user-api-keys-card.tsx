@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   groupProviders,
   PROVIDER_META,
@@ -22,14 +24,15 @@ const USER_PROVIDERS = ["openrouter", "groq", "opencode", "siliconflow", "runwar
 export function UserApiKeysCard({
   ownStatus = null,
 }: Readonly<{ ownStatus?: OwnCatalogStatus | null }>) {
+  const { t } = useTranslation("llm-settings");
   const { apiKeys, loading, error, refetch } = useUserApiKeys();
   const groups = groupProviders(USER_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id)));
-  const errText = error ? errorMessage(error, "No se pudieron cargar tus claves.") : null;
+  const errText = error ? errorMessage(error, t("api.loadKeysError")) : null;
 
   if (loading) {
     return (
       // Con la forma de la lista final (título del grupo y filas con su botón).
-      <div className="space-y-2" role="status" aria-busy="true" aria-label="Cargando claves">
+      <div className="space-y-2" role="status" aria-busy="true" aria-label={t("credentials.loadingKeys")}>
         <Skeleton className="h-4 w-32" />
         <div className="divide-y divide-border rounded-xl border border-border bg-card">
           {["a", "b", "c"].map((key) => (
@@ -51,20 +54,20 @@ export function UserApiKeysCard({
   return (
     <div className="space-y-6">
       <UserKeyProviderGroup
-        title="Recomendado"
+        title={t("credentials.recommended")}
         hint={RECOMMENDED_HINT}
         providers={groups.recommended}
         apiKeys={apiKeys}
         ownStatus={ownStatus}
       />
       <UserKeyProviderGroup
-        title="Otros proveedores de texto"
+        title={t("credentials.otherText")}
         providers={groups.text}
         apiKeys={apiKeys}
         ownStatus={ownStatus}
       />
       <UserKeyProviderGroup
-        title="Otros proveedores de imagen"
+        title={t("credentials.otherImage")}
         providers={groups.image}
         apiKeys={apiKeys}
       />

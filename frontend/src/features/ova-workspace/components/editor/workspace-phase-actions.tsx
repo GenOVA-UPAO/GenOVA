@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -26,6 +28,7 @@ export function WorkspacePhaseActions({
   onHistory,
   onDelete,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <footer className="flex flex-wrap items-center gap-1 border-t border-border bg-muted/30 px-1.5 py-1.5">
       <Button
@@ -36,14 +39,13 @@ export function WorkspacePhaseActions({
         onClick={onToggleEditor}
       >
         <Icon name="code" />
-        {editing ? "Ocultar código HTML" : "Editar código HTML"}
+        {editing ? t("workspace:ocultar_codigo_html") : t("workspace:editar_codigo_html")}
       </Button>
       <span className="flex flex-wrap items-center gap-1 sm:ml-auto">
         <RegenPhaseButton name={name} busy={busy} onRegenerate={onRegenerate} />
         <Button variant="ghost" size="sm" onClick={onHistory}>
           <Icon name="clock-counter-clockwise" />
-          Versiones del recurso
-        </Button>
+          {t("workspace:versiones_del_recurso")} </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -51,8 +53,7 @@ export function WorkspacePhaseActions({
           onClick={onDelete}
         >
           <Icon name="trash" />
-          Eliminar recurso
-        </Button>
+          {t("workspace:eliminar_recurso")} </Button>
       </span>
     </footer>
   );

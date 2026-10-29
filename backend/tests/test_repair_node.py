@@ -4,7 +4,9 @@ Antes: max_retries=0 → un recurso fallido moría y su fila quedaba "pending".
 """
 
 import prometheus.nodes.repair as repair_mod
-from prometheus.nodes.repair import _pending_failures, repair_node
+
+_pending_failures = repair_mod._pending_failures
+repair_node = repair_mod.repair_node
 
 
 def _state(errors, results=None):

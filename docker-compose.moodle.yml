@@ -13,12 +13,14 @@ services:
     volumes: [moodle-db:/var/lib/postgresql/data]
   moodle:
     build: tests/moodle
-    ports: ['8081:80']
+    ports: ['${MOODLE_PORT:-8081}:80']
+    environment:
+      MOODLE_WWWROOT: http://localhost:${MOODLE_PORT:-8081}
     depends_on:
       db: { condition: service_healthy }
     volumes: [moodle-data:/var/moodledata, moodle-config:/var/genova-config]
     healthcheck:
-      test: [CMD-SHELL, 'curl -fsS -H ''Host: localhost:8081'' http://localhost/login/index.php | grep -q ''id="username"''']
+      test: [CMD-SHELL, 'curl -fsS -H "Host: $${MOODLE_WWWROOT#http://}" http://localhost/login/index.php | grep -q ''id="username"''']
       interval: 10s
       retries: 60
 volumes:

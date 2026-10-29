@@ -23,9 +23,18 @@ class DuplicateOva:
             raise OvaGenerating("No se puede duplicar mientras se está generando.")
 
         title = self.repo.next_copy_title(source.title, data.actor.id)
-        ova_id = self.repo.create_ova(data.actor.id, title, source.description, "borrador")
+        # La copia tiene el mismo contenido que el original: «listo» si el original
+        # lo está (y trae recursos), con su SCORM generado; si no, «borrador».
+        ready = source.status == "listo" and bool(source.phases)
+        ova_id = self.repo.create_ova(
+            data.actor.id, title, source.description, "listo" if ready else "borrador"
+        )
+        if source.settings:
+            self.repo.apply_settings(ova_id, source.settings)
         version_id = self.repo.create_version(ova_id, 1, source.prompt)
         self.repo.add_phases(version_id, source.phases)
         self.repo.set_current_version(ova_id, version_id)
+        if ready:
+            self.repo.build_package(ova_id, version_id, data.actor.id)
         self.repo.commit("duplicate_ova")
-        return DuplicateOvaResult(id=ova_id, title=title)
+        return DuplicateOvaResult(id=ova_id, title=title, status="listo" if ready else "borrador")

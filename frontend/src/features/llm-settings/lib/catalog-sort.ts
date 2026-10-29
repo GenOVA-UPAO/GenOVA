@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { firstNonBlank } from "@/core/lib/text";
 
 import type { CatalogModel } from "./user-llm-settings.types";
@@ -23,17 +25,17 @@ export interface CatalogSortOption {
 }
 
 export const SORT_OPTIONS: CatalogSortOption[] = [
-  { key: "default", label: "Orden por defecto" },
-  { key: "price-asc", label: "Más baratos primero" },
-  { key: "price-desc", label: "Más caros primero" },
-  { key: "name-asc", label: "Nombre (A-Z)" },
-  { key: "context-desc", label: "Más contexto primero" },
+  { key: "default", get label() { return t("llm-settings:sort.default"); } },
+  { key: "price-asc", get label() { return t("llm-settings:sort.priceAsc"); } },
+  { key: "price-desc", get label() { return t("llm-settings:sort.priceDesc"); } },
+  { key: "name-asc", get label() { return t("llm-settings:sort.nameAsc"); } },
+  { key: "context-desc", get label() { return t("llm-settings:sort.contextDesc"); } },
 ];
 
 export const GROUP_OPTIONS: { key: "provider" | "type" | "modality"; label: string }[] = [
-  { key: "provider", label: "Por proveedor" },
-  { key: "type", label: "Por tipo de modelo" },
-  { key: "modality", label: "Por modalidad de entrada" },
+  { key: "provider", get label() { return t("llm-settings:groups.provider"); } },
+  { key: "type", get label() { return t("llm-settings:groups.type"); } },
+  { key: "modality", get label() { return t("llm-settings:groups.modality"); } },
 ];
 
 /**
@@ -112,14 +114,19 @@ export function modalityBucket(modality?: string): string {
   return "otra";
 }
 
-export const MODALITY_BUCKET_LABELS: Record<string, string> = {
-  texto: "Solo texto",
-  imagen: "Acepta imagen",
-  video: "Acepta video",
-  audio: "Acepta audio",
-  archivos: "Acepta archivos",
-  otra: "Otra modalidad",
+const BUCKET_LABEL_KEYS: Record<string, string> = {
+  texto: "llm-settings:modalityBuckets.texto",
+  imagen: "llm-settings:modalityBuckets.imagen",
+  video: "llm-settings:modalityBuckets.video",
+  audio: "llm-settings:modalityBuckets.audio",
+  archivos: "llm-settings:modalityBuckets.archivos",
+  otra: "llm-settings:modalityBuckets.otra",
 };
+
+export function modalityBucketLabel(key: string): string | undefined {
+  const i18nKey = Object.hasOwn(BUCKET_LABEL_KEYS, key) ? BUCKET_LABEL_KEYS[key] : undefined;
+  return i18nKey ? t(i18nKey) : undefined;
+}
 
 const MODALITY_BUCKET_ORDER = ["texto", "imagen", "video", "audio", "archivos", "otra"];
 
@@ -141,7 +148,7 @@ function groupKeyOf(m: CatalogModel, groupBy: GroupBy): string {
 }
 
 function groupLabel(key: string, groupBy: GroupBy, labels: Record<string, string>): string {
-  const modalityLabel = groupBy === "modality" ? MODALITY_BUCKET_LABELS[key] : undefined;
+  const modalityLabel = groupBy === "modality" ? modalityBucketLabel(key) : undefined;
   return modalityLabel ?? orDefault(labels[key], key);
 }
 

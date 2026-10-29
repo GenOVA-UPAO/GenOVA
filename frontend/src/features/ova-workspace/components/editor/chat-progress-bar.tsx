@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 interface Props {
@@ -9,9 +11,10 @@ interface Props {
 /** Barra fina de progreso para la regeneración en curso (solo mientras corre). */
 export function ChatProgressBar({
   percentage,
-  label = "Progreso de regeneración",
+  label,
   className,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const clamped = Math.min(100, Math.max(0, Math.round(percentage)));
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -20,7 +23,7 @@ export function ChatProgressBar({
         aria-valuenow={clamped}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={label}
+        aria-label={label ?? t("workspace:progreso_de_regeneracion")}
         className="h-1 flex-1 overflow-hidden rounded-full bg-muted"
       >
         <div

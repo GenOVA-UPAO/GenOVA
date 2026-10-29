@@ -1,0 +1,151 @@
+{
+  "page": {
+    "loadError": "We couldn't load your profile",
+    "emptyTitle": "No profile data",
+    "emptyDescription": "Reload your information to continue.",
+    "retry": "Try again"
+  },
+  "header": {
+    "defaultTitle": "My profile",
+    "memberSince": "Member since {{date}}"
+  },
+  "role": {
+    "usuario": "User",
+    "administrador": "Administrator"
+  },
+  "tabs": {
+    "info": "Information",
+    "config": "Settings",
+    "security": "Security"
+  },
+  "skeleton": {
+    "loading": "Loading profile"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Choose the interface language. It is saved in this browser and applies to every GenOVA screen."
+  },
+  "form": {
+    "title": "Personal details",
+    "description": "Your name and email appear on the OVAs you create and in the platform listings.",
+    "discard": "Discard changes",
+    "save": "Save changes"
+  },
+  "fields": {
+    "fullName": "Full name",
+    "email": "Email address",
+    "universityId": "University ID (UPAO)",
+    "universityIdHint": "Numbers only, no spaces or hyphens.",
+    "gender": "Gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "genderOther": "Other or prefer not to say",
+    "phone": "Contact phone",
+    "phoneHint": "Include the country code, for example +51987285992."
+  },
+  "emailChange": {
+    "currentPassword": "Current password",
+    "currentPasswordHint": "Required to change your account email.",
+    "passwordRequired": "Enter your current password to change your email.",
+    "totpRequired": "Enter the 6-digit TOTP code."
+  },
+  "totpField": {
+    "label": "Verification code (2FA)",
+    "hint": "The one from your authenticator app."
+  },
+  "pendingEmail": {
+    "notice": "Your current email is still active. We sent a code to <strong>{{email}}</strong>: enter it here to complete the change.",
+    "codeLabel": "Confirmation code",
+    "confirm": "Confirm email",
+    "failed": "Couldn't confirm."
+  },
+  "password": {
+    "title": "Password",
+    "description": "Use a password you don't use on other sites.",
+    "current": "Current password",
+    "new": "New password",
+    "newHint": "At least 8 characters, with letters and numbers.",
+    "confirm": "Confirm the new password",
+    "submit": "Update password",
+    "success": "Password updated successfully.",
+    "updateError": "Couldn't update the password."
+  },
+  "delete": {
+    "title": "Delete account",
+    "description": "Your account is deactivated and your personal data is anonymized. Your OVAs are kept without your authorship. This can't be undone.",
+    "button": "Delete account",
+    "modalTitle": "Delete your account?",
+    "modalDescription": "Your account will be deactivated and your personal data anonymized. Your OVAs are kept, but without your authorship. This action can't be undone.",
+    "passwordLabel": "Enter your password to confirm",
+    "passwordRequired": "Enter your password to confirm.",
+    "cancel": "Cancel",
+    "error": "Couldn't delete the account."
+  },
+  "totp": {
+    "title": "Two-step verification",
+    "idleDescription": "In addition to your password, you'll be asked for a code from an authenticator app such as Google Authenticator or Authy when you sign in.",
+    "activate": "Turn on two-step verification",
+    "enabledDescription": "When you sign in, besides your password you're asked for a code from your authenticator app.",
+    "enabled": "On",
+    "disable": "Turn off",
+    "disableCodeLabel": "Code from your app",
+    "disableCodeHint": "The 6-digit code your authenticator app is showing now.",
+    "disableCodeError": "Enter the 6-digit code.",
+    "disableSubmit": "Turn off verification",
+    "cancel": "Cancel",
+    "setupTitle": "Set up your authenticator app",
+    "setupDescription": "Add GenOVA to your authenticator app and confirm with the code it generates.",
+    "setupCodeLabel": "6-digit code from your app",
+    "setupConfirm": "Confirm and turn on",
+    "codeInvalid": "Enter the 6 digits shown in your app.",
+    "connectError": "Couldn't connect to the server.",
+    "enabledToast": "Two-step verification turned on.",
+    "disabledToast": "Two-step verification turned off.",
+    "setupStartError": "Couldn't start the setup.",
+    "wrongCode": "Incorrect code.",
+    "step1": "Scan the code with your app (Google Authenticator, Authy, Microsoft Authenticator…).",
+    "step2": "Enter the 6-digit code shown in the app below.",
+    "manualHint": "Can't scan it? Add the account manually with this key:",
+    "secretLabel": "Secret key",
+    "copyKey": "Copy key",
+    "showUri": "Show the provisioning URI",
+    "uriLabel": "Provisioning URI",
+    "copyUri": "Copy URI",
+    "qrGenerating": "Generating the QR code",
+    "qrTitle": "QR code to add GenOVA to your authenticator app"
+  },
+  "copy": {
+    "copied": "Copied"
+  },
+  "backupCodes": {
+    "title": "Backup codes",
+    "description": "Save them now in a safe place: they won't be shown again. Each one works once if you lose access to your app.",
+    "copied": "Copied",
+    "copyAll": "Copy codes",
+    "liveCopied": "Codes copied to the clipboard"
+  },
+  "validation": {
+    "fullNameRequired": "Full name is required.",
+    "fullNameMin": "The name must be at least 3 characters long.",
+    "emailInvalid": "Enter a valid email address.",
+    "universityIdDigits": "The ID must contain numbers only.",
+    "universityIdMin": "The ID must be 1 or greater.",
+    "phoneFormat": "The phone number can only contain digits and the + sign.",
+    "currentPasswordRequired": "Current password is required.",
+    "newPasswordRequired": "New password is required.",
+    "passwordMin": "Must be at least 8 characters long.",
+    "passwordFormat": "Must contain letters and numbers.",
+    "confirmRequired": "Confirm your new password.",
+    "passwordMismatch": "The passwords don't match.",
+    "deletePasswordRequired": "Password is required to confirm"
+  },
+  "api": {
+    "loadProfile": "Couldn't load your profile information.",
+    "updateProfile": "Couldn't update your profile.",
+    "invalidCode": "Invalid or expired code."
+  },
+  "toast": {
+    "saved": "Personal details saved.",
+    "updateError": "Couldn't update."
+  }
+}

@@ -16,9 +16,11 @@ import structlog
 
 from ova_engine.contract import RenderContext, TemplateSpec
 from ova_engine.decision import decide, rules_decide
+from ova_engine.domain_context import domain_for, with_area
 from ova_engine.html import document
 from ova_engine.planner_attrs import normalize_topic
 from ova_engine.review import review_and_fix
+from ova_engine.sample_data import neutral_sample
 from ova_engine.text import generate_json
 
 logger = structlog.get_logger(__name__)
@@ -90,16 +92,19 @@ def generate_with_template(
     concept, prompt_ctx = _split_request(concept, contexto)
     params = _params(spec, concept, contexto, resource_config, fake)
     data = (
-        spec.sample(concept, params)
+        neutral_sample(spec, concept, params)
         if fake
         else generate_json(
-            spec.prompt(concept, prompt_ctx, params),
+            with_area(spec.prompt(concept, prompt_ctx, params), concept),
             spec.schema(params),
             llm_config=llm_config,
             enabled_models=enabled_models,
             deadline=deadline,
+            db_facts=domain_for(concept, prompt_ctx).is_oracle,
         )
     )
+    if spec.normalize is not None:
+        data = spec.normalize(data, params)
     t_text = time.monotonic()
     data, review = _review_step(spec, concept, params, data, fake, llm_config, enabled_models, deadline)
     t_review = time.monotonic()
@@ -114,7 +119,8 @@ def generate_with_template(
     if spec.uses_images and not image_settings and os.getenv("LOCAL_IMAGE_URL"):
         # Desarrollo/QA: el servidor local de imágenes (SD) hace de proveedor.
         image_settings = {"provider": "local", "max_images": int(os.getenv("OVA_MAX_GENERATED_IMAGES", "6"))}
-    if spec.uses_images and (image_settings is None or image_settings.get("enabled", True)):
+    # En modo fake no se sale a la red: la plantilla dibuja su alternativa (SVG/emoji).
+    if not fake and spec.uses_images and (image_settings is None or image_settings.get("enabled", True)):
         from llm.images.image_enrich import enrich_with_images
         from llm.images.style_guide import CHARACTERS
 

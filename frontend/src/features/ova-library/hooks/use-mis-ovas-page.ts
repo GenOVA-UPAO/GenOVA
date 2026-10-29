@@ -8,6 +8,7 @@ import { useGeneratingJobs } from "./use-generating-jobs";
 import { useOvaActions } from "./use-ova-actions";
 import { useOvaList } from "./use-ova-library";
 import { useOvaSelection } from "./use-ova-selection";
+import { useScopeParam } from "./use-scope-param";
 import { useStatusParam } from "./use-status-param";
 
 /** Hook de estado y lógica para la página Mis OVAs. */
@@ -16,6 +17,7 @@ export function useMisOvasPage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useStatusParam();
+  const [scope, setScope, canSeeAll] = useScopeParam();
 
   const [ovaToTrash, setOvaToTrash] = useState<OvaListItem | null>(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -25,6 +27,7 @@ export function useMisOvasPage() {
     page,
     search: debouncedSearch,
     status: statusFilter === "all" ? "" : statusFilter,
+    scope,
   });
 
   const { ovas, totalItems, totalPages } = pageMeta(data);
@@ -39,6 +42,7 @@ export function useMisOvasPage() {
   const resetPaging = () => { setPage(1); selection.clear(); };
   const handleSearchChange = (val: string) => { setSearch(val); resetPaging(); };
   const handleStatusChange = (val: string) => { setStatusFilter(val); resetPaging(); };
+  const handleScopeChange = (val: "mine" | "all") => { setScope(val); resetPaging(); };
   const handleClearFilters = () => { setSearch(""); setStatusFilter("all"); resetPaging(); };
   const handlePageChange = (next: number) => { setPage(next); selection.clear(); };
 
@@ -60,6 +64,7 @@ export function useMisOvasPage() {
 
   return {
     page, handlePageChange, totalItems, totalPages,
+    scope, canSeeAll, handleScopeChange,
     search, handleSearchChange, statusFilter, handleStatusChange, handleClearFilters, debouncedSearch,
     selection,
     ovaToTrash, setOvaToTrash, handleConfirmTrash,

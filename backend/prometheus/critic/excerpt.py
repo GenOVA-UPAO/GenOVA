@@ -34,7 +34,7 @@ _DATA_URI_RE = re.compile(
     r"data:(?P<kind>image|audio|video)/[A-Za-z0-9.+-]+;base64,(?P<payload>[A-Za-z0-9+/=]+)"
 )
 _OVA_BASE_RE = re.compile(r'<style id="ova-base">.*?</style>', re.DOTALL)
-_SCRIPT_RE = re.compile(r"<script\b[^>]*>.*?</script>", re.DOTALL | re.IGNORECASE)
+_SCRIPT_RE = re.compile(r"<script\b[^>]*>.*?</script\b[^>]*>", re.DOTALL | re.IGNORECASE)
 _UPAO_LIB_SIG = "UPAO Components v"
 
 _KIND_LABEL = {"image": "img", "audio": "audio", "video": "video"}
@@ -89,7 +89,6 @@ def _mid_cut(text: str, cap: int) -> str:
     omitted = len(text) - keep
     marker = _cut_marker(omitted)
     keep = cap - len(marker)
-    omitted = len(text) - keep
     a = keep - keep // 4
     return text[:a] + marker + text[len(text) - (keep - a) :]
 

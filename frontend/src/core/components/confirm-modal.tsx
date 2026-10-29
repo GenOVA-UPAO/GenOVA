@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   AlertDialog,
@@ -17,6 +18,7 @@ interface ConfirmModalProps {
   title: string;
   message: string;
   confirmLabel: string;
+  cancelLabel?: string;
   isLoading?: boolean;
   /** Texto del botón mientras se procesa («Eliminando…»). */
   loadingLabel?: string;
@@ -32,13 +34,15 @@ export function ConfirmModal({
   title,
   message,
   confirmLabel,
+  cancelLabel,
   isLoading = false,
-  loadingLabel = "Procesando…",
+  loadingLabel,
   danger = true,
   confirmPhrase,
   onConfirm,
   onCancel,
 }: Readonly<ConfirmModalProps>) {
+  const { t } = useTranslation();
   const [typed, setTyped] = useState("");
   const inputId = useId();
   const phraseOk =
@@ -67,7 +71,7 @@ export function ConfirmModal({
             }}
           >
             <Label htmlFor={inputId} className="leading-snug font-normal">
-              Para confirmar, escribe <strong className="font-semibold">{confirmPhrase}</strong>
+              {t("shared:para_confirmar_escribe")} <strong className="font-semibold">{confirmPhrase}</strong>
             </Label>
             <Input
               id={inputId}
@@ -89,8 +93,7 @@ export function ConfirmModal({
           {/* `flex-1` solo en fila: en columna (móvil) su base 0 aplastaba los botones
           a ~22 px de alto. En móvil, altura táctil de 44 px. */}
           <AlertDialogCancel size="lg" className="max-sm:h-11 sm:flex-1" disabled={isLoading}>
-            Cancelar
-          </AlertDialogCancel>
+            {cancelLabel ?? t("shared:cancelar")} </AlertDialogCancel>
           <Button
             variant={danger ? "danger" : "default"}
             size="lg"
@@ -99,7 +102,7 @@ export function ConfirmModal({
             disabled={!phraseOk}
             loading={isLoading}
           >
-            {isLoading ? loadingLabel : confirmLabel}
+            {isLoading ? (loadingLabel ?? t("shared:procesando")) : confirmLabel}
           </Button>
         </div>
       </AlertDialogContent>

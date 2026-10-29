@@ -1,8 +1,10 @@
+import { t } from "i18next";
+
 export type TaskType = "texto" | "codigo" | "orquestador" | "razonamiento" | "imagen" | "video";
 
 export interface TaskMeta {
-  label: string;
-  desc: string;
+  readonly label: string;
+  readonly desc: string;
   /** Fallback text glyph, used when `iconName` is not set. */
   icon: string;
   /** Phosphor slug (see `<gn-icon>`), preferred over `icon` when present. */
@@ -17,8 +19,12 @@ export interface TaskMeta {
 
 export const TASK_META: Record<TaskType, TaskMeta> = {
   texto: {
-    label: "Texto",
-    desc: "Generación de contenido OVA",
+    get label() {
+      return t("llm-settings:labels.tasks.texto");
+    },
+    get desc() {
+      return t("llm-settings:taskMeta.groups.texto");
+    },
     icon: "Aa",
     iconName: "text-aa",
     grad: "from-primary/[.07] to-primary/[.02]",
@@ -29,8 +35,12 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     num: "text-primary font-black",
   },
   codigo: {
-    label: "Código / HTML",
-    desc: "HTML interactivo SCORM",
+    get label() {
+      return t("llm-settings:labels.tasks.codigo");
+    },
+    get desc() {
+      return t("llm-settings:taskMeta.groups.codigo");
+    },
     icon: "</>",
     iconName: "code",
     grad: "from-accent-brand/[.07] to-accent-brand/[.02]",
@@ -41,8 +51,12 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     num: "text-accent-brand font-black",
   },
   orquestador: {
-    label: "Orquestador",
-    desc: "Coordinación y planificación",
+    get label() {
+      return t("llm-settings:labels.tasks.orquestador");
+    },
+    get desc() {
+      return t("llm-settings:taskMeta.groups.orquestador");
+    },
     icon: "🤖",
     iconName: "tree-structure",
     grad: "from-primary/[.05] to-primary/[.01]",
@@ -53,8 +67,12 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     num: "text-primary/70 font-black",
   },
   razonamiento: {
-    label: "Razonamiento",
-    desc: "Evaluaciones semánticas",
+    get label() {
+      return t("llm-settings:labels.tasks.razonamiento");
+    },
+    get desc() {
+      return t("llm-settings:taskMeta.groups.razonamiento");
+    },
     icon: "🧠",
     iconName: "brain",
     grad: "from-accent-brand/[.05] to-accent-brand/[.01]",
@@ -65,8 +83,12 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     num: "text-accent-brand/70 font-black",
   },
   imagen: {
-    label: "Imagen",
-    desc: "Recursos visuales del OVA",
+    get label() {
+      return t("llm-settings:labels.tasks.imagen");
+    },
+    get desc() {
+      return t("llm-settings:taskMeta.groups.imagen");
+    },
     icon: "🖼",
     iconName: "image",
     grad: "from-pink-500/[.07] to-pink-500/[.02]",
@@ -77,8 +99,12 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     num: "text-pink-600 font-black",
   },
   video: {
-    label: "Video",
-    desc: "Clips multimedia",
+    get label() {
+      return t("llm-settings:labels.tasks.video");
+    },
+    get desc() {
+      return t("llm-settings:taskMeta.groups.video");
+    },
     icon: "🎬",
     iconName: "film-strip",
     grad: "from-teal-500/[.07] to-teal-500/[.02]",

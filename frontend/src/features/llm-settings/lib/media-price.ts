@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 /**
  * Precio de los modelos que generan imagen o video. No cobran por millón de
  * tokens de entrada y salida como los de texto, sino por imagen, por megapíxel,
@@ -65,40 +67,43 @@ export function isCheapMedia(price: MediaPrice): boolean {
 
 /** Corto, para listas: «$0.04/imagen», «desde $0.03/s», «≈$0.01/imagen». */
 export function mediaPriceSummary(price: MediaPrice): string {
-  if (price.usd === 0) return "Gratis";
-  const from = price.from ? "desde " : "";
+  if (price.usd === 0) return t("llm-settings:mediaPrice.free");
+  const from = price.from ? t("llm-settings:mediaPrice.fromPrefixLower") : "";
   switch (price.unit) {
     case "image":
-      return `${from}${formatMediaUsd(price.usd)}/imagen`;
+      return `${from}${formatMediaUsd(price.usd)}${t("llm-settings:mediaPrice.slashImage")}`;
     case "second":
-      return `${from}${formatMediaUsd(price.usd)}/s`;
+      return `${from}${formatMediaUsd(price.usd)}${t("llm-settings:mediaPrice.slashSecond")}`;
     case "video_token":
-      return `${from}${perMillion(price.usd)}/1M tokens`;
+      return `${from}${perMillion(price.usd)}${t("llm-settings:mediaPrice.slashMillionTokens")}`;
     default:
       // Por megapíxel o por tokens: lo útil es lo que cuesta una imagen.
       return price.estimate === null
-        ? `${from}${perMillion(price.usd)}/1M tokens`
-        : `≈${formatMediaUsd(price.estimate)}/imagen`;
+        ? `${from}${perMillion(price.usd)}${t("llm-settings:mediaPrice.slashMillionTokens")}`
+        : `≈${formatMediaUsd(price.estimate)}${t("llm-settings:mediaPrice.slashImage")}`;
   }
 }
 
 /** Entero, para lectores de pantalla y títulos. */
 export function mediaPriceDescription(price: MediaPrice): string {
-  if (price.usd === 0) return "Gratis";
-  const from = price.from ? "Desde " : "";
+  if (price.usd === 0) return t("llm-settings:mediaPrice.free");
+  const from = price.from ? t("llm-settings:mediaPrice.fromPrefixCapital") : "";
   switch (price.unit) {
     case "image":
-      return `${from}${formatMediaUsd(price.usd)} por imagen`;
+      return `${from}${formatMediaUsd(price.usd)} ${t("llm-settings:mediaPrice.perImage")}`;
     case "second":
-      return `${from}${formatMediaUsd(price.usd)} por segundo de video`;
+      return `${from}${formatMediaUsd(price.usd)} ${t("llm-settings:mediaPrice.perVideoSecond")}`;
     case "video_token":
-      return `${from}${perMillion(price.usd)} por millón de tokens de video`;
+      return `${from}${perMillion(price.usd)} ${t("llm-settings:mediaPrice.perVideoTokenMillion")}`;
     case "megapixel":
-      return `${formatMediaUsd(price.usd)} por megapíxel, unos ${formatMediaUsd(price.estimate ?? price.usd)} por imagen`;
+      return `${formatMediaUsd(price.usd)} ${t("llm-settings:mediaPrice.perMegapixel", { estimate: formatMediaUsd(price.estimate ?? price.usd) })}`;
     default:
       return price.estimate === null
-        ? `${perMillion(price.usd)} por millón de tokens de imagen`
-        : `Unos ${formatMediaUsd(price.estimate)} por imagen (${perMillion(price.usd)} por millón de tokens)`;
+        ? `${perMillion(price.usd)} ${t("llm-settings:mediaPrice.perImageTokenMillion")}`
+        : t("llm-settings:mediaPrice.estimatedPerImageTokens", {
+            estimate: formatMediaUsd(price.estimate),
+            price: perMillion(price.usd),
+          });
   }
 }
 

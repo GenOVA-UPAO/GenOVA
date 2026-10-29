@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 import { CHEAP_IMAGE_MAX, CHEAP_VIDEO_SECOND_MAX } from "../lib/media-price";
@@ -14,8 +16,6 @@ interface ModelFilterChipsProps {
   mediaOnly?: boolean;
 }
 
-const CHEAP_MEDIA_TITLE = `Imagen a $${String(CHEAP_IMAGE_MAX)} o menos, o segundo de video a $${String(CHEAP_VIDEO_SECOND_MAX)} o menos`;
-
 const CAPS: Capability[] = ["vision", "reasoning", "code"];
 
 /** Filtros rápidos del selector: se combinan entre sí y con la búsqueda. */
@@ -26,6 +26,8 @@ export function ModelFilterChips({
   className,
   mediaOnly = false,
 }: Readonly<ModelFilterChipsProps>) {
+  const { t } = useTranslation("llm-settings");
+
   const toggleCap = (cap: Capability) => {
     const has = filters.capabilities.includes(cap);
     onChange({
@@ -38,25 +40,25 @@ export function ModelFilterChips({
   return (
     <div
       role="group"
-      aria-label="Filtros rápidos"
+      aria-label={t("catalog.quickFilters")}
       className={cn(
         "flex gap-1.5 overflow-x-auto overscroll-x-contain [scrollbar-width:none]",
         className,
       )}
     >
       <FilterChip
-        label="Gratis"
+        label={t("catalog.free")}
         pressed={filters.free}
         onClick={() => {
           onChange({ ...filters, free: !filters.free });
         }}
       />
       <FilterChip
-        label="Económicos"
+        label={t("catalog.budget")}
         title={
           mediaOnly
-            ? CHEAP_MEDIA_TITLE
-            : `Salida a $${String(CHEAP_OUTPUT_MAX)} o menos por millón de tokens`
+            ? t("facts.cheapMediaTitle", { image: CHEAP_IMAGE_MAX, video: CHEAP_VIDEO_SECOND_MAX })
+            : t("facts.cheapTokensTitle", { price: CHEAP_OUTPUT_MAX })
         }
         pressed={filters.cheap}
         onClick={() => {

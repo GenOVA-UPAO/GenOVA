@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { TableCell, TableRow } from "@/core/components/ui/table";
 
 import type { AdminUser, Role, UsersHandlers } from "../../lib/types";
@@ -21,9 +23,13 @@ interface UserRowProps {
   handlers: UsersHandlers;
 }
 
-function lockReasonFor(isMe: boolean, isProtected: boolean): string | null {
-  if (isMe) return "Tu propia cuenta no se modifica desde aquí";
-  if (isProtected) return "Solo un administrador puede modificar esta cuenta";
+function lockReasonFor(
+  isMe: boolean,
+  isProtected: boolean,
+  t: (key: string) => string,
+): string | null {
+  if (isMe) return t("users.row.ownAccountHint");
+  if (isProtected) return t("users.row.adminOnlyHint");
   return null;
 }
 
@@ -35,9 +41,10 @@ export function UserRow({
   isUpdating,
   handlers,
 }: Readonly<UserRowProps>) {
+  const { t } = useTranslation("admin");
   const isMe = user.id === currentUserId;
   const isProtected = user.role?.name === "administrador" && !isCurrentUserAdmin;
-  const lockReason = lockReasonFor(isMe, isProtected);
+  const lockReason = lockReasonFor(isMe, isProtected, t);
 
   return (
     <TableRow className={ROW_CLASS}>

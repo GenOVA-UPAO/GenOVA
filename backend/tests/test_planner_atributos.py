@@ -95,7 +95,8 @@ def test_profile_keywords():
 
 def test_tabla_cubre_los_50_recursos():
     for ph in PHASES:
-        assert sorted(TABLE[ph]) == list(range(1, 11))
+        assert sorted(TABLE[ph]) == list(range(1, len(TABLE[ph]) + 1))
+        assert len(TABLE[ph]) >= 10
         for res in TABLE[ph].values():
             assert 1 <= res.nivel <= 5
             for a in [*res.aff, *res.req, *res.req_any]:
@@ -134,6 +135,7 @@ def test_sin_inadecuados_por_requisito():
     plan = pa.select_plan(_prof())  # tema sin histórico, ético ni comparativo
     assert 7 not in plan["explain"] and 9 not in plan["explain"]
     assert 8 not in plan["engage"] and 5 not in plan["engage"]
+    assert 11 not in plan["explore"]
 
 
 def test_requisitos_se_activan_con_el_perfil():
@@ -143,6 +145,7 @@ def test_requisitos_se_activan_con_el_perfil():
     assert 5 in pa.select_plan(_prof(etico=1.0))["engage"]
     assert 6 in pa.select_plan(_prof(tuning=1.0))["explore"]
     assert 7 in pa.select_plan(_prof(codigo=1.0))["elaborate"]
+    assert 11 in pa.select_plan(_prof(matematico=1.0))["explore"]
 
 
 def test_orden_por_progresion_cognitiva():

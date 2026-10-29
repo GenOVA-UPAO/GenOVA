@@ -18,7 +18,7 @@ async function currentUser(maxAgeMs = REVALIDATE_MAX_AGE_MS) {
   try {
     return await authStore.revalidate(maxAgeMs);
   } catch (error) {
-    console.warn("No se pudo verificar la sesión:", error);
+    console.warn("Session verification failed:", error);
     return null;
   }
 }

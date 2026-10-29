@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useIsAdmin } from "@/core/auth/auth-store";
@@ -12,6 +13,7 @@ import { LlmSettingsContext } from "./use-llm-settings";
  * que elige tiene que estar en favoritos para que se use.
  */
 export function useFavoriteActions() {
+  const { t } = useTranslation("llm-settings");
   const store = useContext(LlmSettingsContext);
   const isAdmin = useIsAdmin();
 
@@ -20,9 +22,7 @@ export function useFavoriteActions() {
     if (!isAdmin && store.isModelEnabled(provider, modelId)) {
       const task = favoriteInUseBy(store.settings, { provider, model_id: modelId });
       if (task) {
-        toast.error(
-          `Lo usas en ${task}. Elige otro modelo para esa tarea antes de quitarlo de favoritos.`,
-        );
+        toast.error(t("favorites.inUseError", { task }));
         return;
       }
     }

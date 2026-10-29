@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { NavLink, useMatch } from "react-router";
 
 import { useCurrentUser } from "@/core/auth/auth-store";
@@ -15,8 +16,9 @@ interface ProfileFooterProps {
 }
 
 export function ProfileFooter({ collapsed, onNavigate }: Readonly<ProfileFooterProps>) {
+  const { t } = useTranslation();
   const user = useCurrentUser();
-  const name = firstNonBlank(user?.full_name) ?? "Usuario GenOVA";
+  const name = firstNonBlank(user?.full_name) ?? t("shell:usuario_genova");
   // Clase como texto: el Trigger del tooltip no combina la función de NavLink.
   const isActive = useMatch("/profile") !== null;
   return (
@@ -28,7 +30,7 @@ export function ProfileFooter({ collapsed, onNavigate }: Readonly<ProfileFooterP
           onMouseEnter={() => {
             prefetchRoute("/profile");
           }}
-          aria-label={`Perfil: ${name}`}
+          aria-label={t("shell:perfil_value", { p0: name })}
           className={cn(profileLinkClasses(isActive), collapsed && "justify-center")}
         >
           <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -30,7 +31,7 @@ export function useNodesConfig() {
     data,
     loading: query.isLoading,
     error: query.error
-      ? errorMessage(query.error, "No se pudo cargar la configuración de nodos.")
+      ? errorMessage(query.error, t("llm-settings:nodes.loadError"))
       : "",
     draft: readyDraft,
     rounds: Number(readyDraft?.ova_reflection_rounds ?? 1),
@@ -61,7 +62,7 @@ async function persistNodes(
     await mutateAsync(payload);
     toast.success(successMsg);
   } catch (err) {
-    toast.error(errorMessage(err, "No se pudo guardar."));
+    toast.error(errorMessage(err, t("llm-settings:nodes.saveError")));
     throw err;
   }
 }

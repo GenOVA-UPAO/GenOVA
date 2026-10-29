@@ -36,7 +36,7 @@ def _rebuild_catalog() -> None:
 # System defaults per generation type (mirror llm_router._SEED_MODELOS primaries).
 DEFAULTS: dict[str, dict] = {
     "texto": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
-    "codigo": {"provider": "opencode", "model_id": "deepseek-v4-pro"},
+    "codigo": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-pro"},
     "orquestador": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
     "razonamiento": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
 }

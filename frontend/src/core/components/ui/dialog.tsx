@@ -1,6 +1,7 @@
 import { XIcon } from "@phosphor-icons/react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { useReturnFocus } from "@/core/components/ui/return-focus";
@@ -50,12 +51,14 @@ function DialogContent({
     showCloseButton?: boolean;
   }
 >) {
+  const { t } = useTranslation();
   const focusHandlers = useReturnFocus({ onOpenAutoFocus, onCloseAutoFocus });
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        aria-modal="true"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overscroll-contain rounded-2xl bg-popover p-5 shadow-xl text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
           className,
@@ -68,7 +71,7 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button variant="ghost" className="absolute top-3 right-3" size="icon-sm">
               <XIcon weight="bold" />
-              <span className="sr-only">Cerrar</span>
+              <span className="sr-only">{t("shared:cerrar")}</span>
             </Button>
           </DialogPrimitive.Close>
         )}
@@ -89,6 +92,7 @@ function DialogFooter({
   children,
   ...props
 }: Readonly<ComponentProps<"div"> & { showCloseButton?: boolean }>) {
+  const { t } = useTranslation();
   return (
     <div
       data-slot="dialog-footer"
@@ -101,7 +105,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Cerrar</Button>
+          <Button variant="outline">{t("shared:cerrar")}</Button>
         </DialogPrimitive.Close>
       )}
     </div>

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { Creator } from "../lib/types";
 import { AnalyticsPanel } from "./analytics-panel";
 
@@ -5,16 +7,13 @@ interface TopCreatorsProps {
   creators: Creator[];
 }
 
-function ovaCountLabel(count: number): string {
-  return count === 1 ? "1 OVA" : `${String(count)} OVAs`;
-}
-
 export function TopCreators({ creators }: Readonly<TopCreatorsProps>) {
+  const { t } = useTranslation("analytics");
   return (
-    <AnalyticsPanel title="Mayores creadores">
+    <AnalyticsPanel title={t("creators.title")}>
       {creators.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Aparecerán aquí cuando alguien cree su primer OVA.
+          {t("creators.empty")}
         </p>
       ) : (
         <ol className="divide-y divide-border">
@@ -32,7 +31,9 @@ export function TopCreators({ creators }: Readonly<TopCreatorsProps>) {
                   <p className="truncate text-xs text-muted-foreground">{c.email}</p>
                 ) : null}
               </div>
-              <span className="shrink-0 text-sm tabular-nums">{ovaCountLabel(c.ova_count)}</span>
+              <span className="shrink-0 text-sm tabular-nums">
+                {t("creators.ovaCount", { count: c.ova_count })}
+              </span>
             </li>
           ))}
         </ol>

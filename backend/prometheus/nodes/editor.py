@@ -70,6 +70,13 @@ def _apply_patches(results: list[dict], parches: list[dict]) -> None:
 
 
 def editor_node(state: OvaGenerationState) -> dict:
+    from ova_engine.domain_context import area_scope
+
+    with area_scope(state.get("topic_area")):
+        return _editor_node(state)
+
+
+def _editor_node(state: OvaGenerationState) -> dict:
     """Nodo LangGraph: revisa coherencia 5E del arco completo.
 
     Noop cuando ova_editor != "1" (DB config o env). Best-effort: fallo →
@@ -102,7 +109,9 @@ def editor_node(state: OvaGenerationState) -> dict:
             for r in sorted(results, key=_sort_key)
         ]
 
-        prompt = _PROMPT_TMPL.format(recursos_json=json.dumps(extracto, ensure_ascii=False))
+        from ova_engine.domain_context import with_area
+
+        prompt = with_area(_PROMPT_TMPL.format(recursos_json=json.dumps(extracto, ensure_ascii=False)))
         response = generar_texto(
             prompt, "texto", 1024, state.get("llm_config", {}), state.get("enabled_models", [])
         )

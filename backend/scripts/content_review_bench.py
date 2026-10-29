@@ -105,7 +105,7 @@ def _run_one(args) -> dict:
     f, seed, prefilter = args
     if prefilter:
         os.environ["OVA_CONTENT_REVIEW_PREFILTER"] = "1"
-    fx = json.loads(f.read_text())
+    fx = json.loads(f.read_text(encoding="utf-8"))
     concept, data = fx["concept"], fx["data"]
     rng = random.Random(seed)  # noqa: S311
     out = {"fixture": f.stem, "concept": concept}
@@ -165,7 +165,7 @@ def main() -> None:
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     if a.out:
-        Path(a.out).write_text(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=1))
+        Path(a.out).write_text(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -21,6 +21,22 @@ plantilla, siempre iguales y probados. Fallo del texto → respaldo al plan clá
 | `OVA_DECISION_MIN_CONFIDENCE` | `0.35` | por debajo → se queda la regla |
 | `OVA_TEXT_BACKEND` | `router` (def.) / `local` | `local` = Ollama con salida estructurada |
 | `OVA_LOCAL_LLM_URL` / `OVA_LOCAL_LLM_MODEL` | `http://localhost:11435` / `qwen3:8b` | simulación local |
+| `OVA_DIAGRAM_TIMEOUT` | `60` | segundos de timeout por llamada que genera un diagrama (remota o local); súbelo si el modelo tarda en cargar |
+| `OVA_DIAGRAM_RETRIES` | `2` | máximo de intentos totales (incluye el primero); `1` desactiva reintentos; valores menores que 1 se ajustan a 1 |
+
+Los reintentos incluyen los motivos de rechazo en español y hasta 4000 caracteres
+del JSON anterior para pedir su corrección. Se validan esquema/grafo, calidad,
+semántica (después de las reparaciones conservadoras) y render. Los eventos
+estructurados `diagram_rejected` y `diagram_generated` indican etapa, motivos y
+número de intento, sin registrar el JSON completo.
+
+El presupuesto total para iniciar llamadas es `2 × OVA_DIAGRAM_TIMEOUT`, medido
+con reloj monotónico. No se inicia otro intento ni fallback remoto→local si ya
+se agotó; el timeout de cada petición HTTP se reduce al tiempo restante. El remoto
+y su fallback local comparten el presupuesto de una llamada. El timeout HTTP
+limita fases de I/O, no interrumpe una operación en curso ni el render offline:
+no es una cancelación estricta de tiempo de pared. Valores no numéricos de ambas
+variables, o timeout no positivo/no finito, usan sus valores por defecto.
 
 ## Escribir una plantilla (`templates/<fase>_<NN>.py`)
 

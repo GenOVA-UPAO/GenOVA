@@ -12,7 +12,9 @@ Dos modos:
   que el refinador: si el resultado se trunca o encoge demasiado, se descarta.
 """
 
+import json
 import os
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
 import structlog
@@ -24,6 +26,7 @@ from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.ova_runtime import inject_runtime, runtime_palette, strip_runtime, theme_of
 from llm.utils.utils import extract_html_document
 from ova import placeholder_prompt
+from ova_engine.domain_context import with_area
 
 logger = structlog.get_logger(__name__)
 
@@ -57,6 +60,99 @@ def _material_block(contexto: str) -> str:
     return _MATERIAL_BLOCK.format(contexto=contexto.strip()) if contexto.strip() else ""
 
 
+# Edición por parches (M7). Reescribir el documento entero obliga al modelo a
+# devolver decenas de KB: con «thinking» (deepseek-v4-flash) cada edición tardaba
+# 1-4 min y a menudo terminaba en EmptyContentError (el razonamiento consume el
+# presupuesto de salida y `content` llega vacío). Pedir solo los fragmentos que
+# cambian cabe en una salida corta, por debajo de `_THINK_OFF_MAX` (6k): el
+# modelo responde sin «thinking», en segundos. Si el parche no es válido se
+# recurre a reescribir el documento, como antes.
+_PATCH_MAX_TOKENS = 4000
+_MAX_PATCH_EDITS = 12
+_PATCH_PROMPT = """[ROL] Editor de recursos educativos HTML5 interactivos.
+[TEMA DEL RECURSO] "{concept}"
+[TAREA] Aplica EXCLUSIVAMENTE este cambio pedido por el usuario sobre el HTML de abajo.
+[CAMBIO PEDIDO]
+{instruction}
+{material}[REGLAS]
+- NO devuelvas el documento. Devuelve SOLO un JSON con los fragmentos a sustituir:
+  {{"edits": [{{"old": "<fragmento EXACTO del HTML actual>", "new": "<fragmento ya editado>"}}]}}
+- Cada "old" debe copiarse literalmente del HTML (mismo espacio y comillas), ser lo más corto
+  posible y aparecer UNA sola vez en el documento.
+- No cambies nada que el cambio pedido no toque; conserva el tema, el título y la interactividad
+  (handlers JS reales, callbacks SCORM y cero dependencias externas).
+[HTML_ACTUAL]
+{html}
+[SALIDA] Solo el JSON, sin markdown ni comentarios."""
+
+
+def _parse_edits(raw: str) -> list[tuple[str, str]]:
+    """Pares (old, new) del JSON del modelo; vacío si no se entiende."""
+    text = (raw or "").strip()
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end <= start:
+        return []
+    try:
+        payload = json.loads(text[start : end + 1])
+    except ValueError:
+        return []
+    items = payload.get("edits") if isinstance(payload, dict) else None
+    if not isinstance(items, list) or not 0 < len(items) <= _MAX_PATCH_EDITS:
+        return []
+    pairs = []
+    for item in items:
+        old = item.get("old") if isinstance(item, dict) else None
+        new = item.get("new") if isinstance(item, dict) else None
+        if not isinstance(old, str) or not isinstance(new, str) or not old:
+            return []
+        pairs.append((old, new))
+    return pairs
+
+
+def apply_edits(html: str, edits: list[tuple[str, str]]) -> str | None:
+    """Aplica los parches; None si alguno no aparece exactamente una vez o no cambia nada."""
+    result = html
+    for old, new in edits:
+        if result.count(old) != 1:
+            return None
+        result = result.replace(old, new, 1)
+    if result == html or _looks_truncated(result):
+        return None
+    return result
+
+
+def _patch_edit(
+    concept: str,
+    instruction: str,
+    authored: str,
+    contexto: str,
+    llm_config: dict | None,
+    enabled_models: list | None,
+    area: str = "",
+) -> str | None:
+    """HTML editado con fragmentos sustituidos, o None si el modelo no dio un parche válido."""
+    try:
+        raw = generar_texto(
+            with_area(
+                _PATCH_PROMPT.format(
+                    concept=concept,
+                    instruction=instruction,
+                    material=_material_block(contexto),
+                    html=authored,
+                ),
+                area=area,
+            ),
+            "codigo",
+            _PATCH_MAX_TOKENS,
+            llm_config,
+            enabled_models,
+        )
+    except Exception:
+        logger.warning("patch edit failed; falling back to full rewrite", concept=concept[:60])
+        return None
+    return apply_edits(authored, _parse_edits(raw))
+
+
 def _looks_truncated(html: str) -> bool:
     return not html.rstrip().lower().endswith("</html>")
 
@@ -68,9 +164,11 @@ def edit_phase_content(
     llm_config: dict | None = None,
     enabled_models: list | None = None,
     contexto: str = "",
+    area: str = "",
 ) -> str | None:
     """HTML editado con el cambio pedido, o None si falla o regresiona.
-    `contexto` es el bloque RAG (ya delimitado y con su guarda anti-inyección)."""
+    `contexto` es el bloque RAG (ya delimitado y con su guarda anti-inyección).
+    `area` es el área temática del OVA: la edición no debe sacarlo de ella."""
     from core.config import settings
 
     instruction = (instruction or "").strip()
@@ -83,8 +181,14 @@ def edit_phase_content(
     # The model edits only the authored HTML; the shared runtime (~45 KB) is
     # stripped first and re-injected after, so it is never rewritten or cut.
     authored, had_css, had_components = strip_runtime(base_html)
+    local = getattr(settings, "ova_text_backend", None) == "local"
+    patched = None if local else _patch_edit(concept, instruction, authored, contexto, llm_config, enabled_models, area)
+    if patched is not None:
+        return inject_runtime(
+            patched, css=had_css, components=had_components, palette=runtime_palette(base_html)
+        )
     try:
-        if getattr(settings, "ova_text_backend", None) == "local":
+        if local:
             import httpx
 
             url = os.getenv("OVA_LOCAL_LLM_URL", "http://localhost:11435").rstrip("/")
@@ -96,11 +200,14 @@ def edit_phase_content(
                     "messages": [
                         {
                             "role": "user",
-                            "content": _EDIT_PROMPT.format(
-                                concept=concept,
-                                instruction=instruction,
-                                material=_material_block(contexto),
-                                html=authored,
+                            "content": with_area(
+                                _EDIT_PROMPT.format(
+                                    concept=concept,
+                                    instruction=instruction,
+                                    material=_material_block(contexto),
+                                    html=authored,
+                                ),
+                                area=area,
                             ),
                         }
                     ],
@@ -115,11 +222,14 @@ def edit_phase_content(
         else:
             new_html = extract_html_document(
                 generar_texto(
-                    _EDIT_PROMPT.format(
-                        concept=concept,
-                        instruction=instruction,
-                        material=_material_block(contexto),
-                        html=authored,
+                    with_area(
+                        _EDIT_PROMPT.format(
+                            concept=concept,
+                            instruction=instruction,
+                            material=_material_block(contexto),
+                            html=authored,
+                        ),
+                        area=area,
                     ),
                     "codigo",
                     _CODE_MAX_TOKENS,
@@ -169,6 +279,7 @@ def _regen_one_phase(
     image_settings: dict | None,
     contexto: str = "",
     fallback_theme: dict | None = None,
+    area: str = "",
 ) -> str | None:
     """Edita (si hay `instruction`) o regenera desde cero un recurso de fase.
 
@@ -183,7 +294,7 @@ def _regen_one_phase(
         instruction = None
     if instruction:
         edited = edit_phase_content(
-            concept, instruction, phase.content or "", llm_config, enabled_models, contexto
+            concept, instruction, phase.content or "", llm_config, enabled_models, contexto, area
         )
         if edited:
             return edited
@@ -205,6 +316,7 @@ def _regen_one_phase(
         contexto,
         # Mismo tema con el que se generó: colores libres o la paleta del docente.
         theme=theme_of(phase.content or "") if pending is None else fallback_theme,
+        area=area,
     )
 
 
@@ -217,19 +329,25 @@ def regen_phases_parallel(
     image_settings: dict | None = None,
     contexto: str = "",
     fallback_theme: dict | None = None,
+    should_stop: Callable[[], bool] | None = None,
+    area: str = "",
 ) -> dict[str, str | None]:
     """Edita/regenera `phases` en paralelo → {phase_id: html|None}.
 
     Cada tarea es una llamada LLM aislada (sin DB); el fallo de una fase da None
     para esa fase sin abortar el resto. El caller escribe las filas.
     `fallback_theme` = tema del OVA para los recursos nuevos, que aún no tienen
-    HTML del que deducirlo.
+    HTML del que deducirlo. `should_stop` (opcional) corta los recursos que aún
+    no han empezado: devuelven None.
     """
     if not phases:
         return {}
     workers = min(_regen_concurrency(), len(phases))
 
     def _one(phase) -> tuple[str, str | None]:
+        # Cancelación: se comprueba antes de cada recurso (una llamada ya en vuelo no se aborta).
+        if should_stop is not None and should_stop():
+            return str(phase.id), None
         try:
             return str(phase.id), _regen_one_phase(
                 phase,
@@ -240,6 +358,7 @@ def regen_phases_parallel(
                 image_settings,
                 contexto,
                 fallback_theme,
+                area,
             )
         except Exception:
             logger.exception("regen failed for phase", phase_id=phase.id)

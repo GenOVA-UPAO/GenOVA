@@ -1,4 +1,6 @@
+import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { useFailedSelection } from "../../hooks/use-failed-selection";
@@ -10,24 +12,25 @@ import { GenerationProgressColumn } from "./generation-progress-column";
 import { PreviewAside } from "./preview-aside";
 import { ProgressActions } from "./progress-actions";
 
-function subtitle(job: ReturnType<typeof useOvaJob>): string {
+function subtitle(job: ReturnType<typeof useOvaJob>, t: TFunction): string {
   if (!job.outcome.isTerminal) {
-    return "Puedes salir de esta página: la generación continúa y el OVA aparecerá en Mis OVAs.";
+    return t("workspace:generationBackgroundHint");
   }
-  if (!job.outcome.partialFail) return "Revisa el resultado de cada recurso.";
+  if (!job.outcome.partialFail) return t("workspace:revisa_el_resultado_de_cada_recurso");
   const failed = failedCount(job.resources);
   const total = String(job.resources.length);
   const lead =
     failed === 1
-      ? `1 de ${total} recursos no se pudo generar.`
-      : `${String(failed)} de ${total} recursos no se pudieron generar.`;
-  return `${lead} Reintenta los fallidos o abre el OVA con lo que sí se generó.`;
+      ? t("workspace:1_de_value_recursos_no_se_pudo_generar", { p0: total })
+      : t("workspace:value_de_value_recursos_no_se_pudieron_generar", { p0: String(failed), p1: total });
+  return t("workspace:generationRetryHint", { p0: lead });
 }
 
 export function CreationProgress({
   jobId,
   onReady,
 }: Readonly<{ jobId: string; onReady?: () => void }>) {
+  const { t } = useTranslation();
   const job = useOvaJob(jobId);
   const navigate = useNavigate();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
@@ -47,13 +50,13 @@ export function CreationProgress({
   // El error de carga del job ya lo muestra la columna; aquí solo los de las acciones.
   const error = job.resume.error ?? job.cancel.error;
   const title = job.outcome.isTerminal
-    ? terminalTitle(job.data?.status ?? "error", job.outcome.partialFail)
-    : "Generando tu OVA";
+    ? terminalTitle(job.data?.status ?? "error", job.outcome.partialFail, t)
+    : t("workspace:generando_tu_ova");
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <header>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
-        <p className="mt-1.5 text-sm font-medium text-muted-foreground">{subtitle(job)}</p>
+        <p className="mt-1.5 text-sm font-medium text-muted-foreground">{subtitle(job, t)}</p>
       </header>
       <div className="lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
       <div className="min-w-0 space-y-3">

@@ -1,10 +1,13 @@
 import asyncio
+import importlib
+import os
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 
 # Load .env before importing modules that read env vars at import time.
-load_dotenv()
+if not os.getenv("GENOVA_TESTING"):  # los tests no leen el .env del desarrollador
+    load_dotenv()
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
@@ -15,7 +18,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from sqlalchemy.exc import DataError
 
-import models  # noqa: F401  — imported for side-effect of registering ORM models
+importlib.import_module("models")  # imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
 from auth.interface.http.router import router as auth_router
 from core.config import settings
@@ -26,11 +29,17 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from core.sentry_setup import init_sentry
+from core.topic_area import set_topic_area_provider
 from editor.interface.http import router as editor_router
+from generation.infrastructure.guardrails_store import active_topic_area
+from generation.interface.http.admin_guardrails_router import public_router as topic_area_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
+from lti.interface.http.admin_router import router as lti_admin_router
+from lti.interface.http.router import router as lti_router
 from ova.interface.http.add_phase_router import router as ova_add_phase_router
 from ova.interface.http.chat_router import router as ova_chat_router
 from ova.interface.http.edit_router import router as ova_edit_router
@@ -58,16 +67,7 @@ logger = structlog.get_logger(__name__)
 _IS_PROD = settings.env.lower() == "production"
 
 # Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
-if settings.sentry_dsn:
-    import sentry_sdk
-
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        environment=settings.env,
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
-    )
-    logger.info("Sentry inicializado", environment=settings.env)
+init_sentry()
 
 
 def _background_rag_purge() -> None:
@@ -96,6 +96,32 @@ def _background_auth_purge() -> None:
                 logger.info("Auth tokens purgados en startup", count=removed)
     except Exception:
         logger.exception("Auth startup cleanup failed (continuing).")
+
+
+def _lti_purge_once() -> None:
+    try:
+        from sqlalchemy.orm import Session
+
+        from lti.infrastructure.cleanup import purge_expired_lti
+
+        with Session(engine) as session:
+            removed = purge_expired_lti(session)
+            if any(removed.values()):
+                logger.info("Artefactos LTI caducados purgados", **removed)
+    except Exception:
+        logger.exception("LTI cleanup failed (continuing).")
+
+
+async def _periodic_lti_purge() -> None:
+    # Al arrancar y luego cada LTI_PURGE_INTERVAL_HOURS (6 por defecto): los states
+    # y launches crecen con cada lanzamiento desde el LMS.
+    try:
+        hours = max(0.1, float(os.getenv("LTI_PURGE_INTERVAL_HOURS", "6")))
+    except ValueError:
+        hours = 6.0
+    while True:
+        await asyncio.to_thread(_lti_purge_once)
+        await asyncio.sleep(hours * 3600)
 
 
 def _background_regen_recovery() -> None:
@@ -146,7 +172,9 @@ async def lifespan(_: FastAPI):
     asyncio.create_task(asyncio.to_thread(_background_regen_recovery))
     asyncio.create_task(asyncio.to_thread(_background_late_video_recovery))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
+    lti_purge = asyncio.create_task(_periodic_lti_purge())
     yield
+    lti_purge.cancel()
 
 
 app = FastAPI(
@@ -268,6 +296,8 @@ def admin_refresh_catalog(
         ) from exc
 
 
+# `llm` no puede importar `generation`: el área temática se le inyecta como proveedor.
+set_topic_area_provider(active_topic_area)
 app.include_router(agents_router, prefix="/api/agents")
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(rag_router, prefix="/api/rag")
@@ -294,6 +324,10 @@ app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
 app.include_router(guardrails_router, prefix="/api/admin")
+app.include_router(topic_area_router, prefix="/api/config")
+app.include_router(lti_admin_router, prefix="/api/admin")
+# LTI 1.3: el LMS llama a /lti/* directamente (login OIDC, launch, JWKS, reproductor).
+app.include_router(lti_router)
 
 # Alias heredados: el recurso vivía en /api/ova (singular) y los trabajos colgaban
 # de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya

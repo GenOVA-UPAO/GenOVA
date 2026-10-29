@@ -1,12 +1,16 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 /** Esqueleto de una lista de ajustes con interruptor. */
 export function SettingListSkeleton({ rows }: Readonly<{ rows: number }>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Cargando"
+      aria-label={t("page.loading")}
       className="divide-y rounded-xl border border-border bg-card"
     >
       {Array.from({ length: rows }, (_, index) => (

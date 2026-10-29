@@ -11,24 +11,49 @@ exacto viaja como defecto al refinador.
 
 import json
 import re
+from html.parser import HTMLParser
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
-# La etiqueta de cierre admite basura tipo atributo antes del `>`
-# (`</script foo="bar">`): el navegador la cierra igual, así que aquí también.
-_SCRIPT = re.compile(r"<script(\s[^>]*)?>([\s\S]*?)</script(\s[^>]*)?>", re.I)
+# Se recorre con `html.parser` (tiempo lineal, tolera `</script foo="bar">`, que el
+# navegador cierra igual) en vez de una regex con cuantificadores anidados.
 # Runtime inyectado y snippet SCORM: código propio ya probado, no se revisa.
 _SKIP_MARKERS = ("UPAO Components v", "function _scormInit")
 _MAX_ERRORS = 3
 
 
+class _ScriptCollector(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.scripts: list[tuple[str, str]] = []  # (atributos en minúsculas, cuerpo)
+        self._attrs: str | None = None
+        self._body: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "script":
+            self._attrs = " ".join(
+                f"{k}={v}" if v is not None else k for k, v in attrs
+            ).lower()
+            self._body = []
+
+    def handle_data(self, data):
+        if self._attrs is not None:
+            self._body.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "script" and self._attrs is not None:
+            self.scripts.append((self._attrs, "".join(self._body)))
+            self._attrs = None
+
+
 def _inline_scripts(html: str) -> list[str]:
+    collector = _ScriptCollector()
+    collector.feed(html)
+    collector.close()
     scripts = []
-    for match in _SCRIPT.finditer(html):
-        attrs = (match.group(1) or "").lower()
-        body = match.group(2)
+    for attrs, body in collector.scripts:
         if "src=" in attrs or (
             "type=" in attrs and "javascript" not in attrs and "module" not in attrs
         ):

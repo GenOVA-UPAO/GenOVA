@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { EngineNode } from "../hooks/nodes-config.types";
 import { useNodesConfig } from "../hooks/use-nodes-config";
 import { CapabilitiesBody } from "./capabilities-body";
@@ -5,6 +7,7 @@ import { PlatformSection } from "./platform-section";
 import { SaveCardButton } from "./save-card-button";
 
 export function PlatformCapabilitiesCard() {
+  const { t } = useTranslation("llm-settings");
   const nodes = useNodesConfig();
   const capabilities = nodes.data.capabilities ?? [];
   const configurable = capabilities.filter((item) => item.configurable);
@@ -13,14 +16,14 @@ export function PlatformCapabilitiesCard() {
   return (
     <PlatformSection
       testId="platform-capabilities"
-      title="Capacidades de generación"
-      description="Módulos auxiliares que los agentes usan mientras generan un OVA."
+      title={t("nodes.capabilitiesTitle")}
+      description={t("nodes.capabilitiesDesc")}
       action={
         <SaveCardButton
           disabled={!hasChanges}
           saving={nodes.saving}
           onClick={() => {
-            void nodes.save(capabilityPayload(configurable, nodes.draft), "Capacidades guardadas.");
+            void nodes.save(capabilityPayload(configurable, nodes.draft), t("nodes.capabilitiesSaved"));
           }}
         />
       }

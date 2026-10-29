@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from core.educational_metadata import EducationalMetadata
 from ova.application.dto import SaveOvaInput, SaveOvaResult
 from ova.application.ports import OvaCreationRepository
 
@@ -28,6 +29,7 @@ class SaveOva:
         zip_bytes = self.build_scorm_zip(
             course_title=data.title,
             module_title="OVA Generado por GenOVA",
+            metadata=EducationalMetadata(author=data.author, description=data.prompt),
             phases=[
                 {
                     "type": phase.type,

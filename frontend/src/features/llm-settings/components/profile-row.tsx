@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -22,6 +23,7 @@ interface ProfileRowProps {
 
 /** Un perfil: nombre, si es la config actual o cuánto cambia, «Aplicar» y el resto en «Más acciones». */
 export function ProfileRow(props: Readonly<ProfileRowProps>) {
+  const { t } = useTranslation("llm-settings");
   const { profile } = props;
   const inUse = profile.changes.length === 0;
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -31,30 +33,38 @@ export function ProfileRow(props: Readonly<ProfileRowProps>) {
     if (wasRenaming.current && !props.renaming) menuRef.current?.focus();
     wasRenaming.current = props.renaming;
   }, [props.renaming]);
+
+  const when = profile.created_at ? whenLabel(profile.created_at) : "";
+  const savedText = when
+    ? t("profiles.savedWhen", { when: `${when.charAt(0).toLowerCase()}${when.slice(1)}` })
+    : "";
+
   return (
     <li className="space-y-3 py-3.5" data-profile-row={profile.id}>
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium break-words text-foreground">{profile.name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {inUse ? "Es la configuración actual" : changesLabel(profile.changes.length)}
-            {profile.created_at ? ` · ${savedLabel(profile.created_at)}` : null}
+            {inUse
+              ? t("profiles.isCurrent")
+              : t("profiles.changesCount", { count: profile.changes.length })}
+            {savedText ? ` · ${savedText}` : null}
           </p>
         </div>
         {inUse ? (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/12 px-2 py-0.5 text-xs font-medium text-success-strong">
             <Icon name="check" size="text-xs" />
-            En uso
+            {t("profiles.inUse")}
           </span>
         ) : (
           <Button
             variant="outline"
             size="sm"
             className="shrink-0 max-sm:h-11"
-            aria-label={`Aplicar el perfil ${profile.name}`}
+            aria-label={t("profiles.applyProfileFor", { name: profile.name })}
             onClick={props.onApply}
           >
-            Aplicar
+            {t("profiles.apply")}
           </Button>
         )}
         <ProfileRowMenu
@@ -76,15 +86,4 @@ export function ProfileRow(props: Readonly<ProfileRowProps>) {
       ) : null}
     </li>
   );
-}
-
-function changesLabel(count: number): string {
-  return count === 1
-    ? "1 cambio respecto a la actual"
-    : `${String(count)} cambios respecto a la actual`;
-}
-
-function savedLabel(iso: string): string {
-  const when = whenLabel(iso);
-  return when ? `Guardado: ${when.charAt(0).toLowerCase()}${when.slice(1)}` : "";
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
@@ -29,9 +30,12 @@ interface Props {
   onGenerate: () => void;
   onTour: () => void;
   error?: string;
+  /** Área temática fijada por el administrador ("" o ausente = ninguna). */
+  topicArea?: string;
 }
 
 export function OvaCreateFormCard(props: Readonly<Props>) {
+  const { t } = useTranslation();
   const [touched, setTouched] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const tryGenerate = () => {
@@ -41,13 +45,12 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-6">
       <PageHeader
-        title="Crear nuevo OVA"
-        subtitle="Describe el tema y elige qué recursos generará la IA en cada fase del modelo 5E."
+        title={t("workspace:crear_nuevo_ova")}
+        subtitle={t("workspace:creationSubtitle")}
         actions={
           <Button variant="ghost" className="-ml-3 max-sm:h-11 sm:ml-0" onClick={props.onTour}>
             <Icon name="question" />
-            Ver tutorial
-          </Button>
+            {t("workspace:ver_tutorial")} </Button>
         }
       />
       <CreationSteps
@@ -68,8 +71,15 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
               if (props.prompt.trim()) setTouched(true);
             }}
             onSubmitShortcut={tryGenerate}
+            topicArea={props.topicArea}
           />
           <FileChips files={props.files} onRemove={props.onRemove} />
+          {props.topicArea ? (
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground" data-testid="topic-area-note">
+              <Icon name="info" className="mt-0.5 shrink-0" />
+              <span>{t("workspace:topicAreaNote", { area: props.topicArea })}</span>
+            </p>
+          ) : null}
         </div>
         <CreationToolbar
           nivel={props.nivel}

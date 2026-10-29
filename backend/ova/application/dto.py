@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ova.domain.model import Ova, OvaActor, OvaPhase
 
@@ -13,6 +13,8 @@ class UpdateOvaMetadataInput:
     actor: OvaActor
     title: str
     description: str | None
+    metadata: dict = field(default_factory=dict)
+    package_theme: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,6 +22,8 @@ class OvaMetadataResult:
     id: str
     title: str
     description: str | None
+    metadata: dict = field(default_factory=dict)
+    package_theme: str = "upao"
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +71,7 @@ class SaveOvaInput:
     prompt: str
     phases: tuple[OvaPhase, ...]
     upload_ids: tuple[str, ...]
+    author: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +89,7 @@ class DuplicateOvaInput:
 class DuplicateOvaResult:
     id: str
     title: str
+    status: str = "borrador"
 
 
 @dataclass(frozen=True, slots=True)
@@ -141,10 +147,19 @@ class PhaseVersionInput:
 
 @dataclass(frozen=True, slots=True)
 class PackageDownload:
-    kind: str
+    kind: str  # "url" | "file" | "redirect" | "bytes"
     filename: str
     url: str | None = None
     file_path: str | None = None
+    content: bytes | None = None  # kind == "bytes": paquete construido al vuelo
+    media_type: str = "application/zip"
+
+
+@dataclass(frozen=True, slots=True)
+class ExportOvaInput:
+    ova_id: str
+    actor: OvaActor
+    format: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,6 +199,8 @@ class OvaListQuery:
     limit: int
     search: str
     status: str
+    # Solo el administrador: ver los OVAs de todos los usuarios (moderación/soporte).
+    all_users: bool = False
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
+import i18n from "i18next";
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Icon } from "@/core/components/icon";
@@ -11,11 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
 import { Tooltip } from "@/core/components/ui/tooltip";
+import { exportOva } from "@/core/export/api/ova-export.api";
+import type { ExportFormatId } from "@/core/export/lib/formats";
+import { useLastExportFormat } from "@/core/export/lib/use-last-export-format";
 import { cn } from "@/core/lib/cn";
 import { useLlmSettingsModal } from "@/core/lib/use-llm-settings-modal";
 
-import { exportOvaScorm } from "../../api/ova-workspace.api";
-import { ScormButton } from "./scorm-button";
+import { ExportButton } from "./export-button";
 
 const VersionHistoryPanel = lazy(() => import("../versioning/version-history-panel"));
 
@@ -31,7 +35,7 @@ interface Props {
 /**
  * Acciones del OVA en la cabecera del workspace. En escritorio las secundarias
  * van a la vista; en móvil se recogen en «Más acciones» y la principal
- * («Descargar SCORM») sigue siempre visible.
+ * (botón de descarga) sigue siempre visible.
  */
 export function WorkspacePanelToolbar({
   ovaId,
@@ -39,9 +43,12 @@ export function WorkspacePanelToolbar({
   canExport = true,
   className,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
+  const aiSettingsLabel = t("workspace:configuracion_de_ia");
   const [history, setHistory] = useState(false);
   const settings = useLlmSettingsModal();
-  const download = useScormDownload(ovaId);
+  const download = useExportDownload(ovaId);
+  const [lastFormat, rememberFormat] = useLastExportFormat();
   const openHistory = () => {
     setHistory(true);
   };
@@ -53,13 +60,12 @@ export function WorkspacePanelToolbar({
       <div className="hidden items-center gap-1 md:flex">
         <Button variant="ghost" size="sm" onClick={openHistory}>
           <Icon name="clock-counter-clockwise" />
-          Historial de versiones
-        </Button>
-        <Tooltip label="Configuración de IA" side="bottom">
+          {t("workspace:historial_de_versiones")} </Button>
+        <Tooltip label={aiSettingsLabel} side="bottom">
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Configuración de IA"
+            aria-label={aiSettingsLabel}
             onClick={openSettings}
           >
             <Icon name="gear" />
@@ -71,7 +77,7 @@ export function WorkspacePanelToolbar({
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Más acciones"
+            aria-label={t("workspace:mas_acciones")}
             className="max-md:size-11 md:hidden"
           >
             <Icon name="dots-three-vertical" weight="bold" />
@@ -79,18 +85,18 @@ export function WorkspacePanelToolbar({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuItem onSelect={openHistory}>
-            <Icon name="clock-counter-clockwise" /> Historial de versiones
-          </DropdownMenuItem>
+            <Icon name="clock-counter-clockwise" /> {t("workspace:historial_de_versiones")} </DropdownMenuItem>
           <DropdownMenuItem onSelect={openSettings}>
-            <Icon name="gear" /> Configuración de IA
-          </DropdownMenuItem>
+            <Icon name="gear" /> {aiSettingsLabel} </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ScormButton
+      <ExportButton
         canExport={canExport}
         pending={download.isPending}
-        onDownload={() => {
-          download.mutate();
+        format={lastFormat}
+        onDownload={(format) => {
+          rememberFormat(format);
+          download.mutate(format);
         }}
       />
       {history && (
@@ -109,23 +115,23 @@ export function WorkspacePanelToolbar({
 }
 
 /**
- * Descarga del paquete SCORM. El resultado se avisa con un toast, igual que en
+ * Descarga del paquete en el formato elegido. El resultado se avisa con un toast, igual que en
  * Mis OVAs: el globo fijo bajo el botón tapaba la barra del visor y no se
  * podía cerrar.
  */
-function useScormDownload(ovaId: string) {
+function useExportDownload(ovaId: string) {
   const download = useMutation({
-    mutationFn: () => exportOvaScorm(ovaId),
+    mutationFn: (format: ExportFormatId) => exportOva(ovaId, format),
     onSuccess: () => {
-      toast.success("Descarga iniciada");
+      toast.success(i18n.t("workspace:descarga_iniciada"));
     },
-    onError: (error) => {
-      toast.error("No se pudo descargar el SCORM", {
+    onError: (error, format) => {
+      toast.error(i18n.t("workspace:no_se_pudo_descargar_el_paquete"), {
         description: error.message,
         action: {
-          label: "Reintentar",
+          label: i18n.t("workspace:reintentar"),
           onClick: () => {
-            download.mutate();
+            download.mutate(format);
           },
         },
       });

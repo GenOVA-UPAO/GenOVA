@@ -15,8 +15,8 @@ KIT_CSS = """
 .k-grow{flex:1 1 180px;min-width:0}
 .k-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;
 font-size:.8rem;font-weight:700;background:var(--surface-tint);color:var(--primary);border:1px solid var(--border)}
-.k-chip.ok{background:#EAF7F1;color:var(--success);border-color:var(--success)}
-.k-chip.bad{background:#FBEDED;color:var(--danger);border-color:var(--danger)}
+.k-chip.ok{background:var(--success-bg,#EAF7F1);color:var(--success);border-color:var(--success)}
+.k-chip.bad{background:var(--danger-bg,#FBEDED);color:var(--danger);border-color:var(--danger)}
 .k-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 16px;
 border-radius:10px;border:2px solid var(--primary);background:var(--surface);color:var(--primary);
 font:inherit;font-weight:600;cursor:pointer}
@@ -29,8 +29,8 @@ font:inherit;font-weight:600;cursor:pointer}
 .k-panel.tint{background:var(--surface-tint)}
 .k-label{font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
 .k-fb{margin-top:10px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface-tint)}
-.k-fb.ok{background:#EAF7F1;border-color:var(--success)}
-.k-fb.bad{background:#FBEDED;border-color:var(--danger)}
+.k-fb.ok{background:var(--success-bg,#EAF7F1);border-color:var(--success)}
+.k-fb.bad{background:var(--danger-bg,#FBEDED);border-color:var(--danger)}
 .k-code{font-family:var(--font-mono);font-size:.88rem;white-space:pre-wrap;word-break:break-word;
 background:#0F1B33;color:#E8EEFA;border-radius:10px;padding:12px 14px;margin:0}
 textarea.k-code-in{width:100%;min-height:120px;font-family:var(--font-mono);font-size:.9rem;

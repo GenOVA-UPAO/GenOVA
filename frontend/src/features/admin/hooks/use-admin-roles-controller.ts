@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { useState } from "react";
 
 import type { RoleFormPayload } from "../api/admin-roles.api";
@@ -12,7 +13,7 @@ import {
   useUpdateRole,
 } from "./use-admin-roles";
 
-const CONNECT_ERROR = "No se pudo conectar con el servidor. Intenta de nuevo.";
+const connectError = () => t("admin:roles.connectError");
 
 export function useAdminRolesController() {
   const rolesQuery = useRoles();
@@ -63,7 +64,7 @@ export function useAdminRolesController() {
   return {
     roles: rolesQuery.data ?? [],
     isLoading: rolesQuery.isLoading,
-    error: rolesQuery.error ? errorMessage(rolesQuery.error, CONNECT_ERROR) : "",
+    error: rolesQuery.error ? errorMessage(rolesQuery.error, connectError()) : "",
     tesis: modeRole === "usuarios_prueba",
     savingMode: setMode.isPending,
     toggleMode: () => {
@@ -71,7 +72,7 @@ export function useAdminRolesController() {
     },
     isFormOpen,
     editingRole,
-    formError: formMutation.error ? errorMessage(formMutation.error, CONNECT_ERROR) : "",
+    formError: formMutation.error ? errorMessage(formMutation.error, connectError()) : "",
     isSubmitting: formMutation.isPending,
     openCreate: () => {
       setEditingRole(null);
@@ -85,7 +86,7 @@ export function useAdminRolesController() {
     submitForm,
     deletingRole,
     requestDelete: setDeletingRole,
-    deleteError: deleteRole.error ? errorMessage(deleteRole.error, CONNECT_ERROR) : "",
+    deleteError: deleteRole.error ? errorMessage(deleteRole.error, connectError()) : "",
     isDeleting: deleteRole.isPending,
     confirmDelete,
     cancelDelete,

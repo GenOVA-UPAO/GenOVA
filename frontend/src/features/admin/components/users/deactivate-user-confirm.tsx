@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ConfirmModal } from "@/core/components/confirm-modal";
 
 import type { AdminUser } from "../../lib/types";
@@ -19,14 +21,16 @@ export function DeactivateUserConfirm({
   onConfirm,
   onCancel,
 }: Readonly<DeactivateUserConfirmProps>) {
+  const { t } = useTranslation("admin");
   const name = displayName(user) ?? user.email;
+
   if (nextActive) {
     return (
       <ConfirmModal
-        title={`¿Activar la cuenta de ${name}?`}
-        message="Podrá volver a iniciar sesión con su correo y su contraseña."
-        confirmLabel="Activar cuenta"
-        loadingLabel="Activando…"
+        title={t("users.deactivateModal.activateTitle", { name })}
+        message={t("users.deactivateModal.activateDesc")}
+        confirmLabel={t("users.deactivateModal.activateConfirm")}
+        loadingLabel={t("users.deactivateModal.activating")}
         danger={false}
         isLoading={isChanging}
         onConfirm={onConfirm}
@@ -36,10 +40,10 @@ export function DeactivateUserConfirm({
   }
   return (
     <ConfirmModal
-      title={`¿Desactivar la cuenta de ${name}?`}
-      message="No podrá iniciar sesión hasta que vuelvas a activarla. Sus OVAs y sus datos se conservan."
-      confirmLabel="Desactivar cuenta"
-      loadingLabel="Desactivando…"
+      title={t("users.deactivateModal.deactivateTitle", { name })}
+      message={t("users.deactivateModal.deactivateDesc")}
+      confirmLabel={t("users.deactivateModal.deactivateConfirm")}
+      loadingLabel={t("users.deactivateModal.deactivating")}
       isLoading={isChanging}
       onConfirm={onConfirm}
       onCancel={onCancel}

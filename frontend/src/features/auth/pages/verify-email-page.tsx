@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { authStore } from "@/core/auth/auth-store";
@@ -10,11 +12,12 @@ import { verifyEmail } from "../services/verification";
 type Status = "verifying" | "success" | "error";
 
 export function VerifyEmailPage() {
+  const { t } = useTranslation("auth");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const token = params.get("token");
   const [status, setStatus] = useState<Status>(token ? "verifying" : "error");
-  const [message, setMessage] = useState(token ? "" : "Enlace de verificación inválido.");
+  const [message, setMessage] = useState(token ? "" : t("verify.invalidLink"));
   const ran = useRef(false);
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export function VerifyEmailPage() {
       })
       .catch((error: unknown) => {
         setStatus("error");
-        setMessage(error instanceof Error ? error.message : "Ocurrió un error inesperado.");
+        setMessage(error instanceof Error ? error.message : i18n.t("auth:verify.unexpected"));
       });
   }, [token]);
 
@@ -38,7 +41,7 @@ export function VerifyEmailPage() {
           aria-hidden="true"
           className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
         />
-        <p role="status" className="text-sm text-muted-foreground">Verificando tu correo…</p>
+        <p role="status" className="text-sm text-muted-foreground">{t("verify.verifying")}</p>
       </AuthStatusCard>
     );
   }

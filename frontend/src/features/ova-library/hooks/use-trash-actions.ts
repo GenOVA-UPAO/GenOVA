@@ -1,8 +1,8 @@
+import i18n from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { ovaLibraryApi } from "../api/ova-library.api";
-import { ovaCountPhrase } from "../lib/ova-count";
 import { useOvaMutation } from "./use-ova-library";
 
 /** Maneja las acciones de restauración y borrado permanente en la papelera. */
@@ -25,10 +25,10 @@ export function useTrashActions() {
     setRestoringId(id);
     try {
       await restoreMutation.mutateAsync(id);
-      toast.success("OVA restaurado");
+      toast.success(i18n.t("ova-library:restored_one", { count: 1 }));
       return true;
     } catch {
-      toast.error("No se pudo restaurar el OVA");
+      toast.error(i18n.t("ova-library:no_se_pudo_restaurar_el_ova"));
       return false;
     } finally {
       setRestoringId(null);
@@ -39,10 +39,10 @@ export function useTrashActions() {
     setDeletingId(id);
     try {
       await deleteForeverMutation.mutateAsync(id);
-      toast.success("OVA eliminado definitivamente");
+      toast.success(i18n.t("ova-library:deleted_one", { count: 1 }));
       return true;
     } catch {
-      toast.error("No se pudo eliminar el OVA");
+      toast.error(i18n.t("ova-library:no_se_pudo_eliminar_el_ova"));
       return false;
     } finally {
       setDeletingId(null);
@@ -65,23 +65,29 @@ export function useTrashActions() {
   const batchRestore = (ids: string[]) =>
     runBulk(async () => {
       await batchRestoreMutation.mutateAsync(ids);
-      return ovaCountPhrase(ids.length, "restaurado", "restaurados");
-    }, "No se pudieron restaurar los OVAs");
+      return i18n.t("ova-library:restored", { count: ids.length });
+    }, i18n.t("ova-library:no_se_pudieron_restaurar_los_ovas"));
 
   const batchDeleteForever = (ids: string[]) =>
     runBulk(async () => {
       await batchDeleteForeverMutation.mutateAsync(ids);
-      return ovaCountPhrase(ids.length, "eliminado definitivamente", "eliminados definitivamente");
-    }, "No se pudieron eliminar los OVAs");
+      return i18n.t("ova-library:deleted", { count: ids.length });
+    }, i18n.t("ova-library:no_se_pudieron_eliminar_los_ovas"));
 
   const emptyTrash = () =>
     runBulk(async () => {
       const count = await emptyTrashMutation.mutateAsync(undefined);
-      return `Papelera vaciada: ${ovaCountPhrase(count, "eliminado", "eliminados")}`;
-    }, "No se pudo vaciar la papelera");
+      return i18n.t("ova-library:emptied", { count });
+    }, i18n.t("ova-library:no_se_pudo_vaciar_la_papelera"));
 
   return {
-    restoringId, deletingId, bulkLoading,
-    restoreOva, permanentDeleteOva, batchRestore, batchDeleteForever, emptyTrash,
+    restoringId,
+    deletingId,
+    bulkLoading,
+    restoreOva,
+    permanentDeleteOva,
+    batchRestore,
+    batchDeleteForever,
+    emptyTrash,
   };
 }

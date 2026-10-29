@@ -1,18 +1,22 @@
-# E2E contra el deploy real de develop (Vercel + Railway), disparable desde el
-# CLI de GitHub:
+# E2E nocturno AUTÓNOMO: levanta Postgres, backend y frontend dentro del propio
+# job (igual que el job `e2e` de ci.yml), sin depender de ningún despliegue.
+# No existe despliegue de develop, así que no se apunta a una URL remota.
 #
-#   gh workflow run e2e-develop.yml
-#   gh workflow run e2e-develop.yml -f base_url=https://... -f tags=@smoke
-#   gh run watch                    # seguir el run en vivo
-#   gh run download -n playwright-report-develop   # bajar reporte HTML + videos
+#   gh workflow run e2e-develop.yml                          # app local, todos los escenarios
+#   gh workflow run e2e-develop.yml -f tags=@smoke           # solo @smoke
+#   gh workflow run e2e-develop.yml -f base_url=https://...  # entorno externo (sin app local)
+#   gh run watch                                             # seguir el run en vivo
+#   gh run download -n playwright-report-develop             # bajar reporte HTML + videos
 #
-# Requiere el secret VERCEL_AUTOMATION_BYPASS_SECRET (Vercel → Project →
-# Deployment Protection → Protection Bypass for Automation) para atravesar la
-# protección de los previews. Sin él, el run falla en la pantalla de Vercel.
-#
-# No levanta servidores: el frontend de develop resuelve su backend de Railway
-# por hostname (frontend/src/core/lib/http.ts). Solo corren los escenarios
-# @smoke por defecto (no ensucian la DB de develop con OVAs/roles de prueba).
+# - Cron diario sobre `develop`; workflow_dispatch sobre la rama elegida.
+# - Sin llamadas LLM reales: LLM_FAKE=1 (OVAs deterministas) y claves dummy.
+# - `tags` vacío (por defecto) = suite completa (@smoke + escenarios de
+#   generación, HU-008, HU-018...), más amplia que los @smoke de los PR.
+# - `base_url` opcional: si se informa, NO se levanta backend ni Vite y la suite
+#   corre contra ese frontend (E2E_EXTERNAL=1). Con Vercel Deployment Protection
+#   hace falta el secret VERCEL_AUTOMATION_BYPASS_SECRET.
+#   OJO: contra un backend real los escenarios de generación gastarían cuota
+#   LLM; usa `tags=@smoke` en ese caso.
 
 name: E2E develop
 
@@ -20,28 +24,71 @@ on:
   workflow_dispatch:
     inputs:
       base_url:
-        description: 'URL del frontend a testear'
+        description: 'URL de un frontend externo (vacío = levantar la app dentro del job)'
         required: false
-        default: 'https://gen-ova-frontend-git-develop-gen-ova-s-projects.vercel.app'
+        default: ''
       tags:
-        description: 'Tags Gherkin a ejecutar (expresión de cucumber)'
+        description: 'Expresión de tags Gherkin (vacío = suite completa; ej. "@smoke")'
         required: false
-        default: '@smoke'
+        default: ''
   schedule:
-    # Smoke diario contra develop (07:00 UTC) para detectar regresiones del deploy.
+    # Diario 07:00 UTC sobre develop.
     - cron: '0 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-develop-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   e2e-develop:
-    name: Playwright @smoke vs develop
+    name: Playwright E2E (app local, LLM_FAKE)
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: genova_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      E2E_EXTERNAL: '1'
-      BASE_URL: ${{ inputs.base_url || 'https://gen-ova-frontend-git-develop-gen-ova-s-projects.vercel.app' }}
-      BDD_TAGS: ${{ inputs.tags || '@smoke' }}
+      EXTERNAL_URL: ${{ inputs.base_url }}
+      BDD_TAGS: ${{ inputs.tags }}
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/genova_test
+      JWT_SECRET: ci-solo-para-github-actions-no-es-un-secreto-real
+      DB_POOL_SIZE: '5'
+      DB_MAX_OVERFLOW: '5'
+      GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
+      OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
+      LLM_FAKE: '1'
+      RATE_LIMIT_ENABLED: '0'
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # El cron corre en la rama por defecto; el E2E nocturno prueba develop.
+          ref: ${{ github.event_name == 'schedule' && 'develop' || github.ref }}
+
+      - name: Configurar destino (local o externo)
+        run: |
+          if [ -n "$EXTERNAL_URL" ]; then
+            echo "E2E_EXTERNAL=1" >> "$GITHUB_ENV"
+            echo "BASE_URL=$EXTERNAL_URL" >> "$GITHUB_ENV"
+            echo "MODE=externo" >> "$GITHUB_ENV"
+          else
+            echo "BASE_URL=http://localhost:4200" >> "$GITHUB_ENV"
+            echo "MODE=local" >> "$GITHUB_ENV"
+          fi
 
       - uses: pnpm/action-setup@v6
 
@@ -58,19 +105,64 @@ jobs:
 
       - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
 
-      - name: Run e2e vs develop
+      - uses: actions/setup-python@v7
+        if: env.MODE == 'local'
+        with: { python-version: '3.11' }
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        if: env.MODE == 'local'
+        with: { enable-cache: true }
+
+      - name: Install backend deps
+        if: env.MODE == 'local'
+        run: uv pip install --system -r requirements-dev.txt
+        working-directory: backend
+
+      - name: Start backend
+        if: env.MODE == 'local'
+        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
+        working-directory: backend
+
+      - name: Wait for backend
+        if: env.MODE == 'local'
+        run: |
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health && echo "backend ready" && exit 0
+            echo "waiting... ($i/40)"
+            sleep 5
+          done
+          echo "=== Backend failed to start — startup log ==="
+          cat /tmp/backend.log
+          exit 1
+
+      # Playwright webServer (tests/playwright.config.js) levanta Vite en :4200;
+      # su proxy reenvía /api al backend de :8000. BDD_TAGS vacío = todo.
+      - name: Run E2E
         run: pnpm test:e2e
+
+      - name: Debug backend on failure
+        if: failure() && env.MODE == 'local'
+        run: |
+          echo "=== Backend log ==="
+          tail -n 200 /tmp/backend.log || echo "(no log file)"
 
       - name: Resumen
         if: always()
         run: |
-          echo "## E2E develop" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Frontend: $BASE_URL" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Tags: $BDD_TAGS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Reporte: artifact \`playwright-report-develop\` (HTML + traces + video)" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## E2E develop"
+            echo "- Modo: $MODE"
+            echo "- Frontend: $BASE_URL"
+            echo "- Tags: ${BDD_TAGS:-(suite completa)}"
+            echo "- Estado: ${{ job.status }}"
+            echo "- Reporte: artifact \`playwright-report-develop\` (HTML + traces + video)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report-develop
-          path: tests/playwright-report
+          path: |
+            tests/playwright-report
+            tests/test-results
+          if-no-files-found: ignore

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import {
@@ -28,16 +30,18 @@ export function UserActionMenu({
   onUnlock,
   onSendResetEmail,
 }: Readonly<UserActionMenuProps>) {
+  const { t } = useTranslation("admin");
   const isActive = user.is_active === true;
+  const targetName = displayName(user) ?? user.email;
 
   return (
     <DropdownMenu>
-      <Tooltip label="Más acciones" side="left">
+      <Tooltip label={t("users.actions.moreActions")} side="left">
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={`Más acciones para ${displayName(user) ?? user.email}`}
+            aria-label={t("users.actions.moreActionsFor", { name: targetName })}
             className="max-md:size-11"
           >
             <Icon name="dots-three-vertical" size="text-lg" weight="bold" />
@@ -46,14 +50,14 @@ export function UserActionMenu({
       </Tooltip>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onSelect={onEdit}>
-          <Icon name="pencil-simple" size="text-sm" /> Editar perfil
+          <Icon name="pencil-simple" size="text-sm" /> {t("users.actions.editProfile")}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onSendResetEmail}>
-          <Icon name="envelope" size="text-sm" /> Restablecer por correo
+          <Icon name="envelope" size="text-sm" /> {t("users.actions.resetPasswordEmail")}
         </DropdownMenuItem>
         {isLockedOut(user) && (
           <DropdownMenuItem onSelect={onUnlock}>
-            <Icon name="lock-open" size="text-sm" /> Desbloquear cuenta
+            <Icon name="lock-open" size="text-sm" /> {t("users.actions.unlockAccount")}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
@@ -64,7 +68,7 @@ export function UserActionMenu({
               onToggleStatus(false);
             }}
           >
-            <Icon name="prohibit" size="text-sm" /> Desactivar cuenta
+            <Icon name="prohibit" size="text-sm" /> {t("users.actions.deactivateAccount")}
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem
@@ -72,7 +76,7 @@ export function UserActionMenu({
               onToggleStatus(true);
             }}
           >
-            <Icon name="check-circle" size="text-sm" /> Activar cuenta
+            <Icon name="check-circle" size="text-sm" /> {t("users.actions.activateAccount")}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

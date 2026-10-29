@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 import { formatUsd, type ModelFacts, priceSummary } from "../lib/model-facts";
@@ -7,10 +9,11 @@ import { formatUsd, type ModelFacts, priceSummary } from "../lib/model-facts";
  * modelo de imagen o video («$0.04/imagen», «desde $0.03/s») ocupan las dos.
  */
 export function CatalogPriceCells({ facts }: Readonly<{ facts: ModelFacts }>) {
+  const { t } = useTranslation("llm-settings");
   if (spansBothColumns(facts)) {
     return (
       <span className="col-span-2 hidden text-right sm:block">
-        <span className={summaryClass(facts)}>{priceSummary(facts) ?? "Sin dato"}</span>
+        <span className={summaryClass(facts)}>{priceSummary(facts) ?? t("catalog.noData")}</span>
       </span>
     );
   }

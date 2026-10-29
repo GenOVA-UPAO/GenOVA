@@ -20,6 +20,7 @@ from dataclasses import dataclass
 import structlog
 from sqlalchemy import select
 
+from core.educational_metadata import EducationalMetadata, metadata_from_ova
 from models import Ova, OvaPhase, OvaVersion
 
 logger = structlog.get_logger(__name__)
@@ -37,6 +38,7 @@ class _Snapshot:
     version_number: int
     phases: list[dict]
     fingerprint: str
+    metadata: EducationalMetadata | None = None
 
 
 def _eligible(ova: Ova | None, version_id) -> bool:
@@ -79,7 +81,8 @@ def _snapshot(version_id) -> _Snapshot | None:
             return None
         phases, fingerprint = _phases(db, version_id)
         return _Snapshot(
-            ova.id, str(ova.user_id), ova.title, version.id, int(version.version_number), phases, fingerprint
+            ova.id, str(ova.user_id), ova.title, version.id, int(version.version_number), phases, fingerprint,
+            metadata_from_ova(ova),
         )
     finally:
         db.close()
@@ -96,7 +99,8 @@ def _point_to(snap: _Snapshot, storage_key: str | None, file_path: str | None) -
             db.rollback()
             return False
         _, fingerprint = _phases(db, snap.version_id)
-        if fingerprint != snap.fingerprint:
+        if (fingerprint != snap.fingerprint or ova.title != snap.title
+                or (snap.metadata is not None and metadata_from_ova(ova) != snap.metadata)):
             db.rollback()
             return None
         ova.storage_key = storage_key
@@ -119,7 +123,7 @@ def rebuild_current_scorm(version_id) -> bool:
         snap = _snapshot(version_id)
         if snap is None:
             return False
-        zip_bytes = build_scorm_zip_bytes(course_title=snap.title, module_title=_MODULE_TITLE, phases=snap.phases)
+        zip_bytes = build_scorm_zip_bytes(course_title=snap.title, module_title=_MODULE_TITLE, phases=snap.phases, metadata=snap.metadata)
         storage_key, file_path = persist_scorm_zip(zip_bytes, snap.user_id, str(snap.ova_id), snap.version_number)
         done = _point_to(snap, storage_key, file_path)
         if done is not None:

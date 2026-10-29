@@ -95,12 +95,24 @@ export interface PickerSection {
   options: ModelOption[];
 }
 
-const SECTION_LABELS: Record<SectionKey, string> = {
-  "in-use": "En uso ahora",
-  favorites: "Favoritos",
-  recommended: "Recomendados",
-  rest: "Todos los modelos",
-};
+import { t } from "i18next";
+
+const SECTION_LABELS: Record<SectionKey, string> = new Proxy({} as Record<SectionKey, string>, {
+  get: (_, prop: string) => {
+    switch (prop) {
+      case "in-use":
+        return t("llm-settings:sections.inUse");
+      case "favorites":
+        return t("llm-settings:sections.favorites");
+      case "recommended":
+        return t("llm-settings:sections.recommended");
+      case "rest":
+        return t("llm-settings:sections.rest");
+      default:
+        return prop;
+    }
+  },
+});
 
 function sectionOf(option: ModelOption, current: string): SectionKey {
   if (option.value === current || option.usage.length > 0) return "in-use";

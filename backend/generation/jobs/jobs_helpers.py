@@ -122,19 +122,23 @@ class StartJobRequest(BaseModel):
         return self
 
 
-def autoplan_resources(payload: StartJobRequest) -> None:
+def autoplan_resources(payload: StartJobRequest, area: str = "") -> None:
     """Sin `resources`, decide el plan AL CREAR el job con el motor de decisión.
 
     Antes se creaban filas genéricas (1 por fase) y el concierge re-planificaba
     otros recursos en el grafo: filas y resultados no coincidían, quedaban
     `pending` y el job terminaba `interrupted`. Ahora filas y grafo comparten el
     mismo plan. Sin motor de decisión disponible se mantiene el modo legacy.
+    Si el docente fijó los recursos a mano, no se toca nada. El `area` temática (si hay)
+    inclina la elección del planner hacia recursos afines.
     """
     if payload.resources:
         return
+    from ova_engine.domain_context import area_scope
     from ova_engine.planner import plan_ova
 
-    plan = plan_ova(payload.prompt)
+    with area_scope(area):
+        plan = plan_ova(payload.prompt)
     if not plan:
         return
     wanted = {p.strip().lower() for p in payload.phases if p and p.strip()}
@@ -241,6 +245,9 @@ def resource_to_dict(resource: OvaJobResource) -> dict:
         "attempts": resource.attempts,
         "error_id": str(resource.error_id) if resource.error_id else None,
         "defect_reason": resource.defect_reason,
+        "error_code": resource.defect_reason if resource.defect_reason in (
+            "provider_auth", "provider_auth_personal"
+        ) else None,
     }
 
 
@@ -255,5 +262,9 @@ def job_to_dict(job: OvaJob, resources: list[OvaJobResource]) -> dict:
         "updated_at": job.updated_at.isoformat() if job.updated_at else None,
         "started_at": job.started_at.isoformat() if job.started_at else None,
         "finished_at": job.finished_at.isoformat() if job.finished_at else None,
-        "resources": [resource_to_dict(r) for r in resources],
+        "resources": [
+            {**resource_to_dict(r), "status": "canceled"}
+            if job.status == "canceled" and r.status in ("pending", "running")
+            else resource_to_dict(r) for r in resources
+        ],
     }

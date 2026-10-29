@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
 import { Button } from "@/core/components/ui/button";
@@ -25,21 +27,23 @@ export function RolesPanel({
   onEdit,
   onDelete,
 }: Readonly<RolesPanelProps>) {
+  const { t } = useTranslation("admin");
+
   if (isLoading) {
     return <RolesSkeleton />;
   }
 
   if (error !== "") {
-    return <QueryErrorState title="No se pudieron cargar los roles" onRetry={onRetry} />;
+    return <QueryErrorState title={t("roles.loadError")} onRetry={onRetry} />;
   }
 
   if (roles.length === 0) {
     return (
       <EmptyState
         icon="shield-check"
-        title="Aún no hay roles"
-        description="Crea un rol para decidir qué puede hacer cada perfil de usuario."
-        action={<Button onClick={onCreate}>Nuevo rol</Button>}
+        title={t("roles.emptyTitle")}
+        description={t("roles.emptyDescription")}
+        action={<Button onClick={onCreate}>{t("roles.newRole")}</Button>}
       />
     );
   }

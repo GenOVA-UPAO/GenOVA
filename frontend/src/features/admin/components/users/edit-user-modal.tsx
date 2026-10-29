@@ -1,4 +1,5 @@
 import { type SyntheticEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -34,6 +35,7 @@ export function EditUserModal({
   onClose,
   onSave,
 }: Readonly<EditUserModalProps>) {
+  const { t } = useTranslation("admin");
   const [values, setValues] = useState<UserFormValues>(() => initialUserFormValues(user));
   const [submitted, setSubmitted] = useState(false);
   const errors: UserFormErrors = submitted ? validateUserForm(values) : {};
@@ -65,7 +67,7 @@ export function EditUserModal({
     >
       <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Editar perfil</DialogTitle>
+          <DialogTitle>{t("users.editModal.title")}</DialogTitle>
           <DialogDescription>{user.full_name ?? user.email}</DialogDescription>
         </DialogHeader>
         <form
@@ -89,10 +91,10 @@ export function EditUserModal({
           />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancelar
+              {t("users.editModal.cancel")}
             </Button>
             <Button type="submit" loading={isSubmitting}>
-              Guardar cambios
+              {t("users.editModal.save")}
             </Button>
           </DialogFooter>
         </form>

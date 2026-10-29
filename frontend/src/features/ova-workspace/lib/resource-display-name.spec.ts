@@ -10,6 +10,10 @@ describe("resourceDisplayName", () => {
     expect(resourceDisplayName("Juego Drag & Drop")).toBe("Juego drag & drop");
   });
 
+  it("conserva los nombres propios", () => {
+    expect(resourceDisplayName("Applet GeoGebra")).toBe("Applet GeoGebra");
+  });
+
   it("conserva las siglas", () => {
     expect(resourceDisplayName("FAQ Interactivo")).toBe("FAQ interactivo");
   });

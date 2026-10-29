@@ -1,17 +1,23 @@
+import type { TFunction } from "i18next";
+import i18n from "i18next";
+
+import { currentLocale } from "@/core/i18n/format";
+
 import type { OvaListItem } from "./types";
 
-const DATE_FORMAT = new Intl.DateTimeFormat("es-PE", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+const dateFormat = () =>
+  new Intl.DateTimeFormat(currentLocale(), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
 /** Fecha corta legible ("20 sept 2026"); cadena vacía si no hay fecha válida. */
 export function formatShortDate(value: unknown): string {
   if (typeof value !== "string" || value === "") return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return DATE_FORMAT.format(date).replaceAll(".", "");
+  return dateFormat().format(date).replaceAll(".", "");
 }
 
 function normalize(text: string): string {
@@ -58,8 +64,9 @@ export function visibleVersion(ova: OvaListItem): number | null {
   return Number.isFinite(version) && version > 1 ? version : null;
 }
 
-const FULL_DATE_FORMAT = new Intl.DateTimeFormat("es-PE", { dateStyle: "long", timeStyle: "short" });
-const RELATIVE_FORMAT = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
+const fullDateFormat = () =>
+  new Intl.DateTimeFormat(currentLocale(), { dateStyle: "long", timeStyle: "short" });
+const relativeFormat = () => new Intl.RelativeTimeFormat(currentLocale(), { numeric: "auto" });
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
 /** Por debajo de este margen, `updated_at` es el propio fin de la generación, no una edición. */
@@ -79,14 +86,14 @@ function startOfDay(date: Date): number {
  * Fecha relativa para escanear una lista («hace 5 minutos», «ayer», «hace 3
  * días»); a partir de una semana, la fecha corta precedida de «el».
  */
-export function relativeDate(date: Date, now: Date = new Date()): string {
+export function relativeDate(date: Date, now: Date = new Date(), t: TFunction = i18n.t): string {
   const diff = now.getTime() - date.getTime();
-  if (diff < MINUTE) return "hace un momento";
-  if (diff < 60 * MINUTE) return RELATIVE_FORMAT.format(-Math.floor(diff / MINUTE), "minute");
+  if (diff < MINUTE) return t("ova-library:justNow");
+  if (diff < 60 * MINUTE) return relativeFormat().format(-Math.floor(diff / MINUTE), "minute");
   const days = Math.round((startOfDay(now) - startOfDay(date)) / DAY);
-  if (days === 0) return RELATIVE_FORMAT.format(-Math.floor(diff / (60 * MINUTE)), "hour");
-  if (days < 7) return RELATIVE_FORMAT.format(-days, "day");
-  return `el ${formatShortDate(date.toISOString())}`;
+  if (days === 0) return relativeFormat().format(-Math.floor(diff / (60 * MINUTE)), "hour");
+  if (days < 7) return relativeFormat().format(-days, "day");
+  return t("ova-library:onDate", { date: formatShortDate(date.toISOString()) });
 }
 
 export interface ActivityDate {
@@ -99,29 +106,28 @@ export interface ActivityDate {
 }
 
 /** Última actividad del OVA: la edición si la hubo después de crearlo; si no, la creación. */
-export function lastActivity(
-  ova: OvaListItem,
-  now: Date = new Date(),
-): ActivityDate | null {
+export function lastActivity(ova: OvaListItem, now: Date = new Date(), t: TFunction = i18n.t): ActivityDate | null {
   const created = toDate(ova.created_at);
   const updated = toDate(ova.updated_at);
   const edited = Boolean(created && updated && updated.getTime() - created.getTime() > EDIT_GAP);
   const date = edited ? updated : (created ?? updated);
   if (!date) return null;
   return {
-    label: `${edited ? "Editado" : "Creado"} ${relativeDate(date, now)}`,
+    label: t(edited ? "ova-library:editedAt" : "ova-library:createdAt", {
+      date: relativeDate(date, now, t),
+    }),
     iso: date.toISOString(),
-    full: FULL_DATE_FORMAT.format(date),
+    full: fullDateFormat().format(date),
   };
 }
 
 /** Fecha en la que el OVA pasó a la papelera, en el mismo formato relativo. */
-export function trashedAt(ova: OvaListItem, now: Date = new Date()): ActivityDate | null {
+export function trashedAt(ova: OvaListItem, now: Date = new Date(), t: TFunction = i18n.t): ActivityDate | null {
   const date = toDate(ova.deleted_at);
   if (!date) return null;
   return {
-    label: `Movido a la papelera ${relativeDate(date, now)}`,
+    label: t("ova-library:movido_a_la_papelera_value", { p0: relativeDate(date, now, t) }),
     iso: date.toISOString(),
-    full: FULL_DATE_FORMAT.format(date),
+    full: fullDateFormat().format(date),
   };
 }

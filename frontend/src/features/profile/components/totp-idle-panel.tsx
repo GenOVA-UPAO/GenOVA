@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import { ErrorAlert } from "./error-alert";
@@ -10,10 +12,12 @@ interface TotpIdlePanelProps {
 }
 
 export function TotpIdlePanel({ serverError, isStarting, onStart }: Readonly<TotpIdlePanelProps>) {
+  const { t } = useTranslation("profile");
+
   return (
     <ProfileSection
-      title="Verificación en dos pasos"
-      description="Además de tu contraseña, al entrar se te pedirá un código de una app autenticadora como Google Authenticator o Authy."
+      title={t("totp.title")}
+      description={t("totp.idleDescription")}
     >
       <ErrorAlert message={serverError} />
       <Button
@@ -22,7 +26,7 @@ export function TotpIdlePanel({ serverError, isStarting, onStart }: Readonly<Tot
         loading={isStarting}
         onClick={onStart}
       >
-        Activar verificación en dos pasos
+        {t("totp.activate")}
       </Button>
     </ProfileSection>
   );

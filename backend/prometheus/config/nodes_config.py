@@ -9,10 +9,16 @@ import structlog
 # Re-exported so existing `from prometheus.config.nodes_config import NODES, ...`
 # call sites keep working after the static catalog moved to nodes_catalog.
 from prometheus.config.nodes_catalog import (  # noqa: F401
-    CAPABILITIES,
-    NODES,
-    VIDEO_RESOURCE_TYPES,
-    is_video_resource,
+    CAPABILITIES as CAPABILITIES,
+)
+from prometheus.config.nodes_catalog import (
+    NODES as NODES,
+)
+from prometheus.config.nodes_catalog import (
+    VIDEO_RESOURCE_TYPES as VIDEO_RESOURCE_TYPES,
+)
+from prometheus.config.nodes_catalog import (
+    is_video_resource as is_video_resource,
 )
 
 logger = structlog.get_logger(__name__)

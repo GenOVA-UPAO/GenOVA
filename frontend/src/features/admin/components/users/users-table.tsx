@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Table,
   TableBody,
@@ -28,15 +30,17 @@ export function UsersTable({
   updatingUserId,
   handlers,
 }: Readonly<UsersTableProps>) {
+  const { t } = useTranslation("admin");
+
   return (
     <Table className="max-md:block md:table-fixed">
       <TableHeader className="max-md:sr-only">
         <TableRow className="bg-muted/40 hover:bg-muted/40">
-          <TableHead className={`${HEAD_CLASS} w-[46%]`}>Usuario</TableHead>
-          <TableHead className={`${HEAD_CLASS} w-[26%]`}>Rol</TableHead>
-          <TableHead className={HEAD_CLASS}>Estado</TableHead>
+          <TableHead className={`${HEAD_CLASS} w-[46%]`}>{t("users.table.user")}</TableHead>
+          <TableHead className={`${HEAD_CLASS} w-[26%]`}>{t("users.table.role")}</TableHead>
+          <TableHead className={HEAD_CLASS}>{t("users.table.status")}</TableHead>
           <TableHead className={`${HEAD_CLASS} w-16`}>
-            <span className="sr-only">Acciones</span>
+            <span className="sr-only">{t("users.table.actions")}</span>
           </TableHead>
         </TableRow>
       </TableHeader>

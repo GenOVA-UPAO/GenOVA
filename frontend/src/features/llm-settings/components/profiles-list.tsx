@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/core/components/empty-state";
@@ -17,26 +18,27 @@ interface ProfilesListProps {
 }
 
 export function ProfilesList({ profiles, onApply, onDelete }: Readonly<ProfilesListProps>) {
+  const { t } = useTranslation("llm-settings");
   const [renamingId, setRenamingId] = useState<string | null>(null);
 
   if (profiles.loading) return <ModelsSheetSkeleton />;
   if (profiles.error) {
     return (
-      <QueryErrorState title="No se pudieron cargar los perfiles." onRetry={profiles.refetch} />
+      <QueryErrorState title={t("api.loadProfilesError")} onRetry={profiles.refetch} />
     );
   }
   if (profiles.profiles.length === 0) {
     return (
       <EmptyState
         icon="stack"
-        title="Aún no hay perfiles"
-        description="Guarda la configuración actual con un nombre («Económico», «Máxima calidad»…) y cambia de una a otra sin elegir modelo por modelo."
+        title={t("profiles.emptyTitle")}
+        description={t("profiles.emptyDesc")}
         className="py-10"
       />
     );
   }
   return (
-    <ul className="divide-y divide-border" aria-label="Perfiles guardados">
+    <ul className="divide-y divide-border" aria-label={t("profiles.savedProfilesAria")}>
       {profiles.profiles.map((profile) => (
         <ProfileRow
           key={profile.id}
@@ -60,7 +62,7 @@ export function ProfilesList({ profiles, onApply, onDelete }: Readonly<ProfilesL
               {
                 onSuccess: () => {
                   setRenamingId(null);
-                  toast.success(`Perfil renombrado a «${name}».`);
+                  toast.success(t("profiles.renamedSuccess", { name }));
                 },
               },
             );
@@ -73,3 +75,4 @@ export function ProfilesList({ profiles, onApply, onDelete }: Readonly<ProfilesL
     </ul>
   );
 }
+

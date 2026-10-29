@@ -100,7 +100,7 @@ def test_local_override_and_custom_evaluation_cases(monkeypatch, tmp_path):
     monkeypatch.setattr(evaluate_diagrams, "generate_diagram_json", generate)
     cases = [["flujo", "Mi concepto", "Mi detalle"]]
     evaluate_diagrams.evaluate(tmp_path, cases=cases, model="local-override")
-    records = json.loads((tmp_path / "resultados.json").read_text())
+    records = json.loads((tmp_path / "resultados.json").read_text(encoding="utf-8"))
     assert len(records) == 1 and records[0]["model"] == "local-override"
     assert "Mi concepto" in calls[0][0] and "Mi detalle" in calls[0][0]
     evaluate_diagrams.evaluate(tmp_path, cases=cases, model="local-override", resume=True)
@@ -141,7 +141,7 @@ def test_cli_cases_and_model(tmp_path):
             pass
 
     cases = tmp_path / "cases.json"
-    cases.write_text(json.dumps([["flujo", "Caso externo", "Detalle externo"]]))
+    cases.write_text(json.dumps([["flujo", "Caso externo", "Detalle externo"]]), encoding="utf-8")
     server = HTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -165,9 +165,31 @@ def test_cli_cases_and_model(tmp_path):
         )
         assert requests[0]["model"] == "cli-test-model"
         assert "Caso externo" in requests[0]["messages"][0]["content"]
-        records = json.loads((tmp_path / "out" / "resultados.json").read_text())
+        records = json.loads((tmp_path / "out" / "resultados.json").read_text(encoding="utf-8"))
         assert len(records) == 1 and records[0]["concepto"] == "Caso externo"
     finally:
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+@pytest.mark.parametrize(("env", "expected"), [(None, 60.0), ("150", 150.0)])
+def test_local_diagram_call_uses_own_timeout(monkeypatch, env, expected):
+    monkeypatch.setattr(generation.time, "monotonic", lambda: 0)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("OVA_LOCAL_LLM_TIMEOUT", "300")  # el del texto no aplica al diagrama
+    if env is None:
+        monkeypatch.delenv("OVA_DIAGRAM_TIMEOUT", raising=False)
+    else:
+        monkeypatch.setenv("OVA_DIAGRAM_TIMEOUT", env)
+    timeouts = []
+
+    def post(url, **kwargs):
+        timeouts.append(kwargs["timeout"])
+        return httpx.Response(
+            200, json={"message": {"content": json.dumps(DATA)}}, request=httpx.Request("POST", url)
+        )
+
+    monkeypatch.setattr(generation.httpx, "post", post)
+    generation.generate_diagram_json("prompt", model="local-only")
+    assert timeouts[-1] == expected

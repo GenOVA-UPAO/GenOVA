@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { toast } from "sonner";
 
 import { authStore } from "@/core/auth/auth-store";
@@ -23,12 +24,12 @@ export function useSaveProfile() {
   return useMutation({
     mutationFn: (values: ProfileSaveValues) => saveProfile(values),
     onSuccess: async () => {
-      toast.success("Datos personales guardados.");
+      toast.success(t("profile:toast.saved"));
       await queryClient.invalidateQueries({ queryKey: profileKeys.all });
       await authStore.revalidate();
     },
     onError: (error) => {
-      toast.error(errorMessage(error, "Error al actualizar."));
+      toast.error(errorMessage(error, t("profile:toast.updateError")));
     },
   });
 }
@@ -37,10 +38,10 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: (values: ChangePasswordValues) => changePassword(values),
     onSuccess: () => {
-      toast.success("Contraseña actualizada con éxito.");
+      toast.success(t("profile:password.success"));
     },
     onError: (error) => {
-      toast.error(errorMessage(error, "Error al actualizar."));
+      toast.error(errorMessage(error, t("profile:toast.updateError")));
     },
   });
 }

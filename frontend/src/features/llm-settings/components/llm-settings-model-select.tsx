@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Select,
   SelectContent,
@@ -25,6 +27,7 @@ interface LlmSettingsModelSelectProps {
 
 /** Selector de modelo de una tarea, agrupado por proveedor. */
 export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSettingsModelSelectProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   const allowed = useOwnKeyProviders();
   const cur = store.settings?.[tipo] ?? {};
@@ -45,7 +48,7 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
       }}
     >
       <SelectTrigger aria-label={label} className="h-9 w-full min-w-0 flex-1 max-sm:h-11">
-        <SelectValue placeholder="Elige un modelo" />
+        <SelectValue placeholder={t("tasks.chooseModel")} />
       </SelectTrigger>
       <SelectContent position="popper" align="start" className="max-h-80">
         {missing ? (
@@ -58,7 +61,7 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
               )}
             </span>
             <span className="shrink-0 text-muted-foreground in-data-[slot=select-trigger]:hidden">
-              en uso
+              {t("form.inUse")}
             </span>
           </SelectItem>
         ) : null}
@@ -70,6 +73,7 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
               {providerGroupLabel(
                 provider,
                 isProviderDownForUser(store.catalogStatus, store.ownCatalogStatus, provider),
+                t,
               )}
             </SelectLabel>
             {catalogModels(store.catalog, provider).map((model) => (
@@ -107,9 +111,9 @@ function isMissingFromCatalog(
   return !catalogModels(catalog, provider).some((model) => model.model_id === modelId);
 }
 
-function providerGroupLabel(provider: string, down: boolean): string {
+function providerGroupLabel(provider: string, down: boolean, t: (key: string) => string): string {
   const label = PROVIDER_LABELS[provider] ?? provider;
-  return down ? `${label} (no disponible)` : label;
+  return down ? `${label} (${t("catalog.unavailable")})` : label;
 }
 
 function modelMeta(model: CatalogModel): string {

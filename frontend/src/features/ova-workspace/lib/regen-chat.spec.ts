@@ -152,3 +152,15 @@ describe("informe del material consultado", () => {
     );
   });
 });
+
+describe("cancelación y estimación", () => {
+  it("la cancelación se lee como aviso, no como fallo técnico", async () => {
+    const { cancelledChatPatch } = await import("./regen-cancel");
+    expect(cancelledChatPatch().text).toContain("cancelada");
+  });
+  it("estima minutos y nunca baja de uno", async () => {
+    const { estimateEditMinutes } = await import("./regen-cancel");
+    expect(estimateEditMinutes(1)).toBe(1);
+    expect(estimateEditMinutes(20)).toBe(10);
+  });
+});

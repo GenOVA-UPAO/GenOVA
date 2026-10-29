@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/core/components/page-header";
 
@@ -15,15 +16,15 @@ export function ModelsPageHeader({
   canEdit = true,
   actions,
 }: Readonly<ModelsPageHeaderProps>) {
+  const { t } = useTranslation("llm-settings");
+
   return (
     <PageHeader
-      title="Modelos de IA"
+      title={t("page.title")}
       actions={actions}
       subtitle={
         <>
-          {canEdit
-            ? "Elige qué modelo usa cada tarea y cuáles lo respaldan si falla."
-            : "Consulta qué modelo usa cada tarea al generar tus OVAs y cuáles lo respaldan si falla."}
+          {canEdit ? t("page.headerDescAdmin") : t("page.headerDescUser")}
           {status ? <span className="mt-1 block text-xs">{status}</span> : null}
         </>
       }

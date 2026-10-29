@@ -23,6 +23,7 @@ from generation.application.use_cases import (
     GetResourceContent,
     ResumeJob,
 )
+from generation.infrastructure.guardrails_store import StoredTopicAreaSource
 from generation.infrastructure.image_settings import LlmImageSettingsResolver
 from generation.infrastructure.input_guardrail import InputGuardrailChecker
 from generation.infrastructure.job_launcher import ThreadOrQueueJobLauncher
@@ -53,6 +54,7 @@ def build_generation(db: Session = Depends(get_db)) -> GenerationUseCases:
             launcher=launcher,
             guardrail=InputGuardrailChecker(),
             references=ReferenceMaterialAdapter(db),
+            topic_area=StoredTopicAreaSource(),
         ),
         get_job_status=GetJobStatus(repo=repo, concurrency=settings.ova_gen_concurrency),
         find_job_by_ova=FindJobByOva(repo=repo),

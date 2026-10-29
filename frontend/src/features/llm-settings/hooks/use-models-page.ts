@@ -1,4 +1,6 @@
+import { t } from "i18next";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -7,7 +9,7 @@ import { usePlatformConfig } from "@/core/hooks/use-platform-config";
 import { useTabParam } from "@/core/hooks/use-tab-param";
 
 import type { ApplyConfigResponse } from "../api/model-tools.api";
-import { connectedProviders, platformKeyCount } from "../lib/catalog-status";
+import { connectedProviders, platformKeyCount,type ProviderCount } from "../lib/catalog-status";
 import { blockingMessage, validateDraft } from "../lib/chain-validation";
 import type { Draft } from "../lib/llm-config-draft";
 import {
@@ -46,8 +48,10 @@ export function useModelsPage() {
 
   const platformKeys = usePlatformConfig(isAdmin);
   // Los mismos proveedores que lista Credenciales (se comparte la caché con ella).
-  const { connected, total } =
+  const providerCount =
     platformKeyCount(platformKeys.data) ?? connectedProviders(store.catalogStatus);
+  // Suscribe el hook al idioma: la cabecera se vuelve a calcular al cambiarlo.
+  useTranslation();
   const taskIssues = validateDraft(admin.draft, admin.tasks);
   const chainMessage = blockingMessage(taskIssues);
   const chainInvalid = chainMessage !== null;
@@ -62,8 +66,7 @@ export function useModelsPage() {
     headerStatus: headerStatus({
       isAdmin,
       hasOwnKey: store.hasOwnLlmKey,
-      connected,
-      total,
+      count: providerCount,
       favorites: store.enabledModels.length,
     }),
     activeTab,
@@ -119,9 +122,9 @@ async function saveAllChanges(
     if (store.dirty) await store.save();
     dismissPendingChangesToast();
     // Con la config de plataforma, el aviso dice qué cambió y ofrece «Deshacer».
-    announce("Cambios guardados.", historyOf(adminRes));
+    announce(t("llm-settings:page.savedChanges"), historyOf(adminRes));
   } catch (err) {
-    toast.error(errorMessage(err, "No se pudo guardar."));
+    toast.error(errorMessage(err, t("llm-settings:api.saveError")));
   }
 }
 
@@ -139,16 +142,14 @@ function historyOf(res: unknown): Pick<ApplyConfigResponse, "history_entry"> {
 function headerStatus({
   isAdmin,
   hasOwnKey,
-  connected,
-  total,
+  count,
   favorites,
 }: {
   isAdmin: boolean;
   hasOwnKey: boolean;
-  connected: number;
-  total: number;
+  count: ProviderCount;
   favorites: number;
 }): string | undefined {
-  if (isAdmin) return headerStatusText(connected, total, favoritesLabel(favorites));
-  return hasOwnKey ? favoritesLabel(favorites) : undefined;
+  if (isAdmin) return headerStatusText(count, favoritesLabel(favorites, t), t);
+  return hasOwnKey ? favoritesLabel(favorites, t) : undefined;
 }

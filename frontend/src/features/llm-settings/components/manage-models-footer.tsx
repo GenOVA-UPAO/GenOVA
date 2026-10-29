@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
@@ -14,12 +16,13 @@ interface ManageModelsFooterProps {
  * no cupo en una.
  */
 export function ManageModelsFooter({ hasMoreRows, onShowMore }: Readonly<ManageModelsFooterProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   if (hasMoreRows) {
     return (
       <div className="flex justify-center py-4">
         <Button variant="ghost" size="sm" className="text-muted-foreground max-sm:h-11" onClick={onShowMore}>
-          Mostrar más modelos
+          {t("catalog.showMoreModels")}
         </Button>
       </div>
     );
@@ -28,13 +31,14 @@ export function ManageModelsFooter({ hasMoreRows, onShowMore }: Readonly<ManageM
     return (
       <div className="flex flex-col items-center gap-2 py-5">
         <p className="text-xs text-muted-foreground">
-          Cargados {store.catalogFull.length} de {store.fullTotal} modelos
+          {t("catalog.loadedCountOf", { loaded: store.catalogFull.length, total: store.fullTotal })}
         </p>
         <Button variant="outline" className="max-sm:h-11" loading={store.loadingMore} onClick={store.loadMore}>
-          Cargar más modelos
+          {t("catalog.loadMoreModels")}
         </Button>
       </div>
     );
   }
-  return <p className="py-4 text-center text-xs text-muted-foreground">No hay más modelos.</p>;
+  return <p className="py-4 text-center text-xs text-muted-foreground">{t("catalog.noMoreModels")}</p>;
 }
+

@@ -1,0 +1,35 @@
+{
+  "codes": {
+    "not_found": "We couldn't find what you were looking for.",
+    "forbidden": "You don't have permission to do this.",
+    "invalid_value": "One of the submitted values has an invalid format.",
+    "invalid_credentials": "Incorrect email or password.",
+    "account_locked": "Your account is temporarily locked. Please try again later.",
+    "account_disabled": "Your account is disabled.",
+    "email_not_verified": "You haven't verified your email address yet.",
+    "email_exists": "An account with that email already exists.",
+    "weak_password": "That password is too weak.",
+    "too_many_attempts": "Too many attempts. Wait a moment and try again.",
+    "invalid_token": "The link or code is not valid.",
+    "expired_token": "The link or code has expired.",
+    "invalid_code": "The code is not valid.",
+    "invalid_ticket": "The verification session is not valid. Please sign in again.",
+    "totp_not_setup": "Set up two-step verification first.",
+    "totp_not_enabled": "Two-step verification is not enabled.",
+    "totp_already_enabled": "Two-step verification is already enabled.",
+    "user_not_found": "User not found.",
+    "job_not_found": "Generation job not found.",
+    "job_not_running": "The generation job is no longer running.",
+    "ova_generating": "The OVA is still being generated. Wait for it to finish.",
+    "title_required": "The title is required.",
+    "title_too_long": "The title is too long.",
+    "invalid_name": "The name is not valid.",
+    "invalid_fase_ids": "One of the selected phases is not valid.",
+    "unknown_format": "That export format is not supported.",
+    "upload_error": "The file couldn't be uploaded."
+  },
+  "status": {
+    "413": "The file is too large.",
+    "429": "Too many requests. Please try again in a moment."
+  }
+}

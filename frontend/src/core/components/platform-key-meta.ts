@@ -1,5 +1,6 @@
-/** Proveedores sin prefijo de clave reconocible. */
-const PASTE_HINT = "Pega aquí la clave";
+import i18n from "i18next";
+/** Clave compartida; se resuelve al leer el metadato, nunca al importar. */
+const PASTE_HINT_KEY = "shared:pega_aqui_la_clave";
 
 /** Qué puede generar GenOVA con la clave de cada proveedor. */
 export type ProviderCoverage = "texto" | "imagen" | "video";
@@ -16,56 +17,56 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   openrouter: {
     label: "OpenRouter",
     placeholder: "sk-or-…",
-    desc: "Casi todos los modelos con una sola clave: el proveedor principal de la plataforma",
+    get desc() { return i18n.t("shared:platformKey.openrouterDescription"); },
     compat: true,
     covers: ["texto", "imagen", "video"],
   },
   groq: {
-    label: "Groq",
+    get label() { return i18n.t("shared:groq"); },
     placeholder: "gsk_…",
-    desc: "Modelos de texto abiertos con respuestas muy rápidas",
+    get desc() { return i18n.t("shared:modelos_de_texto_abiertos_con_respuestas_muy_rapidas"); },
     compat: true,
     covers: ["texto"],
   },
   opencode: {
     label: "OpenCode Go",
     placeholder: "oc_…",
-    desc: "Modelos especializados en código",
+    get desc() { return i18n.t("shared:modelos_especializados_en_codigo"); },
     compat: true,
     covers: ["texto"],
   },
   huggingface: {
     label: "HuggingFace",
     placeholder: "hf_…",
-    desc: "Modelos abiertos alojados en HuggingFace",
+    get desc() { return i18n.t("shared:modelos_abiertos_alojados_en_huggingface"); },
     compat: true,
     covers: ["texto"],
   },
   siliconflow: {
     label: "SiliconFlow",
     placeholder: "sk-…",
-    desc: "Modelos abiertos de bajo costo",
+    get desc() { return i18n.t("shared:modelos_abiertos_de_bajo_costo"); },
     compat: true,
     covers: ["texto", "imagen"],
   },
   runware: {
-    label: "Runware",
-    placeholder: PASTE_HINT,
-    desc: "Generación de imágenes (Stable Diffusion XL)",
+    get label() { return i18n.t("shared:runware"); },
+    get placeholder() { return i18n.t(PASTE_HINT_KEY); },
+    get desc() { return i18n.t("shared:generacion_de_imagenes_stable_diffusion_xl"); },
     compat: false,
     covers: ["imagen"],
   },
   falai: {
     label: "fal.ai",
-    placeholder: PASTE_HINT,
-    desc: "Generación de imágenes en la nube",
+    get placeholder() { return i18n.t(PASTE_HINT_KEY); },
+    get desc() { return i18n.t("shared:generacion_de_imagenes_en_la_nube"); },
     compat: false,
     covers: ["imagen"],
   },
   cloudflare: {
-    label: "Cloudflare Workers AI",
-    placeholder: PASTE_HINT,
-    desc: "Generación de imágenes con el plan gratuito de Cloudflare",
+    get label() { return i18n.t("shared:cloudflare_workers_ai"); },
+    get placeholder() { return i18n.t(PASTE_HINT_KEY); },
+    get desc() { return i18n.t("shared:platformKey.cloudflareDescription"); },
     compat: false,
     covers: ["imagen"],
   },
@@ -74,8 +75,12 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
 /** El proveedor que se recomienda conectar primero: cubre texto, imagen y video. */
 export const RECOMMENDED_PROVIDER = "openrouter";
 
-export const RECOMMENDED_HINT =
-  "Con una sola clave de OpenRouter tienes casi todos los modelos de texto, imagen y video.";
+/** Compatibilidad con consumidores externos al área: binding vivo al cambiar idioma. */
+export let RECOMMENDED_HINT = i18n.t("shared:platformKey.openrouterHint");
+i18n.on("languageChanged", () => {
+  RECOMMENDED_HINT = i18n.t("shared:platformKey.openrouterHint");
+});
+
 
 export interface ProviderGroups {
   recommended: string[];
@@ -101,8 +106,8 @@ export function providerMeta(provider: string): ProviderMeta {
   if (Object.hasOwn(PROVIDER_META, provider)) return PROVIDER_META[provider];
   return {
     label: provider,
-    placeholder: PASTE_HINT,
-    desc: "Proveedor genérico",
+    placeholder: i18n.t(PASTE_HINT_KEY),
+    desc: i18n.t("shared:proveedor_generico"),
     compat: false,
     covers: [],
   };

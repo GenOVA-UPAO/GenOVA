@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -13,13 +14,14 @@ from ova_engine.html import (
     render_image_figure,
     script,
 )
+from ova_engine.icons import CYCLE_GLOSSARY, icon
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
 QUIZ_ROUNDS = 3
 
 PARAMS = (
-    Param("num_terms", 8, min=5, max=10, help="Número de términos del glosario"),
+    Param("num_terms", 8, min=5, max=12, help="Número de términos del glosario"),
 )
 
 
@@ -32,8 +34,6 @@ def schema(p: dict) -> dict:
             obj(
                 termino=s(22),
                 definicion=s(330),
-                icono=s(8),
-                icono_desc=s(110),
                 ejemplo=s(220),
             ),
             min_items=n,
@@ -46,14 +46,15 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_terms"]
-    return f"""[ROL] Lexicógrafo visual de sistemas de gestión de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Construye un glosario visual de exactamente {n} términos esenciales para comprender «{concept}», ordenados de lo más básico a lo más específico.
+    return f"""[ROL] Lexicógrafo visual {d.pick("de sistemas de gestión de bases de datos", "experto en «" + concept + "»")} para {d.audiencia}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Construye un glosario visual de exactamente {n} términos esenciales para comprender «{concept}», ordenados de lo más básico a lo más específico.
 - titulo: título corto del glosario.
 - intro: una frase que invite a explorar los términos.
 - imagen (opcional): elemento visual estructurado para el glosario:
-  * "logo" para marcas o tecnologías reconocidas (ej. Oracle, PostgreSQL).
+  * "logo" para marcas o tecnologías reconocidas (ej. {d.pick(d.si_oracle("Oracle, PostgreSQL", "PostgreSQL, MySQL"), "una marca o institución del tema")}).
   * "diagrama" para conceptos, relaciones o procesos (con objeto `diagrama`: tipo, titulo, nodos, aristas).
   * "foto" ÚNICAMENTE si representa hardware, servidores o equipamiento físico real.
   * "escena" para ilustraciones pedagógicas.
@@ -61,11 +62,10 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - terminos: por cada término:
   * `termino`: el nombre exacto (≤20 caracteres).
   * `definicion`: definición autocontenida y precisa (≤50 palabras), sin usar el propio término para definirse.
-  * `icono`: UN solo emoji distinto en cada término.
-  * `icono_desc`: qué representa ese emoji respecto al término (≤15 palabras).
-  * `ejemplo`: ejemplo real razonado (≤30 palabras): una situación del DBA o la sentencia/vista Oracle donde aparece el término.
+  * No incluyas emoji ni símbolos decorativos en ningún campo: el icono de cada tarjeta lo pone la plantilla.
+  * `ejemplo`: ejemplo real razonado (≤30 palabras): {d.pick(f"una situación del DBA o la sentencia {d.si_oracle('/vista Oracle', 'SQL')}", "una situación concreta del tema")} donde aparece el término.
 - cierre: frase que conecte los términos entre sí y con «{concept}».
-[RESTRICCIONES] Términos distintos entre sí, técnicamente correctos y sin tecnicismos sin definir.
+[RESTRICCIONES] Términos distintos entre sí, correctos y sin tecnicismos sin definir.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -77,7 +77,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     for k, t in enumerate(terms):
         cards.append(
             f'<article class="k-panel gl-card" data-i="{k}" data-term="{esc(t["termino"])}">'
-            f'<div class="k-row"><span class="gl-ico" role="img" aria-label="{esc(t["icono_desc"])}">{esc(t["icono"])}</span>'
+            f'<div class="k-row"><span class="gl-ico" aria-hidden="true">{icon(CYCLE_GLOSSARY[k % len(CYCLE_GLOSSARY)], "1em")}</span>'
             f'<h3 class="gl-name">{esc(t["termino"])}</h3></div>'
             f'<button type="button" class="k-btn gl-btn" aria-expanded="false" aria-controls="gl-b{k}">Ver definición</button>'
             f'<div class="gl-body k-hide" id="gl-b{k}"><p>{esc(t["definicion"])}</p>'
@@ -169,7 +169,6 @@ picks.forEach((idx, r) => {
 
 
 def sample(concept: str, p: dict) -> dict:
-    icons = ["📘", "🔑", "🗄️", "⚙️", "🔍", "🧱", "📊", "🛡️", "⏱️", "🧩"]
     return {
         "titulo": f"Glosario de {concept}"[:70],
         "intro": f"Explora los términos clave para dominar {concept}.",
@@ -182,8 +181,6 @@ def sample(concept: str, p: dict) -> dict:
             {
                 "termino": f"Término {k}",
                 "definicion": f"Definición autocontenida del término {k} dentro de {concept}.",
-                "icono": icons[(k - 1) % len(icons)],
-                "icono_desc": "Imagen que evoca el término.",
                 "ejemplo": f"El DBA consulta una vista de Oracle donde aparece el término {k}.",
             }
             for k in range(1, p["num_terms"] + 1)

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Button } from "@/core/components/ui/button";
@@ -21,11 +22,12 @@ function actionState(job: ReturnType<typeof useOvaJob>) {
 
 /** Acciones de la página de progreso: al terminar, reanudar lo que falta o abrir el OVA. */
 export function ProgressActions({ job }: Readonly<{ job: ReturnType<typeof useOvaJob> }>) {
+  const { t } = useTranslation();
   const { ids, canOpen, canResume, canceled, partial } = actionState(job);
   return (
     <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
       <Button variant="ghost" asChild className="max-sm:h-11">
-        <Link to="/mis-ovas">Ir a Mis OVAs</Link>
+        <Link to="/mis-ovas">{t("workspace:ir_a_mis_ovas")}</Link>
       </Button>
       <div className="flex flex-col-reverse gap-2 sm:flex-row">
         {canResume && (
@@ -37,18 +39,18 @@ export function ProgressActions({ job }: Readonly<{ job: ReturnType<typeof useOv
               job.resume.mutate(ids);
             }}
           >
-            {partial ? "Reintentar fallidos" : "Reanudar generación"}
+            {partial ? t("workspace:reintentar_fallidos") : t("workspace:reanudar_generacion")}
           </Button>
         )}
         {canceled && (
           <Button asChild className="max-sm:h-11">
-            <Link to="/crear">Volver a Crear OVA</Link>
+            <Link to="/crear">{t("workspace:volver_a_crear_ova")}</Link>
           </Button>
         )}
         {canOpen && (
           <Button asChild className="max-sm:h-11">
             <Link to={`/workspace/${String(job.data?.ova_id)}`}>
-              {partial ? "Abrir OVA de todos modos" : "Abrir OVA"}
+              {partial ? t("workspace:abrir_ova_de_todos_modos") : t("workspace:abrir_ova")}
             </Link>
           </Button>
         )}

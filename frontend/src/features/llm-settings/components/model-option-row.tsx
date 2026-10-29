@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -28,6 +30,7 @@ export function ModelOptionRow({
   onHover,
   onPick,
 }: Readonly<ModelOptionRowProps>) {
+  const { t } = useTranslation("llm-settings");
   const context = formatContext(option.facts.context);
   const price = priceSummary(option.facts);
   return (
@@ -57,10 +60,10 @@ export function ModelOptionRow({
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           <span>{option.providerLabel}</span>
-          {context ? <span className="tabular-nums">{context} de contexto</span> : null}
+          {context ? <span className="tabular-nums">{context} {t("catalog.ofContext")}</span> : null}
           <ModelCapabilities capabilities={option.facts.capabilities} />
           {option.usage.length > 0 ? (
-            <span className="text-primary">En {usageSummary(option.usage)}</span>
+            <span className="text-primary">{t("facts.inUsage", { usage: usageSummary(option.usage) })}</span>
           ) : null}
         </div>
       </div>

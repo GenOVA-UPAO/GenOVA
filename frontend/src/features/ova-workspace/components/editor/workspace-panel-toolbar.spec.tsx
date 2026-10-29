@@ -7,7 +7,7 @@ import { WorkspacePanelToolbar } from "./workspace-panel-toolbar";
 vi.mock("@/core/lib/use-llm-settings-modal", () => ({
   useLlmSettingsModal: () => ({ open: vi.fn() }),
 }));
-vi.mock("../../api/ova-workspace.api", () => ({ exportOvaScorm: vi.fn() }));
+vi.mock("@/core/export/api/ova-export.api", () => ({ exportOva: vi.fn() }));
 
 function renderToolbar(canExport?: boolean) {
   render(
@@ -15,7 +15,7 @@ function renderToolbar(canExport?: boolean) {
       <WorkspacePanelToolbar ovaId="ova-1" canExport={canExport} />
     </QueryClientProvider>,
   );
-  return screen.getByRole("button", { name: "Descargar SCORM" });
+  return screen.getByRole("button", { name: "Descargar SCORM 1.2" });
 }
 
 describe("WorkspacePanelToolbar", () => {

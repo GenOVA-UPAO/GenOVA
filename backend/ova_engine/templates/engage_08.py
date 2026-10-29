@@ -8,7 +8,9 @@ desplegar todos y barra de progreso que desbloquea la finalización al revisar l
 from __future__ import annotations
 
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.icons import icon
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -44,8 +46,10 @@ def schema(p: dict) -> dict:
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
     n = p["num_milestones"]
-    return f"""[ROL] Historiador y divulgador científico de la tecnología y bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
+    d = domain_for(concept, contexto)
+    if d.is_db:
+        return f"""[ROL] Historiador y divulgador científico de la tecnología y bases de datos.
+[CONCEPTO] «{concept}» ({d.curso}).
 [TAREA] Construye una crónica histórica en {n} hitos verídicos o altamente plausibles que llevaron al surgimiento y evolución de «{concept}».
 - titulo: título atractivo del timeline histórico (≤10 palabras).
 - intro: introducción intrigante que contextualice la necesidad histórica de «{concept}» (≤25 palabras).
@@ -57,6 +61,22 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `conexion_actual`: impacto directo en la vida cotidiana o profesional del estudiante hoy (≤25 palabras).
 - sintesis: conclusión de cómo el pasado forjó lo que hoy es «{concept}» y por qué importa dominarlo (≤35 palabras).
 [RESTRICCIONES] Hechos verídicos o altamente plausibles que llevaron al concepto. Sin fórmulas ni jerga técnica densa. Tono de divulgación histórica apasionante y riguroso.
+{d.rules()}
+{f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
+    return f"""[ROL] Historiador y divulgador científico especializado en «{concept}».
+[CONCEPTO] «{concept}» ({d.curso}).
+[TAREA] Construye una crónica histórica en {n} hitos verídicos o altamente plausibles que llevaron al surgimiento y evolución de «{concept}».
+- titulo: título atractivo del timeline histórico (≤10 palabras).
+- intro: introducción intrigante que contextualice la necesidad histórica de «{concept}» (≤25 palabras).
+- hitos: exactamente {n} hitos históricos cronológicos. Por cada hito:
+  * `anio`: año o época del acontecimiento (ej. '1970', '1979', 'Años 80', ≤20 caracteres).
+  * `nombre`: nombre corto y memorable del hito (≤10 palabras).
+  * `descripcion`: crónica narrativa de qué ocurrió y qué problema resolvió (≤45 palabras).
+  * `dato_sorprendente`: curiosidad o anécdota poco conocida del hito (≤25 palabras).
+  * `conexion_actual`: impacto directo en la vida cotidiana o profesional del estudiante hoy (≤25 palabras).
+- sintesis: conclusión de cómo el pasado forjó lo que hoy es «{concept}» y por qué importa dominarlo (≤35 palabras).
+[RESTRICCIONES] Hechos verídicos o altamente plausibles que llevaron al concepto. Sin fórmulas ni jerga técnica densa. Tono de divulgación histórica apasionante y riguroso.
+{d.rules()}
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
@@ -141,7 +161,7 @@ _STYLE = """
   transition: all 0.2s ease;
 }
 .ova-milestone-status.is-done {
-  background: #DCFCE7;
+  background: var(--success-bg, #DCFCE7);
   color: var(--success, #146C49);
   font-weight: 700;
 }
@@ -254,7 +274,7 @@ _TIMELINE_JS = """
           markMilestone(idx);
         }
       });
-      if (toggleIcon) toggleIcon.textContent = allOpen ? '📁' : '📂';
+      if (toggleIcon) toggleIcon.innerHTML = allOpen ? ovaIcon('folder') : ovaIcon('folder-open');
       if (toggleText) toggleText.textContent = allOpen ? 'Plegar todos los hitos' : 'Abrir todos los hitos';
       toggleAllBtn.setAttribute('aria-expanded', String(allOpen));
       if (statusEl) {
@@ -287,16 +307,16 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<p class="ova-milestone-desc">{descripcion}</p>'
             f'<div class="ova-milestone-meta">'
             f'<div class="ova-milestone-card ova-milestone-card--fact">'
-            f'<strong class="ova-meta-title">💡 Dato sorprendente</strong>'
+            f'<strong class="ova-meta-title">{icon("bulb")} Dato sorprendente</strong>'
             f'<p>{dato}</p>'
             f"</div>"
             f'<div class="ova-milestone-card ova-milestone-card--conn">'
-            f'<strong class="ova-meta-title">🔗 Conexión actual</strong>'
+            f'<strong class="ova-meta-title">{icon("link")} Conexión actual</strong>'
             f'<p>{conexion}</p>'
             f"</div>"
             f"</div>"
             f'<div class="ova-milestone-footer">'
-            f'<span class="ova-milestone-status" id="status-milestone-{idx}" aria-live="polite">👁️ Por revisar</span>'
+            f'<span class="ova-milestone-status" id="status-milestone-{idx}" aria-live="polite">{icon("eye")} Por revisar</span>'
             f"</div>"
             f"</div>"
             f"</upao-node>"
@@ -306,7 +326,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     timeline_js = _TIMELINE_JS.replace("__TOTAL__", str(total))
 
     return f"""{_STYLE}
-<upao-header eyebrow="TIMELINE HISTÓRICO" title="{esc(data["titulo"])}">
+<upao-header eyebrow="TIMELINE INTERACTIVO" title="{esc(data["titulo"])}">
   <p>{esc(data["intro"])}</p>
 </upao-header>
 
@@ -315,7 +335,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <section class="ova-card">
   <div class="ova-timeline-controls">
     <button type="button" class="ova-btn ova-btn--ghost" id="btn-toggle-all" aria-expanded="false" aria-label="Abrir o plegar todos los hitos históricos">
-      <span aria-hidden="true" id="btn-toggle-icon">📂</span> <span id="btn-toggle-text">Abrir todos los hitos</span>
+      <span aria-hidden="true" id="btn-toggle-icon">{icon('folder-open')}</span> <span id="btn-toggle-text">Abrir todos los hitos</span>
     </button>
     <span class="ova-timeline-hint" id="timeline-status" aria-live="polite">
       Explora cada hito histórico o usa los controles para completar la revisión.

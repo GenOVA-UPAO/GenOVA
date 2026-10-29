@@ -1,3 +1,5 @@
+import i18n, { type TFunction } from "i18next";
+
 import { ELABORATE_PREVIEWS } from "./previews/elaborate";
 import { ENGAGE_PREVIEWS } from "./previews/engage";
 import { EVALUATE_PREVIEWS } from "./previews/evaluate";
@@ -16,12 +18,25 @@ const PREVIEWS_BY_PHASE: Record<string, Record<string, ResourcePreviewInfo>> = {
 export function getResourcePreview(
   phaseKey: string,
   resourceId: string | number,
+  t?: TFunction,
 ): ResourcePreviewInfo | null {
   if (!Object.hasOwn(PREVIEWS_BY_PHASE, phaseKey)) return null;
-  return PREVIEWS_BY_PHASE[phaseKey][String(resourceId)] ?? null;
+  const resources = PREVIEWS_BY_PHASE[phaseKey];
+  if (!Object.hasOwn(resources, String(resourceId))) return null;
+  const preview = resources[String(resourceId)];
+  return t ? preview.localized(t) : preview;
 }
 
 /** Nombres de todos los tipos de recurso del catálogo (tal como los envía el backend). */
 export function catalogResourceNames(): Set<string> {
-  return new Set(Object.values(PREVIEWS_BY_PHASE).flatMap((previews) => Object.values(previews).map((info) => info.label)));
+  return new Set(Object.values(PREVIEWS_BY_PHASE).flatMap((previews) => Object.values(previews).map((info) => info.canonicalLabel)));
+}
+
+/** Traduce únicamente nombres del catálogo; los títulos del contenido se conservan. */
+export function localizedCatalogName(name: string, t: TFunction = i18n.t): string | null {
+  for (const previews of Object.values(PREVIEWS_BY_PHASE)) {
+    const match = Object.values(previews).find((info) => info.canonicalLabel === name || info.label === name);
+    if (match) return t(match.labelKey);
+  }
+  return null;
 }

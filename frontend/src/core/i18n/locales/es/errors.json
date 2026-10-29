@@ -1,0 +1,35 @@
+{
+  "codes": {
+    "not_found": "No se encontró lo que buscas.",
+    "forbidden": "No tienes permisos para hacer esto.",
+    "invalid_value": "Alguno de los valores enviados tiene un formato inválido.",
+    "invalid_credentials": "Correo o contraseña incorrectos.",
+    "account_locked": "Tu cuenta está bloqueada temporalmente. Inténtalo más tarde.",
+    "account_disabled": "Tu cuenta está desactivada.",
+    "email_not_verified": "Aún no has verificado tu correo electrónico.",
+    "email_exists": "Ya existe una cuenta con ese correo.",
+    "weak_password": "La contraseña es demasiado débil.",
+    "too_many_attempts": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "invalid_token": "El enlace o código no es válido.",
+    "expired_token": "El enlace o código ha expirado.",
+    "invalid_code": "El código no es válido.",
+    "invalid_ticket": "La sesión de verificación no es válida. Vuelve a iniciar sesión.",
+    "totp_not_setup": "Primero configura la verificación en dos pasos.",
+    "totp_not_enabled": "La verificación en dos pasos no está activada.",
+    "totp_already_enabled": "La verificación en dos pasos ya está activada.",
+    "user_not_found": "No se encontró el usuario.",
+    "job_not_found": "No se encontró la tarea de generación.",
+    "job_not_running": "La tarea de generación ya no está en curso.",
+    "ova_generating": "La OVA se está generando. Espera a que termine.",
+    "title_required": "El título es obligatorio.",
+    "title_too_long": "El título es demasiado largo.",
+    "invalid_name": "El nombre no es válido.",
+    "invalid_fase_ids": "Alguna de las fases indicadas no es válida.",
+    "unknown_format": "El formato de exportación no es compatible.",
+    "upload_error": "No se pudo subir el archivo."
+  },
+  "status": {
+    "413": "El archivo es demasiado grande.",
+    "429": "Demasiadas solicitudes. Inténtalo de nuevo en unos instantes."
+  }
+}

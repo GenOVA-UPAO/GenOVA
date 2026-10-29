@@ -23,6 +23,7 @@ import httpx
 import structlog
 
 from llm.utils.utils import parse_json
+from ova_engine.domain_context import is_oracle_text
 from ova_engine.schema import validate
 
 logger = structlog.get_logger(__name__)
@@ -32,6 +33,23 @@ class TextGenerationError(RuntimeError):
     pass
 
 
+# Errores de Oracle que los modelos repiten (QA en producción, 2026-10-04): se fijan
+# como hechos de REFERENCIA para el texto y para el revisor (ambos pasan por aquí). Solo
+# se añaden si el tema o el área nombran Oracle, y nunca como tema ni como ejemplo.
+ORACLE_FACTS = (
+    "Hechos de referencia de Oracle: si el recurso toca alguno de estos puntos, no lo contradigas. "
+    "NO los uses como tema ni como ejemplo si el tema trata de otra cosa: el tema manda. "
+    "(1) ante un interbloqueo (ORA-00060) Oracle revierte solo la SENTENCIA que lo detecta, "
+    "no la transacción ni elige «víctima»; la sesión decide luego COMMIT o ROLLBACK; "
+    "(2) un SELECT normal no bloquea filas (lectura consistente con undo); solo SELECT ... FOR UPDATE las bloquea; "
+    "(3) Oracle no usa BEGIN TRANSACTION: la transacción empieza con la primera DML y termina con COMMIT/ROLLBACK; "
+    "(4) SAVEPOINT marca un punto y ROLLBACK TO SAVEPOINT revierte hasta él; ROLLBACK sin más revierte toda la transacción; "
+    "(5) las vistas V$ (V$LOCK, V$SESSION) son dinámicas de rendimiento, no del diccionario; "
+    "(6) jerarquía de almacenamiento: tablespace → segmento → extensión → bloque; "
+    "(7) SERIALIZABLE puede lanzar ORA-08177 (can't serialize access). "
+    "No uses sintaxis ni comportamientos de SQL Server, MySQL o PostgreSQL.\n"
+)
+
 _SYSTEM_RULES = (
     "Escribe SOLO el contenido textual en español neutro, preciso y fiel al concepto. "
     "No escribas HTML, CSS, JavaScript ni markdown. Responde únicamente con un JSON "
@@ -39,8 +57,13 @@ _SYSTEM_RULES = (
 )
 
 
-def _full_prompt(prompt: str, schema: dict) -> str:
-    return f"{prompt}\n\n{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
+def _full_prompt(prompt: str, schema: dict, db_facts: bool | None = None) -> str:
+    """Prompt + reglas del sistema. Los hechos de Oracle solo se añaden si el tema o el área
+    nombran Oracle (`db_facts`; por defecto se detecta en el prompt, que ya lleva el área)."""
+    if db_facts is None:
+        db_facts = is_oracle_text(prompt)
+    facts = ORACLE_FACTS if db_facts else ""
+    return f"{prompt}\n\n{facts}{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
 
 
 def _local(
@@ -149,6 +172,22 @@ def _invoke_backend(
     return _router(ask, max_tokens, cfg, enabled_models, deadline)
 
 
+def _coerce_root(data, schema: dict):
+    """Repara las dos raíces equivocadas más comunes de los modelos cuando el schema
+    pide un objeto: `[{...}]` (objeto envuelto en lista) y `[...]` (la lista de la
+    única propiedad array, p. ej. `revision` del revisor, sin su objeto)."""
+    if schema.get("type") != "object" or not isinstance(data, list):
+        return data
+    if len(data) == 1 and isinstance(data[0], dict):
+        return data[0]
+    props = schema.get("properties", {})
+    if len(props) == 1:
+        (name, sub), = props.items()
+        if sub.get("type") == "array":
+            return {name: data}
+    return data
+
+
 def _run_model_attempts(
     model_entry: tuple | None,
     full: str,
@@ -186,6 +225,10 @@ def _run_model_attempts(
                 deadline,
             )
         except Exception as call_err:
+            from llm.auth_errors import is_provider_auth_error
+
+            if is_provider_auth_error(call_err):
+                raise
             logger.warning(
                 "ova text model call failed",
                 error=str(call_err)[:200],
@@ -195,7 +238,7 @@ def _run_model_attempts(
             continue
 
         try:
-            data = parse_json(raw)
+            data = _coerce_root(parse_json(raw), schema)
         except Exception:
             errors = ["la respuesta no es JSON válido"]
             continue
@@ -223,9 +266,10 @@ def generate_json(
     attempts: int = 2,
     timeout: float | None = None,
     model: str | None = None,
+    db_facts: bool | None = None,
 ) -> dict:
     backend = os.getenv("OVA_TEXT_BACKEND", "router").strip().lower()
-    full = _full_prompt(prompt, schema)
+    full = _full_prompt(prompt, schema, db_facts)
     models_to_try = _resolve_candidate_models(backend, llm_config, enabled_models)
 
     all_errors: list[str] = []

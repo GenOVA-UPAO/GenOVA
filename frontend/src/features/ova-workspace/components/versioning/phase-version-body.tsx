@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Skeleton } from "@/core/components/ui/skeleton";
 
@@ -14,9 +16,10 @@ interface Props {
 
 /** Cuerpo del modal de versiones: carga, error, vacío o lista + vista previa. */
 export function PhaseVersionBody({ pending, error, items, selected, onSelect }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   if (pending)
     return (
-      <Skeleton role="status" aria-label="Cargando versiones" className="h-40 w-full rounded-xl" />
+      <Skeleton role="status" aria-label={t("resource.loading")} className="h-40 w-full rounded-xl" />
     );
   if (error)
     return (
@@ -27,14 +30,9 @@ export function PhaseVersionBody({ pending, error, items, selected, onSelect }: 
   if (items.length === 0) {
     return (
       <div className="flex flex-col gap-1 rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-        <p>
-          Este recurso aún no tiene versiones guardadas: se guarda una cada vez que editas su código
-          HTML.
-        </p>
+        <p>{t("resource.emptySaved")}</p>
         {/* Regenerar crea una versión nueva del OVA entero, con recursos nuevos: no queda aquí. */}
-        <p>
-          Lo que cambia la IA al regenerar está en «Historial de versiones», arriba a la derecha.
-        </p>
+        <p>{t("resource.emptyRegenerate")}</p>
       </div>
     );
   }
@@ -44,12 +42,12 @@ export function PhaseVersionBody({ pending, error, items, selected, onSelect }: 
       {selected ? (
         <HtmlPreviewFrame
           html={selected.content}
-          title={`Versión ${String(selected.minor_number)}`}
+          title={t("resource.previewTitle", { number: selected.minor_number })}
           height="45vh"
         />
       ) : (
         <p className="flex min-h-40 items-center justify-center rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-          Elige una versión para ver cómo era.
+          {t("resource.pickToPreview")}
         </p>
       )}
     </div>

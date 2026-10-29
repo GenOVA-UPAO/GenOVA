@@ -6,16 +6,17 @@ import { ovaLibraryApi } from "@/features/ova-library/api/ova-library.api";
 import { ovaKeys } from "@/features/ova-library/hooks/use-ova-library";
 
 /**
- * Loader del dashboard: lanza la lista de OVAs en paralelo con la revalidación
- * de sesión, eliminando la cascada /auth/me → /api/ovas del arranque.
+ * Loader del dashboard: verifica la sesión antes de pedir datos protegidos.
  * useQuery reutiliza la petición por query key, así que no hay doble fetch.
  */
 export async function dashboardLoader(args: LoaderFunctionArgs) {
+  const auth = await requireAuth(args);
+  if (auth) return auth;
   void queryClient
     .query({
       queryKey: ovaKeys.list({ page: 1 }),
       queryFn: () => ovaLibraryApi.list({ page: 1 }),
     })
     .catch(() => undefined);
-  return requireAuth(args);
+  return null;
 }

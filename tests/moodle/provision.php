@@ -7,6 +7,8 @@ require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->dirroot . '/mod/scorm/lib.php');
 require_once($CFG->dirroot . '/mod/scorm/locallib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
+$package = $argv[1] ?? '/tmp/genova.zip';
+$activity = $argv[2] ?? 'GenOVA tres recursos';
 $admin = get_admin();
 \core\session\manager::set_user($admin);
 $course = $DB->get_record('course', ['shortname' => 'genova-scorm-ci']);
@@ -29,14 +31,14 @@ foreach ($instances as $candidate) { if ($candidate->enrol === 'manual') { $inst
 if (!$instance) { $id = $enrol->add_instance($course); $instance = $DB->get_record('enrol', ['id' => $id]); }
 $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
 $enrol->enrol_user($instance, $user->id, $role->id);
-$scorm = $DB->get_record('scorm', ['course' => $course->id, 'name' => 'GenOVA tres recursos']);
+$scorm = $DB->get_record('scorm', ['course' => $course->id, 'name' => $activity]);
 $draft = file_get_unused_draft_itemid();
 $fs = get_file_storage();
 $fs->create_file_from_pathname(['contextid' => context_user::instance($admin->id)->id,
     'component' => 'user', 'filearea' => 'draft', 'itemid' => $draft,
-    'filepath' => '/', 'filename' => 'genova.zip'], '/tmp/genova.zip');
+    'filepath' => '/', 'filename' => basename($package)], $package);
 if (!$scorm) {
-    $info = (object)['course' => $course->id, 'name' => 'GenOVA tres recursos',
+    $info = (object)['course' => $course->id, 'name' => $activity,
         'modulename' => 'scorm', 'module' => $DB->get_field('modules', 'id', ['name' => 'scorm']),
         'section' => 1, 'visible' => 1, 'intro' => 'Paquete exportado por GenOVA desde fixtures reales',
         'introformat' => FORMAT_HTML, 'scormtype' => SCORM_TYPE_LOCAL, 'packagefile' => $draft,
@@ -57,4 +59,4 @@ if (!$scorm) {
 $cm = get_coursemodule_from_instance('scorm', $scorm->id, $course->id);
 $sco = $DB->get_record_select('scorm_scoes', 'scorm = ? AND launch <> ?', [$scorm->id, ''], '*', MUST_EXIST);
 echo json_encode(['course' => $course->id, 'cm' => $cm->id, 'scorm' => $scorm->id,
-    'sco' => $sco->id, 'user' => $user->id]) . "\n";
+    'sco' => $sco->id, 'user' => $user->id, 'version' => $scorm->version]) . "\n";

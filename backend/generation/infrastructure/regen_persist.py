@@ -9,6 +9,7 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.educational_metadata import metadata_from_ova
 from models import Ova
 from ova import ova_output_dir
 
@@ -24,6 +25,7 @@ def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):
         course_title=ova.title,
         module_title="OVA Generado por GenOVA",
         phases=phases_data,
+        metadata=metadata_from_ova(ova),
     )
 
     storage_key = None

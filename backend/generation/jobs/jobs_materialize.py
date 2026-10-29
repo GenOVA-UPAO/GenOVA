@@ -14,9 +14,10 @@ materialization failure is logged and contained — the job state is unaffected.
 import uuid
 
 import structlog
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
+from core.educational_metadata import metadata_from_ova
 from core.text import ova_title
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
 from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
@@ -81,10 +82,7 @@ def materialize_partial_ova(
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
     title = ova_title(prompt) or "OVA parcial"
-    total = db.execute(
-        select(func.count()).select_from(OvaJobResource).where(OvaJobResource.job_id == job.id)
-    ).scalar_one()
-    final_status = "listo" if total and len(resources) >= total else "borrador"
+    final_status = "listo"
 
     ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
     if ova is None:
@@ -96,6 +94,8 @@ def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uui
         ova.title = title
 
     version = _acquire_version(db, ova, prompt)
+    if not ova.author:
+        ova.author = metadata_from_ova(ova).author
     ova.status = final_status
     phases_data = _add_phases(db, version.id, resources)
     _persist_scorm(ova, title, phases_data, str(job.user_id))
@@ -181,6 +181,7 @@ def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) 
         course_title=title,
         module_title="OVA Generado por GenOVA",
         phases=phases_data,
+        metadata=metadata_from_ova(ova),
     )
     storage_key, file_path = persist_scorm_zip(zip_bytes, user_id, str(ova.id), version=1)
     ova.storage_key = storage_key

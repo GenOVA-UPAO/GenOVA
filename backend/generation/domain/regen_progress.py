@@ -18,7 +18,7 @@ PROGRESS_STAGES = [
 # Estimated seconds per resource for real LLM regeneration.
 EST_SECONDS_PER_PHASE = 60
 
-_TERMINAL_STATUSES = frozenset({"success", "error"})
+_TERMINAL_STATUSES = frozenset({"success", "error", "cancelled"})
 
 # Suelo del porcentaje según el paso real que registra el ejecutor en la BD. La
 # estimación por tiempo sola decía «Generando fases» mientras ya se construía el

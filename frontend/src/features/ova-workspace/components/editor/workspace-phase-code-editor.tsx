@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 interface Props {
@@ -12,9 +14,9 @@ interface Props {
 }
 
 function stateText(dirty: boolean, saved: boolean): string {
-  if (dirty) return "Cambios sin guardar.";
-  if (saved) return "Cambios guardados. Ya se ven en la vista previa.";
-  return "Sin cambios.";
+  if (dirty) return "workspace:cambios_sin_guardar";
+  if (saved) return "workspace:cambios_guardados_ya_se_ven_en_la_vista_previa";
+  return "workspace:sin_cambios";
 }
 
 /** Editor del HTML de un recurso: plegado por defecto, es la vía avanzada. */
@@ -28,11 +30,11 @@ export function WorkspacePhaseCodeEditor({
   onSave,
   onDiscard,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <div id={id} className="space-y-2 border-t border-border p-3">
       <label htmlFor={`${id}-field`} className="text-xs font-medium text-muted-foreground">
-        Código HTML del recurso
-      </label>
+        {t("workspace:codigo_html_del_recurso")} </label>
       <textarea
         id={`${id}-field`}
         rows={10}
@@ -52,15 +54,13 @@ export function WorkspacePhaseCodeEditor({
           aria-describedby={`${id}-state`}
           onClick={onSave}
         >
-          Guardar cambios
-        </Button>
+          {t("workspace:guardar_cambios")} </Button>
         {dirty && (
           <Button size="sm" variant="ghost" disabled={saving} onClick={onDiscard}>
-            Descartar cambios
-          </Button>
+            {t("workspace:descartar_cambios")} </Button>
         )}
         <span id={`${id}-state`} role="status" className="text-xs text-muted-foreground">
-          {stateText(dirty, saved)}
+          {t(stateText(dirty, saved))}
         </span>
       </div>
     </div>

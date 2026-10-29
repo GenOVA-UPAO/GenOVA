@@ -36,8 +36,10 @@ _GLOBAL_PURGE_EVERY = 50
 
 
 class SlidingWindow(Protocol):
-    def hit(self, bucket: str, subject: str, limit: int, window_s: float) -> int: ...
-    def reset(self, bucket: str) -> None: ...
+    def hit(self, bucket: str, subject: str, limit: int, window_s: float) -> int:
+        raise NotImplementedError
+    def reset(self, bucket: str) -> None:
+        raise NotImplementedError
 
 
 def _wait(remaining_s: float) -> int:

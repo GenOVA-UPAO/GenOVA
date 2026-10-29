@@ -1,10 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 import { PasswordInput } from "@/core/components/ui/password-input";
 
-import { AUTH_LINK_CLASS, EMAIL_FORMAT_ERROR } from "../lib/auth-copy";
+import { AUTH_LINK_CLASS } from "../lib/auth-copy";
 import type { RegisterValues } from "../lib/auth-schemas";
 import type { FormSubmitHandler } from "../lib/on-form-submit";
 import type { useAuthForm } from "../lib/use-auth-form";
@@ -27,20 +28,21 @@ export function RegisterFormFields({
   submitting,
   onSubmit,
 }: Readonly<RegisterFormFieldsProps>) {
+  const { t } = useTranslation("auth");
   const passwordError = form.errorFor("password");
   return (
-    <AuthCard title="Crear cuenta" subtitle="Regístrate para guardar y acceder a tus OVAs.">
+    <AuthCard title={t("register.title")} subtitle={t("register.subtitle")}>
       <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
-        <AuthField id="fullName" label="Nombre completo" error={form.errorFor("full_name")}>
+        <AuthField id="fullName" label={t("register.fullName")} error={form.errorFor("full_name")}>
           <Input
             id="fullName"
             type="text"
             autoComplete="name"
-            placeholder="Ej: María Pérez"
+            placeholder={t("register.fullNamePlaceholder")}
             {...form.bind("full_name", { id: "fullName" })}
           />
         </AuthField>
-        <AuthField id="email" label="Correo" error={form.errorFor("email") ? EMAIL_FORMAT_ERROR : undefined}>
+        <AuthField id="email" label={t("common.email")} error={form.errorFor("email")}>
           <Input
             id="email"
             type="email"
@@ -48,15 +50,15 @@ export function RegisterFormFields({
             inputMode="email"
             spellCheck={false}
             autoCapitalize="none"
-            placeholder="nombre@upao.edu.pe"
+            placeholder={t("common.emailPlaceholder")}
             {...form.bind("email")}
           />
         </AuthField>
         <AuthField
           id="password"
-          label="Contraseña"
-          error={passwordError ? "Mínimo 8 caracteres con letras y números." : undefined}
-          hint="Usa al menos 8 caracteres con letras y números."
+          label={t("common.password")}
+          error={passwordError ? t("validation.passwordFormat") : undefined}
+          hint={t("common.passwordHint")}
         >
           <PasswordInput
             id="password"
@@ -66,12 +68,12 @@ export function RegisterFormFields({
         </AuthField>
         {serverError ? <ServerAlert>{serverError}</ServerAlert> : null}
         <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
-          {submitting ? "Creando cuenta…" : "Crear cuenta"}
+          {submitting ? t("register.submitting") : t("register.submit")}
         </Button>
         <p className="pt-2 text-center text-sm text-muted-foreground">
-          ¿Ya tienes cuenta?{" "}
+          {t("register.haveAccount")}{" "}
           <Link to="/login" className={AUTH_LINK_CLASS}>
-            Iniciar sesión
+            {t("register.signIn")}
           </Link>
         </p>
       </form>

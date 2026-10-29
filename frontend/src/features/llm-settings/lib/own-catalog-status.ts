@@ -1,3 +1,5 @@
+import { t } from "i18next";
+
 import { type CatalogStatus, failedProviders } from "./catalog-status";
 
 /**
@@ -71,21 +73,25 @@ export function platformStatusForUser(
   return Object.fromEntries(Object.entries(platform).filter(([id]) => !mine.has(id)));
 }
 
-const ERROR_TEXT: Record<string, string> = {
-  invalid_key: "El proveedor rechazó tu clave. Puede estar mal copiada, caducada o revocada.",
-  rate_limited:
-    "El proveedor limitó las peticiones de tu cuenta. Vuelve a intentarlo en unos minutos.",
-  unreachable: "El proveedor no respondió. Vuelve a intentarlo en unos minutos.",
-};
-
 /** Motivo del fallo, dicho para el usuario. */
 export function ownKeyErrorText(code: string): string {
-  return ERROR_TEXT[code] ?? "No pudimos obtener sus modelos. Vuelve a intentarlo en unos minutos.";
+  switch (code) {
+    case "invalid_key":
+      return t("llm-settings:ownCatalogStatus.rejected");
+    case "rate_limited":
+      return t("llm-settings:ownCatalogStatus.rateLimited");
+    case "unreachable":
+      return t("llm-settings:ownCatalogStatus.unreachable");
+    default:
+      return t("llm-settings:ownCatalogStatus.cannotGetModels");
+  }
 }
 
 /** Etiqueta corta del fallo para la fila de la clave. */
 export function ownKeyErrorLabel(code: string): string {
-  return code === "invalid_key" ? "Clave no válida" : "Sin respuesta";
+  return code === "invalid_key"
+    ? t("llm-settings:ownCatalogStatus.invalidKeyBadge")
+    : t("llm-settings:ownCatalogStatus.noResponseBadge");
 }
 
 /** Si el fallo se arregla cambiando la clave (y no reintentando). */

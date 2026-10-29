@@ -8,6 +8,7 @@ from groq import RateLimitError as GroqRateLimitError
 from openai import RateLimitError as OpenAIRateLimitError
 
 from llm import cassette
+from llm.auth_errors import ProviderAuthError, is_provider_auth_error
 from llm.chain_credentials import usable_chain
 from llm.clients.clients import (
     _LLM_TIMEOUT_S,
@@ -103,12 +104,35 @@ def _chat_once(
     key: str | None = None,
 ) -> tuple[str, str | None]:
     """Una llamada de chat. Costura única de record/replay (llm.cassette)."""
+    def call():
+        platform_key = _get_provider_key(provider) if key is None else key
+        try:
+            return _provider_chat_once(provider, model_id, msgs, max_tokens, extra, timeout, platform_key)
+        except Exception as exc:
+            if not is_provider_auth_error(exc):
+                raise
+            from llm.clients.key_resolver import environment_key
+
+            fallback = environment_key(provider) if key is None else None
+            if fallback and fallback != platform_key:
+                logger.warning("platform key rejected; trying environment key", provider=provider)
+                try:
+                    result = _provider_chat_once(provider, model_id, msgs, max_tokens, extra, timeout, fallback)
+                except Exception as fallback_exc:
+                    if is_provider_auth_error(fallback_exc):
+                        raise ProviderAuthError(provider) from None
+                    raise
+                with _key_lock:
+                    _key_cache[provider] = (fallback, time.monotonic())
+                return result
+            raise ProviderAuthError(provider, personal=key is not None) from None
+
     return cassette.intercept_chat(
         provider,
         model_id,
         msgs,
         max_tokens,
-        lambda: _provider_chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key),
+        call,
     )
 
 

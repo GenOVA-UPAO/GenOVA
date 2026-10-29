@@ -1,0 +1,63 @@
+{
+  "resource": {
+    "title": "Versiones del recurso",
+    "description": "Versiones anteriores de «{{name}}».",
+    "selected": "Versión {{number}} seleccionada",
+    "pick": "Elige una versión para restaurarla.",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "restore": "Restaurar esta versión",
+    "loading": "Cargando versiones",
+    "emptySaved": "Este recurso aún no tiene versiones guardadas: se guarda una cada vez que editas su código HTML.",
+    "emptyRegenerate": "Lo que cambia la IA al regenerar está en «Historial de versiones», arriba a la derecha.",
+    "previewTitle": "Versión {{number}}",
+    "pickToPreview": "Elige una versión para ver cómo era.",
+    "listLabel": "Versiones",
+    "listItem": "Versión {{number}}"
+  },
+  "confirm": {
+    "title": "¿Restaurar la versión {{number}}?",
+    "message": "El OVA volverá a tener el contenido de la versión {{number}}.",
+    "confirm": "Restaurar versión"
+  },
+  "history": {
+    "title": "Historial de versiones",
+    "descriptionReadOnly": "Compara dos versiones del OVA.",
+    "description": "Compara dos versiones del OVA o restaura una anterior."
+  },
+  "footer": {
+    "compareDone": "Los cambios están debajo de la lista. Desmarca una versión para elegir otra.",
+    "compareTwo": "2 versiones marcadas. Desmarca una para elegir otra.",
+    "compareHint": "Marca 2 versiones para compararlas ({{count}} de 2).",
+    "close": "Cerrar",
+    "compare": "Comparar versiones"
+  },
+  "list": {
+    "empty": "Aún no hay versiones anteriores. Tras regenerar podrás comparar y restaurar.",
+    "selectLabel": "Seleccionar versión {{number}} para comparar",
+    "version": "Versión {{number}}",
+    "current": "Actual",
+    "restore": "Restaurar",
+    "onlyOne": "Esta es la única versión. Cuando apliques cambios con la IA aparecerán aquí para que puedas compararlas o volver a una anterior."
+  },
+  "diff": {
+    "label": "Comparación de versiones",
+    "same": "Las dos versiones tienen el mismo contenido.",
+    "changedOne_one": "Cambió {{changed}} de {{total}} recurso.",
+    "changedOne_other": "Cambió {{changed}} de {{total}} recursos.",
+    "changedMany_one": "Cambiaron {{changed}} de {{total}} recurso.",
+    "changedMany_other": "Cambiaron {{changed}} de {{total}} recursos.",
+    "beforeHeading": "Anterior: versión {{number}}",
+    "afterHeading": "Posterior: versión {{number}}",
+    "resource": "Recurso",
+    "changed": "Cambió",
+    "unchanged": "Sin cambios",
+    "hide": "Ocultar",
+    "showAnyway": "Ver igualmente",
+    "missing": "Este recurso no existe en la versión {{number}}.",
+    "captionBefore": "Anterior (versión {{number}}): ",
+    "captionAfter": "Posterior (versión {{number}}): ",
+    "frameBefore": "Anterior, versión {{number}}: {{name}}",
+    "frameAfter": "Posterior, versión {{number}}: {{name}}"
+  }
+}

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -22,6 +24,7 @@ export function ModelsOverviewBar({
   onConnectProvider,
   onGoToOwnKey,
 }: Readonly<ModelsOverviewBarProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   // Sin clave propia el catálogo solo decía «Aún no tienes claves API»: el
   // camino ya lo indica el aviso de cada tarea.
@@ -31,12 +34,12 @@ export function ModelsOverviewBar({
     <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          Elige una tarea para ver su modelo principal y sus modelos de respaldo.
+          {t("overview.chooseTaskDesc")}
         </p>
         {canBrowseCatalog ? (
           <Button variant="outline" onClick={onOpenCatalog} className="shrink-0 max-sm:h-11">
             <Icon name="squares-four" size="text-sm" />
-            Abrir catálogo
+            {t("overview.openCatalog")}
           </Button>
         ) : null}
       </div>

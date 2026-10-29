@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Icon } from "@/core/components/icon";
@@ -25,6 +26,7 @@ function downloadHtml(result: PreviewResult): void {
 }
 
 export function HtmlPreview({ result }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [view, setView] = useState<"preview" | "code">("preview");
   if (!result?.html_content) return null;
   return (
@@ -32,22 +34,22 @@ export function HtmlPreview({ result }: Readonly<Props>) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {resourceDisplayName(result.tipo ?? "")}:{" "}
+            {resourceDisplayName(result.tipo ?? "", t)}:{" "}
             <span className="text-primary">{result.concepto}</span>
           </p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Icon name="clock-counter-clockwise" size="text-xs" /> {result.duracion}. Interactividad{" "}
+            <Icon name="clock-counter-clockwise" size="text-xs" /> {result.duracion}{t("workspace:interactividad_290")}{" "}
             {(result.interactividad ?? "").toLowerCase()}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SegmentedTabs
-            label="Vista del recurso"
+            label={t("workspace:vista_del_recurso")}
             value={view}
             onChange={setView}
             options={[
-              { value: "preview", label: "Vista previa" },
-              { value: "code", label: "Código" },
+              { value: "preview", label: t("workspace:vista_previa") },
+              { value: "code", label: t("workspace:codigo") },
             ]}
           />
           <Button
@@ -55,8 +57,7 @@ export function HtmlPreview({ result }: Readonly<Props>) {
               downloadHtml(result);
             }}
           >
-            Descargar HTML
-          </Button>
+            {t("workspace:descargar_html")} </Button>
         </div>
       </div>
       <div className="overflow-hidden rounded-xl border border-border">

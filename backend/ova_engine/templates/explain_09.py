@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
+from ova_engine.domain_context import domain_for
 from ova_engine.html import (
     IMAGE_FIGURE_CSS,
     PROGRESS_JS,
@@ -17,7 +18,7 @@ from ova_engine.schema import arr, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
 PARAMS = (
-    Param("num_dimensions", 4, min=3, max=5, help="Dimensiones de comparación (filas de la tabla)"),
+    Param("num_dimensions", 4, min=3, max=6, help="Dimensiones de comparación (filas de la tabla)"),
 )
 
 
@@ -45,21 +46,22 @@ def schema(p: dict) -> dict:
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
+    d = domain_for(concept, contexto)
     n = p["num_dimensions"]
-    return f"""[ROL] Analista comparativo de administración de bases de datos.
-[CONCEPTO] «{concept}» (curso: Sistemas de Gestión de Base de Datos).
-[TAREA] Compara «{concept}» con otras alternativas o conceptos relacionados (p. ej. backup frío/caliente/incremental, DBMS_JOB/DBMS_SCHEDULER, Oracle/SQL Server/PostgreSQL): EXACTAMENTE 3 elementos comparados (uno puede ser «{concept}») en {n} dimensiones medibles.
+    return f"""[ROL] Analista comparativo {d.pick("de administración de bases de datos", "experto en «" + concept + "»")}.
+[CONCEPTO] «{concept}» ({d.curso}).
+{d.rules() + chr(10) if not d.is_db else ""}[TAREA] Compara «{concept}» con otras alternativas o conceptos relacionados {d.pick(d.si_oracle("(p. ej. backup frío/caliente/incremental, DBMS_JOB/DBMS_SCHEDULER, Oracle/SQL Server/PostgreSQL)", "(alternativas, enfoques o conceptos cercanos del mismo tema, p. ej. variantes de una técnica o de un tipo de SGBD)"), "(alternativas, enfoques o conceptos cercanos del mismo tema)")}: EXACTAMENTE 3 elementos comparados (uno puede ser «{concept}») en {n} dimensiones medibles.
 - titulo: título corto de la comparación.
 - intro: una frase que explique qué se compara y para qué.
 - imagen (opcional): recurso visual estructurado comparativo:
-  * "logo" para marcas o tecnologías reconocidas comparadas (ej. Oracle vs PostgreSQL).
+  * "logo" para marcas o tecnologías reconocidas comparadas (ej. {d.pick(d.si_oracle("Oracle vs PostgreSQL", "PostgreSQL vs MySQL"), "dos marcas o instituciones comparadas")}).
   * "diagrama" para esquemas conceptuales o contrastes arquitectónicos (incluye objeto `diagrama` con tipo "comparacion"|"capas"|"flujo", titulo, nodos, aristas).
   * "foto" ÚNICAMENTE para equipamiento físico o hardware tangible.
   * "escena" para ilustraciones pedagógicas.
   Incluye {{"tipo": "logo"|"diagrama"|"foto"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - dimensiones: {n} criterios medibles (≤5 palabras cada uno, p. ej. «Tiempo de recuperación»).
 - comparaciones: 3 objetos, cada uno con `concepto` (nombre), `valores` (EXACTAMENTE {n} textos, uno por dimensión y EN EL MISMO ORDEN que `dimensiones`; ≤30 palabras, con datos concretos y comparables), `ventaja` (balance de su principal ventaja, ≤30 palabras) y `desventaja` (su principal desventaja, ≤30 palabras).
-- reto: `escenario` (situación realista de un DBA donde hay que elegir entre los 3, ≤35 palabras), `mejor` (número 1, 2 o 3: posición de la mejor opción en `comparaciones`) y `explicacion` (por qué esa opción gana y qué se sacrifica, ≤40 palabras).
+- reto: `escenario` ({d.pick("situación realista de un DBA", "situación realista del tema")} donde hay que elegir entre los 3, ≤35 palabras), `mejor` (número 1, 2 o 3: posición de la mejor opción en `comparaciones`) y `explicacion` (por qué esa opción gana y qué se sacrifica, ≤40 palabras).
 - conclusion: criterio general para decidir entre las alternativas.
 [RESTRICCIONES] Sin sesgo a favor de ningún elemento: cada uno debe ganar en alguna dimensión.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
@@ -102,7 +104,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 .cmp-table{{border-collapse:separate;border-spacing:0;min-width:640px}}
 .cmp-table th,.cmp-table td{{vertical-align:top;padding:10px;text-align:left}}
 .cmp-table td.hl,.cmp-table tr.hl th{{background:var(--surface-tint)}}
-.cmp-table td.hl-col{{background:#FFF6EC}}
+.cmp-table td.hl-col{{background:var(--accent-tint,#FFF6EC)}}
 .cmp-bal{{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}}
 .cmp-good{{border-left:4px solid var(--success)}}
 .cmp-bad{{border-left:4px solid var(--danger)}}

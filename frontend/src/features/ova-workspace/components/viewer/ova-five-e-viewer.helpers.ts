@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { phaseMeta } from "../../lib/phase-meta";
 
 export interface PhaseSection {
@@ -29,11 +31,11 @@ export function phaseColor(phaseId: string): { tab: string; badge: string } {
 }
 
 const PHASE_LABELS: Record<string, string> = {
-  ENGAGE: "Enganche",
-  EXPLORE: "Exploración",
-  EXPLAIN: "Explicación",
-  ELABORATE: "Elaboración",
-  EVALUATE: "Evaluación",
+  get ENGAGE() { return i18n.t("workspace:enganche"); },
+  get EXPLORE() { return i18n.t("workspace:exploracion"); },
+  get EXPLAIN() { return i18n.t("workspace:explicacion"); },
+  get ELABORATE() { return i18n.t("workspace:elaboracion"); },
+  get EVALUATE() { return i18n.t("workspace:evaluacion"); },
 };
 
 const PHASE_IDS: Record<string, string> = {
@@ -48,26 +50,26 @@ export function buildPhaseDemoContent(phaseName: string): OvaContent {
   const id = PHASE_IDS[phaseName] ?? "enganche";
   const label = PHASE_LABELS[phaseName] ?? phaseName;
   return {
-    title: `Modelo 5E — ${label}`,
+    title: i18n.t("workspace:modelo_5e_value", { p0: label }),
     phases: [
       {
         id,
         order: 1,
         label,
         sections: [
-          { type: "heading", content: `Fase ${label}` },
+          { type: "heading", content: i18n.t("workspace:fase_value", { p0: label }) },
           {
             type: "paragraph",
             content:
-              "Vista previa estructurada del recurso generado. El contenido final se renderiza como HTML interactivo tras la generación con IA.",
+              i18n.t("workspace:structuredPreviewHint"),
           },
           {
             type: "list",
             ordered: true,
             items: [
-              "Selecciona un tipo de recurso",
-              "Define el concepto",
-              "Genera y revisa la vista previa",
+              i18n.t("workspace:selecciona_un_tipo_de_recurso"),
+              i18n.t("workspace:define_el_concepto"),
+              i18n.t("workspace:genera_y_revisa_la_vista_previa"),
             ],
           },
         ],

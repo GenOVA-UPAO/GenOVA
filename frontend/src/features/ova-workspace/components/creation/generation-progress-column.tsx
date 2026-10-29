@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { useOvaJob } from "../../hooks/use-ova-job";
 import { isResumableJob } from "../../lib/ova-job-view-model";
 import { CanceledJobBanner } from "./canceled-job-banner";
@@ -61,6 +63,7 @@ export function GenerationProgressColumn({
   onCancel,
   onPreview,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const activeId = activePreviewId(job, pinnedId);
   const outcome = job.outcome;
   const resumable = resumableCount(job);
@@ -69,10 +72,9 @@ export function GenerationProgressColumn({
     <>
       {!outcome.isTerminal && job.resources.length === 0 && !job.error && (
         <p role="status" className="text-sm text-muted-foreground">
-          Iniciando generación…
-        </p>
+          {t("workspace:iniciando_generacion")} </p>
       )}
-      {kind === "canceled" && <CanceledJobBanner />}
+      {kind === "canceled" && <CanceledJobBanner onRetry={onRetryAll} />}
       {kind === "totalFail" && (
         <TotalFailurePanel viewModel={job.resources} onRetryAll={onRetryAll} />
       )}

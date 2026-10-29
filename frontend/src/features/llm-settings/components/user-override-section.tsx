@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { useFavoriteActions } from "../hooks/use-favorite-actions";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { useOwnKeyModels } from "../hooks/use-own-key-providers";
@@ -25,6 +27,7 @@ export function UserOverrideSection({
   userDisabled = false,
   bounds = [30, 300],
 }: Readonly<UserOverrideSectionProps>) {
+  const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
   const userSettings = store.settings?.[task] ?? {};
   const favorites = useFavoriteActions();
@@ -55,7 +58,7 @@ export function UserOverrideSection({
             modelId={userSettings.model_id}
             currentLabel={catalogLabel(store.catalogFull, userSettings.provider, userSettings.model_id)}
             disabled={userDisabled}
-            ariaLabel={`Tu modelo para ${taskMeta(task).label}`}
+            ariaLabel={t("tasks.userModelForAria", { task: taskMeta(task).label })}
             describedBy={`user-model-summary-${task}`}
             onChange={(ev) => {
               store.setModel(task, ev.provider, ev.modelId);
@@ -83,7 +86,7 @@ export function UserOverrideSection({
         disabled={userDisabled}
       />
       <p className="text-xs text-muted-foreground">
-        Aparecen los modelos de los proveedores con tu clave, con tus favoritos primero.
+        {t("tasks.userOverrideTip")}
       </p>
       <UserFallbackEditor
         fallbacks={userFallbacks}

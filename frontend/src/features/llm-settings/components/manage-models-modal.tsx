@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { useState } from "react";
 
 import { useIsAdmin } from "@/core/auth/auth-store";
@@ -91,7 +92,7 @@ function inUseLabels(
   if (isAdmin) return usage;
   for (const model of userModelsInUse(settings)) {
     const key = `${model.provider}::${model.model_id}`;
-    const label = `${taskMeta(model.task).label} (tuyo)`;
+    const label = t("llm-settings:manageModal.mine", { task: taskMeta(model.task).label });
     usage[key] = [...(usage[key] ?? []), label];
   }
   return usage;

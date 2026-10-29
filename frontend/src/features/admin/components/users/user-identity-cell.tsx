@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { TableCell } from "@/core/components/ui/table";
 
 import type { AdminUser } from "../../lib/types";
@@ -11,6 +13,7 @@ interface UserIdentityCellProps {
 }
 
 export function UserIdentityCell({ user, isMe, className }: Readonly<UserIdentityCellProps>) {
+  const { t } = useTranslation("admin");
   const name = displayName(user);
   const contact = userContactLine(user);
 
@@ -23,11 +26,11 @@ export function UserIdentityCell({ user, isMe, className }: Readonly<UserIdentit
             {name !== null ? (
               <span className="truncate text-sm font-semibold">{name}</span>
             ) : (
-              <span className="text-sm text-muted-foreground italic">Sin nombre</span>
+              <span className="text-sm text-muted-foreground italic">{t("users.identity.noName")}</span>
             )}
             {isMe && (
               <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary dark:bg-primary/20">
-                Tú
+                {t("users.identity.you")}
               </span>
             )}
           </p>

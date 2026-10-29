@@ -219,6 +219,9 @@ export default defineConfig(({ mode }) => {
       // Con la PC cargada (dev servers, Docker) tests de interacción pasaban de los
       // 5 s por defecto y el pre-push fallaba al azar; en CI tardan <1 s.
       testTimeout: 15_000,
+      // Por defecto vitest abre un worker por núcleo (11 en un equipo de 12 hilos), cada
+      // uno con su jsdom: en PCs de 8 GB el pre-push se quedaba sin memoria. CI no cambia.
+      maxWorkers: process.env.CI ? undefined : 4,
     },
   };
 });

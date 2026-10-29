@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -24,6 +26,7 @@ export function BulkTrashModal({
   onConfirm,
   onCancel,
 }: Readonly<BulkTrashModalProps>) {
+  const { t } = useTranslation();
   const handleOpenChange = (open: boolean) => {
     if (!open && !isLoading) onCancel();
   };
@@ -33,19 +36,21 @@ export function BulkTrashModal({
     <Dialog open onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton={!isLoading}>
         <DialogHeader className="pr-8">
-          <DialogTitle>Mover {noun} a la papelera</DialogTitle>
+          <DialogTitle>
+            {t("ova-library:mover")} {noun} {t("ova-library:a_la_papelera")}
+          </DialogTitle>
           <DialogDescription>
             {count === 1
-              ? "Podrás restaurarlo desde Papelera cuando quieras."
-              : "Podrás restaurarlos desde Papelera cuando quieras."}
+              ? t("ova-library:podras_restaurarlo_desde_papelera_cuando_quieras")
+              : t("ova-library:podras_restaurarlos_desde_papelera_cuando_quieras")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel} disabled={isLoading}>
-            Cancelar
+            {t("ova-library:cancelar")}{" "}
           </Button>
           <Button variant="danger" onClick={onConfirm} loading={isLoading}>
-            {isLoading ? "Moviendo…" : "Mover a la papelera"}
+            {isLoading ? t("ova-library:moviendo") : t("ova-library:mover_a_la_papelera")}
           </Button>
         </DialogFooter>
       </DialogContent>

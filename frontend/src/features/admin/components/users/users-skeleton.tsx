@@ -1,11 +1,15 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 const ROWS = ["a", "b", "c", "d", "e", "f"];
 
 /** Esqueleto con la forma de las filas: avatar, nombre y email, rol y estado. */
 export function UsersSkeleton() {
+  const { t } = useTranslation("admin");
+
   return (
-    <div role="status" aria-busy="true" aria-label="Cargando usuarios" className="divide-y">
+    <div role="status" aria-busy="true" aria-label={t("users.loading")} className="divide-y">
       {ROWS.map((key) => (
         <div key={key} className="flex items-center gap-3 px-4 py-3.5">
           <Skeleton className="size-9 shrink-0 rounded-full" />
