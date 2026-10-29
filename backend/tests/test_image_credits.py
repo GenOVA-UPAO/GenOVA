@@ -30,14 +30,14 @@ def test_is_generic_credit_value():
     assert is_generic_credit_value("web") is True
     assert is_generic_credit_value("#") is True
     assert is_generic_credit_value("Desconocido") is True
-    assert is_generic_credit_value("Wikimedia") is True
-    assert is_generic_credit_value("Openverse") is True
     assert is_generic_credit_value("Colaborador de Wikimedia") is True
     assert is_generic_credit_value("Autor Openverse") is True
     assert is_generic_credit_value("") is True
     assert is_generic_credit_value(None) is True
 
-    # Valores específicos legítimos
+    # Valores específicos legítimos (los proveedores reales no son texto de relleno)
+    assert is_generic_credit_value("Wikimedia") is False
+    assert is_generic_credit_value("Openverse") is False
     assert is_generic_credit_value("Linus Torvalds") is False
     assert is_generic_credit_value("CC BY-SA 4.0") is False
     assert is_generic_credit_value("https://commons.wikimedia.org/wiki/File:Linux.jpg") is False
@@ -96,6 +96,19 @@ def test_is_valid_third_party_credit():
         "license": "CC BY-SA 4.0",
         "url": "https://commons.wikimedia.org/wiki/File:Foo.jpg",
     }) is False
+
+    # El nombre de la plataforma no es el autor ni la licencia
+    for platform in ("Wikimedia", "Openverse", "Flickr"):
+        assert is_valid_third_party_credit({
+            "author": platform,
+            "license": "CC BY-SA 4.0",
+            "url": "https://commons.wikimedia.org/wiki/File:Foo.jpg",
+        }) is False
+        assert is_valid_third_party_credit({
+            "author": "Jane Doe",
+            "license": platform,
+            "url": "https://commons.wikimedia.org/wiki/File:Foo.jpg",
+        }) is False
 
 
 def test_render_image_figure_incomplete_credit_returns_empty_string():
@@ -299,4 +312,56 @@ def test_templates_keep_generated_foto_and_drop_uncredited_search(key):
 
     data["image_source"] = "busqueda"
     assert 'class="ova-figure-img"' not in spec.render(data, ctx)
+
+
+# --- Proveedor real en el pie y enlaces sin '#' --------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("provider", "label"),
+    [
+        ("wikimedia", "Wikimedia Commons"),
+        ("openverse", "Openverse"),
+        ("flickr", "Flickr"),
+        ("Banco Fotográfico UPAO", "Banco Fotográfico UPAO"),
+        ("web", "origen"),
+        ("", "origen"),
+    ],
+)
+def test_caption_and_credits_section_keep_real_provider_name(provider, label):
+    credit = {**_VALID_CREDIT, "provider": provider}
+    source_link = f'<a href="{_VALID_CREDIT["source_url"]}" target="_blank" rel="noopener noreferrer">{label}</a>'
+    figure = render_item_figure(_enriched_item("busqueda", credit=credit))
+    assert source_link in figure
+    section = render_credits_section({**_enriched_item("busqueda", credit=credit)})
+    assert source_link in section
+
+
+@pytest.mark.parametrize("license_url", ["", "#", "creativecommons.org/licenses/by/4.0"])
+def test_missing_license_url_links_to_source_never_hash(license_url):
+    credit = {**_VALID_CREDIT, "license_url": license_url}
+    license_link = f'<a href="{_VALID_CREDIT["source_url"]}" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>'
+    for html in (
+        render_item_figure(_enriched_item("busqueda", credit=credit)),
+        render_credits_section(_enriched_item("busqueda", credit=credit)),
+    ):
+        assert license_link in html
+        assert 'href="#"' not in html
+
+
+def test_credit_dataclass_renders_like_dict():
+    from llm.images.sources.contract import Credit
+
+    credit = Credit(title="Antena", license_url="", **{k: v for k, v in _VALID_CREDIT.items() if k != "license_url"})
+    html = render_item_figure(_enriched_item("busqueda", credit=credit))
+    assert "Jane Doe" in html
+    assert "Wikimedia Commons" in html
+    assert 'href="#"' not in html
+
+
+def test_credits_section_lists_search_image_even_if_tipo_hint_was_escena():
+    """La plantilla puede redirigir un 'escena' a búsqueda: su crédito real debe listarse."""
+    section = render_credits_section(_enriched_item("busqueda", tipo="escena", credit=_VALID_CREDIT))
+    assert "Jane Doe" in section
+    assert render_credits_section(_enriched_item("generada", tipo="foto", credit=_VALID_CREDIT)) == ""
 

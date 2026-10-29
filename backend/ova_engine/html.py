@@ -161,91 +161,97 @@ IMAGE_FIGURE_CSS = """
 """
 
 
-GENERIC_CREDIT_VALUES: set[str] = {
-    "autor",
-    "author",
-    "licencia libre",
-    "free license",
-    "licencia",
-    "license",
-    "web",
-    "cache",
-    "fuente libre",
-    "licencia libre verificada",
-    "desconocido",
-    "desconocida",
-    "unknown",
-    "anonimo",
-    "anónimo",
-    "anonymous",
-    "colaborador de wikimedia",
-    "autor openverse",
-    "wikimedia",
-    "openverse",
-    "wikipedia",
-    "internet",
-    "google",
-    "flickr",
-    "cc",
-    "creative commons",
-    "n/a",
-    "none",
-    "null",
-    "undefined",
-    "#",
-    "imagen",
-    "image",
+# Textos de relleno: nunca son un autor, una licencia ni una URL de origen reales.
+GENERIC_CREDIT_VALUES: frozenset[str] = frozenset({
+    "autor", "author", "licencia libre", "free license", "licencia", "license", "web", "cache",
+    "fuente libre", "licencia libre verificada", "desconocido", "desconocida", "unknown",
+    "anonimo", "anónimo", "anonymous", "colaborador de wikimedia", "autor openverse",
+    "internet", "google", "cc", "creative commons", "n/a", "none", "null", "undefined", "#",
+    "imagen", "image",
+})
+# Plataformas de donde sale la imagen: son un proveedor legítimo, pero nunca su autor.
+CREDIT_PROVIDER_NAMES: frozenset[str] = frozenset({
+    "wikimedia", "wikimedia commons", "wikipedia", "openverse", "flickr", "pexels", "unsplash",
+})
+_PROVIDER_LABELS = {
+    "wikimedia": "Wikimedia Commons",
+    "openverse": "Openverse",
+    "flickr": "Flickr",
+    "pexels": "Pexels",
+    "unsplash": "Unsplash",
+    "simple-icons": "Simple Icons",
 }
 
 
 def is_generic_credit_value(val: Any) -> bool:
-    """Verifica si un campo de crédito es nulo, vacío o contiene texto genérico/inventado."""
+    """Verifica si un campo de crédito es nulo, vacío o un texto de relleno inventado."""
     if not val or not isinstance(val, str):
         return True
     clean = val.strip().lower()
     return not clean or clean in GENERIC_CREDIT_VALUES
 
 
+def _credit_field(credit: Any, *names: str) -> str:
+    """Primer campo no vacío del crédito (``Credit`` o dict), sin espacios."""
+    for name in names:
+        val = credit.get(name) if isinstance(credit, dict) else getattr(credit, name, None)
+        if val:
+            return str(val).strip()
+    return ""
+
+
+def _is_http_url(url: str) -> bool:
+    return url.startswith(("http://", "https://"))
+
+
 def is_valid_third_party_credit(credit: Any) -> bool:
     """Valida si un crédito de terceros tiene autor, licencia y URL de origen legítimos (no genéricos)."""
     if not credit:
         return False
-    author = getattr(credit, "author", None) if not isinstance(credit, dict) else credit.get("author")
-    lic = getattr(credit, "license", None) if not isinstance(credit, dict) else credit.get("license")
-    src_url = (
-        getattr(credit, "source_url", None)
-        if not isinstance(credit, dict)
-        else (credit.get("source_url") or credit.get("url"))
+    # El nombre de la plataforma no es ni el autor ni la licencia de la obra.
+    author, lic = _credit_field(credit, "author"), _credit_field(credit, "license")
+    src_url = _credit_field(credit, "source_url", "url")
+    return (
+        not any(is_generic_credit_value(v) or v.lower() in CREDIT_PROVIDER_NAMES for v in (author, lic))
+        and not is_generic_credit_value(src_url)
+        and _is_http_url(src_url)
     )
 
-    if is_generic_credit_value(author) or is_generic_credit_value(lic) or is_generic_credit_value(src_url):
-        return False
 
-    url_str = str(src_url).strip()
-    return url_str.startswith("http://") or url_str.startswith("https://")
+def _credit_parts(credit: Any, default_provider: str) -> dict[str, str]:
+    """Campos escapados de un crédito válido para el pie y la sección de créditos.
+
+    Los enlaces son siempre http(s): sin ``license_url`` válida, la licencia enlaza
+    al origen (nunca a ``#``). El proveedor conserva su nombre real (Wikimedia
+    Commons, Openverse…) y solo si falta o es genérico se usa ``default_provider``.
+    """
+    source_url = _credit_field(credit, "source_url", "url")
+    license_url = _credit_field(credit, "license_url")
+    provider = _credit_field(credit, "provider")
+    label = (
+        default_provider
+        if is_generic_credit_value(provider)
+        else _PROVIDER_LABELS.get(provider.lower(), provider)
+    )
+    return {
+        "author": esc(_credit_field(credit, "author")),
+        "license": esc(_credit_field(credit, "license")),
+        "license_url": esc(license_url if _is_http_url(license_url) else source_url),
+        "source_url": esc(source_url),
+        "provider": esc(label),
+    }
 
 
 def _format_figure_caption(credit: Any, default_prov: str = "origen") -> str:
     """Genera el bloque <figcaption> con autor, licencia y origen si el crédito es válido."""
-    if not credit or not is_valid_third_party_credit(credit):
+    if not is_valid_third_party_credit(credit):
         return ""
-    author = esc(str(getattr(credit, "author", "") or credit.get("author")).strip())
-    lic = esc(str(getattr(credit, "license", "") or credit.get("license")).strip())
-    lic_url = getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "")
-    lic_url_esc = esc(str(lic_url).strip()) if (lic_url and str(lic_url).strip().startswith("http")) else "#"
-    prov = getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "")
-    prov_esc = esc(str(prov).strip()) if not is_generic_credit_value(prov) else default_prov
-    raw_src = (
-        getattr(credit, "source_url", "")
-        or (credit.get("source_url") if isinstance(credit, dict) else "")
-        or (credit.get("url") if isinstance(credit, dict) else "")
-    )
-    src_url = esc(str(raw_src).strip())
+    c = _credit_parts(credit, default_prov)
     return (
         f'<figcaption class="ova-image-credit">'
-        f'<span>{author}</span> · '
-        f'<a href="{lic_url_esc}" target="_blank" rel="noopener noreferrer">{lic}</a> · '
-        f'<a href="{src_url}" target="_blank" rel="noopener noreferrer">{prov_esc}</a>'
+        f'<span>{c["author"]}</span> · '
+        f'<a href="{c["license_url"]}" target="_blank" rel="noopener noreferrer">{c["license"]}</a> · '
+        f'<a href="{c["source_url"]}" target="_blank" rel="noopener noreferrer">{c["provider"]}</a>'
         f'</figcaption>'
     )
 
@@ -255,6 +261,9 @@ _CREDIT_EXEMPT_SOURCES = frozenset({"diagrama", "logo", "generada", "personaje"}
 # Sin fuente conocida (datos antiguos, llamadas directas) decide la pista ``tipo`` del LLM.
 _CREDIT_EXEMPT_TIPOS = frozenset({"diagrama", "logo", "escena", "personaje"})
 _CREDIT_EXEMPT_FLAGS = ("is_diagram", "is_logo", "is_generated", "diagrama")
+# Producidas por GenOVA: nunca aparecen en la sección de créditos.
+_OWN_SOURCES = frozenset({"diagrama", "generada", "personaje"})
+_OWN_TIPOS = frozenset({"diagrama", "escena", "personaje"})
 
 
 def _is_credit_exempt(img_data: Any, src: Any, kwargs: dict[str, Any]) -> bool:
@@ -365,9 +374,11 @@ def render_credits_section(data: dict | list | None) -> str:
         if not isinstance(item, dict):
             continue
 
+        # Imágenes propias (diagrama, generada, personaje) no van a créditos. Como en la
+        # figura, manda la fuente real: un 'escena' resuelto por búsqueda sí se acredita.
         source = item.get("image_source") or item.get("source") or ""
         tipo = (item.get("imagen") or {}).get("tipo") if isinstance(item.get("imagen"), dict) else item.get("tipo")
-        if source in ("diagrama", "generada", "personaje") or tipo in ("diagrama", "escena", "personaje"):
+        if source in _OWN_SOURCES or (not source and tipo in _OWN_TIPOS):
             continue
 
         credit = item.get("image_credit") or item.get("credit")
@@ -377,18 +388,10 @@ def render_credits_section(data: dict | list | None) -> str:
         if not is_valid_third_party_credit(credit):
             continue
 
-        author = esc(str(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "")).strip())
-        license_name = esc(str(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "")).strip())
-        raw_src = getattr(credit, "source_url", "") or (credit.get("source_url") if isinstance(credit, dict) else "") or (credit.get("url") if isinstance(credit, dict) else "")
-        source_url = esc(str(raw_src).strip())
-        lic_url = getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "")
-        license_url = esc(str(lic_url).strip()) if (lic_url and str(lic_url).strip().startswith("http")) else source_url
-        prov = getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "")
-        provider = esc(str(prov).strip()) if not is_generic_credit_value(prov) else "origen"
-        raw_title = getattr(credit, "title", "") or (credit.get("title") if isinstance(credit, dict) else "")
-        title = esc(str(raw_title).strip()) if not is_generic_credit_value(raw_title) else "Fotografía técnica"
-
-        valid_entries.append((title, author, license_url, license_name, source_url, provider))
+        c = _credit_parts(credit, "origen")
+        raw_title = _credit_field(credit, "title")
+        title = esc(raw_title) if not is_generic_credit_value(raw_title) else "Fotografía técnica"
+        valid_entries.append((title, c["author"], c["license_url"], c["license"], c["source_url"], c["provider"]))
 
     if not valid_entries:
         return ""

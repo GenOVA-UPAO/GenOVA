@@ -268,7 +268,7 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
         height = int(imageinfo.get("height") or 0)
 
         lic = extmetadata.get("LicenseShortName", {}).get("value") or extmetadata.get("License", {}).get("value") or ""
-        lic_url = extmetadata.get("LicenseUrl", {}).get("value") or "https://creativecommons.org/"
+        lic_url = extmetadata.get("LicenseUrl", {}).get("value") or ""
         author = clean_html_tags(
             extmetadata.get("Artist", {}).get("value")
             or extmetadata.get("Credit", {}).get("value")
@@ -322,7 +322,7 @@ def search_openverse(query: str, session: requests.Session | None = None) -> lis
         lic = item.get("license", "")
         lic_ver = item.get("license_version", "")
         lic_name = f"CC {lic.upper()} {lic_ver}".strip() if lic not in ("cc0", "pdm") else lic.upper()
-        lic_url = item.get("license_url") or "https://creativecommons.org/"
+        lic_url = item.get("license_url") or ""
 
         candidates.append({
             "title": item.get("title") or "Imagen Openverse",
@@ -699,9 +699,9 @@ class SearchSource:
                             title=c_meta.get("title") or f"Imagen para {query}",
                             author=author,
                             license=lic,
-                            license_url=lic_url or "https://creativecommons.org/",
+                            license_url=lic_url or src_url,
                             source_url=src_url,
-                            provider=prov or "busqueda",
+                            provider=prov,
                         )
                         return ImageResult(
                             data_uri=record["data_uri"],
