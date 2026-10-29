@@ -18,37 +18,6 @@ logger = structlog.get_logger(__name__)
 _SIZE = 512  # get_image_data_uri genera 512x512 por defecto
 
 
-def format_credit_caption(credit: Any) -> str:
-    """Formatea la atribución requerida para imágenes de terceros en el pie de figura."""
-    if not credit:
-        return ""
-    from ova_engine.html import esc, is_generic_credit_value, is_valid_third_party_credit
-
-    if not is_valid_third_party_credit(credit):
-        return ""
-
-    author = esc(str(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "")).strip())
-    license_name = esc(str(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "")).strip())
-    src_url = str(
-        getattr(credit, "source_url", "")
-        or (credit.get("source_url") if isinstance(credit, dict) else "")
-        or (credit.get("url") if isinstance(credit, dict) else "")
-    ).strip()
-    lic_url = str(getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "")).strip()
-    license_url = esc(lic_url) if lic_url.startswith("http") else esc(src_url)
-    prov = str(getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "")).strip()
-    provider = esc(prov) if not is_generic_credit_value(prov) else "origen"
-    source_url = esc(src_url)
-
-    return (
-        f'<figcaption class="ova-image-credit">'
-        f'<span>{author}</span> · '
-        f'<a href="{license_url}" target="_blank" rel="noopener noreferrer">{license_name}</a> · '
-        f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{provider}</a>'
-        f'</figcaption>'
-    )
-
-
 def image_items(json_data: Any) -> list[dict]:
     """Elementos con ``prompt_imagen`` (cómic tradicional) o ``imagen`` (contrato nuevo).
 
@@ -159,7 +128,6 @@ def enrich_with_images(
                 )
                 if res:
                     item["image_credit"] = res.credit
-                    item["image_credit_html"] = format_credit_caption(res.credit)
                     item["image_source"] = res.source
                     item["image_alt"] = res.alt
                     item["image_meta"] = res.meta

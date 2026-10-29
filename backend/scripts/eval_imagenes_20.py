@@ -22,7 +22,6 @@ from typing import Any
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from llm.images.image_enrich import format_credit_caption
 from llm.images.image_placeholder import resolve_image_placeholders
 from llm.images.query_builder import sanitize_image_request
 from llm.images.sources.contract import ImageRequest
@@ -372,7 +371,6 @@ def main():
                 params = decide(spec, concept, "")
                 sample_data["image_placeholder"] = res.data_uri
                 sample_data["image_credit"] = res.credit
-                sample_data["image_credit_html"] = format_credit_caption(res.credit)
                 sample_data["image_source"] = res.source
                 sample_data["image_alt"] = res.alt
 

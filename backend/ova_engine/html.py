@@ -310,7 +310,6 @@ def render_image_figure(
     img_data: dict | None = None,
     src: str | None = None,
     credit: Any = None,
-    credit_html: str = "",
     *,
     alt_fallback: str = "Ilustración conceptual",
     extra_class: str = "",

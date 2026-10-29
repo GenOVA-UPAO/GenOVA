@@ -9,7 +9,6 @@ Verifica:
 
 import pytest
 
-from llm.images.image_enrich import format_credit_caption
 from ova_engine.contract import RenderContext
 from ova_engine.html import (
     is_generic_credit_value,
@@ -223,20 +222,6 @@ def test_render_credits_section_filters_invalid_items():
     assert "https://example.com/img1.jpg" in html
     assert "Autor" not in html
     assert "img2.jpg" not in html
-
-
-def test_format_credit_caption():
-    # Crédito válido
-    valid_cred = {"author": "Carlos Vega", "license": "CC BY-SA 4.0", "url": "https://commons.wikimedia.org/wiki/File:Switch.jpg"}
-    caption = format_credit_caption(valid_cred)
-    assert "Carlos Vega" in caption
-    assert "CC BY-SA 4.0" in caption
-    assert "https://commons.wikimedia.org/wiki/File:Switch.jpg" in caption
-
-    # Crédito inválido / genérico -> retorna ""
-    invalid_cred = {"author": "Autor", "license": "Licencia libre", "url": "#"}
-    assert format_credit_caption(invalid_cred) == ""
-    assert format_credit_caption({}) == ""
 
 
 # --- La fuente real (image_source) decide si hace falta crédito ---------------------
