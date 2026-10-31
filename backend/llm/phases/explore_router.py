@@ -7,6 +7,7 @@ from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
 from core.topic_area import active_topic_area
+from llm.images.image_providers import build_image_settings
 from llm.phases._rag import retrieve_phase_context
 from models import User
 from prometheus.plans.generate import generate_resource
@@ -53,7 +54,8 @@ def generate_explore_resource(
 
     try:
         result = generate_resource(
-            "explore", n, concept, contexto=contexto, area=active_topic_area()
+            "explore", n, concept, contexto=contexto,
+            image_settings=build_image_settings(current_user, db), area=active_topic_area(),
         )
         return {
             **meta,

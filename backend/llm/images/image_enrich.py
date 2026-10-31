@@ -85,7 +85,9 @@ def enrich_with_images(
         return {}
 
     settings = image_settings or {}
-    if settings.get("enabled") is False:
+    # Sin proveedor ni cadena no hay imágenes: unos settings vacíos no pueden
+    # saltarse el interruptor de imagen del admin con la clave de plataforma.
+    if settings.get("enabled") is False or not (settings.get("provider") or settings.get("chain")):
         return {}
     default_max = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
     max_images = int(settings.get("max_images", default_max))
@@ -94,7 +96,7 @@ def enrich_with_images(
     # Las claves no viajan en los settings guardados: se resuelven ahora, en memoria.
     settings = with_resolved_keys(settings)
 
-    provider = settings.get("provider", "cloudflare")
+    provider = settings.get("provider")
     api_key = settings.get("api_key") or None
     model = settings.get("image_model") or None
     chain = settings.get("chain") or []
