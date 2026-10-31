@@ -10,26 +10,32 @@ JWT_SECRET = settings.jwt_secret
 JWT_ALGORITHM = settings.jwt_algorithm
 JWT_EXPIRES_MINUTES = settings.jwt_expires_minutes
 
-# bcrypt truncates input at 72 bytes; we enforce a hard ceiling earlier in the
-# request pipeline so the CPU cost of hashing a multi-MB password cannot be
-# weaponized as a DoS vector.
+# Tope de caracteres en los modelos de request (anti-DoS). bcrypt solo usa los
+# primeros 72 bytes; bcrypt>=5 lanza ValueError en vez de truncar, así que
+# truncamos aquí de forma explícita y simétrica (hash y verificación).
 PASSWORD_MAX_LENGTH = 128
+_BCRYPT_MAX_BYTES = 72
 
 # Pre-computed dummy hash used to equalize timing between
 # "user not found" and "wrong password" code paths in the login flow.
 _DUMMY_HASH = bcrypt.hashpw(b"dummy-password-for-timing", bcrypt.gensalt()).decode("utf-8")
 
 
+def _bcrypt_input(password: str) -> bytes:
+    """Bytes que bcrypt realmente usa: conserva la semántica de bcrypt<5."""
+    return password.encode("utf-8")[:_BCRYPT_MAX_BYTES]
+
+
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    hashed = bcrypt.hashpw(_bcrypt_input(password), salt)
     return hashed.decode("utf-8")
 
 
 def verify_password(password: str, hashed: str) -> bool:
     try:
-        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
-    except ValueError:
+        return bcrypt.checkpw(_bcrypt_input(password), hashed.encode("utf-8"))
+    except ValueError:  # hash almacenado mal formado
         return False
 
 
