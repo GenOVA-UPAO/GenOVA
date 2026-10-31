@@ -594,7 +594,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         central_text_svg = f'<text class="center-title" x="{cx:.1f}" y="{cy + 10:.1f}">{esc(central_lines[0])}</text>'
     else:
         central_text_svg = (
-            f'<text class="center-title" x="{cx:.1f}" y="{cy + 4:.1f}">{esc(central_lines[0])}</text>'
+            f'<text class="center-title" x="{cx:.1f}" y="{cy + 4:.1f}">{esc(central_lines[0])}</text> '
             f'<text class="center-title" x="{cx:.1f}" y="{cy + 18:.1f}">{esc(central_lines[1])}</text>'
         )
 
@@ -662,7 +662,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             node_tspans = f'<text class="node-title" x="{nx + 6:.1f}" y="{ny + 4:.1f}">{esc(node_lines[0])}</text>'
         else:
             node_tspans = (
-                f'<text class="node-title" x="{nx + 6:.1f}" y="{ny - 3:.1f}">{esc(node_lines[0])}</text>'
+                f'<text class="node-title" x="{nx + 6:.1f}" y="{ny - 3:.1f}">{esc(node_lines[0])}</text> '
                 f'<text class="node-title" x="{nx + 6:.1f}" y="{ny + 11:.1f}">{esc(node_lines[1])}</text>'
             )
 
@@ -671,8 +671,8 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'aria-label="Nodo {k + 1}: {esc(etiqueta)}">'
             f'<rect class="node-rect" x="{bx:.1f}" y="{by:.1f}" width="{sw:.1f}" height="{sh:.1f}" rx="10"/>'
             f'<circle class="node-num-badge" cx="{bx + 16:.1f}" cy="{by + 16:.1f}" r="9"/>'
-            f'<text class="node-num-text" x="{bx + 16:.1f}" y="{by + 19:.1f}" text-anchor="middle">{k + 1}</text>'
-            f'<text class="node-check" x="{bx + sw - 14:.1f}" y="{by + 19:.1f}" text-anchor="middle">✓</text>'
+            f'<text class="node-num-text" x="{bx + 16:.1f}" y="{by + 19:.1f}" text-anchor="middle">{k + 1}</text> '
+            f'<text class="node-check" x="{bx + sw - 14:.1f}" y="{by + 19:.1f}" text-anchor="middle">✓</text> '
             f'{node_tspans}'
             f'</g>'
         )
@@ -699,7 +699,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <g class="mapa-edge-labels-group">
     {"".join(svg_edge_labels)}
   </g>
-  <g class="mapa-center-node" id="svg-node-center" tabindex="0" role="button" aria-label="Nodo central: {esc(central_name)}">
+  <g class="mapa-center-node" id="svg-node-center" tabindex="0" role="button" aria-label="Concepto central: {esc(central_name)}">
     <rect class="center-rect" x="{c_x1:.1f}" y="{c_y1:.1f}" width="{cw:.1f}" height="{ch:.1f}" rx="14"/>
     <text class="center-eyebrow" x="{cx:.1f}" y="{cy - 12:.1f}">CONCEPTO CENTRAL</text>
     {central_text_svg}

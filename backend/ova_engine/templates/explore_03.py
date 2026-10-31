@@ -615,10 +615,10 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'  <div class="item-actions" role="group" aria-label="Clasificar {item_texto}">'
             f'    <span class="action-prompt">O clasifica directamente:</span>'
             f'    <div class="action-buttons">'
-            f'      <button type="button" class="btn-classify" data-item-id="{item_id}" data-target-cat="{esc(cat_a["id"])}" aria-label="Clasificar {item_texto} en {esc(cat_a["nombre"])}">'
+            f'      <button type="button" class="btn-classify" data-item-id="{item_id}" data-target-cat="{esc(cat_a["id"])}" aria-label="Clasificar {item_texto} en la categoría A, {esc(cat_a["nombre"])}">'
             f'        <span class="btn-tag" aria-hidden="true">A</span> {esc(cat_a["nombre"])}'
             f"      </button>"
-            f'      <button type="button" class="btn-classify" data-item-id="{item_id}" data-target-cat="{esc(cat_b["id"])}" aria-label="Clasificar {item_texto} en {esc(cat_b["nombre"])}">'
+            f'      <button type="button" class="btn-classify" data-item-id="{item_id}" data-target-cat="{esc(cat_b["id"])}" aria-label="Clasificar {item_texto} en la categoría B, {esc(cat_b["nombre"])}">'
             f'        <span class="btn-tag" aria-hidden="true">B</span> {esc(cat_b["nombre"])}'
             f"      </button>"
             f"    </div>"

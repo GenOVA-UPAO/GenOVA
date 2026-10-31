@@ -436,7 +436,7 @@ def render(data: dict, ctx: RenderContext) -> str:
                 f'data-fb-ok="{esc(r.get("feedback_correcto", ""))}" '
                 f'data-fb-err="{esc(r.get("feedback_incorrecto", ""))}" '
                 f'aria-label="Opción {letter}: {esc(opt)}">'
-                f'<span class="ova-opt-badge" aria-hidden="true">{letter}</span>'
+                f'<span class="ova-opt-badge" aria-hidden="true">{letter}</span> '
                 f'<span class="ova-opt-text">{esc(opt)}</span>'
                 f"</button>"
             )

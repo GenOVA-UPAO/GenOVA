@@ -35,7 +35,7 @@ describe("PackageThemeSelector", () => {
     expect(change).toHaveBeenCalledWith("oscuro");
     rerender(<PackageThemeSelector value="oscuro" onChange={change} />);
     expect(select).toHaveValue("oscuro");
-    expect(screen.getByText("Aprender juntos").parentElement).toHaveStyle({ background: "#000000", color: "#ffffff" });
+    expect(screen.getByText("Aprender juntos").parentElement).toHaveStyle({ backgroundColor: "#000000", color: "#ffffff" });
   });
 
   it("con «Paleta del OVA» explica que se conservan los colores y no pinta muestra", () => {

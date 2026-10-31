@@ -89,7 +89,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<h3 id="mpb-h{k}" style="margin:0">{esc(p["contexto"])}</h3>'
         f'<ul>{"".join(f"<li>{esc(x)}</li>" for x in p["sintomas"])}</ul>'
         f'<upao-drop-zone class="mpb-zone" zone-id="z{k}" accepts="p{k}" label="Problema {k + 1}" role="button" tabindex="0" '
-        f'aria-label="Zona del problema {k + 1}: suelta o toca aquí el diagnóstico seleccionado"></upao-drop-zone>'
+        f'aria-label="Problema {k + 1}: arrastra aquí o toca para colocar el diagnóstico seleccionado"></upao-drop-zone>'
         f'<div class="mpb-fb k-hide" aria-live="polite"></div>'
         f'<div class="mpb-sol k-fb ok k-hide"><p class="k-label">Solución recomendada</p><p>{esc(p["solucion_recomendada"])}</p></div></article>'
         for k, p in enumerate(ps)
@@ -136,6 +136,7 @@ function result(zone, chip, ok) {
     fb.appendChild(el('div', 'k-fb ok', '✓ Correcto: ' + chip.getAttribute('item-id') + ' explica estos síntomas.'));
     chip.classList.add('done'); if (chip.matched) chip.matched();
     try { zone.shadowRoot.querySelector('.zone').classList.add('correct'); const d = zone.shadowRoot.querySelector('#dropped'); d.hidden = false; d.textContent = chip.getAttribute('item-id'); zone.shadowRoot.querySelector('#hint').hidden = true; } catch (e) {}
+    zone.setAttribute('aria-label', zone.getAttribute('label') + ': ' + chip.getAttribute('item-id') + ', correcto');
     chip.setAttribute('aria-disabled', 'true'); setSel(null);
     window.ovaMark('prob-' + card.dataset.i);
   } else {
