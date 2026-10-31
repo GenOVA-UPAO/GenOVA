@@ -4,6 +4,8 @@ import os
 os.environ["GENOVA_TESTING"] = "1"
 os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+# Ninguna prueba envía trazas a LangSmith (las que lo activan restauran el entorno).
+os.environ.setdefault("LANGSMITH_TRACING", "false")
 
 import pytest
 import requests
