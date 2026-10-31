@@ -13,6 +13,8 @@ os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import smtplib  # noqa: E402
+
 import pytest  # noqa: E402
 from sqlalchemy import select  # noqa: E402
 
@@ -21,7 +23,7 @@ from models import PasswordResetToken, User  # noqa: E402
 from tests._sqlite_db import make_session  # noqa: E402
 from users.application.dto import UpdateProfileInput  # noqa: E402
 from users.application.use_cases.update_user_profile import UpdateUserProfile  # noqa: E402
-from users.domain.errors import IncorrectCurrentPassword  # noqa: E402
+from users.domain.errors import EmailChangeUnavailable, IncorrectCurrentPassword  # noqa: E402
 from users.infrastructure.password_adapters import CorePasswordHasher  # noqa: E402
 from users.infrastructure.sqlalchemy_account_repository import (  # noqa: E402
     SqlAlchemyUserAccountRepository,
@@ -104,3 +106,28 @@ def test_editar_otros_campos_sin_cambiar_correo_no_pide_clave(db, user):
     db.refresh(user)
     assert user.full_name == "Victima Prueba"
     assert db.execute(select(PasswordResetToken)).first() is not None
+
+
+def test_cambio_de_correo_sin_smtp_responde_503(db, user, monkeypatch):
+    # Sin credenciales SMTP el envío lanzaba EmailNotConfigured y la API daba 500.
+    from users.interface.http.error_map import to_http_exception
+
+    monkeypatch.setattr("auth.infrastructure.smtp_email.SMTP_USER", "")
+    monkeypatch.setattr("auth.infrastructure.smtp_email.SMTP_PASSWORD", "")
+    with pytest.raises(EmailChangeUnavailable) as err:
+        _uc(db).execute(_input(user, "nuevo@example.com", PASSWORD))
+    assert to_http_exception(err.value).status_code == 503
+    db.refresh(user)
+    assert user.pending_email is None
+    assert user.email == "victima@example.com"
+
+
+def test_cambio_de_correo_con_fallo_smtp_responde_503(db, user, monkeypatch):
+    def _falla(*_args):
+        raise smtplib.SMTPServerDisconnected("caído")
+
+    monkeypatch.setattr("users.infrastructure.sqlalchemy_profile_repository.send_email_change", _falla)
+    with pytest.raises(EmailChangeUnavailable):
+        _uc(db).execute(_input(user, "nuevo@example.com", PASSWORD))
+    db.refresh(user)
+    assert user.pending_email is None
