@@ -24,9 +24,11 @@ class SqlAlchemyPasswordResetTokenRepository:
         ).scalar_one_or_none()
         if row is None:
             return None
+        # La llave normalizada solo sirve para buscar: el enlace va al correo
+        # guardado (con su +etiqueta), igual que la verificación y el reset de admin.
         return PasswordResetUser(
             id=row.id,
-            email=normalized_email,
+            email=str(row.email),
             full_name=row.full_name,
         )
 
