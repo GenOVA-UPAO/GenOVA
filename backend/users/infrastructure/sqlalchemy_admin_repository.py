@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from auth.domain.email import normalize_email
+from auth.domain.reset_policy import ADMIN_RESET_TTL
 from core.database import commit_or_500
 from core.security import token_digest
 from models import PasswordResetToken, Role, User, UserRole
@@ -170,7 +171,7 @@ class SqlAlchemyAdminUserRepository:
         self._db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
         self._db.flush()
         token = secrets.token_urlsafe(32)
-        expires_at = datetime.now(UTC) + timedelta(hours=24)
+        expires_at = datetime.now(UTC) + ADMIN_RESET_TTL
         self._db.add(
             PasswordResetToken(user_id=user_id, token=token_digest(token), expires_at=expires_at)
         )
