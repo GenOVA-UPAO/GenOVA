@@ -143,6 +143,11 @@ def create_http_session() -> requests.Session:
         backoff_factor=1.5,
         status_forcelist=[429, 500, 502, 503, 504],
         raise_on_status=False,
+        # Un Retry-After de un proveedor saturado puede pedir horas (urllib3 lo
+        # respeta hasta 6 h) y bloquear el hilo de generación: se ignora y la
+        # espera entre reintentos queda acotada.
+        respect_retry_after_header=False,
+        backoff_max=5,
     )
     adapter = HTTPAdapter(max_retries=retries)
     session.mount("https://", adapter)
@@ -671,6 +676,15 @@ class SearchSource:
                         )
                     logger.info("search image cache hit contained generic/invalid credit; treating as miss", query=query)
 
+        # Sin CLIP el resultado se descarta igual: se comprueba antes de gastar hasta
+        # 8 peticiones (con reintentos) a los proveedores de búsqueda.
+        reranker = ClipReranker.get_instance()
+        if not reranker.available and os.getenv("IMAGE_SEARCH_WITHOUT_CLIP", "0") != "1":
+            # Sin verificación visual las fotos elegidas por metadatos resultaron
+            # inadecuadas (medido): mejor dejar que el decisor pase a otra fuente.
+            logger.info("image search skipped: CLIP unavailable", query=query)
+            return None
+
         # 2. Recolectar 15-20 candidatas usando múltiples variantes de consulta
         search_queries = build_search_queries(request)
         all_candidates: list[dict[str, Any]] = []
@@ -713,12 +727,6 @@ class SearchSource:
             return None
 
         # 4. Re-ranking visual local con CLIP y clases negativas zero-shot
-        reranker = ClipReranker.get_instance()
-        if not reranker.available and os.getenv("IMAGE_SEARCH_WITHOUT_CLIP", "0") != "1":
-            # Sin verificación visual las fotos elegidas por metadatos resultaron
-            # inadecuadas (medido): mejor dejar que el decisor pase a otra fuente.
-            logger.info("image search skipped: CLIP unavailable", query=query)
-            return None
         primary_query = search_queries[0] if search_queries else query
         best_candidate, clip_diagnostics = reranker.score_candidates(
             valid_candidates[:20],
