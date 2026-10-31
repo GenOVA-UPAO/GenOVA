@@ -207,12 +207,26 @@ def _chat(
     extra: dict,
     timeout: float | None = None,
     key: str | None = None,
+    *,
+    deadline: float | None = None,
 ) -> str:
+    """Una respuesta completa: continúa la salida cortada por `finish_reason=length`.
+
+    Con `deadline` (presupuesto del recurso) cada continuación cabe en lo que queda
+    y, si queda menos de `_MIN_ATTEMPT_S`, se devuelve lo generado hasta ahí.
+    """
     msgs = [{"role": "user", "content": prompt}]
     content, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
     for _ in range(_MAX_CONTINUATIONS):
         if finish != "length":
             break
+        step_timeout = timeout
+        if deadline is not None:
+            left = deadline - time.monotonic()
+            if left < _MIN_ATTEMPT_S:
+                logger.info("llm continuation skipped: resource budget exhausted", model_id=model_id)
+                break
+            step_timeout = min(timeout or _LLM_TIMEOUT_S, left)
         logger.info("llm output truncated; continuing", provider=provider, model_id=model_id)
         msgs = [
             *msgs,
@@ -220,7 +234,7 @@ def _chat(
             {"role": "user", "content": _CONTINUE_PROMPT},
         ]
         try:
-            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
+            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, step_timeout, key)
         except EmptyContentError:
             break
         # Algunos modelos (deepseek-v4-flash) no continúan: reinician el documento.
@@ -316,6 +330,7 @@ def generar_texto(
                 attempt_extra,
                 attempt_timeout,
                 user_keys.get(proveedor),
+                deadline=deadline,
             )
             logger.info(
                 "task model ok",
