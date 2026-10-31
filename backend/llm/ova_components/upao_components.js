@@ -598,7 +598,7 @@ ${s}
           ${src ? `<audio id="aud" src="${src}" preload="auto"></audio>` : ''}
           <div class="wave" id="wave">${bars}</div>
           <div class="controls">
-            <button class="btn play" id="play" aria-label="Reproducir">${ICON.play} Reproducir</button>
+            <button class="btn play" id="play">${ICON.play} Reproducir</button>
             <button class="btn ghost" id="rep" aria-label="Repetir">↺ Repetir</button>
           </div>
           ${src ? `<div class="track" id="track" role="slider" aria-label="Progreso del audio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -658,7 +658,9 @@ ${s}
       // y creaba un segundo foco interactivo dentro del botón de la plantilla.
       if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
       if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
-      if (!this.hasAttribute('aria-label')) this.setAttribute('aria-label', 'Elemento: ' + id);
+      // El nombre accesible sale del contenido visible (WCAG 2.5.3); el item-id
+      // es un identificador interno y solo se usa si el elemento no tiene texto.
+      if (!this.hasAttribute('aria-label') && !this.textContent.trim()) this.setAttribute('aria-label', 'Elemento ' + id);
       this.shadowRoot.innerHTML = this.css(`
         .item{padding:11px 16px;border:2px solid ${T.border};border-radius:${T.radiusSm};
           background:${T.surface};cursor:grab;font-size:.93rem;font-weight:500;
@@ -763,8 +765,8 @@ ${s}
         .hint{font-size:.78rem;color:${T.muted};margin-top:8px}
       `) + `
       <div class="wrap">
-        <button class="btn" id="btn"${locked ? ' disabled' : ''} aria-label="${label}">
-          <span id="icon" aria-hidden="true">${ICON.flag}</span> <span id="lbl">${label}</span>
+        <button class="btn" id="btn"${locked ? ' disabled' : ''}>
+          <span id="icon" aria-hidden="true">${ICON.flag}</span> <span id="lbl">${text(label)}</span>
         </button>
         ${locked ? `<p class="hint" id="hint" aria-live="polite">Completa la actividad para continuar</p>` : ''}
       </div>`;

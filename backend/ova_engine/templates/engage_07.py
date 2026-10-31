@@ -298,14 +298,14 @@ def render(data: dict, ctx: RenderContext) -> str:
     Selecciona la opción que consideres más adecuada para analizar su impacto en el sistema:
   </p>
   <div class="ova-decision-grid" role="group" aria-label="Alternativas de decisión">
-    <button type="button" class="ova-decision-card" id="btn-opt-a" data-option="A" aria-pressed="false" aria-label="Opción A: {esc(data["opcion_A"])}">
+    <button type="button" class="ova-decision-card" id="btn-opt-a" data-option="A" aria-pressed="false">
       <div class="ova-decision-head">
         <span class="ova-opt-letter" aria-hidden="true">A</span>
         <strong>Opción A</strong>
       </div>
       <p class="ova-opt-text">{esc(data["opcion_A"])}</p>
     </button>
-    <button type="button" class="ova-decision-card" id="btn-opt-b" data-option="B" aria-pressed="false" aria-label="Opción B: {esc(data["opcion_B"])}">
+    <button type="button" class="ova-decision-card" id="btn-opt-b" data-option="B" aria-pressed="false">
       <div class="ova-decision-head">
         <span class="ova-opt-letter" aria-hidden="true">B</span>
         <strong>Opción B</strong>

@@ -457,7 +457,7 @@ def render(data: dict, ctx: RenderContext) -> str:
                 f'data-turn="{t_idx}" data-opt="{opt_idx}" data-correct="{correcta_str}" '
                 f'data-feedback="{feedback}" data-pista="{pista}" '
                 f'aria-label="Opción {letter}: {texto}">'
-                f'<span class="socratic-opt-badge" aria-hidden="true">{letter}</span>'
+                f'<span class="socratic-opt-badge" aria-hidden="true">{letter}</span> '
                 f'<span class="socratic-opt-text">{texto}</span>'
                 f"</button>"
             )

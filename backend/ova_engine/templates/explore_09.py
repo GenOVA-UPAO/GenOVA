@@ -560,12 +560,12 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'tabindex="0" '
             f'role="button" '
             f'aria-pressed="false" '
-            f'aria-label="Pista cotidiana: {esc(t["pista_cotidiana"])}" '
+            f'aria-label="Pista {k}: {esc(t["pista_cotidiana"])}" '
             f'draggable="true">'
             f'<div class="card-topline">'
-            f'<span class="card-tag">Pista #{k}</span>'
+            f'<span class="card-tag">Pista #{k}</span> '
             f'<span class="match-badge" aria-hidden="true" hidden>✓ Conectado</span>'
-            f"</div>"
+            f"</div> "
             f'<p class="card-desc">{esc(t["pista_cotidiana"])}</p>'
             f"</div>"
         )
@@ -585,9 +585,9 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'aria-label="Nodo técnico: {esc(t["nodo_tecnico"])}" '
             f'draggable="true">'
             f'<div class="card-topline">'
-            f'<span class="card-tag card-tag--tech">Nodo Técnico</span>'
+            f'<span class="card-tag card-tag--tech">Nodo Técnico</span> '
             f'<span class="match-badge" aria-hidden="true" hidden>✓ Conectado</span>'
-            f"</div>"
+            f"</div> "
             f'<h3 class="tech-title">{esc(t["nodo_tecnico"])}</h3>'
             f"</div>"
         )
@@ -714,6 +714,7 @@ function attemptMatch(cardA, cardB, idA, idB) {
       c.setAttribute('aria-disabled', 'true');
       const badge = c.querySelector('.match-badge');
       if (badge) badge.hidden = false;
+      c.setAttribute('aria-label', c.getAttribute('aria-label').replace(': ', ', conectado: '));
     });
 
     selectedCard = null;

@@ -602,7 +602,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div class="ova-controls-col">
       {controls_html}
       <div class="ova-sim-toolbar">
-        <button type="button" class="ova-btn-ghost" id="btn-reset-sim" aria-label="Restablecer controles a sus valores por defecto">
+        <button type="button" class="ova-btn-ghost" id="btn-reset-sim" aria-label="Restablecer valores por defecto">
           <span>↺ Restablecer valores</span>
         </button>
       </div>
