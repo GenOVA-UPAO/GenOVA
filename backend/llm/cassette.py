@@ -288,7 +288,7 @@ class Cassette:
                 f"Cassette {self.path.name}: no hay respuesta grabada para la clave {key} "
                 f"({provider}/{model_id}, max_tokens={max_tokens}, {len(msgs)} mensajes, "
                 f"prompt: {_preview(msgs)['head'][:160]!r}…). Regrábalo con "
-                "scripts/record_llm_cassettes.py."
+                "LLM_CASSETTE_MODE=record (o use_cassette(ruta, mode='record'))."
             )
         return hit
 
