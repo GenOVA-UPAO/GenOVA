@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from auth.domain.user import PasswordResetTokenRecord, PasswordResetUser
 from core.database import commit_or_500
+from core.security import token_digest
 from models import PasswordResetToken, User
 
 
@@ -38,34 +39,35 @@ class SqlAlchemyPasswordResetTokenRepository:
             PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user_id)
         )
         self._db.add(
-            PasswordResetToken(user_id=user_id, token=token, expires_at=expires_at)
+            PasswordResetToken(user_id=user_id, token=token_digest(token), expires_at=expires_at)
         )
         commit_or_500(self._db, "request_password_reset")
 
     def find_by_token(self, token: str) -> PasswordResetTokenRecord | None:
+        digest = token_digest(token)
         # Only discover the owner first. All credential mutations acquire the
         # user lock BEFORE token locks/deletes, avoiding a reset/change deadlock.
         user_id = self._db.execute(
-            select(PasswordResetToken.user_id).where(PasswordResetToken.token == token)
+            select(PasswordResetToken.user_id).where(PasswordResetToken.token == digest)
         ).scalar_one_or_none()
         if user_id is None or not self.find_user(user_id):
             return None
         # Recheck after waiting: a change/reset may have deleted the token.
         row = self._db.execute(
-            select(PasswordResetToken).where(PasswordResetToken.token == token)
+            select(PasswordResetToken).where(PasswordResetToken.token == digest)
             .with_for_update().execution_options(populate_existing=True)
         ).scalar_one_or_none()
         if row is None:
             return None
         return PasswordResetTokenRecord(
             user_id=row.user_id,
-            token=str(row.token),
+            token=token,
             expires_at=row.expires_at,
         )
 
     def delete(self, token: str) -> None:
         self._db.execute(
-            PasswordResetToken.__table__.delete().where(PasswordResetToken.token == token)
+            PasswordResetToken.__table__.delete().where(PasswordResetToken.token == token_digest(token))
         )
         commit_or_500(self._db, "delete_expired_password_reset_token")
 

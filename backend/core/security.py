@@ -1,3 +1,4 @@
+import hashlib
 from datetime import UTC, datetime
 
 import bcrypt
@@ -37,6 +38,14 @@ def verify_password(password: str, hashed: str) -> bool:
         return bcrypt.checkpw(_bcrypt_input(password), hashed.encode("utf-8"))
     except ValueError:  # hash almacenado mal formado
         return False
+
+
+def token_digest(token: str) -> str:
+    """SHA-256 hex de un token de un solo uso (reset, verificación de correo).
+
+    En BD solo se guarda el digest: quien lea la tabla no obtiene un enlace
+    válido. El token en claro solo viaja en el correo."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 def verify_dummy() -> None:

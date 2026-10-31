@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from auth.domain.email import normalize_email
 from core.database import commit_or_500
+from core.security import token_digest
 from models import PasswordResetToken, Role, User, UserRole
 from users.domain.admin import (
     AdminRoleSummary,
@@ -170,6 +171,8 @@ class SqlAlchemyAdminUserRepository:
         self._db.flush()
         token = secrets.token_urlsafe(32)
         expires_at = datetime.now(UTC) + timedelta(hours=24)
-        self._db.add(PasswordResetToken(user_id=user_id, token=token, expires_at=expires_at))
+        self._db.add(
+            PasswordResetToken(user_id=user_id, token=token_digest(token), expires_at=expires_at)
+        )
         commit_or_500(self._db, op="reset_password_email_token")
         return token
