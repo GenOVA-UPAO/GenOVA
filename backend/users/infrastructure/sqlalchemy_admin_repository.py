@@ -66,14 +66,15 @@ class SqlAlchemyAdminUserRepository:
         return [_to_summary(u) for u in users_db]
 
     def is_admin(self, user_id: UUID) -> bool:
-        role = (
-            self._db.execute(
-                select(Role).join(UserRole).where(UserRole.user_id == user_id)
-            )
-            .scalars()
-            .first()
+        # Mismo predicado que el guard de auth: con varias filas en user_roles
+        # (BU-002) basta con que una sea «administrador», sin depender del orden.
+        stmt = select(
+            select(UserRole.user_id)
+            .join(Role, Role.id == UserRole.role_id)
+            .where(UserRole.user_id == user_id, Role.name == "administrador")
+            .exists()
         )
-        return role is not None and role.name == "administrador"
+        return bool(self._db.execute(stmt).scalar())
 
     def assert_can_touch_target(self, caller_id: UUID, target_id: UUID) -> None:
         # Cortocircuito idéntico al helper original: la consulta del caller
