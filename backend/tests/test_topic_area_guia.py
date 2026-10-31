@@ -189,7 +189,7 @@ def test_podcast_recibe_el_area(monkeypatch):
         return "monólogo"
 
     monkeypatch.setattr("ova_engine.text.generate_plain", fake_plain)
-    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda _t: None)
+    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda _t, **_: None)
     generate._gen_podcast("engage", 3, "Árboles", "", None, None, fake=False)
     assert "[ÁREA DEL CURSO]" not in seen["prompt"]
     with area_scope(AREA_ML):

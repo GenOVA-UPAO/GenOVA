@@ -8,10 +8,11 @@ audio cannot be generated.
 import base64
 import html
 import re
+import time
 
 import structlog
 
-from llm.podcast.audio_helpers import generar_audio_tts
+from llm.podcast.audio_helpers import MIN_TTS_S, generar_audio_tts
 from llm.utils.utils import SCORM_JS
 
 logger = structlog.get_logger(__name__)
@@ -33,20 +34,34 @@ def plain_monologue(text: str) -> str:
     return _MD_EMPHASIS.sub("", text).strip()
 
 
-def podcast_audio(text: str) -> tuple[str, str] | None:
+def _left(deadline: float | None) -> float | None:
+    return None if deadline is None else deadline - time.monotonic()
+
+
+def podcast_audio(text: str, deadline: float | None = None) -> tuple[str, str] | None:
     """Monólogo narrado como (base64, tipo MIME), o None si no hay audio.
 
     Primero OpenRouter: voz en español y MP3 ligero. Si no hay clave o falla,
     Groq (Orpheus, solo inglés, WAV), como antes. Sin ninguno, solo texto.
+    Con `deadline` (presupuesto del recurso) la síntesis cabe en lo que queda y,
+    si no queda casi nada, el podcast se queda en texto.
     """
     from llm.clients.clients import _get_provider_key
     from llm.podcast.tts_openrouter import synthesize_mp3
 
-    mp3 = synthesize_mp3(text, _get_provider_key("openrouter"))
+    left = _left(deadline)
+    if left is not None and left < MIN_TTS_S:
+        logger.info("podcast TTS skipped: resource budget exhausted")
+        return None
+    mp3 = synthesize_mp3(text, _get_provider_key("openrouter"), timeout=left)
     if mp3:
         return base64.b64encode(mp3).decode("ascii"), "audio/mpeg"
+    left = _left(deadline)
+    if left is not None and left < MIN_TTS_S:
+        logger.info("podcast TTS fallback skipped: resource budget exhausted")
+        return None
     try:
-        return base64.b64encode(generar_audio_tts(text)).decode("ascii"), "audio/wav"
+        return base64.b64encode(generar_audio_tts(text, deadline=deadline)).decode("ascii"), "audio/wav"
     except Exception as exc:
         logger.warning("podcast TTS failed, falling back to text-only", error=str(exc))
         return None

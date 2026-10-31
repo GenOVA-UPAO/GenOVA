@@ -68,7 +68,7 @@ def _gen_podcast(
                     f"Reescríbelo con unas {n} palabras (±15 %), sin añadir encabezados:\n{cur}"
                 ),
             )
-        audio = podcast_audio(mono)
+        audio = podcast_audio(mono, deadline=deadline)
 
     html = build_podcast_html(concept, mono, *(audio or (None,)))
     return ResourceResult(html, [], {"monologue": mono})
