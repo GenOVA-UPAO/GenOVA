@@ -18,27 +18,6 @@ logger = structlog.get_logger(__name__)
 _SIZE = 512  # get_image_data_uri genera 512x512 por defecto
 
 
-def format_credit_caption(credit: Any) -> str:
-    """Formatea la atribución requerida para imágenes de terceros en el pie de figura."""
-    if not credit:
-        return ""
-    from ova_engine.html import esc
-
-    author = esc(getattr(credit, "author", "") or "Autor")
-    license_name = esc(getattr(credit, "license", "") or "Licencia libre")
-    license_url = esc(getattr(credit, "license_url", "") or "#")
-    provider = esc(getattr(credit, "provider", "") or "web")
-    source_url = esc(getattr(credit, "source_url", "") or "#")
-
-    return (
-        f'<figcaption class="ova-image-credit">'
-        f'<span>{author}</span> · '
-        f'<a href="{license_url}" target="_blank" rel="noopener noreferrer">{license_name}</a> · '
-        f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{provider}</a>'
-        f'</figcaption>'
-    )
-
-
 def image_items(json_data: Any) -> list[dict]:
     """Elementos con ``prompt_imagen`` (cómic tradicional) o ``imagen`` (contrato nuevo).
 
@@ -149,7 +128,6 @@ def enrich_with_images(
                 )
                 if res:
                     item["image_credit"] = res.credit
-                    item["image_credit_html"] = format_credit_caption(res.credit)
                     item["image_source"] = res.source
                     item["image_alt"] = res.alt
                     item["image_meta"] = res.meta

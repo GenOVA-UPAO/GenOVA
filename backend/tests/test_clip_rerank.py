@@ -232,3 +232,127 @@ def test_clip_rerank_usage_penalty(tmp_path, monkeypatch):
     assert diags[0]["usage_penalty"] >= 0.04
     assert diags[0]["effective_score"] < diags[0]["pos_score"]
 
+
+def test_clip_person_classes_and_threshold_configuration():
+    """Verifica que las clases negativas de persona estén explícitamente configuradas con el umbral 0.205."""
+    from llm.images.clip_rerank import (
+        DEFAULT_PERSON_THRESHOLD,
+        GENERATED_NEGATIVE_CLASSES,
+        NEGATIVE_CLASSES,
+        PERSON_NEGATIVE_CLASSES,
+    )
+
+    assert DEFAULT_PERSON_THRESHOLD == 0.205
+    for p_class in ("persona", "persona_primer_plano", "persona_rostro", "persona_posando"):
+        assert p_class in NEGATIVE_CLASSES
+        assert p_class in GENERATED_NEGATIVE_CLASSES
+        assert p_class in PERSON_NEGATIVE_CLASSES
+
+    # Verificar que los prompts de persona contengan los términos explícitos requeridos
+    assert "close-up portrait of a person" in NEGATIVE_CLASSES["persona_primer_plano"]
+    assert "person's face" in NEGATIVE_CLASSES["persona_primer_plano"]
+    assert "people posing" in NEGATIVE_CLASSES["persona_posando"]
+
+
+def test_clip_rerank_person_discard_rule(monkeypatch):
+    """Verifica que un candidato con score de persona >= DEFAULT_PERSON_THRESHOLD es descartado por persona_detectada."""
+    from llm.images.clip_rerank import DEFAULT_PERSON_THRESHOLD
+
+    reranker = ClipReranker.get_instance()
+    test_img = Image.new("RGB", (224, 224), color=(50, 100, 150))
+    img_bytes = _image_to_bytes(test_img)
+
+    # Creamos un tensor sintético normalizado
+    def mock_encode_image(tensor):
+        # Tomamos el embedding de la clase persona_rostro ponderado para dar exactamente 0.22
+        from llm.images.clip_rerank import NEGATIVE_CLASSES
+        neg_names = list(NEGATIVE_CLASSES.keys())
+        p_idx = neg_names.index("persona_rostro")
+        # El vector de persona_rostro multiplicado por 0.22 más ortogonal
+        v = reranker.negative_embeddings[p_idx:p_idx+1].clone() * 0.22
+        return v / v.norm(dim=-1, keepdim=True)
+
+    monkeypatch.setattr(reranker.model, "encode_image", mock_encode_image)
+
+    candidates = [
+        {
+            "title": "Persona en primer plano",
+            "url": "https://example.com/face.png",
+            "_downloaded_bytes": img_bytes,
+        }
+    ]
+
+    best, diags = reranker.score_candidates(
+        candidates,
+        concept="Ciberseguridad",
+        query="cybersecurity brass padlock",
+        description="Candado físico de seguridad",
+        min_similarity=0.10,
+    )
+
+    assert best is None
+    assert len(diags) == 1
+    d = diags[0]
+    assert d["passed"] is False
+    assert "persona_detectada" in d["reason"] or "negativa_ganadora" in d["reason"]
+    assert d["top_persona_score"] >= DEFAULT_PERSON_THRESHOLD
+
+
+def test_clip_rerank_server_room_penalty_non_infra_vs_infra():
+    """Verifica que el score de sala de servidores se penaliza/descarta en temas no-infraestructura."""
+    from llm.images.clip_rerank import SERVER_ROOM_PROMPTS
+    from llm.images.query_builder import is_infrastructure_topic
+
+    assert len(SERVER_ROOM_PROMPTS) >= 2
+
+    # Verificar clasificación de temas
+    assert is_infrastructure_topic("Centros de datos y servidores en rack") is True
+    assert is_infrastructure_topic("Infraestructura física de centros de datos") is True
+    assert is_infrastructure_topic("Bases de datos relacionales con PostgreSQL") is False
+    assert is_infrastructure_topic("Ciberseguridad y criptografía") is False
+    assert is_infrastructure_topic("Programación orientada a objetos") is False
+    assert is_infrastructure_topic("Redes de computadoras y 5G") is False
+
+
+def test_clip_validate_generated_image_person_and_server_room_rejection(monkeypatch):
+    """Verifica que validate_generated_image rechace imágenes generadas con personas o con salas de servidores fuera de infra."""
+    from llm.images.clip_rerank import ClipReranker
+
+    reranker = ClipReranker.get_instance()
+    test_img = Image.new("RGB", (224, 224), color=(120, 120, 120))
+    img_bytes = _image_to_bytes(test_img)
+
+    # 1. Imagen que supera el umbral de persona
+    def mock_encode_person(tensor):
+        from llm.images.clip_rerank import GENERATED_NEGATIVE_CLASSES
+        gen_neg_names = list(GENERATED_NEGATIVE_CLASSES.keys())
+        p_idx = gen_neg_names.index("persona_rostro")
+        v = reranker.generated_negative_embeddings[p_idx:p_idx+1].clone()
+        return v / v.norm(dim=-1, keepdim=True)
+
+    monkeypatch.setattr(reranker.model, "encode_image", mock_encode_person)
+
+    passed, reason, score, diag = reranker.validate_generated_image(
+        image_input=img_bytes,
+        concept="Bases de datos relacionales",
+        subject_prompt="un disco duro con platos magnéticos",
+    )
+    assert passed is False
+    assert "persona_detectada" in reason or "negativa_ganadora" in reason
+
+    # 2. Imagen que es sala de servidores en tema no de infraestructura
+    def mock_encode_servers(tensor):
+        v = reranker.server_room_embeddings[0:1].clone()
+        return v / v.norm(dim=-1, keepdim=True)
+
+    monkeypatch.setattr(reranker.model, "encode_image", mock_encode_servers)
+
+    passed_sr, reason_sr, score_sr, diag_sr = reranker.validate_generated_image(
+        image_input=img_bytes,
+        concept="Bases de datos relacionales",
+        subject_prompt="un disco duro con platos magnéticos",
+    )
+    assert passed_sr is False
+    assert "sala_de_servidores" in reason_sr or "negativa_ganadora" in reason_sr
+
+

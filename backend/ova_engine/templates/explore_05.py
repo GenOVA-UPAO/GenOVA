@@ -16,7 +16,7 @@ from ova_engine.html import (
     esc,
     paragraphs,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.icons import icon
@@ -301,13 +301,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         for k, o in enumerate(data.get("opciones_patron", []))
     )
 
-    fig_html = render_image_figure(
-        data.get("imagen"),
-        data.get("image_placeholder"),
-        data.get("image_credit"),
-        data.get("image_credit_html", ""),
-        alt_fallback=f"Métricas y análisis de {ctx.concept}",
-    )
+    fig_html = render_item_figure(data, alt_fallback=f"Métricas y análisis de {ctx.concept}")
     credits_sec = render_credits_section(data)
 
     return f"""{_STYLE}{IMAGE_FIGURE_CSS}

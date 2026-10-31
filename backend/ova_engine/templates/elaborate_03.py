@@ -6,11 +6,12 @@ from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
     PROGRESS_JS,
     esc,
     paragraphs,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.icons import icon
@@ -118,7 +119,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     )
     return f"""
 {header("MINI-PROYECTO", data["titulo"])}
-{KIT_CSS}
+{KIT_CSS}{IMAGE_FIGURE_CSS}
 <style>
 .mp-list{{list-style:none;margin:0;padding:0;display:grid;gap:12px}}
 .mp-lvl{{display:flex;gap:8px;align-items:flex-start;padding:8px 4px;cursor:pointer}}
@@ -127,7 +128,7 @@ fieldset.mp-crit{{margin:0 0 12px}}
 .mp-ent.done{{border-color:var(--success)}}
 </style>
 <upao-objective>{esc(data["objetivo"])}</upao-objective>
-{render_image_figure(data.get("imagen"), concept=ctx.concept)}
+{render_item_figure(data, concept=ctx.concept)}
 {progress(n + 1, "Entregables y autoevaluación")}
 <article class="ova-card ova-stack" aria-labelledby="mp-ds-h"><h2 id="mp-ds-h">Caso y datos de partida</h2>{paragraphs(data["dataset_sugerido"])}</article>
 <div class="k-row"><upao-timer id="tmr" seconds="600" label="Tiempo sugerido (10 min)"></upao-timer>
@@ -138,7 +139,7 @@ fieldset.mp-crit{{margin:0 0 12px}}
 {rub_html}
 <div class="k-fb" id="mp-score" role="status" aria-live="polite">Evalúa los {len(rub)} criterios para ver tu resultado.</div></section>
 {summary(data["cierre"], "Transferencia")}
-{render_credits_section(data.get("imagen"))}
+{render_credits_section(data)}
 {script(PROGRESS_JS + UTIL_JS + '''
 const $ = id => document.getElementById(id);
 $('mp-start').addEventListener('click', () => { const t = $('tmr'); if (t && t.start) t.start(); $('mp-start').disabled = true; });

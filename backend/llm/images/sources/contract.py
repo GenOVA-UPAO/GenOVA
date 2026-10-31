@@ -17,7 +17,7 @@ fuente si la elegida no da resultado. Toda imagen de terceros lleva ``Credit``.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 ImageKind = Literal["personaje", "logo", "diagrama", "foto", "escena"]
 DiagramKind = Literal["er", "arbol", "flujo", "capas", "secuencia", "comparacion"]
@@ -137,6 +137,61 @@ class Credit:
     license_url: str
     source_url: str
     provider: str  # "wikimedia" | "openverse" | "pexels" | "unsplash" | "simple-icons"…
+
+
+# Textos de relleno: nunca son un autor, una licencia ni una URL de origen reales. Única
+# lista para la búsqueda (descarta candidatas) y el render del OVA (no muestra la foto).
+GENERIC_CREDIT_VALUES: frozenset[str] = frozenset({
+    "autor", "author", "licencia libre", "free license", "licencia", "license", "web", "cache",
+    "fuente libre", "licencia libre verificada", "comunidad libre", "desconocido", "desconocida",
+    "unknown", "anonimo", "anónimo", "anonymous", "colaborador de wikimedia", "autor openverse",
+    "internet", "google", "cc", "creative commons", "n/a", "none", "null", "undefined", "#",
+    "imagen", "image",
+})
+# Plataformas de donde sale la imagen: son un proveedor legítimo, pero nunca su autor.
+CREDIT_PROVIDER_NAMES: frozenset[str] = frozenset({
+    "wikimedia", "wikimedia commons", "wikipedia", "openverse", "flickr", "pexels", "unsplash",
+})
+
+
+def is_generic_credit_value(val: Any) -> bool:
+    """Verifica si un campo de crédito es nulo, vacío o un texto de relleno inventado."""
+    if not val or not isinstance(val, str):
+        return True
+    clean = val.strip().lower()
+    return not clean or clean in GENERIC_CREDIT_VALUES
+
+
+def is_generic_attribution(val: Any) -> bool:
+    """Como ``is_generic_credit_value`` y además rechaza el nombre de la plataforma:
+    «Wikimedia» u «Openverse» no son ni el autor ni la licencia de la obra."""
+    return is_generic_credit_value(val) or val.strip().lower() in CREDIT_PROVIDER_NAMES
+
+
+def credit_field(credit: Any, *names: str) -> str:
+    """Primer campo no vacío del crédito (``Credit`` o dict), sin espacios."""
+    for name in names:
+        val = credit.get(name) if isinstance(credit, dict) else getattr(credit, name, None)
+        if val:
+            return str(val).strip()
+    return ""
+
+
+def is_http_url(url: str) -> bool:
+    return url.startswith(("http://", "https://"))
+
+
+def is_valid_third_party_credit(credit: Any) -> bool:
+    """Valida si un crédito de terceros tiene autor, licencia y URL de origen legítimos (no genéricos)."""
+    if not credit:
+        return False
+    src_url = credit_field(credit, "source_url", "url")
+    return (
+        not is_generic_attribution(credit_field(credit, "author"))
+        and not is_generic_attribution(credit_field(credit, "license"))
+        and not is_generic_credit_value(src_url)
+        and is_http_url(src_url)
+    )
 
 
 @dataclass(frozen=True, slots=True)

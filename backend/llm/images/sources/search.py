@@ -26,7 +26,14 @@ from urllib3.util.retry import Retry
 from llm.images import image_cache
 from llm.images.clip_rerank import ClipReranker
 from llm.images.image_compress import compress_data_uri
-from llm.images.sources.contract import Credit, ImageRequest, ImageResult
+from llm.images.sources.contract import (
+    Credit,
+    ImageRequest,
+    ImageResult,
+    is_generic_attribution,
+    is_http_url,
+    is_valid_third_party_credit,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -232,11 +239,11 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
         height = int(imageinfo.get("height") or 0)
 
         lic = extmetadata.get("LicenseShortName", {}).get("value") or extmetadata.get("License", {}).get("value") or ""
-        lic_url = extmetadata.get("LicenseUrl", {}).get("value") or "https://creativecommons.org/"
+        lic_url = extmetadata.get("LicenseUrl", {}).get("value") or ""
         author = clean_html_tags(
             extmetadata.get("Artist", {}).get("value")
             or extmetadata.get("Credit", {}).get("value")
-            or "Colaborador de Wikimedia"
+            or ""
         )
         desc = clean_html_tags(extmetadata.get("ImageDescription", {}).get("value") or title)
         source_url = imageinfo.get("descriptionurl") or f"https://commons.wikimedia.org/wiki/{urllib.parse.quote(page.get('title', ''))}"
@@ -286,7 +293,7 @@ def search_openverse(query: str, session: requests.Session | None = None) -> lis
         lic = item.get("license", "")
         lic_ver = item.get("license_version", "")
         lic_name = f"CC {lic.upper()} {lic_ver}".strip() if lic not in ("cc0", "pdm") else lic.upper()
-        lic_url = item.get("license_url") or "https://creativecommons.org/"
+        lic_url = item.get("license_url") or ""
 
         candidates.append({
             "title": item.get("title") or "Imagen Openverse",
@@ -297,7 +304,7 @@ def search_openverse(query: str, session: requests.Session | None = None) -> lis
             "mime": "image/jpeg",
             "license": lic_name,
             "license_url": lic_url,
-            "author": item.get("creator") or "Autor Openverse",
+            "author": (item.get("creator") or "").strip(),
             "source_url": item.get("foreign_landing_url") or item.get("url") or "",
             "provider": "openverse",
         })
@@ -401,8 +408,15 @@ def filter_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if any(url_clean.endswith(ext) or title_clean.endswith(ext) for ext in forbidden_exts):
             continue
 
-        # 1. Licencia permitida
-        if not is_allowed_license(c.get("license", "")):
+        # 1. Licencia permitida y no genérica
+        lic = (c.get("license") or "").strip()
+        if not is_allowed_license(lic) or is_generic_attribution(lic):
+            continue
+        author = c.get("author")
+        if author is not None and is_generic_attribution(str(author)):
+            continue
+        src_url = c.get("source_url") or c.get("url")
+        if src_url is not None and not is_http_url(str(src_url)):
             continue
 
         # 2. Idioma: descartar si hay caracteres o menciones explícitas de idioma ajeno
@@ -638,12 +652,8 @@ class SearchSource:
                     src_url = (c_meta.get("source_url") or "").strip()
                     lic_url = (c_meta.get("license_url") or "").strip()
 
-                    is_generic = (
-                        not author
-                        or author.lower() in ("fuente libre", "comunidad libre", "desconocido", "unknown")
-                        or not lic
-                        or lic.lower() in ("licencia libre verificada", "licencia libre", "unknown")
-                        or prov.lower() == "cache"
+                    is_generic = prov.lower() == "cache" or not is_valid_third_party_credit(
+                        {"author": author, "license": lic, "source_url": src_url}
                     )
                     if not is_generic:
                         logger.info("search image cache hit with real credit", query=query, author=author, license=lic)
@@ -653,9 +663,9 @@ class SearchSource:
                             title=c_meta.get("title") or f"Imagen para {query}",
                             author=author,
                             license=lic,
-                            license_url=lic_url or "https://creativecommons.org/",
+                            license_url=lic_url or src_url,
                             source_url=src_url,
-                            provider=prov or "busqueda",
+                            provider=prov,
                         )
                         return ImageResult(
                             data_uri=record["data_uri"],
@@ -743,14 +753,19 @@ class SearchSource:
             return None
 
         # 6. Atribución real obligatoria (CC BY / CC BY-SA)
-        author = best_candidate.get("author") or "Colaborador de Wikimedia"
-        license_name = best_candidate.get("license") or "CC BY-SA 4.0"
+        author = (best_candidate.get("author") or "").strip()
+        license_name = (best_candidate.get("license") or "").strip()
+        source_url = (best_candidate.get("source_url") or best_candidate.get("url") or "").strip()
+        if not is_valid_third_party_credit({"author": author, "license": license_name, "source_url": source_url}):
+            logger.warning("best candidate lacks complete attribution, discarding", title=best_candidate.get("title"))
+            return None
+
         credit = Credit(
             title=best_candidate.get("title") or query,
             author=author,
             license=license_name,
-            license_url=best_candidate.get("license_url") or "https://creativecommons.org/",
-            source_url=best_candidate.get("source_url") or best_candidate.get("url") or "https://commons.wikimedia.org/",
+            license_url=best_candidate.get("license_url") or source_url,
+            source_url=source_url,
             provider=best_candidate.get("provider") or "wikimedia",
         )
 
