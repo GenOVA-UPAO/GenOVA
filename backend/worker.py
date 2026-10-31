@@ -136,8 +136,29 @@ def _recover_regen() -> None:
     recover_orphan_regen()
 
 
+def _refresh_catalog() -> None:
+    """Catálogo de modelos en memoria, como en el lifespan del web.
+
+    Sin él, en este proceso ``media_params()`` está vacío: el video se pide con
+    480p/4 s/16:9 genéricos (400 en modelos con mínimo 720p) y la imagen manda
+    ``aspect_ratio`` a modelos que no lo aceptan. Si la red falla, el refresco ya
+    cae a la caché guardada en la BD.
+    """
+    from sqlalchemy.orm import Session
+
+    from core.database import engine
+    from llm.catalog.catalog_refresh import refresh_catalog
+
+    with Session(engine) as session:
+        refresh_catalog(session)
+
+
 async def resume_orphans(ctx) -> None:
     """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado / queued)."""
+    try:
+        await asyncio.to_thread(_refresh_catalog)
+    except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
+        logger.exception("catalog refresh on worker startup failed")
     try:
         await asyncio.to_thread(_start_late_videos)
     except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
