@@ -18,6 +18,8 @@ logger = structlog.get_logger(__name__)
 _DEFAULT_MAX = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
 # Autor del job: de quién son las claves propias o heredadas al generar.
 OWNER_KEY = "owner_id"
+# Eslabón elegido por el usuario: solo se paga con su clave (propia o heredada).
+USER_KEY_ONLY = "user_key_only"
 
 
 def legacy_image_entry(ova_settings: dict | None) -> tuple[dict | None, bool]:
@@ -73,7 +75,6 @@ def video_chain(stored: dict | None = None) -> list[dict]:
 def build_image_settings(
     *,
     ova_settings: dict | None,
-    # Sin uso: se conservan por compatibilidad; las claves se resuelven al usarlas.
     user_api_keys: dict | None,
     db,
     user_id=None,
@@ -84,6 +85,10 @@ def build_image_settings(
     estado del grafo. Solo el autor (``owner_id``); la clave se resuelve al
     generar cada imagen (:func:`with_resolved_keys`), así una clave rotada,
     borrada o un vínculo revocado dejan de usarse también al reanudar.
+
+    Regla de producto (``llm/utils/user_overrides.py``): la elección del propio
+    usuario (``ova_settings.image_*``, sin cadena del admin) solo se respeta si
+    la paga su clave (propia o heredada); nunca la de plataforma.
     """
     stored = llm_config_store.stored_cached()
     flags_raw = (stored or {}).get("generation_enabled")
@@ -92,7 +97,9 @@ def build_image_settings(
     else:
         enabled = llm_config_store.generation_enabled("imagen", stored)
 
-    chain = imagen_chain(stored, ova_settings)
+    chain = imagen_chain(stored, None)
+    if not chain:
+        chain = _user_paid_legacy(ova_settings, user_api_keys, db, user_id)
     max_images = int((ova_settings or {}).get("max_images", _DEFAULT_MAX))
     if not enabled or max_images <= 0 or not chain:
         return {
@@ -112,6 +119,19 @@ def build_image_settings(
         "enabled": True,
         OWNER_KEY: str(user_id) if user_id else None,
     }
+
+
+def _user_paid_legacy(ova_settings, user_api_keys, db, user_id) -> list[dict]:
+    """[entrada legacy] si el usuario tiene clave (propia o heredada) para pagarla, si no []."""
+    legacy, _ = legacy_image_entry(ova_settings)
+    if not legacy:
+        return []
+    from llm.clients.key_resolver import resolve_user_key
+
+    if not resolve_user_key(legacy["provider"], user_api_keys, db, user_id):
+        logger.info("legacy image choice ignored: no user key", provider=legacy["provider"])
+        return []
+    return [{**legacy, USER_KEY_ONLY: True}]
 
 
 def strip_image_keys(settings: dict | None, owner_id=None) -> dict:
@@ -143,7 +163,7 @@ def with_resolved_keys(settings: dict) -> dict:
         return settings
     from core.database import SessionLocal
     from llm.clients.clients import get_user_keys
-    from llm.clients.key_resolver import resolve_key
+    from llm.clients.key_resolver import resolve_key, resolve_user_key
 
     owner = settings.get(OWNER_KEY)
     owner_uuid = _as_uuid(owner)
@@ -151,7 +171,9 @@ def with_resolved_keys(settings: dict) -> dict:
     db = SessionLocal()
     try:
         chain = [
-            {**e, "api_key": resolve_key(e["provider"], keys, db, owner_uuid)}
+            {**e, "api_key": (resolve_user_key if e.get(USER_KEY_ONLY) else resolve_key)(
+                e["provider"], keys, db, owner_uuid
+            )}
             for e in settings["chain"]
             if isinstance(e, dict) and e.get("provider")
         ]

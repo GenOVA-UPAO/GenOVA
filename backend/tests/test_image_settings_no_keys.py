@@ -135,3 +135,36 @@ def test_load_for_run_quita_claves_de_params(monkeypatch):
     assert "sk-old" not in json.dumps(params)
     assert "sk-old" not in json.dumps(job.params)
     assert params["image_settings"]["owner_id"] == str(job.user_id)
+
+
+_LEGACY = {"image_provider": "openrouter", "image_model": "openai/gpt-5-image", "max_images": 10}
+
+
+def test_eleccion_legacy_sin_clave_propia_no_se_paga_con_la_plataforma(monkeypatch):
+    monkeypatch.setattr(store, "stored_cached", lambda: {})
+    monkeypatch.setattr("llm.clients.key_resolver._inherited_key", lambda *a: None)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-plat")
+    out = resolve.build_image_settings(
+        ova_settings=_LEGACY, user_api_keys={}, db=None, user_id=uuid.uuid4()
+    )
+    assert out["enabled"] is False
+    assert out["chain"] == []
+
+
+def test_eleccion_legacy_con_clave_propia_se_respeta_y_no_cae_a_plataforma(monkeypatch):
+    monkeypatch.setattr(store, "stored_cached", lambda: {})
+    monkeypatch.setattr("llm.clients.key_resolver._inherited_key", lambda *a: None)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-plat")
+    owner = uuid.uuid4()
+    out = resolve.build_image_settings(
+        ova_settings=_LEGACY, user_api_keys={"openrouter": "sk-own"}, db=None, user_id=owner
+    )
+    assert out["enabled"] is True
+    assert out["image_model"] == "openai/gpt-5-image"
+    assert out["chain"][0]["user_key_only"] is True
+
+    # Si luego borra su clave, al generar no se usa la de plataforma.
+    monkeypatch.setattr("llm.clients.clients.get_user_keys", lambda uid: {})
+    monkeypatch.setattr("core.database.SessionLocal", lambda: SimpleNamespace(close=lambda: None))
+    resolved = resolve.with_resolved_keys(out)
+    assert resolved["chain"][0]["api_key"] is None
