@@ -11,6 +11,7 @@ from llm.images import image_cache
 from llm.images.image_compress import compress_data_uri
 from llm.images.image_placeholder import IMG_PLACEHOLDER
 from llm.images.image_providers import get_image_data_uri, hf_last_resort
+from llm.images.image_settings_resolve import with_resolved_keys
 from llm.images.media_fake import fake_media_enabled
 from llm.images.style_guide import guide_from_settings
 
@@ -90,6 +91,8 @@ def enrich_with_images(
     max_images = int(settings.get("max_images", default_max))
     if max_images <= 0:
         return {}
+    # Las claves no viajan en los settings guardados: se resuelven ahora, en memoria.
+    settings = with_resolved_keys(settings)
 
     provider = settings.get("provider", "cloudflare")
     api_key = settings.get("api_key") or None

@@ -1,4 +1,4 @@
-"""Resuelve {max_images, provider, api_key} en el momento de crear el job."""
+"""Resuelve {max_images, provider, chain, owner_id} (sin claves) al crear el job."""
 
 from __future__ import annotations
 
