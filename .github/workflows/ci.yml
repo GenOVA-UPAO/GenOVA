@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
 
       - run: uvx ruff check backend/
@@ -102,7 +102,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -173,7 +173,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -224,7 +224,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -318,7 +318,7 @@ jobs:
       - name: pnpm audit (prod)
         run: pnpm audit --prod --audit-level high
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
 
       - name: pip-audit (backend)
@@ -377,7 +377,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with: { enable-cache: true }
 
       - name: Install backend deps
