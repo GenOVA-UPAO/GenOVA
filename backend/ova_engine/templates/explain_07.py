@@ -114,7 +114,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     n = len(hs)
     marks = "".join(
         f'<li><button type="button" class="tl-mark" data-i="{k}" aria-label="Hito {k + 1}: {esc(h["anio"])}, {esc(h["titulo"])}">'
-        f'<span class="tl-dot" aria-hidden="true"></span><span class="tl-year">{esc(h["anio"])}</span>'
+        f'<span class="tl-dot" aria-hidden="true"></span><span class="tl-year">{esc(h["anio"])}</span> '
         f'<span class="tl-t">{esc(h["titulo"])}</span></button></li>'
         for k, h in enumerate(hs)
     )
