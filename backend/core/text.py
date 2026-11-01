@@ -28,6 +28,21 @@ def smart_truncate(text: str, limit: int = 80) -> str:
     return f"{cut}…"
 
 
+# Tope de la descripción visible de un OVA: el mismo que valida la edición de
+# metadatos (PATCH /api/ovas/{id}/metadata). El prompt admite hasta 4000.
+OVA_DESCRIPTION_MAX = 2000
+
+
+def ova_description(text: str) -> str:
+    """Descripción de un OVA a partir del prompt, recortada a `OVA_DESCRIPTION_MAX`.
+
+    El prompt se guardaba entero como descripción: con más de 2000 caracteres
+    el docente ya no podía guardar ningún cambio de metadatos (ni solo el
+    título) sin recortarla antes a mano.
+    """
+    return text if len(text) <= OVA_DESCRIPTION_MAX else smart_truncate(text, OVA_DESCRIPTION_MAX)
+
+
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 # Por debajo de esto la «primera frase» suele ser un fragmento suelto
 # («Ley de Ohm.») al que le falta contexto: se usa la línea entera.
