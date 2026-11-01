@@ -251,6 +251,7 @@
       "emailInvalid": "Ingresa un correo electrónico válido.",
       "universityIdDigits": "El código solo debe contener números.",
       "universityIdMin": "El código debe ser mayor o igual a 1.",
+      "universityIdMax": "El código tiene como máximo 9 dígitos.",
       "phoneFormat": "El teléfono solo debe contener dígitos y el signo +."
     }
   }

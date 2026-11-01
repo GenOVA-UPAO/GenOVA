@@ -251,6 +251,7 @@
       "emailInvalid": "Enter a valid email address.",
       "universityIdDigits": "The ID must contain numbers only.",
       "universityIdMin": "The ID must be 1 or greater.",
+      "universityIdMax": "The ID can have at most 9 digits.",
       "phoneFormat": "The phone number can only contain digits and the + sign."
     }
   }
