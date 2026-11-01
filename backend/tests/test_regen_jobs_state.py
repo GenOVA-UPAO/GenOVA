@@ -52,6 +52,7 @@ CREATE TABLE ova_phases (
   regenerated BOOLEAN NOT NULL DEFAULT 0,
   resource_type_id INTEGER,
   title VARCHAR(120),
+  lineage_id TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE ova_jobs (id TEXT PRIMARY KEY, ova_id TEXT, status VARCHAR(20) NOT NULL);

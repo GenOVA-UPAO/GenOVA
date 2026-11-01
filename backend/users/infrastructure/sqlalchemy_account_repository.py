@@ -11,12 +11,12 @@ import uuid
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from auth.domain.email import normalize_email
 from core.database import commit_or_500
-from models import PasswordResetToken, Role, User, UserRole
+from models import EmailVerificationToken, PasswordResetToken, Role, User, UserLink, UserRole
 from users.domain.account import UserAccount
 from users.domain.errors import SoleAdminRemoval
 
@@ -87,5 +87,23 @@ class SqlAlchemyUserAccountRepository:
         user.full_name = "[eliminado]"
         user.phone_number = None
         user.university_id = None
+        # Secretos y configuración: una cuenta eliminada no debe conservar claves
+        # de proveedores (las heredaban sus vinculados), TOTP ni el correo pendiente.
+        user.user_api_keys = {}
+        user.llm_settings = {}
+        user.enabled_models = []
+        user.totp_secret = None
+        user.totp_enabled = False
+        user.totp_backup_codes = []
+        user.pending_email = user.pending_email_token_hash = user.pending_email_expires_at = None
+        self._db.execute(
+            delete(UserLink).where(
+                or_(UserLink.owner_user_id == user.id, UserLink.linked_user_id == user.id)
+            )
+        )
+        self._db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user.id))
+        self._db.execute(
+            delete(EmailVerificationToken).where(EmailVerificationToken.user_id == user.id)
+        )
 
         commit_or_500(self._db, "delete_account")

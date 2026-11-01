@@ -19,6 +19,7 @@ from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
 from users.interface.http.error_map import to_http_exception
 from users.interface.http.key_validation import validate_key_updates
+from users.interface.http.models_access import require_models_access
 
 router = APIRouter(tags=["Ajustes de usuario"])
 
@@ -40,7 +41,7 @@ def get_api_keys(
 def put_api_keys(
     request: Request,
     payload: dict,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_models_access),
     users: UsersUseCases = Depends(build_users),
 ):
     """Upsert or delete provider API keys.

@@ -121,6 +121,17 @@ def test_el_recurso_recuperado_entra_en_una_version_nueva_sin_perder_ediciones(d
         ("evaluate", "<p>quiz</p>"),
     ]
     assert fases[1].title  # etiqueta legible del tipo de recurso
+    # Las fases copiadas heredan el linaje de su origen (historial del recurso);
+    # la recuperada es un recurso nuevo.
+    origen = {
+        p.phase_type: p.id
+        for v in versiones
+        if not v.is_active
+        for p in v.phases
+    }
+    assert fases[0].lineage_id == origen["engage"]
+    assert fases[2].lineage_id == origen["evaluate"]
+    assert fases[1].lineage_id is None
     assert [p["type"] for p in db.scorms[0]] == ["engage", "explore", "evaluate"]
 
 

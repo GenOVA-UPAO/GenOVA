@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from auth.domain.user import EmailVerificationTokenRecord, EmailVerificationUser
 from core.database import commit_or_500
+from core.security import token_digest
 from models import EmailVerificationToken, User
 
 
@@ -29,20 +30,22 @@ class SqlAlchemyEmailVerificationTokenRepository:
 
     def find_by_token(self, token: str) -> EmailVerificationTokenRecord | None:
         row = self._db.execute(
-            select(EmailVerificationToken).where(EmailVerificationToken.token == token)
+            select(EmailVerificationToken).where(
+                EmailVerificationToken.token == token_digest(token)
+            )
         ).scalar_one_or_none()
         if row is None:
             return None
         return EmailVerificationTokenRecord(
             user_id=row.user_id,
-            token=str(row.token),
+            token=token,
             expires_at=row.expires_at,
         )
 
     def delete(self, token: str) -> None:
         self._db.execute(
             EmailVerificationToken.__table__.delete().where(
-                EmailVerificationToken.token == token
+                EmailVerificationToken.token == token_digest(token)
             )
         )
         commit_or_500(self._db, "delete_email_verification_token")
@@ -78,6 +81,8 @@ class SqlAlchemyEmailVerificationTokenRepository:
             )
         )
         self._db.add(
-            EmailVerificationToken(user_id=user_id, token=token, expires_at=expires_at)
+            EmailVerificationToken(
+                user_id=user_id, token=token_digest(token), expires_at=expires_at
+            )
         )
         commit_or_500(self._db, "resend_email_verification")

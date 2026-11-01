@@ -591,7 +591,7 @@ Hay redirecciones de URLs antiguas (`/crear-ova` → `/crear`, `/modelos` → `/
 - **CORS** restringido a métodos `GET/POST/PATCH/PUT/DELETE/OPTIONS` y headers `Authorization, Content-Type, Accept, X-Requested-With`.
 - **Lockout**: 5 intentos fallidos → 15 min bloqueo.
 - **Fallback chain LLM**: errores recuperables (rate-limit, 402, 5xx) caen a un modelo Groq de respaldo en lugar de exponer el fallo al cliente.
-- **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token.
+- **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token. En BD solo se guarda su SHA-256 (`core.security.token_digest`), igual que el de verificación de correo; el enlace propio dura 1 h y el que envía un admin, 24 h.
 - **Sin secretos hardcodeados.** `auth/infrastructure/email_adapters.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
 - **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 

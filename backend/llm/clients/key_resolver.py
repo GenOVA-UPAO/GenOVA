@@ -44,7 +44,8 @@ def _inherited_key(provider: str, user_id, db) -> str | None:
         if not link:
             return None
         owner = db.get(User, link.owner_user_id)
-        if not owner:
+        # Un dueño desactivado o eliminado no sigue pagando la generación de sus vinculados.
+        if not owner or not owner.is_active:
             return None
         key = (owner.user_api_keys or {}).get(provider, "").strip()
         return key or None

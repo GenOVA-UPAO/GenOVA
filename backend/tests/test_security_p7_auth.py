@@ -23,7 +23,7 @@ from auth.infrastructure.jwt import build_token  # noqa: E402
 from auth.infrastructure.reset_adapters import SqlAlchemyPasswordResetTokenRepository  # noqa: E402
 from auth.infrastructure.session_adapters import JwtSessionTokenDecoder  # noqa: E402
 from auth.interface.http.dependencies import get_current_user  # noqa: E402
-from core.security import JWT_ALGORITHM, JWT_SECRET  # noqa: E402
+from core.security import JWT_ALGORITHM, JWT_SECRET, token_digest  # noqa: E402
 from models import PasswordResetToken, RevokedToken, Role, User, UserLink, UserRole  # noqa: E402
 from tests._sqlite_db import make_session  # noqa: E402
 from users.infrastructure.sqlalchemy_account_repository import (  # noqa: E402
@@ -131,7 +131,7 @@ def test_revocation_decoder_accepts_new_sessions_and_rejects_foreign_issuer():
 
 def test_reset_locks_user_before_token_and_change_locks_before_password_read(db, monkeypatch):
     row = user(db)
-    db.add(PasswordResetToken(user_id=row.id, token="reset",
+    db.add(PasswordResetToken(user_id=row.id, token=token_digest("reset"),
                              expires_at=datetime.now(UTC) + timedelta(hours=1)))
     db.commit()
     statements = []
@@ -155,7 +155,7 @@ def test_reset_locks_user_before_token_and_change_locks_before_password_read(db,
 
 def test_reset_rechecks_token_after_interleaved_password_change(db, monkeypatch):
     row = user(db)
-    db.add(PasswordResetToken(user_id=row.id, token="reset",
+    db.add(PasswordResetToken(user_id=row.id, token=token_digest("reset"),
                              expires_at=datetime.now(UTC) + timedelta(hours=1)))
     db.commit()
     original = db.execute

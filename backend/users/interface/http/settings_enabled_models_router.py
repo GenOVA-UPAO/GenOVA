@@ -22,6 +22,7 @@ from users.container import UsersUseCases, build_users
 from users.domain.enabled_models import validate_enabled_models
 from users.domain.errors import UserError
 from users.interface.http.error_map import to_http_exception
+from users.interface.http.models_access import require_models_access
 
 router = APIRouter(tags=["Ajustes de usuario"])
 
@@ -51,7 +52,7 @@ def get_enabled_models(current_user: User = Depends(get_current_user)):
 def put_enabled_models(
     request: Request,
     payload: EnabledModelsUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_models_access),
     users: UsersUseCases = Depends(build_users),
 ):
     try:
