@@ -26,7 +26,9 @@
     "invalid_name": "The name is not valid.",
     "invalid_fase_ids": "One of the selected phases is not valid.",
     "unknown_format": "That export format is not supported.",
-    "upload_error": "The file couldn't be uploaded."
+    "upload_error": "The file couldn't be uploaded.",
+    "network": "Could not reach the server. Check your connection and try again.",
+    "timeout": "The server took too long to respond. Please try again."
   },
   "status": {
     "413": "The file is too large.",

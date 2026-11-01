@@ -1,6 +1,7 @@
+import i18n from "i18next";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiFetch, UPLOAD_TIMEOUT_MS } from "./http";
+import { apiFetch, HttpError, UPLOAD_TIMEOUT_MS } from "./http";
 import { markServerResponded, resetServerWakeup } from "./server-wakeup";
 
 /** fetch que nunca responde y registra la señal de aborto. */
@@ -49,5 +50,39 @@ describe("apiFetch: plazos", () => {
 
     await vi.advanceTimersByTimeAsync(15_001);
     expect(signals[0]?.aborted).toBe(true);
+  });
+});
+
+describe("apiFetch: fallos sin respuesta", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it("sin red lanza HttpError traducido en vez de «Failed to fetch»", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+
+    const err = await apiFetch("/api/ovas").catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(HttpError);
+    expect(err).toMatchObject({
+      status: 0,
+      code: "network",
+      message: i18n.t("errors:codes.network"),
+    });
+  });
+
+  it("al agotar el plazo lanza HttpError con code timeout", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", hangingFetch([]));
+
+    const request = apiFetch("/api/ovas", {}, { timeoutMs: 1000 }).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(1001);
+
+    expect(await request).toMatchObject({
+      status: 0,
+      code: "timeout",
+      message: i18n.t("errors:codes.timeout"),
+    });
   });
 });

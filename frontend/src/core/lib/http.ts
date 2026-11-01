@@ -81,8 +81,26 @@ function isAuthEndpoint(path: string): boolean {
   return AUTH_PATHS.has(path) || path.startsWith("/api/auth/") || path.startsWith("/auth/");
 }
 
+/**
+ * Fallo sin respuesta HTTP (plazo agotado o red caída) como HttpError con texto
+ * traducido: el navegador lo da en inglés («Failed to fetch», «signal is
+ * aborted without reason») y las pantallas muestran `error.message` tal cual.
+ */
+function transportError(error: unknown): unknown {
+  let code = "";
+  if (error instanceof DOMException && error.name === "AbortError") code = "timeout";
+  else if (error instanceof TypeError) code = "network";
+  if (code === "") return error;
+  return new HttpError(apiErrorText(code, 0) ?? (error as Error).message, { status: 0, code });
+}
+
 function isFormDataBody(body: RequestInit["body"]): boolean {
   return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
+/** Plazo explícito: el del llamador o, para subidas multipart, UPLOAD_TIMEOUT_MS. */
+function explicitTimeout(init: RequestInit, timeoutMs: number | undefined): number | undefined {
+  return timeoutMs ?? (isFormDataBody(init.body) ? UPLOAD_TIMEOUT_MS : undefined);
 }
 
 function buildHeaders(init: RequestInit): Record<string, string> {
@@ -107,11 +125,9 @@ export async function apiFetch(
   // Auth y la primera petición tras inactividad pueden pillar el servidor
   // dormido (Render free): más margen y aviso al usuario si tarda.
   const coldCandidate = isAuthEndpoint(path) || !isServerWarm();
-  const explicitTimeoutMs =
-    opts.timeoutMs ?? (isFormDataBody(init.body) ? UPLOAD_TIMEOUT_MS : undefined);
   const { timeoutMs, done: endTracking } = planRequest(
     coldCandidate,
-    explicitTimeoutMs,
+    explicitTimeout(init, opts.timeoutMs),
     DEFAULT_TIMEOUT_MS,
   );
   const ctrl = new AbortController();
@@ -135,6 +151,8 @@ export async function apiFetch(
     }
 
     return res;
+  } catch (error) {
+    throw transportError(error);
   } finally {
     clearTimeout(t);
     endTracking?.();
