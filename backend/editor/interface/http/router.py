@@ -14,6 +14,7 @@ from editor.application.dto import (
     InterpretAndApplyInput,
 )
 from editor.container import EditorUseCases, build_editor
+from editor.domain.errors import EditConflictError
 from editor.domain.model import ResourceBlock
 from editor.interface.http.schemas import (
     ConfirmRequest,
@@ -121,16 +122,19 @@ def confirm_and_apply(
     domain_blocks = _to_domain_blocks(payload.blocks)
     is_admin = bool(getattr(current_user, "admin_flag_cached", False) or getattr(current_user, "is_admin", False))
 
-    return editor.confirm_and_apply.execute(
-        ConfirmAndApplyInput(
-            ova_id=ova_id,
-            phase_id=phase_id,
-            instruction=payload.instruction,
-            blocks=domain_blocks,
-            actor_id=str(current_user.id),
-            is_admin=is_admin,
+    try:
+        return editor.confirm_and_apply.execute(
+            ConfirmAndApplyInput(
+                ova_id=ova_id,
+                phase_id=phase_id,
+                instruction=payload.instruction,
+                blocks=domain_blocks,
+                actor_id=str(current_user.id),
+                is_admin=is_admin,
+            )
         )
-    )
+    except EditConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=error.motivo) from error
 
 
 @router.post(

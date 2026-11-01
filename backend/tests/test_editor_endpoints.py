@@ -231,6 +231,30 @@ def test_admin_cannot_confirm_on_another_users_ova_but_can_interpret():
     assert interpret.status_code == 200
 
 
+def test_confirm_and_apply_409_on_edit_conflict():
+    """Fase de una versión anterior u OVA generando: 409, no un 200 que pierde el cambio."""
+    from editor.domain.errors import EditConflictError
+
+    owner_id = str(uuid.uuid4())
+    ova_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    editor = _build_test_editor(owner_id=owner_id, phases=[phase_id])
+
+    def conflict(**_kwargs):
+        raise EditConflictError("ova_generating", "No se puede editar mientras genera.")
+
+    editor.confirm_and_apply.phase_repo.update_phase_and_create_version = conflict
+    app.dependency_overrides[get_current_user] = lambda: FakeUser(owner_id)
+    app.dependency_overrides[build_editor] = lambda: editor
+
+    res = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/confirm",
+        json={"instruction": "x", "blocks": [{"id": "b1", "tipo": "header", "props": {}}]},
+    )
+    assert res.status_code == 409
+    assert res.json()["detail"] == "No se puede editar mientras genera."
+
+
 def test_record_feedback_200_success():
     owner_id = str(uuid.uuid4())
     ova_id = str(uuid.uuid4())
