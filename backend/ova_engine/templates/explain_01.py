@@ -307,14 +307,14 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<li class="ova-marker-item" id="marker-item-{idx}" data-marker="{idx}">'
             f'<div class="ova-marker-head">'
             f'<span class="ova-time-tag">{icon("clock")} {tiempo}</span>'
-            f'<strong class="ova-marker-concept">{concepto}</strong>'
+            f'<strong class="ova-marker-concept" id="marker-concept-{idx}">{concepto}</strong>'
             f'<span class="ova-marker-chip" id="chip-marker-{idx}" aria-hidden="true">Pendiente</span>'
             f"</div>"
             f'<p class="ova-marker-p"><strong>Visual:</strong> {desc_visual}</p>'
             f'<p class="ova-marker-p ova-muted"><strong>Locución:</strong> «{narracion}»</p>'
             f'<div class="ova-marker-foot">'
             f'<button type="button" class="ova-btn ova-btn--ghost btn-marker-check" data-marker="{idx}" '
-            f'aria-label="Revisar marcador {idx}: {concepto}">'
+            f'aria-labelledby="btn-lbl-marker-{idx} marker-concept-{idx}">'
             f'<span aria-hidden="true">{icon("eye")}</span> <span id="btn-lbl-marker-{idx}">Marcar como revisado</span>'
             f"</button>"
             f"</div>"
@@ -334,10 +334,10 @@ def render(data: dict, ctx: RenderContext) -> str:
   <div class="ova-markers-header">
     <h2>{icon('film')} Secuencia del Storyboard ({total_markers} marcadores temporales)</h2>
     <div class="ova-markers-controls">
-      <button type="button" class="ova-btn ova-btn--ghost" id="btn-play-markers" aria-label="Reproducir recorrido de marcadores">
+      <button type="button" class="ova-btn ova-btn--ghost" id="btn-play-markers">
         <span aria-hidden="true">{icon('play')}</span> <span id="play-btn-label">Reproducir recorrido</span>
       </button>
-      <button type="button" class="ova-btn ova-btn--ghost" id="btn-mark-all" aria-label="Marcar todos los marcadores como revisados">
+      <button type="button" class="ova-btn ova-btn--ghost" id="btn-mark-all">
         <span aria-hidden="true">✓</span> <span>Marcar todos revisados</span>
       </button>
     </div>
@@ -366,7 +366,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   </p>
   <pre class="ova-prompt-box"><code id="prompt-video-text">{esc(data["prompt_video"])}</code></pre>
   <div class="ova-copy-bar">
-    <button type="button" class="ova-btn" id="btn-copy-prompt" aria-label="Copiar prompt de video al portapapeles">
+    <button type="button" class="ova-btn" id="btn-copy-prompt">
       <span aria-hidden="true">{icon('clipboard')}</span> <span id="copy-btn-label">Copiar prompt de video</span>
     </button>
     <span id="copy-status" aria-live="polite" class="ova-muted" style="font-size:0.875rem"></span>
