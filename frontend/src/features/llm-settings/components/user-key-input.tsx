@@ -41,7 +41,12 @@ export function UserKeyInput({
           ref={inputRef}
           id={id}
           type="password"
-          autoComplete="off"
+          // Chromium ignora «off» en campos de contraseña: ofrecía guardar la clave
+          // del proveedor como contraseña de GenOVA (o rellenar aquí la de acceso).
+          name="provider-api-key"
+          autoComplete="new-password"
+          data-1p-ignore
+          data-lpignore="true"
           value={value}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
