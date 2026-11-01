@@ -67,22 +67,24 @@ def _as_utc(dt):
 
 
 def _find_orphans_to_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
-    """Find stuck jobs: stale ``running`` (dead worker) or fresh ``queued`` (no worker).
+    """Jobs atascados: ``running`` sin latido reciente (worker muerto).
 
-    Only reclaim queued jobs younger than QUEUED_STALE_AFTER_SECONDS — older
-    zombies stay for the lazy sweep (interrupted) instead of flooding Redis.
+    Los ``queued`` no se re-encolan: un job solo queda ``queued`` cuando su
+    entrada de arq ya está en Redis, que sobrevive al reinicio del worker.
+    Re-encolarlo creaba un segundo run del mismo job (doble coste LLM y
+    recursos duplicados). Si Redis perdió la entrada, el sweep lazy lo pasa a
+    ``interrupted`` y el docente lo reanuda.
     """
     from datetime import UTC, datetime, timedelta
 
     from sqlalchemy import select, update
 
     from core.database import SessionLocal
-    from generation.jobs.jobs_service import QUEUED_STALE_AFTER_SECONDS, STALE_AFTER_SECONDS
+    from generation.jobs.jobs_service import STALE_AFTER_SECONDS
     from models import OvaJob
 
     now = datetime.now(UTC)
     running_stale = now - timedelta(seconds=STALE_AFTER_SECONDS)
-    queued_fresh_after = now - timedelta(seconds=QUEUED_STALE_AFTER_SECONDS)
     out: list[tuple[uuid.UUID, list[uuid.UUID]]] = []
     db = SessionLocal()
     try:
@@ -107,14 +109,6 @@ def _find_orphans_to_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
                 continue
             out.append((job.id, _pending_resource_ids(db, job.id)))
 
-        # REDIS_URL sin worker → jobs quedan "En cola…". Solo los recientes.
-        for job in db.execute(select(OvaJob).where(OvaJob.status == "queued")).scalars().all():
-            updated = _as_utc(job.updated_at) or _as_utc(job.created_at)
-            if updated is None or updated < queued_fresh_after:
-                continue
-            pending = _pending_resource_ids(db, job.id)
-            if pending:
-                out.append((job.id, pending))
         return out
     finally:
         db.close()
@@ -137,7 +131,7 @@ def _recover_regen() -> None:
 
 
 async def resume_orphans(ctx) -> None:
-    """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado / queued)."""
+    """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado)."""
     try:
         await asyncio.to_thread(_start_late_videos)
     except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
