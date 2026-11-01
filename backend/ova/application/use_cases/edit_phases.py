@@ -85,7 +85,9 @@ class EditPhases:
         return version
 
     def _resolve(self, ova_id: str, actor_id: str) -> tuple[EditorOva, EditorVersion]:
-        ova = self.repo.get_ova(ova_id)
+        # Bloquea el OVA antes de leer la versión activa: guardados concurrentes esperan
+        # y crean su versión sobre la del anterior en vez de chocar.
+        ova = self.repo.get_ova(ova_id, for_update=True)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
         # Todo lo de este caso de uso modifica el OVA: solo su autor.
