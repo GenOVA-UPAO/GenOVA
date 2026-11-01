@@ -196,3 +196,9 @@ def test_pre_push_import_linter_falla_con_un_contrato_roto(tmp_path):
     )
     assert result.returncode != 0, result.stdout + result.stderr
     assert "BROKEN" in result.stdout
+
+
+def test_render_despliega_main_solo_si_pasan_los_checks():
+    for service in yaml.safe_load(_read("render.yaml"))["services"]:
+        if service.get("branch") == "main":
+            assert service.get("autoDeployTrigger") == "checksPass", service["name"]

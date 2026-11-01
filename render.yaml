@@ -38,7 +38,9 @@ services:
     region: oregon
     plan: free
     healthCheckPath: /health
-    autoDeployTrigger: commit
+    # Despliega solo cuando pasan los checks de GitHub del commit en main: el
+    # /health es estático y no detecta un despliegue con flujos rotos.
+    autoDeployTrigger: checksPass
 
     envVars:
       # ─── Núcleo (obligatorio) ───────────────────────────────────────────────
