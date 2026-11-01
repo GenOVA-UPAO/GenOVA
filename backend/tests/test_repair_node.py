@@ -93,3 +93,46 @@ def test_repair_skips_llm_when_budget_exhausted(monkeypatch):
     assert out["results"][0]["html"] == "<html>mejor intento</html>"
     assert out["results"][0]["defects"] == ["contenido escaso"]
     assert out["errors"][0]["exhausted"] is True
+
+
+def test_repair_uses_budget_left_not_worker_deadline(monkeypatch):
+    """El tiempo que el recurso espera a los demás workers no gasta su presupuesto.
+
+    Con OVA_GEN_CONCURRENCY=1 un recurso que falla al principio llega a repair
+    minutos después: el deadline absoluto del worker ya venció y antes se saltaba
+    el reintento ('Revisar y reintentar') sin llamar al LLM.
+    """
+    import time
+
+    import prometheus.engine.workpool as wp
+    import prometheus.plans.generate as gen
+    from prometheus.engine.budget import budget_seconds
+
+    clock = {"now": 1000.0}
+    monkeypatch.setattr(time, "monotonic", lambda: clock["now"])
+
+    def failing_generate(*a, **k):
+        raise RuntimeError("todos los proveedores 429")
+
+    monkeypatch.setattr(gen, "generate_resource", failing_generate)
+    payload = {
+        "work_item": {"phase": "engage", "resource_type": 1},
+        "prompt": "tema",
+        "resource_configs": {},
+    }
+    failure = wp.resource_worker(payload)["errors"][0]
+
+    clock["now"] = 1000.0 + 600.0  # repair corre tras el resto de recursos
+    seen = {}
+
+    def fake_generate(phase, rt, concept, *, deadline=None, **kw):
+        seen["deadline"] = deadline
+        return gen.ResourceResult("<html>reparado</html>", [], None)
+
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
+    monkeypatch.setattr(repair_mod, "_recursos_meta_for", lambda phase: {1: {"tipo": "Cómic"}})
+    out = repair_node(_state([failure]))
+
+    assert out["results"][0]["html"] == "<html>reparado</html>"
+    assert out["errors"] == []
+    assert seen["deadline"] == clock["now"] + budget_seconds()
