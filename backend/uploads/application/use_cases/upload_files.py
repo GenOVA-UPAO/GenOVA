@@ -21,6 +21,7 @@ from uploads.application.dto import (
 from uploads.application.ports import RagIngestionPort, TempUploadRepository, UploadLimits
 from uploads.application.views import to_view
 from uploads.domain.errors import (
+    ArchiveTooLarge,
     ContentMismatch,
     FilesRequired,
     FileTooLarge,
@@ -28,7 +29,12 @@ from uploads.domain.errors import (
     TooManyFiles,
     UploadError,
 )
-from uploads.domain.policies import is_allowed_mime, magic_bytes_ok, safe_filename
+from uploads.domain.policies import (
+    is_allowed_mime,
+    magic_bytes_ok,
+    office_archive_ok,
+    safe_filename,
+)
 
 _RAG_DISABLED = RagStatus(status="disabled", chunks=0)
 _RAG_PROCESSING = RagStatus(status="processing", chunks=0)
@@ -97,6 +103,8 @@ class UploadFiles:
             raise FileTooLarge(max_mb)
         if not magic_bytes_ok(mime, incoming.content):
             raise ContentMismatch()
+        if not office_archive_ok(mime, incoming.content):
+            raise ArchiveTooLarge()
 
         upload = self.repo.create(
             user_id, safe_filename(incoming.filename), mime, incoming.content, ova_id=ova_id

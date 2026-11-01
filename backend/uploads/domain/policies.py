@@ -6,6 +6,8 @@ from pathlib import Path
 
 import filetype
 
+from core.archives import office_zip_within_limits
+
 ALLOWED_MIME_TYPES: frozenset[str] = frozenset(
     {
         # Documentos
@@ -58,6 +60,12 @@ def magic_bytes_ok(declared_mime: str, content: bytes) -> bool:
             sniffed.startswith("audio/") or sniffed in _AUDIO_CONTAINER_MIMES
         )
     return False
+
+
+def office_archive_ok(declared_mime: str, content: bytes) -> bool:
+    """DOCX/PPTX son zips: rechaza los que descomprimidos exceden los límites
+    (zip bomb). El tope de subida solo mide los bytes comprimidos."""
+    return declared_mime not in _OFFICE_ZIP_MIMES or office_zip_within_limits(content)
 
 
 def safe_filename(raw: str | None) -> str:

@@ -13,6 +13,7 @@ from collections.abc import Callable
 
 import structlog
 
+from core.archives import office_zip_within_limits
 from rag.application.errors import ParserError  # noqa: F401  (re-export para compat)
 
 logger = structlog.get_logger(__name__)
@@ -56,11 +57,19 @@ def _parse_pdf(path: str) -> str:
     return "\n".join(p for p in text_parts if p.strip())
 
 
+def _check_office_archive(path: str) -> None:
+    """Defensa en profundidad ante zip bombs ya guardados: python-pptx lee todos
+    los miembros en memoria al abrir el archivo."""
+    if not office_zip_within_limits(path):
+        raise ParserError("archive too large")
+
+
 def _parse_docx(path: str) -> str:
     try:
         import docx  # type: ignore
     except ImportError as exc:
         raise ParserError("python-docx not installed") from exc
+    _check_office_archive(path)
     document = docx.Document(path)
     return "\n".join(p.text for p in document.paragraphs if p.text.strip())
 
@@ -70,6 +79,7 @@ def _parse_pptx(path: str) -> str:
         from pptx import Presentation  # type: ignore
     except ImportError as exc:
         raise ParserError("python-pptx not installed") from exc
+    _check_office_archive(path)
     prs = Presentation(path)
     parts: list[str] = []
     for slide in prs.slides:
