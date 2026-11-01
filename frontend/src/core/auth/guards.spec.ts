@@ -51,6 +51,19 @@ describe("guards", () => {
     await expect(requireGuest()).resolves.toBeNull();
   });
 
+  it("con sesión cacheada y el backend caído, /login muestra el formulario (sin bucle)", async () => {
+    authStore.setUser({ id: 1, role: "docente" });
+    const revalidate = vi
+      .spyOn(authStore, "revalidate")
+      .mockRejectedValue(new Error("auth/me: unexpected status 503"));
+
+    const toLogin = (await requireAuth(args()))!;
+    expect(toLogin.headers.get("location")).toContain("/login");
+
+    await expect(requireGuest()).resolves.toBeNull();
+    expect(revalidate).toHaveBeenCalledTimes(2);
+  });
+
   it("devuelve al dashboard a quien no es administrador", async () => {
     vi.spyOn(authStore, "revalidate").mockImplementation(() => {
       authStore.setUser({ id: 1, role: "docente" });
