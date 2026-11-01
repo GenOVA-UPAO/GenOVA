@@ -8,7 +8,7 @@ readme = "../readme.md"
 # Mirror of requirements.txt — kept in sync manually.
 # uv reads this; pip uses requirements.txt. Both must resolve to the same set.
 dependencies = [
-    "fastapi==0.159.1",
+    "fastapi==0.162.0",
     "uvicorn[standard]==0.54.0",
     "sqlalchemy==2.1.6",
     "psycopg[binary]==3.3.6",
@@ -17,15 +17,15 @@ dependencies = [
     "PyJWT==2.15.1",
     "python-multipart==0.0.32",
     "pydantic[email]==2.14.1",
-    "pydantic-settings==2.16.1",
+    "pydantic-settings==2.16.2",
     "slowapi==0.1.10",
-    "sse-starlette==3.5.0",
+    "sse-starlette==3.6.0",
     "arq==0.28.0",
-    "sentry-sdk[fastapi]==2.72.0",
+    "sentry-sdk[fastapi]==2.73.0",
     "prometheus-fastapi-instrumentator==8.1.0",
     # Sin extra [fastapi]: otel-instrumentation-fastapi 0.63b1 rompe con FastAPI 0.138
     # (_IncludedRouter sin `.path`) y tumba /api/*. Ver core/observability.py.
-    "logfire[sqlalchemy]==5.2.0",
+    "logfire[sqlalchemy]==5.4.0",
     "structlog==26.1.0",
     "openai==3.3.0",
     "groq==1.7.0",
@@ -33,14 +33,14 @@ dependencies = [
     "pillow==13.0.0",
     "instructor==1.17.0",
     "supabase==2.33.0",
-    "google-genai==2.32.0",
-    "pypdf==6.21.2",
+    "google-genai==2.33.0",
+    "pypdf==6.21.4",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "filetype==1.2.0",
-    "langgraph==1.2.16",
+    "langgraph==1.2.18",
     "langgraph-checkpoint-postgres==3.2.0",
-    "langsmith==0.14.12",
+    "langsmith==0.14.14",
     "pyotp==2.10.0",
     # Parser JS (motor QuickJS) para detectar scripts rotos o truncados en los OVAs generados.
     "quickjs==1.19.4",
@@ -59,7 +59,7 @@ dev = [
     # <9.2: pytest 9.2 quitó FixtureManager._arg2fixturedefs, que pytest-bdd 9.0 usa al
     # armar cada paso (AttributeError en todos los escenarios). Quitar el tope cuando
     # pytest-bdd publique la versión compatible.
-    "pytest>=9.1.1,<9.2",
+    "pytest>=9.1.1,<9.3",
     "pytest-bdd>=7.0.0",
     "pytest-cov>=5.0.0",
     "requests>=2.31.0",
