@@ -205,6 +205,32 @@ def test_confirm_and_apply_200_owner_success():
     assert "UPAO Components v" in data["html"]
 
 
+def test_admin_cannot_confirm_on_another_users_ova_but_can_interpret():
+    """El admin ve el OVA de otro docente pero no lo modifica (solo su creador)."""
+    owner_id = str(uuid.uuid4())
+    admin_id = str(uuid.uuid4())
+    ova_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    editor = _build_test_editor(owner_id=owner_id, phases=[phase_id])
+
+    app.dependency_overrides[get_current_user] = lambda: FakeUser(admin_id, is_admin=True)
+    app.dependency_overrides[build_editor] = lambda: editor
+    blocks = [{"id": "b1", "tipo": "header", "props": {"title": "Título"}}]
+
+    confirm = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/confirm",
+        json={"instruction": "x", "blocks": blocks},
+    )
+    assert confirm.status_code == 403
+    assert editor.confirm_and_apply.phase_repo.version_created is False
+
+    interpret = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/interpret-and-apply",
+        json={"instruction": "elimina el ejemplo", "blocks": blocks},
+    )
+    assert interpret.status_code == 200
+
+
 def test_record_feedback_200_success():
     owner_id = str(uuid.uuid4())
     ova_id = str(uuid.uuid4())

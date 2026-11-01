@@ -35,8 +35,8 @@ class SqlAlchemyEditorPhaseRepository(EditorPhaseRepositoryPort):
         return row is not None
 
     def can_edit(self, ova_id: str, actor_id: str, is_admin: bool) -> bool:
-        if is_admin:
-            return True
+        # Solo quien creó el OVA lo modifica: el admin lo ve pero no lo edita
+        # (misma regla que `ova.domain.model`), así que `is_admin` no da permiso.
         owner = self.get_ova_owner(ova_id)
         if owner is None:
             return False
