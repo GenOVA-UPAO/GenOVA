@@ -70,5 +70,10 @@
     "clientId": "Copia el Client ID que muestra el LMS.",
     "deployments": "Indica al menos un Deployment ID.",
     "url": "Pega la URL completa (https://…)."
+  },
+  "toast": {
+    "created": "Plataforma registrada",
+    "updated": "Plataforma actualizada",
+    "deleted": "Plataforma eliminada"
   }
 }
