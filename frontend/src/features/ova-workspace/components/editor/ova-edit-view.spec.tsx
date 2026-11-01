@@ -116,7 +116,11 @@ describe("OvaEditView event wiring", () => {
   it("reorders only the resources of the moved phase", async () => {
     // Un OVA real tiene varias fases: el backend rechaza con 422 una lista
     // que mezcla tipos, así que «explore» no debe viajar en el PATCH.
-    vi.mocked(api.fetchOvaWorkspace).mockResolvedValueOnce({
+    // El editor pide el OVA varias veces al montar: un `Once` lo consumía la
+    // primera petición y la prueba acababa usando el fixture de solo «engage».
+    const fetchWorkspace = vi.mocked(api.fetchOvaWorkspace);
+    const original = fetchWorkspace.getMockImplementation();
+    fetchWorkspace.mockResolvedValue({
       title: "OVA de prueba",
       status: "listo",
       current_version: {
@@ -128,14 +132,19 @@ describe("OvaEditView event wiring", () => {
         ],
       },
     });
-    await setup();
-    fireEvent.click(screen.getByRole("button", { name: "Subir Segundo recurso" }));
-    await waitFor(() => {
-      expect(api.reorderOvaPhases).toHaveBeenCalledWith("ova-1", [
-        { phase_id: "b", new_order: 0 },
-        { phase_id: "a", new_order: 1 },
-      ]);
-    });
+    try {
+      await setup();
+      expect(screen.getAllByRole("button", { name: "Regenerar recurso" })).toHaveLength(3);
+      fireEvent.click(screen.getByRole("button", { name: "Subir Segundo recurso" }));
+      await waitFor(() => {
+        expect(api.reorderOvaPhases).toHaveBeenCalledWith("ova-1", [
+          { phase_id: "b", new_order: 0 },
+          { phase_id: "a", new_order: 1 },
+        ]);
+      });
+    } finally {
+      if (original) fetchWorkspace.mockImplementation(original);
+    }
   });
   it("regenerates only the requested phase", async () => {
     await setup();
