@@ -341,7 +341,9 @@ def render(data: dict, ctx: RenderContext) -> str:
             opts = _fix_correct(q.get("opciones") or [])
             fixed_items.append(
                 {
-                    "id": q.get("id") or f"{lvl}_{i_idx}",
+                    # El id solo sirve para no repetir preguntas entre niveles: si el LLM
+                    # numera cada nivel q1..q3, usar el suyo terminaba el test a la mitad.
+                    "id": f"{lvl}_{i_idx}",
                     "enunciado": q.get("enunciado", ""),
                     "opciones": opts,
                     "feedback_correcto": q.get("feedback_correcto", ""),
