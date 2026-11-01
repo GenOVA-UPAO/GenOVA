@@ -40,6 +40,7 @@ def select_context_chunks(
     decir con verdad qué archivos llegaron al prompt (los que se quedan fuera del
     presupuesto no cuentan como «consultados»)."""
     selected: list[dict] = []
+    seen: set[tuple[str, str]] = set()
     total = 0
     for c in chunks:
         snippet = (c.get("content") or "").strip()
@@ -48,8 +49,20 @@ def select_context_chunks(
         # Anti-spoofing: el contenido no puede falsificar los delimitadores.
         snippet = snippet.replace(_CTX_OPEN, "").replace(_CTX_CLOSE, "")
         filename = sanitize_source_filename(c.get("source_filename"))
-        block_len = len(_SOURCE_HEADER.format(filename)) + 1 + len(snippet)
+        # La ingesta multimodal guarda el primer fragmento dos veces (con el
+        # vector del texto y con el del archivo): no se gasta presupuesto en él.
+        if (filename, snippet) in seen:
+            continue
+        seen.add((filename, snippet))
+        header_len = len(_SOURCE_HEADER.format(filename)) + 1
+        block_len = header_len + len(snippet)
         if total + block_len > max_chars and selected:
+            break
+        if block_len > max_chars:
+            # El primer bloque siempre entra, pero recortado al presupuesto: un
+            # chunk enorme (p. ej. un PDF guardado entero) no infla cada prompt.
+            snippet = snippet[: max(max_chars - header_len, 0)]
+            selected.append({**c, "source_filename": filename, "content": snippet})
             break
         selected.append({**c, "source_filename": filename, "content": snippet})
         total += block_len + 4

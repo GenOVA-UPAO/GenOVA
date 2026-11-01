@@ -30,7 +30,7 @@ from generation.jobs.jobs_progress import (
 from generation.jobs.jobs_resume_merge import merge_resumed_resources
 from llm.images.image_settings_resolve import strip_image_keys
 from llm.utils.llm_helpers import with_owner
-from models import Ova, OvaJob
+from models import Ova, OvaJob, OvaJobResource
 
 logger = structlog.get_logger(__name__)
 
@@ -92,6 +92,23 @@ def _load_for_run(job_id: uuid.UUID) -> tuple[str, dict | None]:
         db.close()
 
 
+def _seed_resources(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID]) -> list[dict]:
+    """(fase, tipo) de los recursos del reintento, en el orden del job."""
+    db = SessionLocal()
+    try:
+        rows = db.execute(
+            select(OvaJobResource.phase_type, OvaJobResource.resource_type)
+            .where(
+                OvaJobResource.job_id == job_id,
+                OvaJobResource.id.in_(only_resource_ids),
+            )
+            .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
+        ).all()
+        return [{"phase_type": phase, "resource_type": rt} for phase, rt in rows]
+    finally:
+        db.close()
+
+
 def _generate(
     job_id: uuid.UUID,
     prompt: str,
@@ -102,7 +119,16 @@ def _generate(
     # concierge NO re-planifique por LLM e ignore la selección (lo que
     # desalineaba las filas OvaJobResource → quedaban pending/error y el job se
     # materializaba vacío). Sin resources (modo legacy) → el concierge planifica.
-    phases_seed, phase_order_seed = seed_plan(params.get("resources") or [])
+    # Un reintento siembra SOLO sus recursos: el motor real no filtra por
+    # only_resource_ids y regeneraba el OVA entero (coste LLM x N) y marcaba
+    # `done` recursos no pedidos que luego no entraban en el OVA.
+    if only_resource_ids:
+        seed = _seed_resources(job_id, only_resource_ids)
+        if not seed:
+            return [], []
+    else:
+        seed = params.get("resources") or []
+    phases_seed, phase_order_seed = seed_plan(seed)
     initial_state = build_graph_state(
         prompt=prompt,
         params=params,

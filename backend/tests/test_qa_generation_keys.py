@@ -174,7 +174,9 @@ def test_auth_failure_persists_immediately_and_stops_queued_workers(db, monkeypa
     assert resource.status == "error" and resource.defect_reason == "provider_auth"
     assert workpool.resource_worker(payload) == {}
     assert generate.call_count == 1
-    mark_job_resuming(db, job)
+    job.status = "error"  # el run terminó: solo así se puede reanudar
+    db.commit()
+    assert mark_job_resuming(db, job) is True
     assert not control.job_stopped(str(job.id))
 
 

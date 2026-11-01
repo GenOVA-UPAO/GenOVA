@@ -75,7 +75,14 @@ class IngestDocument:
             return {"status": "skipped", "reason": "empty_text", "chunks": 0}
         return self._ingest_text(user_id, upload_id, filename, text)
 
-    def _ingest_text(self, user_id: str, upload_id: str, filename: str, text: str) -> dict:
+    def _ingest_text(
+        self,
+        user_id: str,
+        upload_id: str,
+        filename: str,
+        text: str,
+        file_vector: list[float] | None = None,
+    ) -> dict:
         chunks = chunk_text(text)
         if not chunks:
             return {"status": "skipped", "reason": "no_chunks", "chunks": 0}
@@ -92,37 +99,58 @@ class IngestDocument:
         embeddings = self._embed_batch(chunks, filename)
         if embeddings is None:
             return {"status": "failed", "reason": "embedder_error", "chunks": 0}
+        if file_vector is not None:
+            # El vector multimodal del archivo va en una fila extra con el primer
+            # fragmento como contenido: nunca el texto entero.
+            chunks, embeddings = [*chunks, chunks[0]], [*embeddings, file_vector]
         return self._persist(user_id, upload_id, filename, chunks, embeddings, message)
 
     def _ingest_binary(
         self, user_id: str, upload_id: str, filename: str, storage_path: str, mime_type: str
     ) -> dict:
+        """PDF/audio/imagen con embedder multimodal.
+
+        El texto extraído pasa por el mismo troceo que `_ingest_text` (fragmentos
+        acotados y aviso de truncado): guardarlo como UN chunk metía el PDF o la
+        transcripción enteros en cada prompt. El embedding del archivo es un
+        extra best-effort; si falla (p. ej. PDF de más páginas de las que admite
+        el proveedor) el documento se indexa igual por su texto.
+        """
         embed_file = getattr(self.embedder, "embed_file", None)
         if not getattr(self.embedder, "supports_multimodal", False) or not callable(embed_file):
             return self._ingest_via_text(user_id, upload_id, filename, storage_path)
-        try:
-            with open(storage_path, "rb") as fh:
-                embedding = embed_file(fh.read(), mime_type)
-        except EmbedderError as exc:
-            logger.warning("RAG multimodal embed no disponible", filename=filename, error=str(exc))
-            return {"status": "failed", "reason": "embedder_unavailable", "chunks": 0}
-        except Exception:
-            logger.exception("RAG multimodal embed falló", filename=filename)
-            return {"status": "failed", "reason": "embedder_error", "chunks": 0}
-        content = self._describe(storage_path, filename, mime_type)
-        result = self._persist(user_id, upload_id, filename, [content], [embedding])
-        if result.get("status") == "indexed":
+        vector, reason = self._embed_file(embed_file, storage_path, mime_type, filename)
+        text = self._extract_quietly(storage_path, filename)
+        if text.strip():
+            result = self._ingest_text(user_id, upload_id, filename, text, file_vector=vector)
+        elif vector is None:
+            return {"status": "failed", "reason": reason, "chunks": 0}
+        else:
+            placeholder = f"[Archivo multimodal: {sanitize_source_filename(filename)} ({mime_type})]"
+            result = self._persist(user_id, upload_id, filename, [placeholder], [vector])
+        if result.get("status") == "indexed" and vector is not None:
             result["mode"] = "multimodal"
         return result
 
-    def _describe(self, storage_path: str, filename: str, mime_type: str) -> str:
-        safe_name = sanitize_source_filename(filename)
+    def _embed_file(
+        self, embed_file, storage_path: str, mime_type: str, filename: str
+    ) -> tuple[list[float] | None, str]:
         try:
-            text = self.extractor.extract_text(storage_path, filename=filename)
-            return text if text.strip() else f"[Archivo multimodal: {safe_name} ({mime_type})]"
+            with open(storage_path, "rb") as fh:
+                return embed_file(fh.read(), mime_type), ""
+        except EmbedderError as exc:
+            logger.warning("RAG multimodal embed no disponible", filename=filename, error=str(exc))
+            return None, "embedder_unavailable"
+        except Exception:
+            logger.exception("RAG multimodal embed falló", filename=filename)
+            return None, "embedder_error"
+
+    def _extract_quietly(self, storage_path: str, filename: str) -> str:
+        try:
+            return self.extractor.extract_text(storage_path, filename=filename) or ""
         except Exception as exc:  # noqa: BLE001
             logger.warning("RAG extract_text falló para multimodal", filename=filename, error=str(exc))
-            return f"[Archivo multimodal: {safe_name} ({mime_type})]"
+            return ""
 
     def _embed_batch(self, chunks: list[str], filename: str) -> list[list[float]] | None:
         try:

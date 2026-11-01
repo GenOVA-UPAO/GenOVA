@@ -55,6 +55,15 @@ class ContentMismatch(UploadError):
         super().__init__("El contenido del archivo no coincide con su tipo declarado.")
 
 
+class ArchiveTooLarge(UploadError):
+    code = "archive_too_large"
+
+    def __init__(self) -> None:
+        super().__init__(
+            "El documento está dañado o su contenido descomprimido es demasiado grande."
+        )
+
+
 class UploadNotFound(UploadError):
     code = "upload_not_found"
 
