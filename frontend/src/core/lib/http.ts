@@ -36,6 +36,11 @@ function resolveApiBase(): string {
 export const API_BASE = resolveApiBase();
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+/**
+ * Subidas multipart: el temporizador cubre también el envío del cuerpo (hasta
+ * 5 × 20 MB), que en un enlace lento supera con creces los 15 s por defecto.
+ */
+export const UPLOAD_TIMEOUT_MS = 180_000;
 const AUTH_PATHS = new Set(["/api/auth/me", "/auth/login", "/auth/register"]);
 
 export interface HttpErrorOptions {
@@ -76,8 +81,12 @@ function isAuthEndpoint(path: string): boolean {
   return AUTH_PATHS.has(path) || path.startsWith("/api/auth/") || path.startsWith("/auth/");
 }
 
+function isFormDataBody(body: RequestInit["body"]): boolean {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
 function buildHeaders(init: RequestInit): Record<string, string> {
-  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+  const isFormData = isFormDataBody(init.body);
   const initHeaders = (init.headers ?? {}) as Record<string, string>;
   const baseHeaders: Record<string, string> = { "X-Requested-With": "XMLHttpRequest" };
   if (init.body && !isFormData && !initHeaders["Content-Type"]) {
@@ -98,7 +107,13 @@ export async function apiFetch(
   // Auth y la primera petición tras inactividad pueden pillar el servidor
   // dormido (Render free): más margen y aviso al usuario si tarda.
   const coldCandidate = isAuthEndpoint(path) || !isServerWarm();
-  const { timeoutMs, done: endTracking } = planRequest(coldCandidate, opts.timeoutMs, DEFAULT_TIMEOUT_MS);
+  const explicitTimeoutMs =
+    opts.timeoutMs ?? (isFormDataBody(init.body) ? UPLOAD_TIMEOUT_MS : undefined);
+  const { timeoutMs, done: endTracking } = planRequest(
+    coldCandidate,
+    explicitTimeoutMs,
+    DEFAULT_TIMEOUT_MS,
+  );
   const ctrl = new AbortController();
   const t = setTimeout(() => {
     ctrl.abort();
