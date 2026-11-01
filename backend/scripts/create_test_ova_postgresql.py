@@ -1,17 +1,26 @@
 """Script para crear OVA de prueba 'Bases de datos relacionales con PostgreSQL',
 verificar las imágenes y créditos, y exportar/verificar el paquete SCORM.
+
+Escribe en la BD de DATABASE_URL: exige --user-email (dueño del OVA; nunca se toma
+"el primer usuario") y se niega a correr con ENV=production/staging salvo --force.
+
+Uso (desde backend/):
+  python scripts/create_test_ova_postgresql.py --user-email profesor@genova.ai [--out DIR]
 """
 
 from __future__ import annotations
 
+import argparse
 import os
 import sys
+import tempfile
 import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
 
+from core.config import settings
 from core.database import engine
 from models import User
 from ova.application.dto import ManageOvaInput, SaveOvaInput
@@ -19,8 +28,23 @@ from ova.container import build_ova
 from ova.domain.model import OvaActor, OvaPhase
 from ova_engine.registry import get_spec
 
+_PROTECTED_ENVS = ("production", "staging")
 
-def main():
+
+def _parse_args(argv: list[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--user-email", required=True, help="Usuario dueño del OVA de prueba")
+    parser.add_argument("--out", default=None, help="Carpeta de verificación (por defecto, temporal)")
+    parser.add_argument("--force", action="store_true", help="Permitir ENV=production/staging")
+    args = parser.parse_args(argv)
+    if settings.env.strip().lower() in _PROTECTED_ENVS and not args.force:
+        parser.exit(2, f"ENV={settings.env}: este script escribe en la BD; usa --force si es a propósito.\n")
+    return args
+
+
+def main(argv: list[str] | None = None):
+    args = _parse_args(argv)
+    out_dir = args.out or tempfile.mkdtemp(prefix="genova-scorm-verify-")
     concept = "Bases de datos relacionales con PostgreSQL"
     print(f"Generando recursos para OVA: «{concept}»...")
 
@@ -72,11 +96,9 @@ def main():
 
     # Obtener el usuario profesor para guardar el OVA
     with Session(engine) as db:
-        user = db.query(User).filter(User.email == "profesor@genova.ai").first()
+        user = db.query(User).filter(User.email == args.user_email.strip().lower()).first()
         if not user:
-            user = db.query(User).first()
-        if not user:
-            raise RuntimeError("No se encontró usuario en base de datos")
+            raise SystemExit(f"No existe el usuario {args.user_email}")
         user_id = str(user.id)
         is_admin = False
 
@@ -107,7 +129,7 @@ def main():
     print(f"✓ SCORM generado en: {scorm_path}")
 
     # Verificar offline y créditos en SCORM
-    verify_dir = "/home/jeffryru/github/genova-orquestacion/out/imagenes-busqueda/scorm_verify"
+    verify_dir = os.path.join(out_dir, "scorm_verify")
     os.makedirs(verify_dir, exist_ok=True)
 
     with zipfile.ZipFile(scorm_path, "r") as zf:
@@ -142,7 +164,7 @@ def main():
     print(f"  - Extracción completa en: {verify_dir}")
 
     # Escribir reporte de verificación SCORM en JSON
-    summary_path = "/home/jeffryru/github/genova-orquestacion/out/imagenes-busqueda/scorm_verification.json"
+    summary_path = os.path.join(out_dir, "scorm_verification.json")
     with open(summary_path, "w", encoding="utf-8") as f:
         import json
         json.dump({
