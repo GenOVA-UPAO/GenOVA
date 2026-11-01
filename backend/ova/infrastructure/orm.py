@@ -117,6 +117,9 @@ class OvaPhase(Base):
     regenerated = Column(Boolean, nullable=False, default=False)
     resource_type_id = Column(Integer, nullable=True)  # 1-10 resource type per phase
     title = Column(String(120), nullable=True)  # human-readable label for SCORM nav
+    # Identidad del recurso entre versiones (la copia hereda la de su origen);
+    # NULL = su propio id. Agrupa el historial de micro-versiones.
+    lineage_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     version = relationship("OvaVersion", back_populates="phases")
