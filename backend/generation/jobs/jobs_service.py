@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
 from core.package_themes import default_package_theme
-from core.text import ova_title, split_education_level
+from core.text import ova_description, ova_title, split_education_level
 from models import Ova, OvaJob, OvaJobResource
 
 logger = structlog.get_logger(__name__)
@@ -68,7 +68,7 @@ def create_job(
     ova = Ova(
         user_id=user_id,
         title=title,
-        description=description,
+        description=ova_description(description),
         educational_level=level,
         status="generando",
         package_theme=default_package_theme((params or {}).get("theme")),

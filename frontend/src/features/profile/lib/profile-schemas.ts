@@ -1,6 +1,9 @@
 import { t } from "i18next";
 import { z } from "zod";
 
+/** Los códigos UPAO tienen 9 dígitos; más allá se sale del INTEGER de users.university_id. */
+export const UNIVERSITY_ID_MAX_DIGITS = 9;
+
 export const profileSchema = z.object({
   full_name: z
     .string()
@@ -12,6 +15,9 @@ export const profileSchema = z.object({
     .string()
     .refine((value) => /^\d*$/.test(value.trim()), {
       error: () => t("profile:validation.universityIdDigits"),
+    })
+    .refine((value) => value.trim().length <= UNIVERSITY_ID_MAX_DIGITS, {
+      error: () => t("profile:validation.universityIdMax"),
     })
     .refine((value) => value.trim() === "" || Number(value) >= 1, {
       error: () => t("profile:validation.universityIdMin"),

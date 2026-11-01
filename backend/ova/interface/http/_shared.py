@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from core.educational_metadata import EducationalMetadata, InvalidEducationalMetadata, License
 from core.package_themes import PackageThemeId
+from core.text import OVA_DESCRIPTION_MAX
 from ova.application.access import _is_admin as _is_admin
 
 
@@ -13,7 +14,7 @@ class UpdateOvaMetadataRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
 
     title: str
-    description: str | None = Field(default=None, max_length=2000)
+    description: str | None = Field(default=None, max_length=OVA_DESCRIPTION_MAX)
     package_theme: PackageThemeId | None = None
     license: License = "CC BY-SA 4.0"
     language: str = "es"

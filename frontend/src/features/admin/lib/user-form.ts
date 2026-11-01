@@ -19,6 +19,8 @@ export interface UserFormErrors {
 }
 
 const PHONE_RE = /^\+?\d+$/;
+/** Los códigos UPAO tienen 9 dígitos; más allá se sale del INTEGER de users.university_id. */
+export const UNIVERSITY_ID_MAX_DIGITS = 9;
 
 const EMAIL_SCHEMA = z.email();
 
@@ -49,9 +51,12 @@ export function validateUserForm(values: UserFormValues): UserFormErrors {
   if (!EMAIL_SCHEMA.safeParse(values.email.trim()).success) {
     errors.email = t("admin:users.validation.emailInvalid");
   }
-  if (!/^\d*$/.test(values.university_id.trim())) {
+  const universityId = values.university_id.trim();
+  if (!/^\d*$/.test(universityId)) {
     errors.university_id = t("admin:users.validation.universityIdDigits");
-  } else if (values.university_id.trim() !== "" && Number(values.university_id) < 1) {
+  } else if (universityId.length > UNIVERSITY_ID_MAX_DIGITS) {
+    errors.university_id = t("admin:users.validation.universityIdMax");
+  } else if (universityId !== "" && Number(universityId) < 1) {
     errors.university_id = t("admin:users.validation.universityIdMin");
   }
   const phone = values.phone_number.trim();
