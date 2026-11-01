@@ -210,7 +210,7 @@ ANSWER_JS = r"""
 function norm(t) {
   return String(t == null ? '' : t)
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim();
@@ -225,7 +225,8 @@ function sameAnswer(value, expected) {
   const val = norm(value);
   const exp = norm(expected);
   if (!val || !exp) return false;
-  if (val === exp) return true;
+  // Fórmulas: «y=2x+1» es la misma respuesta que «y = 2x + 1».
+  if (val === exp || val.replace(/ /g, '') === exp.replace(/ /g, '')) return true;
   if (NUM_RE.test(val) && NUM_RE.test(exp)) {
     const a = parseFloat(val.replace(',', '.'));
     const b = parseFloat(exp.replace(',', '.'));

@@ -30,6 +30,9 @@ def _same(value: str, expected: str) -> bool:
         ("2,01", "2", True),
         ("-2 y 2", "2 y -2", True),
         ("2 y 2", "2 y -2", False),
+        ("interseccion con el eje y", "Intersección con el eje Y", True),
+        ("y=2x+1", "y = 2x + 1", True),
+        ("y=2x-1", "y = 2x + 1", False),
     ],
 )
 def test_same_answer(value, expected, ok):
