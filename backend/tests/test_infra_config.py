@@ -101,3 +101,18 @@ def test_imagen_del_backend_no_lleva_secretos_ni_venv():
             assert _docker_excluye(rules, path), f"{dockerfile}: {path} entra en la imagen"
         for path in ("backend/main.py", "backend/uploads/container.py", "backend/.env.example"):
             assert not _docker_excluye(rules, path), f"{dockerfile}: {path} queda fuera"
+
+
+# ── render.yaml (Blueprint de producción) ─────────────────────────────────────
+
+
+def _render_env(service: dict) -> dict[str, dict]:
+    return {var["key"]: var for var in service.get("envVars", []) if "key" in var}
+
+
+def test_render_fija_lti_tool_url_https_en_produccion():
+    for service in yaml.safe_load(_read("render.yaml"))["services"]:
+        env = _render_env(service)
+        if env.get("ENV", {}).get("value") != "production":
+            continue
+        assert str(env.get("LTI_TOOL_URL", {}).get("value", "")).startswith("https://")
