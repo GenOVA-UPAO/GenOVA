@@ -1,4 +1,5 @@
 import { apiJson } from "@/core/lib/http";
+import { COLD_START_TIMEOUT_MS } from "@/core/lib/server-wakeup";
 
 import type { ServerItem } from "../services/upload.service";
 
@@ -16,7 +17,9 @@ function scoped(ovaId?: string): string {
 
 /** Piso de ~512 kbps de subida: 64 KB por segundo de margen. */
 const UPLOAD_BYTES_PER_SECOND = 64_000;
-const UPLOAD_MIN_TIMEOUT_MS = 60_000;
+// Un timeout explícito sustituye al de arranque en frío (90 s): el piso no
+// puede ser menor o una subida pequeña con el servidor dormido se abortaría.
+const UPLOAD_MIN_TIMEOUT_MS = COLD_START_TIMEOUT_MS;
 const UPLOAD_MAX_TIMEOUT_MS = 600_000;
 
 /**

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiJson } from "@/core/lib/http";
+import { COLD_START_TIMEOUT_MS } from "@/core/lib/server-wakeup";
 
 import { uploadTemporaryFiles, uploadTimeoutMs } from "./uploads.api";
 
@@ -20,8 +21,9 @@ describe("uploads API", () => {
     expect(opts?.timeoutMs).toBe(uploadTimeoutMs([big]));
   });
 
-  it("keeps a one-minute floor and a ten-minute ceiling", () => {
-    expect(uploadTimeoutMs([new File(["x"], "a.pdf")])).toBe(60_000);
+  it("never gives less time than a cold start and caps at ten minutes", () => {
+    // Un timeout explícito reemplaza los 90 s del arranque en frío.
+    expect(uploadTimeoutMs([new File(["x"], "a.pdf")])).toBe(COLD_START_TIMEOUT_MS);
     expect(uploadTimeoutMs([new File([new Uint8Array(100 * 1024 * 1024)], "a.pdf")])).toBe(600_000);
   });
 });
