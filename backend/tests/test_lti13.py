@@ -337,6 +337,30 @@ def test_phase_documents_are_sandboxed_even_on_direct_navigation(env):
     assert "sandbox" not in scorm_csp
 
 
+def test_player_package_uses_ova_theme_and_metadata(env):
+    """El alumno ve el tema y el idioma elegidos por el docente, no siempre UPAO/es."""
+    from core.package_themes import theme_css
+
+    db = env["db"]
+    ova = db.get(Ova, uuid.UUID(env["graded"]))
+    ova.package_theme = "alto-contraste"
+    ova.language = "en"
+    db.commit()
+
+    package = ova_content.build_player_package(db, env["graded"])
+    html = b"".join(data for name, data in package.files.items() if name.endswith(".html"))
+    assert theme_css("alto-contraste").encode() in html
+    assert theme_css("upao").encode() not in html
+    assert b'lang="en"' in html
+
+    # Cambiar el tema no sirve el paquete anterior desde la caché.
+    ova.package_theme = "oscuro"
+    db.commit()
+    package = ova_content.build_player_package(db, env["graded"])
+    html = b"".join(data for name, data in package.files.items() if name.endswith(".html"))
+    assert theme_css("oscuro").encode() in html
+
+
 def test_launch_rejects_invalid_signature(env):
     client = env["client"]
     state, nonce = _login(client)

@@ -21,6 +21,7 @@ from zipfile import ZipFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from core.educational_metadata import metadata_from_ova
 from models import Ova, OvaPhase, OvaVersion, User
 from scorm import get_export_format
 
@@ -111,7 +112,7 @@ def list_ready_ovas(db: Session, owner_id: str) -> list[OvaSummary]:
     return result
 
 
-_cache: OrderedDict[tuple[str, str], tuple[float, PlayerPackage]] = OrderedDict()
+_cache: OrderedDict[tuple[str, ...], tuple[float, PlayerPackage]] = OrderedDict()
 _cache_lock = threading.Lock()
 
 
@@ -128,7 +129,9 @@ def build_player_package(db: Session, ova_id: str) -> PlayerPackage | None:
     version = _active_version(db, ova.id)
     if version is None:
         return None
-    key = (str(ova.id), str(version.id))
+    theme = ova.package_theme or "upao"
+    # El tema y los metadatos (idioma, licencia) se editan sin crear versión nueva.
+    key = (str(ova.id), str(version.id), theme, str(ova.updated_at))
     now = time.monotonic()
     with _cache_lock:
         hit = _cache.get(key)
@@ -140,7 +143,10 @@ def build_player_package(db: Session, ova_id: str) -> PlayerPackage | None:
         {"type": p.phase_type, "order": p.phase_order, "content": p.content, "title": p.title}
         for p in _phases(db, version.id)
     ]
-    zipped = get_export_format("html").build(ova.title, phases)
+    # Mismo tema y metadatos que la exportación: sin ellos el alumno veía siempre UPAO.
+    zipped = get_export_format("html").build(
+        ova.title, phases, metadata=metadata_from_ova(ova), theme=theme
+    )
     with ZipFile(BytesIO(zipped)) as archive:
         files = {name: archive.read(name) for name in archive.namelist()}
     package = PlayerPackage(title=ova.title, files=files)
