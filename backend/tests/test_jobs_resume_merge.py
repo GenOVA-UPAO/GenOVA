@@ -207,3 +207,56 @@ def test_un_segundo_run_del_mismo_job_no_duplica_los_recursos(db):
     assert len(fases) == 2
     # La fase que el docente regeneró no se pisa.
     assert ("engage", 5, "<p>editado por el docente</p>") in fases
+
+
+def _segunda_lectura(db, job, status, content, order=1):
+    r = OvaJobResource(
+        id=uuid.uuid4(),
+        job_id=job.id,
+        phase_type="explore",
+        phase_order=2,
+        resource_type="5",
+        resource_order=order,
+        status=status,
+        content=content,
+    )
+    db.add(r)
+    db.commit()
+    return r
+
+
+def test_dos_del_mismo_tipo_el_que_falto_se_anade_sin_pisar_al_otro(db):
+    # La 1.ª lectura (degradada) ya está en el OVA; la 2.ª, del mismo tipo y fase,
+    # falló y nunca entró. Reintentar solo la 2.ª la añade: no sustituye a la 1.ª.
+    ova = _ova_con_degradado(db)
+    job = _job(ova)
+    _recurso(db, job, "degraded", content="<p>degradado</p>")
+    segunda = _segunda_lectura(db, job, "done", "<p>segunda</p>")
+
+    assert merge_resumed_resources(db, job, [segunda.id]) is True
+
+    lecturas = [f[2] for f in _fases_activas(db, ova) if f[:2] == ("explore", 5)]
+    assert sorted(lecturas) == ["<p>degradado</p>", "<p>segunda</p>"]
+
+
+def test_doble_run_con_dos_del_mismo_tipo_no_duplica(db):
+    ova = _ova_con_degradado(db)
+    db.add(
+        OvaPhase(
+            version_id=ova.current_version_id,
+            phase_type="explore",
+            phase_order=4,
+            content="<p>segunda</p>",
+            resource_type_id=5,
+            title="Lectura guiada",
+        )
+    )
+    db.commit()
+    job = _job(ova)
+    a = _recurso(db, job, "done", content="<p>primera v2</p>")
+    b = _segunda_lectura(db, job, "done", "<p>segunda v2</p>")
+
+    assert merge_resumed_resources(db, job, [a.id, b.id]) is True
+
+    lecturas = [f[2] for f in _fases_activas(db, ova) if f[:2] == ("explore", 5)]
+    assert sorted(lecturas) == ["<p>primera v2</p>", "<p>segunda v2</p>"]

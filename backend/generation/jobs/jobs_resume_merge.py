@@ -8,6 +8,7 @@ en una versión NUEVA que copia la activa, así no se pierde ninguna edición.
 """
 
 import uuid
+from collections import Counter
 
 import structlog
 from sqlalchemy import select, update
@@ -58,51 +59,83 @@ def _phase_row(p: OvaPhase) -> dict:
     }
 
 
+def _key(phase_type: str, resource_type) -> tuple[str, int | None]:
+    return phase_type, resolve_resource_display(phase_type, resource_type)[0]
+
+
+def _missing_slots(db: Session, job_id, current: list[OvaPhase]) -> Counter:
+    """Por (fase, tipo): cuántos recursos del job aún no tienen fase en el OVA.
+
+    Distingue un recurso que ya se materializó (un `degraded`, o todos en un
+    doble run) de otro del mismo tipo en la misma fase que nunca entró.
+    """
+    in_job = Counter(
+        _key(phase, rt)
+        for phase, rt in db.execute(
+            select(OvaJobResource.phase_type, OvaJobResource.resource_type).where(
+                OvaJobResource.job_id == job_id
+            )
+        ).all()
+    )
+    return in_job - Counter((p.phase_type, p.resource_type_id) for p in current)
+
+
+def _new_row(r: OvaJobResource) -> dict:
+    rid, title, _emoji = resolve_resource_display(r.phase_type, r.resource_type)
+    return {
+        "phase_type": r.phase_type,
+        "content": r.content or "",
+        "regenerated": False,
+        "resource_type_id": rid,
+        "title": title,
+    }
+
+
 def _merged_rows(
-    current: list[OvaPhase], recovered: list[OvaJobResource], *, replace: bool
+    current: list[OvaPhase],
+    recovered: list[OvaJobResource],
+    missing: Counter,
+    *,
+    replace: bool,
 ) -> tuple[list[dict], int]:
     """Copia la versión activa y le aplica los recursos recuperados.
 
-    Un recurso cuyo (fase, tipo) ya está en el OVA no se añade otra vez: un
-    `degraded` ya se materializó y un doble run del mismo job repite todos. Con
-    ``replace`` se sustituye el contenido en su sitio (salvo que el docente ya
-    regenerase esa fase); sin él (job cancelado) se omite. Cada fase casa con un
-    solo recurso, así dos del mismo tipo encuentran cada uno la suya. Devuelve
-    las filas y cuántos recursos cambiaron algo.
+    Se añaden tantos recursos de cada (fase, tipo) como huecos le faltan al OVA
+    (``missing``); el resto ya está dentro (un `degraded` materializado, o un
+    doble run del mismo job) y no se duplica. Con ``replace`` se sustituye su
+    contenido en su sitio (salvo que el docente ya regenerase esa fase); sin él
+    (job cancelado) se omite. Se recorre del último al primero: al cancelar, los
+    que faltan son los que terminaron tarde. Devuelve las filas y cuántos
+    recursos cambiaron algo.
     """
     rows = [_phase_row(p) for p in sorted(current, key=lambda p: p.phase_order)]
     matched: set[int] = set()
-    applied = 0
-    for r in recovered:
-        rid, title, _emoji = resolve_resource_display(r.phase_type, r.resource_type)
+    appended: list[dict] = []
+    replaced = 0
+    for r in reversed(recovered):
+        key = _key(r.phase_type, r.resource_type)
+        if missing[key] > 0:
+            missing[key] -= 1
+            appended.append(_new_row(r))
+            continue
+        # También desde el final: en un doble run cada uno cae en su propia fase.
         hit = next(
             (
                 i
-                for i, row in enumerate(rows)
-                if i not in matched
-                and (row["phase_type"], row["resource_type_id"]) == (r.phase_type, rid)
+                for i in reversed(range(len(rows)))
+                if i not in matched and (rows[i]["phase_type"], rows[i]["resource_type_id"]) == key
             ),
             None,
         )
         if hit is None:
-            rows.append(
-                {
-                    "phase_type": r.phase_type,
-                    "content": r.content or "",
-                    "regenerated": False,
-                    "resource_type_id": rid,
-                    "title": title,
-                }
-            )
-            matched.add(len(rows) - 1)
-            applied += 1
             continue
         matched.add(hit)
         if replace and not rows[hit]["regenerated"]:
             rows[hit]["content"] = r.content or ""
-            applied += 1
+            replaced += 1
+    rows.extend(reversed(appended))
     # sorted() es estable: dentro de cada fase, primero lo que ya había y luego lo recuperado.
-    return sorted(rows, key=lambda row: _rank(row["phase_type"])), applied
+    return sorted(rows, key=lambda row: _rank(row["phase_type"])), len(appended) + replaced
 
 
 def merge_resumed_resources(db: Session, job: OvaJob, resource_ids: list[uuid.UUID]) -> bool:
@@ -115,7 +148,9 @@ def merge_resumed_resources(db: Session, job: OvaJob, resource_ids: list[uuid.UU
     if not recovered or active is None:
         return False
     replace = getattr(job, "status", None) != "canceled"
-    rows, applied = _merged_rows(list(active.phases), recovered, replace=replace)
+    current = list(active.phases)
+    missing = _missing_slots(db, job.id, current)
+    rows, applied = _merged_rows(current, recovered, missing, replace=replace)
     if not applied:
         return False
     db.execute(
