@@ -12,7 +12,7 @@ from ova_engine.html import (
     json_data,
     paragraphs,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.schema import arr, obj, s
@@ -110,13 +110,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<div class="cs-res k-hide" aria-live="polite"></div></section>'
         for k, q in enumerate(qs)
     )
-    fig_html = render_image_figure(
-        data.get("imagen"),
-        data.get("image_placeholder"),
-        data.get("image_credit"),
-        data.get("image_credit_html", ""),
-        alt_fallback=f"Contexto del caso de {ctx.concept}",
-    )
+    fig_html = render_item_figure(data, alt_fallback=f"Contexto del caso de {ctx.concept}")
     credits_sec = render_credits_section(data)
 
     return f"""

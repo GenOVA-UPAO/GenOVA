@@ -123,6 +123,28 @@ def test_candidate_filtering_and_ranking():
     assert score > 20.0
 
 
+def test_filter_candidates_uses_shared_credit_rules():
+    """La búsqueda y el render comparten las reglas de crédito (contract.GENERIC_CREDIT_VALUES)."""
+    base = {
+        "title": "Fiber optic patch panel in a telecom room",
+        "description": "Fiber optic cables",
+        "url": "https://example.com/fiber.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Fiber.jpg",
+        "width": 1024,
+        "height": 768,
+        "license": "CC BY-SA 4.0",
+        "author": "Jane Doe",
+    }
+    rejected = [
+        {**base, "author": "Wikimedia"},  # la plataforma no es el autor
+        {**base, "author": "Comunidad libre"},  # texto de relleno
+        {**base, "author": "Autor Openverse"},
+        {**base, "source_url": "#", "url": "#"},
+    ]
+    assert filter_candidates(rejected) == []
+    assert [c["author"] for c in filter_candidates([base])] == ["Jane Doe"]
+
+
 def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
     monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path / "cache"))
     # Prueba el flujo de red/licencias, no CLIP (opcional): se fuerza sin verificación visual.

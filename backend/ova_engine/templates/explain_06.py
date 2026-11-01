@@ -11,7 +11,7 @@ from ova_engine.html import (
     esc,
     json_data,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.icons import CYCLE_GLOSSARY, icon
@@ -83,13 +83,7 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="gl-body k-hide" id="gl-b{k}"><p>{esc(t["definicion"])}</p>'
             f'<p class="k-label">Ejemplo</p><p>{esc(t["ejemplo"])}</p></div></article>'
         )
-    fig_html = render_image_figure(
-        data.get("imagen"),
-        data.get("image_placeholder"),
-        data.get("image_credit"),
-        data.get("image_credit_html", ""),
-        alt_fallback=f"Logotipo y diagrama de {ctx.concept}",
-    )
+    fig_html = render_item_figure(data, alt_fallback=f"Logotipo y diagrama de {ctx.concept}")
     credits_sec = render_credits_section(data)
 
     return f"""
