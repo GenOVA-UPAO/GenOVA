@@ -33,8 +33,13 @@ export function useGeneratingJobs(ovas: OvaListItem[]) {
   const results = useQueries({
     queries: ids.map((ovaId) => ({
       queryKey: ["ovaJob", ovaId],
-      queryFn: async (): Promise<JobPollData> =>
-        (await ovaJobsApi.getJobByOvaId(ovaId)) as JobPollData,
+      queryFn: async (): Promise<JobPollData> => {
+        const data = (await ovaJobsApi.getJobByOvaId(ovaId)) as JobPollData;
+        // Al terminar el job, el backend saca al OVA de "generando": se refresca
+        // la lista para que la tarjeta deje de verse ocupada (y se desmonte este sondeo).
+        if (!ACTIVE.has(data.status ?? "")) void qc.invalidateQueries({ queryKey: ovaKeys.all });
+        return data;
+      },
       staleTime: 0,
       refetchInterval: (query: { state: { data?: JobPollData } }) =>
         ACTIVE.has(query.state.data?.status ?? "") ? POLL_MS : false,

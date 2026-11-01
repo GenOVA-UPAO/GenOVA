@@ -54,6 +54,17 @@ describe("useGeneratingJobs", () => {
     expect(result.current.jobs.o1.progress).toEqual({ done: 1, total: 2 });
   });
 
+  it("refresca la lista cuando el job termina y deja de sondear", async () => {
+    getJob.mockResolvedValueOnce({ status: "running" }).mockResolvedValue({ status: "done" });
+    const { invalidate } = setup([{ id: "o1", status: "generando" }]);
+    await advance(0);
+    expect(invalidate).not.toHaveBeenCalled();
+    await advance(4_000);
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["ova"] });
+    await advance(8_000);
+    expect(getJob).toHaveBeenCalledTimes(2);
+  });
+
   it("no sondea los OVAs de otros usuarios (alcance todos)", async () => {
     getJob.mockResolvedValue({ status: "running" });
     setup([{ id: "o2", status: "generando", owner: { id: "otro", full_name: "Ana" } }]);
