@@ -334,7 +334,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
 <section class="ova-card">
   <div class="ova-timeline-controls">
-    <button type="button" class="ova-btn ova-btn--ghost" id="btn-toggle-all" aria-expanded="false" aria-label="Abrir o plegar todos los hitos históricos">
+    <button type="button" class="ova-btn ova-btn--ghost" id="btn-toggle-all" aria-expanded="false">
       <span aria-hidden="true" id="btn-toggle-icon">{icon('folder-open')}</span> <span id="btn-toggle-text">Abrir todos los hitos</span>
     </button>
     <span class="ova-timeline-hint" id="timeline-status" aria-live="polite">

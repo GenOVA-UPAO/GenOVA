@@ -117,7 +117,7 @@ def _svg(blocks: list[dict]) -> str:
             f"<title>{nm}: {rol}</title>"
             f'<rect x="{x}" y="{y}" width="{w}" height="{h_blk}" rx="12" class="fw-rect"/>'
             f'<circle cx="{x + 24}" cy="{y + h_blk / 2}" r="13" fill="var(--surface)"/>'
-            f'<text x="{x + 24}" y="{y + h_blk / 2 + 5}" text-anchor="middle" class="fw-num">{k + 1}</text>'
+            f'<text x="{x + 24}" y="{y + h_blk / 2 + 5}" text-anchor="middle" class="fw-num">{k + 1}</text> '
             f'<text x="{x + 48}" y="{y + h_blk / 2 + 5}" class="fw-name">{nm}</text></g>'
         )
     parts.append("</svg>")
