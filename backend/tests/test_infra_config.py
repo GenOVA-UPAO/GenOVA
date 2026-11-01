@@ -9,6 +9,8 @@ Uso:  pytest tests/test_infra_config.py -v
 """
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -152,3 +154,34 @@ def test_load_test_solo_exporta_variables_que_lee_el_locustfile():
         for var in step.get("env", {}):
             if var.startswith("LOAD_"):
                 assert f'"{var}"' in locustfile, f"{var} no lo lee tests/load/locustfile.py"
+
+
+# ── Hook pre-push: fronteras de arquitectura ──────────────────────────────────
+
+
+def test_pre_push_import_linter_falla_con_un_contrato_roto(tmp_path):
+    hook = _read(".husky/pre-push")
+    assert "-m importlinter" not in hook and "run_backend_tool importlinter" not in hook
+    match = re.search(r"^run_backend_python importlinter -c '([^']+)'$", hook, re.M)
+    assert match, "el pre-push no ejecuta import-linter"
+
+    # Paquete de juguete con una importación prohibida por su propio contrato.
+    pkg = tmp_path / "juguete"
+    (pkg / "dominio").mkdir(parents=True)
+    (pkg / "__init__.py").write_text("")
+    (pkg / "infra.py").write_text("")
+    (pkg / "dominio" / "__init__.py").write_text("from juguete import infra  # noqa\n")
+    (tmp_path / ".importlinter").write_text(
+        "[importlinter]\nroot_package = juguete\n\n"
+        "[importlinter:contract:dominio-puro]\nname = dominio puro\ntype = forbidden\n"
+        "source_modules = juguete.dominio\nforbidden_modules = juguete.infra\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", match.group(1)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "BROKEN" in result.stdout
