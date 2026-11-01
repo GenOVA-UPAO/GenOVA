@@ -138,14 +138,25 @@ def _sin_pipefail(workflow: str) -> list[str]:
     malos = []
     for job_name, step, shell in _run_steps(workflow):
         script = step["run"]
-        tuberia = "| tee" in script or re.search(r"\$\(curl[^)]*\|", script)
+        tuberia = "| tee" in script or re.search(r"\$\(curl[^)]*(?<!\|)\|(?!\|)", script)
         if tuberia and shell != "bash" and "set -o pipefail" not in script:
             malos.append(f"{workflow}:{job_name}:{step.get('name', script[:40])}")
     return malos
 
 
-def test_load_test_el_gate_rn001_puede_fallar():
-    assert _sin_pipefail("load-test.yml") == []
+def test_ningun_paso_con_tuberia_oculta_su_fallo():
+    workflows = sorted(p.name for p in (REPO / ".github/workflows").glob("*.yml"))
+    assert "load-test.yml" in workflows and "ci.yml" in workflows
+    assert [paso for w in workflows for paso in _sin_pipefail(w)] == []
+
+
+def test_api_contract_falla_si_el_login_seed_no_da_token():
+    auth = next(
+        step
+        for job, step, _shell in _run_steps("ci.yml")
+        if job == "api-contract" and step.get("id") == "auth"
+    )
+    assert '"$TOKEN" != null' in auth["run"] and "exit 1" in auth["run"]
 
 
 def test_load_test_solo_exporta_variables_que_lee_el_locustfile():
