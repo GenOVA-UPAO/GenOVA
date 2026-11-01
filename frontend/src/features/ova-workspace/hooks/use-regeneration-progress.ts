@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { fetchRegenerationProgress } from "../api/ova-workspace.api";
 import { type RegenChatMessage } from "../lib/regen-chat";
-import { handleRegenPollTick } from "../lib/regen-poll";
+import { handleRegenPollTick, regenPollDelayMs } from "../lib/regen-poll";
 import { ovaWorkspaceKey } from "./use-ova-workspace";
 
 export function useRegenerationProgress(
@@ -27,8 +27,11 @@ export function useRegenerationProgress(
 
   useEffect(() => {
     if (!ovaId || !jobId || !assistant) return undefined;
-    const schedule = (id: string) => { timer.current = setTimeout(() => { void tick(id); }, 3_000); };
-    const tick = async (id: string) => handleRegenPollTick(id, {
+    const schedule = (id: string, failures = 0) => { timer.current = setTimeout(() => { void tick(id, failures); }, regenPollDelayMs(failures)); };
+    // Cualquier final (también un fallo o abandonar el sondeo) refresca el OVA:
+    // la regeneración pudo terminar en el backend aunque aquí no se viera.
+    const refresh = () => { void queryClient.invalidateQueries({ queryKey: ovaWorkspaceKey(ovaId) }); void queryClient.invalidateQueries({ queryKey: ["ova"] }); };
+    const tick = async (id: string, failures = 0) => handleRegenPollTick(id, {
       mounted: () => mounted.current,
       setProgress: (value) => { setProgressState({ jobId: id, ...value }); },
       getAssistantId: () => assistant.id,
@@ -37,12 +40,12 @@ export function useRegenerationProgress(
         await patchMessage({ ...assistant, ...patch });
       },
       onTerminal: () => { if (timer.current) clearTimeout(timer.current); },
-      onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ovaWorkspaceKey(ovaId) }); void queryClient.invalidateQueries({ queryKey: ["ova"] }); },
-      onCancelled: () => { void queryClient.invalidateQueries({ queryKey: ovaWorkspaceKey(ovaId) }); },
-      onError: (message) => { setFailure({ jobId: id, message }); },
+      onSuccess: refresh,
+      onCancelled: refresh,
+      onError: (message) => { setFailure({ jobId: id, message }); refresh(); },
       schedule,
       fetchProgress: (id) => fetchRegenerationProgress(ovaId, id),
-    });
+    }, failures);
     void tick(jobId);
     return () => { if (timer.current) clearTimeout(timer.current); };
   }, [assistant, jobId, ovaId, patchMessage, queryClient]);
