@@ -68,8 +68,31 @@ def office_archive_ok(declared_mime: str, content: bytes) -> bool:
     return declared_mime not in _OFFICE_ZIP_MIMES or office_zip_within_limits(content)
 
 
+# El archivo se guarda en disco como `<uuid>_<nombre>`: con 37 bytes de prefijo
+# el nombre debe caber holgado en NAME_MAX (255 bytes). Un título largo en
+# UTF-8 (tildes = 2 bytes) lo superaba y open() fallaba con un 500.
+_MAX_NAME_BYTES = 150
+_MAX_SUFFIX_BYTES = 16
+
+
+def _truncate_utf8(text: str, max_bytes: int) -> str:
+    return text.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
+
+
 def safe_filename(raw: str | None) -> str:
-    return Path(raw or "archivo").name
+    """Nombre apto para disco: sin ruta, sin NUL ni caracteres de control y con
+    el nombre acotado en bytes conservando la extensión (la ingesta la usa para
+    detectar el tipo)."""
+    name = "".join(c for c in Path(raw or "archivo").name if c.isprintable()).strip()
+    name = name or "archivo"
+    if len(name.encode("utf-8")) <= _MAX_NAME_BYTES:
+        return name
+    suffix = Path(name).suffix
+    if len(suffix.encode("utf-8")) > _MAX_SUFFIX_BYTES:
+        suffix = ""
+    stem = name[: len(name) - len(suffix)] if suffix else name
+    budget = _MAX_NAME_BYTES - len(suffix.encode("utf-8"))
+    return _truncate_utf8(stem, budget) + suffix
 
 
 _INGESTION_MESSAGES: dict[str, str] = {
