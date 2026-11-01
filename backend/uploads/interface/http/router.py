@@ -14,7 +14,7 @@ from core.database import get_db
 from models import Ova, User
 from uploads.application.dto import IncomingFile
 from uploads.container import UploadsUseCases, build_uploads, run_background_ingestion
-from uploads.domain.errors import UploadError
+from uploads.domain.errors import TooManyFiles, UploadError
 from uploads.interface.http.responses import error_response
 
 router = APIRouter()
@@ -67,11 +67,19 @@ async def upload_temp_files(
     db: Session = Depends(get_db),
 ):
     validate_ova_scope(ova_id, current_user.id, db)
+    # Los topes se comprueban ANTES de cargar nada en memoria: leer cada parte
+    # entera (un archivo de GB o cientos de partes) tumbaba el proceso antes de
+    # que el caso de uso pudiera rechazarla. Basta con max_bytes + 1 para que
+    # el caso de uso detecte un archivo demasiado grande.
+    limits = uc.upload_files.limits
+    if len(files) > limits.max_files_per_request():
+        return error_response(TooManyFiles(limits.max_files_per_request()))
+    read_cap = limits.max_file_size_bytes() + 1
     incoming = [
         IncomingFile(
             filename=f.filename or "archivo",
             content_type=f.content_type or "",
-            content=await f.read(),
+            content=await f.read(read_cap),
         )
         for f in files
     ]
