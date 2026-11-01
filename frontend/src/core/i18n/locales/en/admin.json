@@ -136,7 +136,9 @@
   "thesis": {
     "title": "Thesis mode",
     "enabledDesc": "Enabled: registered accounts receive the \"Trial users\" role, designed for study participants. Their permissions can be adjusted in the role list.",
-    "disabledDesc": "Disabled: registered accounts receive the \"User\" role, with full access. Turn this on during the thesis study."
+    "disabledDesc": "Disabled: registered accounts receive the \"User\" role, with full access. Turn this on during the thesis study.",
+    "loading": "Checking the registration mode…",
+    "loadError": "Could not load the registration mode."
   },
   "users": {
     "title": "Users",
