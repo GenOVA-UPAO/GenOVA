@@ -9,9 +9,10 @@ import { useUserApiKeys } from "./use-user-api-keys";
  */
 export function useOwnKeyProviders(): Set<string> | null {
   const isAdmin = useIsAdmin();
-  const { apiKeys, loading } = useUserApiKeys();
-  // Mientras cargan las claves no se filtra: el backend rechaza igual lo no permitido.
-  if (isAdmin || loading) return null;
+  const { apiKeys, loading, error } = useUserApiKeys();
+  // Mientras cargan las claves (o si no se pudieron leer) no se filtra: el
+  // backend rechaza igual lo no permitido. Con el error se vaciaban los selectores.
+  if (isAdmin || loading || error) return null;
   return new Set(Object.entries(apiKeys).filter(([, masked]) => Boolean(masked)).map(([p]) => p));
 }
 
