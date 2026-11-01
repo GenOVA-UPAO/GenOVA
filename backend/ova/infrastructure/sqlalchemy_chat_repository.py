@@ -36,17 +36,19 @@ class SqlAlchemyChatRepository:
         self._db = db
 
     def list_messages(self, ova_id: str, limit: int = 200) -> tuple[ChatMessage, ...]:
+        # Los `limit` más recientes, devueltos en orden cronológico: con ASC + LIMIT un
+        # hilo de más de 200 mensajes dejaba fuera justo los últimos.
         rows = (
             self._db.execute(
                 select(OvaEditorChatMessage)
                 .where(OvaEditorChatMessage.ova_id == ova_id)
-                .order_by(OvaEditorChatMessage.created_at.asc())
+                .order_by(OvaEditorChatMessage.created_at.desc(), OvaEditorChatMessage.id.desc())
                 .limit(limit)
             )
             .scalars()
             .all()
         )
-        return tuple(_to_message(row) for row in rows)
+        return tuple(_to_message(row) for row in reversed(rows))
 
     def create_message(self, draft: ChatMessageDraft) -> ChatMessage:
         try:
