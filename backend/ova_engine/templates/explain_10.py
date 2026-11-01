@@ -59,6 +59,21 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 
+def _short_label(title: str, max_chars: int = 14) -> str:
+    """Rótulo bajo el nodo del mapa: palabras completas y «…» si no cabe el título.
+    Cortarlo a mitad de palabra («Costos de ejec») dejaba en el rótulo visible texto
+    que no figura en el nombre accesible del nodo (WCAG 2.5.3)."""
+    words = title.split()
+    if len(title) <= max_chars or not words:
+        return title
+    shown = [words[0]]
+    for w in words[1:]:
+        if len(" ".join([*shown, w])) > max_chars:
+            break
+        shown.append(w)
+    return " ".join(shown) + ("…" if len(shown) < len(words) else "")
+
+
 def _map(secs: list[dict]) -> str:
     n = len(secs)
     w = 520
@@ -68,11 +83,11 @@ def _map(secs: list[dict]) -> str:
     for k, sec in enumerate(secs):
         cx = gap * k + gap / 2
         t = esc(sec["titulo"])
-        short = esc(sec["titulo"][:14])
+        short = esc(_short_label(sec["titulo"]))
         parts.append(
             f'<g class="ig-node" data-i="{k}" tabindex="0" role="button" aria-label="Ir a la sección {k + 1}: {t}">'
             f'<circle cx="{cx:.1f}" cy="34" r="20" class="ig-c"/>'
-            f'<text x="{cx:.1f}" y="40" text-anchor="middle" class="ig-n">{k + 1}</text>'
+            f'<text x="{cx:.1f}" y="40" text-anchor="middle" class="ig-n">{k + 1}</text> '
             f'<text x="{cx:.1f}" y="78" text-anchor="middle" class="ig-l">{short}</text></g>'
         )
     parts.append("</svg>")
