@@ -13,9 +13,12 @@ from __future__ import annotations
 
 import secrets
 
+import structlog
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 
 from core.config import settings
+
+logger = structlog.get_logger(__name__)
 
 
 def require_metrics_token(request: Request) -> None:
@@ -31,6 +34,10 @@ def setup_metrics(app: FastAPI) -> bool:
     """Instrumenta la app y expone /metrics protegido. False si está apagado."""
     if not settings.metrics_enabled:
         return False
+    if not settings.metrics_token:
+        # Sin token el endpoint queda cerrado (404): avisar para que el scrape no
+        # falle en silencio.
+        logger.warning("METRICS_ENABLED=1 sin METRICS_TOKEN: /metrics responderá 404")
     from prometheus_fastapi_instrumentator import Instrumentator
 
     Instrumentator().instrument(app).expose(
