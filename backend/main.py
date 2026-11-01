@@ -26,6 +26,7 @@ from core.database import Base, engine
 from core.http_errors import data_error_handler
 from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
 from core.logging_setup import RequestContextMiddleware, configure_logging
+from core.metrics import setup_metrics
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
@@ -236,11 +237,8 @@ app.add_middleware(
 )
 logger.info("CORS origins configurados", origins=allowed_origins)
 
-if settings.metrics_enabled:
-    from prometheus_fastapi_instrumentator import Instrumentator
-
-    Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
-    logger.info("Prometheus /metrics habilitado")
+if setup_metrics(app):
+    logger.info("Prometheus /metrics habilitado (requiere METRICS_TOKEN)")
 
 from core.observability import init_langsmith, init_logfire
 
