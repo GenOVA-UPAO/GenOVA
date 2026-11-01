@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from core.educational_metadata import EducationalMetadata
+from core.text import ova_description
 from ova.application.dto import SaveOvaInput, SaveOvaResult
 from ova.application.ports import OvaCreationRepository
 
@@ -22,7 +23,11 @@ class SaveOva:
     def execute(self, data: SaveOvaInput) -> SaveOvaResult:
         # El orden no es incidental: los IDs ya existen antes de construir el
         # paquete, y los cambios se confirman solo después de persistirlo.
-        ova_id = self.repo.create_ova(data.actor_id, data.title, data.prompt, "listo")
+        # El prompt va entero a la versión; la descripción editable se recorta al
+        # tope de la edición de metadatos para que siga pudiéndose guardar.
+        ova_id = self.repo.create_ova(
+            data.actor_id, data.title, ova_description(data.prompt), "listo"
+        )
         version_id = self.repo.create_version(ova_id, 1, data.prompt)
         self.repo.add_phases(version_id, data.phases)
 
