@@ -105,6 +105,7 @@ def generate_with_template(
             enabled_models=enabled_models,
             deadline=deadline,
             db_facts=domain_for(concept, prompt_ctx).is_oracle,
+            check=(lambda d: spec.check(d, params)) if spec.check else None,
         )
     )
     if spec.normalize is not None:

@@ -47,6 +47,19 @@ function say(el,text,kind){el.hidden=false;el.textContent=text;el.className='ev-
 """
 
 
+def single_correct_errors(questions: list, path: str) -> list[str]:
+    """Errores para el reintento del LLM: cada pregunta con exactamente una opción correcta.
+
+    El schema solo tipa `correcta` como booleano; sin esta regla, una pregunta sin
+    ninguna correcta pasaba la validación y el render daba por buena la opción A."""
+    errors = []
+    for n, q in enumerate(questions or [], 1):
+        opts = q.get("opciones") if isinstance(q, dict) else None
+        if sum(1 for o in opts or [] if isinstance(o, dict) and o.get("correcta") is True) != 1:
+            errors.append(f"{path} pregunta {n}: debe tener exactamente una opción con correcta=true")
+    return errors
+
+
 def trim_to_param(key: str, param: str):
     """Normalizador puro `(data, params) -> data`: si el LLM devuelve más elementos de
     `key` que los pedidos en `params[param]`, recorta; si devuelve menos, los deja

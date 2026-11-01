@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import structlog
+
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, normalize_bank
+from ova_engine.templates._evaluate_common import EV_CSS, normalize_bank, single_correct_errors
+
+logger = structlog.get_logger(__name__)
 
 PARAMS = (
     Param("num_per_level", 3, min=2, max=4, help="Preguntas por nivel en el banco"),
@@ -321,10 +325,16 @@ renderQuestion();
 
 def _fix_correct(opts: list) -> list[dict]:
     flags = [bool(o.get("correcta")) for o in opts]
-    if flags.count(True) != 1:
+    if flags.count(True) != 1:  # último recurso: `check` ya pidió corregirlo al LLM
+        logger.warning("quiz answer key remapped", template="evaluate:11", correctas=flags.count(True))
         first = flags.index(True) if True in flags else 0
         return [{"texto": o.get("texto", ""), "correcta": i == first} for i, o in enumerate(opts)]
     return [{"texto": o.get("texto", ""), "correcta": bool(o.get("correcta"))} for o in opts]
+
+
+def check(data: dict, p: dict) -> list[str]:
+    banco = data.get("banco") or {}
+    return [e for lvl in ("bajo", "medio", "alto") for e in single_correct_errors(banco.get(lvl), f"banco.{lvl}:")]
 
 
 def render(data: dict, ctx: RenderContext) -> str:
@@ -475,4 +485,5 @@ SPEC = TemplateSpec(
     render=render,
     sample=sample,
     normalize=normalize_bank,
+    check=check,
 )
