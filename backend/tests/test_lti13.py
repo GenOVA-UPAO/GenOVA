@@ -317,6 +317,26 @@ def test_valid_resource_link_launch_opens_player_without_editor(env):
     assert (launch.subject, launch.has_evaluation, launch.can_post_score) == ("user-42", True, True)
 
 
+def test_phase_documents_are_sandboxed_even_on_direct_navigation(env):
+    """El HTML de fase (escrito por el dueño) nunca corre en el origen de la API."""
+    client, db = env["client"], env["db"]
+    for phase in db.query(OvaPhase).filter(OvaPhase.phase_type == "engage"):
+        phase.content = "<!doctype html><html><body><script>fetch('/api/x')</script></body></html>"
+    db.commit()
+    state, nonce = _login(client)
+    path = _player_path(_launch(client, state, _id_token(nonce, **_resource_claims(env["graded"]))))
+
+    resource = client.get(path + "content/resources/recurso_1.html")
+    assert resource.status_code == 200
+    csp = resource.headers["content-security-policy"]
+    assert csp == f"sandbox allow-scripts; frame-ancestors 'self' {ISSUER}"
+    # El shell generado por GenOVA y sus scripts no van en sandbox.
+    index_csp = client.get(path + "content/index.html").headers["content-security-policy"]
+    assert "sandbox" not in index_csp
+    scorm_csp = client.get(path + "content/resources/scorm.js").headers["content-security-policy"]
+    assert "sandbox" not in scorm_csp
+
+
 def test_launch_rejects_invalid_signature(env):
     client = env["client"]
     state, nonce = _login(client)
