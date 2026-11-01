@@ -28,11 +28,13 @@ export function NodesCardBody({
 }: Readonly<NodesCardBodyProps>) {
   const { t } = useTranslation("llm-settings");
 
+  // El error va antes que «sin datos»: si la carga falla nunca hay borrador y
+  // el esqueleto quedaba girando para siempre.
+  if (error && !loading) {
+    return <SectionError message={error} />;
+  }
   if (loading || !ready) {
     return <SettingListSkeleton rows={3} />;
-  }
-  if (error) {
-    return <SectionError message={error} />;
   }
   return (
     <div className="space-y-6">
