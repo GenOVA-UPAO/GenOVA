@@ -56,6 +56,15 @@ def _inherited_key(provider: str, user_id, db) -> str | None:
         return None
 
 
+def resolve_user_key(provider: str, user_api_keys: dict | None, db=None, user_id=None) -> str | None:
+    """Clave del propio usuario o la heredada de su vínculo; nunca la de plataforma."""
+    if user_api_keys:
+        k = user_api_keys.get(provider, "").strip()
+        if k:
+            return k
+    return _inherited_key(provider, user_id, db)
+
+
 def resolve_key(provider: str, user_api_keys: dict | None, db=None, user_id=None) -> str | None:
     """Return the best available API key for `provider` or None."""
     if user_api_keys:

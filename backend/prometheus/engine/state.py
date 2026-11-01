@@ -17,7 +17,7 @@ class OvaGenerationState(TypedDict, total=False):
     llm_config: dict
     enabled_models: list[dict]
     theme: dict  # {"color": "upao"|"free", "design": "upao"|"free"}
-    image_settings: dict  # {max_images, provider, api_key}
+    image_settings: dict  # {max_images, provider, chain, owner_id} (sin claves)
     # {"{phase}:{resource_type}": {param: value}} — per-resource user config.
     # MUST be declared here: LangGraph drops state keys missing from the schema.
     resource_configs: dict

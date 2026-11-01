@@ -81,7 +81,7 @@ def _parse_pptx(path: str) -> str:
 
 
 def _parse_audio(path: str) -> str:
-    from llm.podcast.podcast.audio_helpers import transcribir_audio
+    from llm.podcast.audio_helpers import transcribir_audio
 
     return transcribir_audio(path)
 

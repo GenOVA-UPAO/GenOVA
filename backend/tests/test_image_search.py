@@ -316,3 +316,27 @@ def test_search_skipped_without_clip(monkeypatch, tmp_path):
     monkeypatch.setattr("llm.images.sources.search.search_openverse", lambda *a, **k: [])
     monkeypatch.setattr("llm.images.sources.search.filter_candidates", lambda c: c)
     assert src.fetch(ImageRequest(tipo="foto", descripcion="servidores", consulta="server rack")) is None
+
+
+def test_search_without_clip_makes_no_provider_requests(monkeypatch):
+    """Sin CLIP no se gasta ninguna petición: el resultado se descartaría igual."""
+    from llm.images.clip_rerank import ClipReranker
+
+    monkeypatch.setenv("IMAGE_CACHE", "0")
+    monkeypatch.delenv("IMAGE_SEARCH_WITHOUT_CLIP", raising=False)
+    fake = type("R", (), {"available": False})()
+    monkeypatch.setattr(ClipReranker, "get_instance", classmethod(lambda cls: fake))
+    calls = []
+    monkeypatch.setattr("llm.images.sources.search.search_wikimedia", lambda *a, **k: calls.append("w") or [])
+    monkeypatch.setattr("llm.images.sources.search.search_openverse", lambda *a, **k: calls.append("o") or [])
+    src = SearchSource()
+    assert src.fetch(ImageRequest(tipo="foto", descripcion="servidores", consulta="server rack")) is None
+    assert calls == []
+
+
+def test_http_session_ignores_long_retry_after():
+    from llm.images.sources.search import create_http_session
+
+    retry = create_http_session().get_adapter("https://x").max_retries
+    assert retry.respect_retry_after_header is False
+    assert retry.backoff_max <= 5

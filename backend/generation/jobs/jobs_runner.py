@@ -28,6 +28,7 @@ from generation.jobs.jobs_progress import (
     _start_job,
 )
 from generation.jobs.jobs_resume_merge import merge_resumed_resources
+from llm.images.image_settings_resolve import strip_image_keys
 from llm.utils.llm_helpers import with_owner
 from models import Ova, OvaJob
 
@@ -79,6 +80,13 @@ def _load_for_run(job_id: uuid.UUID) -> tuple[str, dict | None]:
         # Las elecciones de modelo con clave propia se pagan con esa clave: el
         # motor la busca por el autor del job (nunca se guarda en los params).
         params["llm_config"] = with_owner(params.get("llm_config"), job.user_id)
+        # Jobs antiguos guardaban las claves de imagen en los params: se quitan (también
+        # de la BD) y se resuelven al generar, por el autor del job.
+        images = strip_image_keys(params.get("image_settings"), job.user_id)
+        if images != (params.get("image_settings") or {}):
+            job.params = {**(job.params or {}), "image_settings": images}
+            db.commit()
+        params["image_settings"] = images
         return job.prompt or "", params
     finally:
         db.close()

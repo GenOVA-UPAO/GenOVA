@@ -23,6 +23,7 @@ import structlog
 
 from core.config import settings
 from core.shared_throttle import MemoryWindow, SharedWindow, SlidingWindow
+from llm.auth_errors import is_provider_auth_error
 
 logger = structlog.get_logger(__name__)
 
@@ -84,6 +85,10 @@ def classify_probe_error(exc: Exception) -> str:
         return EMPTY
     if _is_timeout(exc):
         return TIMEOUT
+    # router._chat_once convierte el 401/403 del SDK en ProviderAuthError, que no
+    # lleva status_code: sin esto una clave revocada salía como error genérico.
+    if is_provider_auth_error(exc):
+        return INVALID_KEY
     status = _status_of(exc)
     if status in (401, 403):
         return INVALID_KEY

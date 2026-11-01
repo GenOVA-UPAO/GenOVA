@@ -58,7 +58,7 @@ def _admin(monkeypatch, defaults, fallbacks):
 def _fake_chat(clock, actions, calls):
     """Fake de _chat: cada action = (avance_reloj, resultado|Exception)."""
 
-    def fake(provider, model_id, prompt, max_tokens, extra, timeout, key=None):
+    def fake(provider, model_id, prompt, max_tokens, extra, timeout, key=None, deadline=None):
         calls.append({"provider": provider, "model_id": model_id, "timeout": timeout})
         advance, outcome = actions.pop(0)
         clock.t += advance

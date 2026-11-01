@@ -13,6 +13,7 @@ en su sitio al llegar o deja el aviso definitivo si no llega. Mientras tanto el 
 
 from __future__ import annotations
 
+import time
 from concurrent.futures import Future, ThreadPoolExecutor
 
 import structlog
@@ -42,7 +43,12 @@ def start_video(
         return None
     try:
         from llm.images.video_embed import video_prompt
-        from llm.images.video_generation import cache_key, generate_video, video_chain_for
+        from llm.images.video_generation import (
+            cache_key,
+            default_options,
+            generate_video,
+            video_chain_for,
+        )
         from llm.utils.llm_helpers import OWNER_FIELD
 
         chain = video_chain_for(llm_config)
@@ -52,7 +58,10 @@ def start_video(
         owner = (llm_config or {}).get(OWNER_FIELD, "")
         reuse = cache_key(owner, concept, phase, rt, models)
         prompt = video_prompt(json_data, concept)
-        return _POOL.submit(generate_video, prompt, chain, reuse_key=reuse)
+        # El tope corre desde que se encarga: si espera en la cola del pool más de
+        # lo que attach_video lo aguarda, al arrancar ya no paga un video huérfano.
+        deadline = time.monotonic() + default_options().timeout_s
+        return _POOL.submit(generate_video, prompt, chain, reuse_key=reuse, deadline=deadline)
     except Exception:  # noqa: BLE001 — el video es opcional: nunca tumba el recurso
         logger.exception("video step could not start", phase=phase, resource_type=rt)
         return None
@@ -67,6 +76,11 @@ def attach_video(html: str, pending: Future | None) -> str:
         from llm.images.video_generation import VideoPending, default_options
 
         result = pending.result(timeout=default_options().timeout_s + _WAIT_SLACK_S)
+    except TimeoutError:
+        # Si aún espera en la cola del pool, se cancela: nadie insertaría ese video.
+        cancelled = pending.cancel()
+        logger.warning("video step timed out; keeping the script", cancelled=cancelled)
+        return html
     except Exception:  # noqa: BLE001 — tope o fallo: se queda el guion
         logger.exception("video step failed; keeping the script")
         return html
