@@ -361,6 +361,38 @@ def test_player_package_uses_ova_theme_and_metadata(env):
     assert theme_css("oscuro").encode() in html
 
 
+def test_list_ready_ovas_runs_one_query_without_loading_phase_html(env):
+    """El selector no hace N+1 ni carga el contenido de las fases (videos embebidos)."""
+    from sqlalchemy import event
+
+    db = env["db"]
+    teacher = db.get(Ova, uuid.UUID(env["graded"])).user_id
+    owner = db.get(User, teacher)
+    for index in range(20):
+        _make_ova(db, owner, f"OVA {index}", ["engage", "evaluate"] if index % 2 else ["engage"])
+    db.commit()
+
+    statements: list[str] = []
+
+    def record(_conn, _cursor, statement, *_args):
+        statements.append(statement)
+
+    engine = db.get_bind()
+    event.listen(engine, "before_cursor_execute", record)
+    try:
+        summaries = ova_content.list_ready_ovas(db, str(teacher))
+    finally:
+        event.remove(engine, "before_cursor_execute", record)
+
+    assert len(summaries) == 22
+    assert len(statements) == 1
+    assert "content" not in statements[0].split("FROM")[0]
+    by_title = {summary.title: summary.has_evaluation for summary in summaries}
+    assert by_title["Fotosíntesis"] is True
+    assert by_title["Lectura libre"] is False
+    assert by_title["OVA 1"] is True and by_title["OVA 2"] is False
+
+
 def test_launch_rejects_invalid_signature(env):
     client = env["client"]
     state, nonce = _login(client)
