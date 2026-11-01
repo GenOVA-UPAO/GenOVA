@@ -258,3 +258,23 @@ def test_create_next_version_keeps_titles_and_resource_types(session, monkeypatc
     monkeypatch.setenv("OVA_OUTPUT_DIR", str(tmp_path))
     repo.rebuild_scorm(str(ova_row.id), created_id, str(ova_row.user_id))
     assert [phase["title"] for phase in captured["phases"]] == ["Video", "Lectura", "Quiz"]
+
+
+def test_get_ova_for_update_locks_the_row():
+    """Las escrituras de versión piden FOR UPDATE; las lecturas no."""
+    from unittest.mock import MagicMock
+
+    from sqlalchemy.dialects import postgresql
+
+    db = MagicMock()
+    db.execute.return_value.scalar_one_or_none.return_value = None
+    repo = SqlAlchemyOvaEditorRepository(db)
+    ova_id = str(uuid.uuid4())
+
+    def compiled() -> str:
+        return str(db.execute.call_args.args[0].compile(dialect=postgresql.dialect()))
+
+    repo.get_ova(ova_id, for_update=True)
+    assert "FOR UPDATE" in compiled()
+    repo.get_ova(ova_id)
+    assert "FOR UPDATE" not in compiled()

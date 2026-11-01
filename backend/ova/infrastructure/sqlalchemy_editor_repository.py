@@ -32,12 +32,15 @@ class SqlAlchemyOvaEditorRepository:
         self._ovas: dict[str, Ova] = {}
         self._versions: dict[str, OvaVersion] = {}
 
-    def get_ova(self, ova_id: str) -> EditorOva | None:
+    def get_ova(self, ova_id: str, *, for_update: bool = False) -> EditorOva | None:
         if not is_uuid(ova_id):
             return None
-        row = self._db.execute(
-            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-        ).scalar_one_or_none()
+        query = select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+        if for_update:
+            # Serializa las escrituras que crean versión: dos guardados a la vez leían la
+            # misma versión activa y el segundo violaba uq_one_active_version_per_ova (500).
+            query = query.with_for_update()
+        row = self._db.execute(query).scalar_one_or_none()
         if row is None:
             return None
         self._ovas[str(row.id)] = row

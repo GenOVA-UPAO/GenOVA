@@ -111,7 +111,8 @@ class OvaDuplicationRepository(Protocol):
 
 
 class OvaEditorRepository(Protocol):
-    def get_ova(self, ova_id: str) -> EditorOva | None:
+    def get_ova(self, ova_id: str, *, for_update: bool = False) -> EditorOva | None:
+        """`for_update=True` bloquea la fila del OVA hasta el commit (escrituras de versión)."""
         raise NotImplementedError
 
     def get_or_create_active_version(self, ova: EditorOva) -> EditorVersion:

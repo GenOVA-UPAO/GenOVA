@@ -53,7 +53,7 @@ class EditView:
         }
 
     def revert(self, data: VersionInput) -> EditorVersion:
-        ova = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin)
+        ova = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin, for_update=True)
         if not can_edit_ova(ova.owner_id, data.actor):
             raise OvaForbidden(EDIT_FORBIDDEN)
         if ova.status == "generando":
@@ -82,8 +82,10 @@ class EditView:
             "v2": {"version": version_to_dict(right), "phases": [phase_to_dict(p) for p in right.phases]},
         }
 
-    def _resolve(self, ova_id: str, actor_id: str, is_admin: bool) -> EditorOva:
-        ova = self.repo.get_ova(ova_id)
+    def _resolve(
+        self, ova_id: str, actor_id: str, is_admin: bool, *, for_update: bool = False
+    ) -> EditorOva:
+        ova = self.repo.get_ova(ova_id, for_update=for_update)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
         if ova.owner_id != actor_id and not is_admin:
