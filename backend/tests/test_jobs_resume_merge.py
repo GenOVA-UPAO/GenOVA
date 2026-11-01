@@ -141,3 +141,69 @@ def test_ova_atascado_en_generando_lo_resuelve_la_materializacion(db):
 
     assert merge_resumed_resources(db, job, [recuperado.id]) is False
     assert len(db.execute(select(OvaVersion)).scalars().all()) == 1
+
+
+def _ova_con_degradado(db):
+    """OVA ya materializado con el recurso `degraded` del job dentro."""
+    ova = _ova_con_version(db)
+    db.add(
+        OvaPhase(
+            version_id=ova.current_version_id,
+            phase_type="explore",
+            phase_order=3,
+            content="<p>degradado</p>",
+            resource_type_id=5,
+            title="Lectura guiada",
+        )
+    )
+    db.commit()
+    return ova
+
+
+def _fases_activas(db, ova):
+    activa = db.execute(
+        select(OvaVersion).where(OvaVersion.ova_id == ova.id, OvaVersion.is_active.is_(True))
+    ).scalar_one()
+    return [(p.phase_type, p.resource_type_id, p.content) for p in activa.phases]
+
+
+@pytest.mark.parametrize("estado", ["done", "degraded"])
+def test_reintentar_un_degradado_sustituye_su_copia_sin_duplicarla(db, estado):
+    # El degradado ya estaba en el OVA: el reintento lo reemplaza en su sitio,
+    # tanto si vuelve bien como si vuelve degradado otra vez.
+    ova = _ova_con_degradado(db)
+    job = _job(ova)
+    reintentado = _recurso(db, job, estado, content="<p>reintentado</p>")
+
+    assert merge_resumed_resources(db, job, [reintentado.id]) is True
+
+    fases = _fases_activas(db, ova)
+    assert len(fases) == 3
+    assert [f for f in fases if f[:2] == ("explore", 5)] == [("explore", 5, "<p>reintentado</p>")]
+
+
+def test_un_segundo_run_del_mismo_job_no_duplica_los_recursos(db):
+    # Doble ejecución (re-encolado o doble reintento): todos los recursos vuelven
+    # `done` y ya están en el OVA; no se añade ninguna copia.
+    ova = _ova_con_version(db)
+    job = _job(ova)
+    a = _recurso(db, job, "done", phase="engage", content="<p>otra vez</p>")
+    b = OvaJobResource(
+        id=uuid.uuid4(),
+        job_id=job.id,
+        phase_type="evaluate",
+        phase_order=5,
+        resource_type="1",
+        resource_order=0,
+        status="done",
+        content="<p>quiz</p>",
+    )
+    db.add(b)
+    db.commit()
+
+    merge_resumed_resources(db, job, [a.id, b.id])
+
+    fases = _fases_activas(db, ova)
+    assert len(fases) == 2
+    # La fase que el docente regeneró no se pisa.
+    assert ("engage", 5, "<p>editado por el docente</p>") in fases

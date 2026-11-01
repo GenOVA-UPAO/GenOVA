@@ -48,30 +48,61 @@ def _active_version(db: Session, ova_id) -> OvaVersion | None:
     ).scalar_one_or_none()
 
 
-def _merged_rows(current: list[OvaPhase], recovered: list[OvaJobResource]) -> list[dict]:
-    rows = [
-        {
-            "phase_type": p.phase_type,
-            "content": p.content,
-            "regenerated": p.regenerated,
-            "resource_type_id": p.resource_type_id,
-            "title": p.title,
-        }
-        for p in sorted(current, key=lambda p: p.phase_order)
-    ]
+def _phase_row(p: OvaPhase) -> dict:
+    return {
+        "phase_type": p.phase_type,
+        "content": p.content,
+        "regenerated": p.regenerated,
+        "resource_type_id": p.resource_type_id,
+        "title": p.title,
+    }
+
+
+def _merged_rows(
+    current: list[OvaPhase], recovered: list[OvaJobResource], *, replace: bool
+) -> tuple[list[dict], int]:
+    """Copia la versión activa y le aplica los recursos recuperados.
+
+    Un recurso cuyo (fase, tipo) ya está en el OVA no se añade otra vez: un
+    `degraded` ya se materializó y un doble run del mismo job repite todos. Con
+    ``replace`` se sustituye el contenido en su sitio (salvo que el docente ya
+    regenerase esa fase); sin él (job cancelado) se omite. Cada fase casa con un
+    solo recurso, así dos del mismo tipo encuentran cada uno la suya. Devuelve
+    las filas y cuántos recursos cambiaron algo.
+    """
+    rows = [_phase_row(p) for p in sorted(current, key=lambda p: p.phase_order)]
+    matched: set[int] = set()
+    applied = 0
     for r in recovered:
         rid, title, _emoji = resolve_resource_display(r.phase_type, r.resource_type)
-        rows.append(
-            {
-                "phase_type": r.phase_type,
-                "content": r.content or "",
-                "regenerated": False,
-                "resource_type_id": rid,
-                "title": title,
-            }
+        hit = next(
+            (
+                i
+                for i, row in enumerate(rows)
+                if i not in matched
+                and (row["phase_type"], row["resource_type_id"]) == (r.phase_type, rid)
+            ),
+            None,
         )
+        if hit is None:
+            rows.append(
+                {
+                    "phase_type": r.phase_type,
+                    "content": r.content or "",
+                    "regenerated": False,
+                    "resource_type_id": rid,
+                    "title": title,
+                }
+            )
+            matched.add(len(rows) - 1)
+            applied += 1
+            continue
+        matched.add(hit)
+        if replace and not rows[hit]["regenerated"]:
+            rows[hit]["content"] = r.content or ""
+            applied += 1
     # sorted() es estable: dentro de cada fase, primero lo que ya había y luego lo recuperado.
-    return sorted(rows, key=lambda row: _rank(row["phase_type"]))
+    return sorted(rows, key=lambda row: _rank(row["phase_type"])), applied
 
 
 def merge_resumed_resources(db: Session, job: OvaJob, resource_ids: list[uuid.UUID]) -> bool:
@@ -83,16 +114,10 @@ def merge_resumed_resources(db: Session, job: OvaJob, resource_ids: list[uuid.UU
     active = _active_version(db, ova.id)
     if not recovered or active is None:
         return False
-    if getattr(job, "status", None) == "canceled":
-        existing = {(p.phase_type, p.resource_type_id) for p in active.phases}
-        recovered = [
-            r for r in recovered
-            if (r.phase_type, resolve_resource_display(r.phase_type, r.resource_type)[0])
-            not in existing
-        ]
-        if not recovered:
-            return False
-    rows = _merged_rows(list(active.phases), recovered)
+    replace = getattr(job, "status", None) != "canceled"
+    rows, applied = _merged_rows(list(active.phases), recovered, replace=replace)
+    if not applied:
+        return False
     db.execute(
         update(OvaVersion)
         .where(OvaVersion.ova_id == ova.id, OvaVersion.is_active.is_(True))
@@ -131,6 +156,6 @@ def merge_resumed_resources(db: Session, job: OvaJob, resource_ids: list[uuid.UU
         ova_id=str(ova.id),
         job_id=str(job.id),
         version=version.version_number,
-        added=len(recovered),
+        added=applied,
     )
     return True
