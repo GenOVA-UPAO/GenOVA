@@ -4,21 +4,23 @@ import { isRouteErrorResponse, Link, useRouteError } from "react-router";
 import { Button } from "@/core/components/ui/button";
 import { captureException } from "@/core/lib/observability/sentry";
 
-/** A deploy replaced the hashed chunks while this tab was open. */
+/**
+ * A deploy replaced the hashed chunks while this tab was open. Mensajes de
+ * Chromium, Safari, Firefox y del preload de CSS de Vite.
+ */
+const CHUNK_LOAD_ERROR =
+  /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Unable to preload CSS/i;
+
 function isChunkLoadError(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    /Failed to fetch dynamically imported module|Importing a module script failed/i.test(
-      error.message,
-    )
-  );
+  return error instanceof Error && CHUNK_LOAD_ERROR.test(error.message);
 }
 
 export function RouteError() {
   const { t } = useTranslation();
   const error = useRouteError();
   const chunk = isChunkLoadError(error);
-  if (!isRouteErrorResponse(error)) captureException(error);
+  // Un chunk viejo tras un deploy no es un fallo de la app: no se reporta.
+  if (!chunk && !isRouteErrorResponse(error)) captureException(error);
 
   return (
     <main className="flex h-dvh overflow-y-auto flex-col items-center justify-center gap-4 p-6 text-center">
