@@ -56,6 +56,8 @@ def _merged_rows(current: list[OvaPhase], recovered: list[OvaJobResource]) -> li
             "regenerated": p.regenerated,
             "resource_type_id": p.resource_type_id,
             "title": p.title,
+            # Mismo recurso en la versión nueva: conserva su historial de micro-versiones.
+            "lineage_id": p.lineage_id or p.id,
         }
         for p in sorted(current, key=lambda p: p.phase_order)
     ]
