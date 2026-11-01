@@ -5,8 +5,8 @@ import { Button } from "@/core/components/ui/button";
 import { captureException } from "@/core/lib/observability/sentry";
 
 /**
- * A deploy replaced the hashed chunks while this tab was open. Mensajes de
- * Chromium, Safari, Firefox y del preload de CSS de Vite.
+ * Un deploy reemplazó los chunks con hash mientras la pestaña seguía abierta.
+ * Mensajes de Chromium, Safari, Firefox y del preload de CSS de Vite.
  */
 const CHUNK_LOAD_ERROR =
   /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Unable to preload CSS/i;
