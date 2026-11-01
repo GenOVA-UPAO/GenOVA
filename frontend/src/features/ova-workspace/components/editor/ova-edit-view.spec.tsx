@@ -3,6 +3,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HttpError } from "@/core/lib/http";
+
 import * as jobsApi from "../../api/ova-jobs.api";
 import * as api from "../../api/ova-workspace.api";
 import { OvaEditView } from "./ova-edit-view";
@@ -220,5 +222,39 @@ describe("OvaEditView event wiring", () => {
       "aria-current",
       "true",
     );
+  });
+});
+
+describe("OvaEditView conflicts", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  function renderView() {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <OvaEditView ovaId="ova-1" />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+  it("shows the backend message when the OVA was left without a version", async () => {
+    const message = "Este OVA no tiene recursos guardados. Reintenta la generación desde Mis OVAs.";
+    vi.mocked(api.fetchOvaWorkspace).mockRejectedValueOnce(
+      new HttpError(message, { status: 409, code: "generation_no_version" }),
+    );
+    renderView();
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
+    expect(jobsApi.fetchOvaJobByOvaId).not.toHaveBeenCalled();
+  });
+  it("keeps the generating panel while the OVA is still being generated", async () => {
+    vi.mocked(api.fetchOvaWorkspace).mockRejectedValueOnce(
+      new HttpError("La OVA se está generando.", { status: 409, code: "ova_generating" }),
+    );
+    renderView();
+    await waitFor(() => {
+      expect(jobsApi.fetchOvaJobByOvaId).toHaveBeenCalledWith("ova-1");
+    });
   });
 });
