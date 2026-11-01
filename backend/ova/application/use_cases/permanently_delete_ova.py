@@ -24,4 +24,5 @@ class PermanentlyDeleteOva:
         self.repo.stage_permanent_delete(ova.id)
         self.repo.commit("permanent_delete_ova")
         self.packages.delete(ova.file_path, ova.storage_key)
+        self.packages.delete_versions(ova.owner_id, ova.id)
         return OvaMutationResult(id=data.ova_id)

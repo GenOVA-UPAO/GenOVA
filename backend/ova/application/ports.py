@@ -48,6 +48,10 @@ class ScormPackageCleaner(Protocol):
     def delete(self, file_path: str | None, storage_key: str | None) -> None:
         raise NotImplementedError
 
+    def delete_versions(self, owner_id: str, ova_id: str) -> None:
+        """Borra los paquetes de TODAS las versiones (`{owner}/{ova}_vN.zip`), no solo el último."""
+        raise NotImplementedError
+
 
 class OvaCreationRepository(Protocol):
     def create_ova(

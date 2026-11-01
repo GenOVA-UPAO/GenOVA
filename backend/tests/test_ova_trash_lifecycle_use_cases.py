@@ -71,9 +71,13 @@ class DummyLifecycleRepository:
 class DummyScormCleaner:
     def __init__(self) -> None:
         self.deleted_packages: list[tuple[str | None, str | None]] = []
+        self.deleted_versions: list[tuple[str, str]] = []
 
     def delete(self, file_path: str | None, storage_key: str | None) -> None:
         self.deleted_packages.append((file_path, storage_key))
+
+    def delete_versions(self, owner_id: str, ova_id: str) -> None:
+        self.deleted_versions.append((owner_id, ova_id))
 
 
 def _make_ova(
@@ -227,6 +231,8 @@ def test_permanent_delete_exitoso_purga_bd_y_borra_paquete_scorm():
     assert repo.staged_deletes == ["ova-1"]
     assert repo.commits == ["permanent_delete_ova"]
     assert cleaner.deleted_packages == [("/var/scorm/ova-1.zip", "user-1/ova-1_v1.zip")]
+    # También los paquetes de las versiones anteriores, no solo el último.
+    assert cleaner.deleted_versions == [("user-1", "ova-1")]
 
 
 # --- Operaciones por lotes (Batch) ---
@@ -282,6 +288,7 @@ def test_batch_permanent_delete_purga_validos_y_elimina_todos_los_paquetes():
     assert repo.staged_deletes == ["t1", "t2"]
     assert repo.commits == ["batch_permanent_delete"]
     assert cleaner.deleted_packages == [("/p/t1.zip", None), (None, "key/t2.zip")]
+    assert cleaner.deleted_versions == [("user-1", "t1"), ("user-1", "t2")]
 
 
 # --- Conteo y Listado de Papelera ---
