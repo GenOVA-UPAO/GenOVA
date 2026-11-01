@@ -22,6 +22,8 @@
   "deleted_other": "{{count}} OVAs eliminados definitivamente",
   "emptied_one": "Papelera vaciada: {{count}} OVA eliminado",
   "emptied_other": "Papelera vaciada: {{count}} OVAs eliminados",
+  "skipped_one": "{{count}} OVA omitido: cambió de estado o ya no está disponible",
+  "skipped_other": "{{count}} OVAs omitidos: cambiaron de estado o ya no están disponibles",
   "withStatus": " en estado «{{status}}»",
   "no_se_pudo_descargar_el_archivo": "No se pudo descargar el archivo.",
   "descargar_elegir_formato": "Descargar, elegir formato",
