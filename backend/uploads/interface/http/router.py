@@ -57,8 +57,12 @@ def list_temp_uploads(
     return {"items": [asdict(v) for v in items]}
 
 
+# `def` y no `async def`: FastAPI lo ejecuta en el threadpool. El cuerpo es todo
+# E/S síncrona (transacciones con SELECT ... FOR UPDATE, escritura a disco de
+# hasta 20 MB por archivo); en el event loop congelaba los demás endpoints
+# async, incluido el SSE de progreso de los jobs.
 @router.post("/temp", tags=["Documentos y RAG"], summary="Subir documentos temporales")
-async def upload_temp_files(
+def upload_temp_files(
     background: BackgroundTasks,
     files: list[UploadFile] = File(default=[]),
     ova_id: uuid.UUID | None = _OVA_SCOPE,
@@ -79,7 +83,7 @@ async def upload_temp_files(
         IncomingFile(
             filename=f.filename or "archivo",
             content_type=f.content_type or "",
-            content=await f.read(read_cap),
+            content=f.file.read(read_cap),
         )
         for f in files
     ]

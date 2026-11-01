@@ -88,3 +88,11 @@ def test_demasiados_archivos_se_rechazan_sin_leerlos(cliente):
     assert res.status_code == 400
     assert res.json()["error"] == "files_limit_exceeded"
     assert repo.recibidos == []
+
+
+def test_el_endpoint_de_subida_no_bloquea_el_event_loop():
+    # Todo su trabajo es E/S síncrona (BD y disco): como `def` corre en el
+    # threadpool; como `async def` congelaba los demás endpoints (SSE incluido).
+    import inspect
+
+    assert not inspect.iscoroutinefunction(http.upload_temp_files)
