@@ -60,6 +60,7 @@ export function WorkspaceChatPanel({
         }}
         onSelectPrompt={setPrompt}
         cancel={regen.cancel}
+        busy={regen.busy}
       />
       <div className="shrink-0 space-y-2 border-t border-border bg-background/60 p-3 sm:p-4">
         <ChatComposer
