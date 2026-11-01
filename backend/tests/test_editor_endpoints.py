@@ -19,6 +19,7 @@ from editor.application.use_cases import (
 )
 from editor.container import EditorUseCases, build_editor
 from editor.infrastructure.interpreters.rules import RulesIntentInterpreter
+from editor.infrastructure.runtime import OvaRuntimeAdapter
 from main import app
 
 client = TestClient(app)
@@ -85,7 +86,7 @@ def _build_test_editor(owner_id: str | None, phases: list[str] | None) -> Editor
             interpreters={"rules": rules, "hybrid": rules},
             default_backend="rules",
         ),
-        confirm_and_apply=ConfirmAndApplyUseCase(phase_repo=phase_repo),
+        confirm_and_apply=ConfirmAndApplyUseCase(phase_repo=phase_repo, runtime=OvaRuntimeAdapter()),
         record_feedback=RecordFeedbackUseCase(feedback_repo=feedback_repo),
     )
 
@@ -200,6 +201,8 @@ def test_confirm_and_apply_200_owner_success():
     assert data["success"] is True
     assert data["minor_number"] == 2
     assert "<upao-header" in data["html"]
+    # Se guarda con el runtime UPAO: sin él las etiquetas upao-* quedan sin definir.
+    assert "UPAO Components v" in data["html"]
 
 
 def test_record_feedback_200_success():
