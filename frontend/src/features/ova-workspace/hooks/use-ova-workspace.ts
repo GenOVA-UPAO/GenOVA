@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addOvaPhase, deleteOvaPhase, downloadOvaScorm, fetchOvaVersions, fetchOvaWorkspace, fetchPhaseVersions, fetchVersionDiff, reorderOvaPhases, revertOvaVersion, revertPhaseVersion, saveOvaPhase, triggerOvaRegeneration } from "../api/ova-workspace.api";
 
 export const ovaWorkspaceKey = (ovaId: string) => ["ova-workspace", ovaId] as const;
+/** Microversiones de un recurso (historial «Versiones» del recurso). */
+export const phaseVersionsKey = (ovaId: string, phaseId: string) => ["ova-phase-versions", ovaId, phaseId] as const;
 
 export function useOvaWorkspace(ovaId: string | undefined) {
   const queryClient = useQueryClient();
