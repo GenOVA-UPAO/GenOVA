@@ -24,7 +24,7 @@ def test_credito_enriquecido_es_json_y_se_sigue_mostrando(monkeypatch):
     spec = get_spec("engage", 5)
     params = spec.resolve_params({})
     data = spec.sample("Redes", params)
-    enrich_with_images(data, {"max_images": 1}, ova_key="Redes", template_key=spec.key)
+    enrich_with_images(data, {"max_images": 1, "provider": "huggingface"}, ova_key="Redes", template_key=spec.key)
     assert data["image_credit"]["author"] == "Ana Autora"
     json.dumps(data)
     html = spec.render(data, RenderContext("Redes", spec.phase, spec.rt, spec.title, params))
