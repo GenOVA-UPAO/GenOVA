@@ -37,7 +37,11 @@ def render_resource(
     html = document(f"{spec.title}: {concept}", spec.render(data, ctx), key=spec.key, info=info)
     return inject_runtime(
         html,
-        css=theme.get("color", "upao") != "free",
+        # La hoja base va siempre: en el motor de plantillas el LLM solo escribe
+        # texto, así que «IA elige» (color «free») no aporta CSS propio y sin ella
+        # los botones .k-btn.main y las tarjetas quedaban sin estilo. «free» usa
+        # la paleta UPAO; solo «custom» trae paleta propia.
+        css=True,
         # Las plantillas SIEMPRE usan los componentes UPAO.
         components=True,
         palette=theme.get("palette") if theme.get("color") == "custom" else None,
