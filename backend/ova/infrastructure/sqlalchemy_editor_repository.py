@@ -150,6 +150,8 @@ class SqlAlchemyOvaEditorRepository:
                     phase_order=phase.phase_order,
                     content=phase.content,
                     regenerated=False,
+                    resource_type_id=phase.resource_type_id,
+                    title=phase.title,
                 )
             )
         self._db.flush()
@@ -171,7 +173,12 @@ class SqlAlchemyOvaEditorRepository:
             module_title="OVA Generado por GenOVA",
             metadata=metadata_from_ova(ova),
             phases=[
-                {"type": phase.phase_type, "order": phase.phase_order, "content": phase.content}
+                {
+                    "type": phase.phase_type,
+                    "order": phase.phase_order,
+                    "content": phase.content,
+                    "title": phase.title,
+                }
                 for phase in phases
             ],
         )
