@@ -24,6 +24,9 @@ concurrency:
 jobs:
   qa:
     name: QA contenido (LLM real)
+    # Los PR de Dependabot (bump mensual de acciones) tocan este workflow pero no
+    # reciben secretos: sin QA_OPENROUTER_API_KEY fallaban siempre los 12 casos.
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:

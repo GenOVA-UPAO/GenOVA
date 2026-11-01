@@ -14,8 +14,14 @@ services:
     # queda por proceso; con Redis y sin worker la generación se queda en cola.
     env_file:
       - ./backend/.env
+    environment:
+      # Solo nginx (red interna) y el propio host llegan al backend: se confía
+      # en su X-Forwarded-Proto/For para que request.base_url sea el público.
+      FORWARDED_ALLOW_IPS: '*'
+    # El tráfico entra por el gateway nginx (:80); el 8000 queda solo en
+    # loopback del host para depurar.
     ports:
-      - '8000:8000'
+      - '127.0.0.1:8000:8000'
     healthcheck:
       test: ['CMD', 'python', '-c', 'import urllib.request; urllib.request.urlopen("http://localhost:8000/health")']
       interval: 15s

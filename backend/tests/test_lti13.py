@@ -710,3 +710,24 @@ def test_play_without_slash_adds_the_slash_in_the_browser(env):
 def test_play_without_slash_rejects_malformed_token(env, token):
     response = env["client"].get(f"/lti/play/{token}", follow_redirects=False)
     assert response.status_code == 404
+
+
+def test_tool_url_usa_la_configurada_aunque_la_peticion_llegue_por_http(monkeypatch):
+    # Detrás del proxy de Render la petición llega como http://: manda LTI_TOOL_URL.
+    from starlette.requests import Request
+
+    from lti.interface.http.router import tool_url
+
+    request = Request(
+        {
+            "type": "http",
+            "scheme": "http",
+            "server": ("genova-backend-lbdr.onrender.com", 80),
+            "path": "/lti/login",
+            "headers": [(b"host", b"genova-backend-lbdr.onrender.com")],
+        }
+    )
+    monkeypatch.setattr(settings, "lti_tool_url", "https://genova-backend-lbdr.onrender.com/")
+    assert tool_url(request) == "https://genova-backend-lbdr.onrender.com"
+    monkeypatch.setattr(settings, "lti_tool_url", "")
+    assert tool_url(request).startswith("http://")

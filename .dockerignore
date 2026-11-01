@@ -3,6 +3,7 @@
 # (solo vale con contexto ./backend, el compose de desarrollo), así que todo lo que
 # `COPY backend/ .` no debe meter en la imagen se excluye en este archivo.
 node_modules
+**/node_modules
 .git
 .github
 tests
