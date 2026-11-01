@@ -87,8 +87,9 @@ def test_gate_consulta_ambos_permisos_y_el_rol_admin():
     assert "roles.name =" in sql
 
 
-def test_put_api_keys_sin_permiso_responde_403():
-    limiter.enabled = False
+def test_put_api_keys_sin_permiso_responde_403(monkeypatch):
+    # SlowAPI es estado global: se desactiva solo durante esta prueba.
+    monkeypatch.setattr(limiter, "enabled", False)
     app = FastAPI()
     app.state.limiter = limiter
     app.include_router(settings_api_keys_router.router, prefix="/api/users")
