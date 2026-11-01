@@ -24,7 +24,7 @@ import structlog
 
 from llm.utils.utils import parse_json
 from ova_engine.domain_context import is_oracle_text
-from ova_engine.schema import validate
+from ova_engine.schema import prune, validate
 
 logger = structlog.get_logger(__name__)
 
@@ -244,7 +244,7 @@ def _run_model_attempts(
             continue
         errors = validate(data, schema)[:8]
         if not errors:
-            return data, []
+            return prune(data, schema), []
         logger.warning(
             "ova text schema errors",
             attempt=attempt,
