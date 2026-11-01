@@ -8,6 +8,7 @@ una fija un fallo real que pasó desapercibido porque el despliegue o el job
 Uso:  pytest tests/test_infra_config.py -v
 """
 
+import json
 import re
 import subprocess
 import sys
@@ -202,3 +203,15 @@ def test_render_despliega_main_solo_si_pasan_los_checks():
     for service in yaml.safe_load(_read("render.yaml"))["services"]:
         if service.get("branch") == "main":
             assert service.get("autoDeployTrigger") == "checksPass", service["name"]
+
+
+# ── `pnpm dev:docker` ─────────────────────────────────────────────────────────
+
+
+def test_dev_docker_renueva_el_node_modules_anonimo():
+    # Compose conserva los volúmenes anónimos al recrear: sin -V el node_modules
+    # viejo tapa las dependencias recién instaladas en la imagen.
+    frontend = yaml.safe_load(_read("docker-compose.yml"))["services"]["frontend"]
+    if "/app/node_modules" in frontend.get("volumes", []):
+        script = json.loads(_read("package.json"))["scripts"]["dev:docker"]
+        assert "--renew-anon-volumes" in script or " -V" in script
