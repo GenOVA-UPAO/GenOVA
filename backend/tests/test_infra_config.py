@@ -116,3 +116,39 @@ def test_render_fija_lti_tool_url_https_en_produccion():
         if env.get("ENV", {}).get("value") != "production":
             continue
         assert str(env.get("LTI_TOOL_URL", {}).get("value", "")).startswith("https://")
+
+
+# ── Workflows de GitHub Actions ───────────────────────────────────────────────
+
+
+def _run_steps(workflow: str):
+    data = yaml.safe_load(_read(f".github/workflows/{workflow}"))
+    defaults = (data.get("defaults") or {}).get("run", {}).get("shell")
+    for job_name, job in data["jobs"].items():
+        job_shell = (job.get("defaults") or {}).get("run", {}).get("shell", defaults)
+        for step in job.get("steps", []):
+            if "run" in step:
+                yield job_name, step, step.get("shell", job_shell)
+
+
+def _sin_pipefail(workflow: str) -> list[str]:
+    """Pasos con tuberías cuyo estado es el del último comando (bash -e sin pipefail)."""
+    malos = []
+    for job_name, step, shell in _run_steps(workflow):
+        script = step["run"]
+        tuberia = "| tee" in script or re.search(r"\$\(curl[^)]*\|", script)
+        if tuberia and shell != "bash" and "set -o pipefail" not in script:
+            malos.append(f"{workflow}:{job_name}:{step.get('name', script[:40])}")
+    return malos
+
+
+def test_load_test_el_gate_rn001_puede_fallar():
+    assert _sin_pipefail("load-test.yml") == []
+
+
+def test_load_test_solo_exporta_variables_que_lee_el_locustfile():
+    locustfile = _read("tests/load/locustfile.py")
+    for _job, step, _shell in _run_steps("load-test.yml"):
+        for var in step.get("env", {}):
+            if var.startswith("LOAD_"):
+                assert f'"{var}"' in locustfile, f"{var} no lo lee tests/load/locustfile.py"

@@ -83,7 +83,8 @@ jobs:
       - name: Run Locust
         env:
           # Contra develop NO se encolan generaciones (LLM real, quema cuota).
-          LOAD_GENERATION: ${{ env.TARGET == 'local' && '1' || '0' }}
+          # locustfile.py solo lee LOAD_COSTOSOS (generación, agentes, uploads).
+          LOAD_COSTOSOS: ${{ env.TARGET == 'local' && '1' || '0' }}
         run: |
           HOST=http://localhost:8000
           locust -f tests/load/locustfile.py --headless \
@@ -93,6 +94,8 @@ jobs:
 
       - name: Gate RN-001 (P90 <= 278 ms, solo modo local)
         if: env.TARGET == 'local'
+        # `shell: bash` añade -o pipefail: sin él, el `| tee` se tragaba el exit 1.
+        shell: bash
         run: python tests/load/check_thresholds.py tests/load/report_stats.csv | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v7
