@@ -20,9 +20,13 @@ tests
 **/*.pyc
 **/.pytest_cache
 **/.ruff_cache
+**/.import_linter_cache
 
 # Datos locales del backend (zips SCORM de usuarios, uploads, salidas de pruebas).
 backend/**/scorm_output
 backend/tmp
 backend/tests
 backend/tools/outputs
+# Logs locales (gitignorados, como el del Prompt Lab): no son parte de la imagen.
+**/*.log
+backend/tools/prompt_lab_log.jsonl

@@ -67,6 +67,8 @@ def _excluded(path: str) -> bool:
         "backend/tmp/upload.pdf",
         "backend/tests/conftest.py",
         "backend/core/__pycache__/config.cpython-312.pyc",
+        "backend/tools/prompt_lab_log.jsonl",
+        "backend/uvicorn.log",
     ],
 )
 def test_contexto_raiz_excluye(path):
