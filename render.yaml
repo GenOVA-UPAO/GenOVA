@@ -69,6 +69,14 @@ services:
         value: none
       - key: LOG_LEVEL
         value: INFO
+      # El proxy de Render conecta desde su red privada (10.x). uvicorn solo toma la
+      # IP del cliente de X-Forwarded-For si el peer es de confianza; sin esto todos
+      # los usuarios comparten el límite por IP de SlowAPI (p. ej. 10 logins/min para
+      # toda la clase). Solo ese rango, nunca '*': con '*' el cliente falsearía la IP
+      # poniendo su propio X-Forwarded-For. No usar en docker-compose.prod.yml
+      # (publica el 8000 directo).
+      - key: FORWARDED_ALLOW_IPS
+        value: "10.0.0.0/8"
 
       # NO configurar Redis aquí: con un valor, arq encola los jobs, pero este
       # Blueprint no crea worker y quedarían esperando para siempre. Vacío activa
