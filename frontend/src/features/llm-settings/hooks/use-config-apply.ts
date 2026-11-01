@@ -26,15 +26,18 @@ export function useConfigApply() {
     ]);
   };
 
-  const undo = async (entryId: string) => {
+  /** Devuelve si se deshizo: ante un error solo avisa, para que quien llama no siga. */
+  const undo = async (entryId: string): Promise<boolean> => {
     try {
       const res = await restoreConfigVersion(entryId, "before");
       await refresh();
       toast.success(t("llm-settings:history.undoSuccess"), {
         description: res.history_entry ? changesSummary(res.history_entry.changes) : undefined,
       });
+      return true;
     } catch (err: unknown) {
       toast.error(errorMessage(err, t("llm-settings:history.undoError")));
+      return false;
     }
   };
 
