@@ -111,6 +111,30 @@ describe("OvaEditView event wiring", () => {
       ]);
     });
   });
+  it("reorders only the resources of the moved phase", async () => {
+    // Un OVA real tiene varias fases: el backend rechaza con 422 una lista
+    // que mezcla tipos, así que «explore» no debe viajar en el PATCH.
+    vi.mocked(api.fetchOvaWorkspace).mockResolvedValueOnce({
+      title: "OVA de prueba",
+      status: "listo",
+      current_version: {
+        version_number: 2,
+        phases: [
+          { id: "a", phase_type: "engage", phase_order: 0, title: "Primer recurso", content: "<p>1</p>" },
+          { id: "b", phase_type: "engage", phase_order: 1, title: "Segundo recurso", content: "<p>2</p>" },
+          { id: "c", phase_type: "explore", phase_order: 2, title: "Tercer recurso", content: "<p>3</p>" },
+        ],
+      },
+    });
+    await setup();
+    fireEvent.click(screen.getByRole("button", { name: "Subir Segundo recurso" }));
+    await waitFor(() => {
+      expect(api.reorderOvaPhases).toHaveBeenCalledWith("ova-1", [
+        { phase_id: "b", new_order: 0 },
+        { phase_id: "a", new_order: 1 },
+      ]);
+    });
+  });
   it("regenerates only the requested phase", async () => {
     await setup();
     fireEvent.click(screen.getAllByRole("button", { name: "Regenerar recurso" })[0]);
