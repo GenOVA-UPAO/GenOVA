@@ -424,6 +424,7 @@
   "gracias_usaremos_tu_opinion_para_mejorar_los_recursos": "Thank you. We'll use your feedback to improve resources.",
   "mensaje_eliminado": "Message deleted.",
   "error_al_subir_archivo": "Could not upload the file.",
+  "subida_demasiado_lenta": "The upload took too long. Check your connection or upload smaller files.",
   "cambio_confirmado_y_aplicado_con_exito_value_conf": "Change confirmed and applied successfully ({{p0}}% confidence).",
   "accion_cancelada": "Action canceled.",
   "no_hay_cambios_anteriores_para_deshacer": "No previous changes to undo.",

@@ -424,6 +424,7 @@
   "gracias_usaremos_tu_opinion_para_mejorar_los_recursos": "Gracias, usaremos tu opinión para mejorar los recursos.",
   "mensaje_eliminado": "Mensaje eliminado.",
   "error_al_subir_archivo": "Error al subir archivo.",
+  "subida_demasiado_lenta": "La subida tardó demasiado. Revisa tu conexión o sube archivos más pequeños.",
   "cambio_confirmado_y_aplicado_con_exito_value_conf": "Cambio confirmado y aplicado con éxito ({{p0}}% conf.).",
   "accion_cancelada": "Acción cancelada.",
   "no_hay_cambios_anteriores_para_deshacer": "No hay cambios anteriores para deshacer.",
