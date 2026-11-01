@@ -83,9 +83,9 @@ class SqlAlchemyJobRepository:
     def resumable_subset(self, job_id: UUID, requested: list[UUID]) -> list[UUID]:
         return jobs_service.resumable_subset(self._db, job_id, requested)
 
-    def mark_resuming(self, job_id: UUID) -> None:
+    def mark_resuming(self, job_id: UUID) -> bool:
         orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
-        jobs_service.mark_job_resuming(self._db, orm)
+        return jobs_service.mark_job_resuming(self._db, orm)
 
     def cancel(self, job_id: UUID) -> None:
         orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
