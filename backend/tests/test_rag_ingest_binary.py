@@ -13,7 +13,11 @@ import pytest
 from rag.application.errors import EmbedderError
 from rag.application.use_cases.ingest_document import IngestDocument
 from rag.domain.chunking import DEFAULT_CHUNK_SIZE
-from rag.domain.context import DEFAULT_MAX_CONTEXT_CHARS, build_contexto_usuario
+from rag.domain.context import (
+    DEFAULT_MAX_CONTEXT_CHARS,
+    build_contexto_usuario,
+    select_context_chunks,
+)
 
 
 class _Embedder:
@@ -101,3 +105,17 @@ def test_un_chunk_enorme_se_recorta_al_presupuesto_del_contexto():
 
     assert "y" * 100 in contexto
     assert len(contexto) < DEFAULT_MAX_CONTEXT_CHARS + 600
+
+
+def test_el_fragmento_repetido_por_el_vector_del_archivo_entra_una_sola_vez():
+    # La fila extra del vector multimodal repite el primer fragmento.
+    chunks = [
+        {"content": "inicio", "source_filename": "a.pdf"},
+        {"content": "inicio", "source_filename": "a.pdf"},
+        {"content": "inicio", "source_filename": "b.pdf"},
+    ]
+    elegidos = select_context_chunks(chunks)
+    assert [(c["source_filename"], c["content"]) for c in elegidos] == [
+        ("a.pdf", "inicio"),
+        ("b.pdf", "inicio"),
+    ]
