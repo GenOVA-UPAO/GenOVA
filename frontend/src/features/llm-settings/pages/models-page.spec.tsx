@@ -94,8 +94,10 @@ vi.mock("../components/models-master-detail", () => ({
   ModelsMasterDetail: () => createElement("div", { "data-testid": "master-detail" }),
 }));
 
+const announce = vi.fn();
+
 vi.mock("../hooks/use-config-apply", () => ({
-  useConfigApply: () => ({ refresh: vi.fn(), undo: vi.fn(), announce: vi.fn() }),
+  useConfigApply: () => ({ refresh: vi.fn(), undo: vi.fn(), announce }),
 }));
 
 vi.mock("../components/models-config-tools", () => import("./models-page-config-tools-stub"));
@@ -137,6 +139,8 @@ function renderPage() {
 describe("ModelsPage", () => {
   beforeEach(() => {
     store.dirty = false;
+    store.saving = false;
+    store.save = vi.fn(() => Promise.resolve(true));
     store.enabledModels = [{ provider: "groq", model_id: "x" }];
     admin.loading = false;
     admin.adminDirty = false;
@@ -212,6 +216,28 @@ describe("ModelsPage", () => {
     expect(dismissPendingChangesToast).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole("button", { name: "Descartar cambios" }));
     expect(dismissPendingChangesToast).toHaveBeenCalledTimes(2);
+  });
+
+  it("si falla el guardado de los ajustes propios no anuncia «Cambios guardados»", async () => {
+    const user = userEvent.setup();
+    dismissPendingChangesToast.mockClear();
+    announce.mockClear();
+    store.dirty = true;
+    store.save = vi.fn(() => Promise.resolve(false));
+    renderPage();
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+    expect(store.save).toHaveBeenCalledTimes(1);
+    expect(announce).not.toHaveBeenCalled();
+    expect(dismissPendingChangesToast).not.toHaveBeenCalled();
+  });
+
+  it("bloquea Guardar mientras se guardan los ajustes propios", () => {
+    store.dirty = true;
+    store.saving = true;
+    renderPage();
+    const save = screen.getByRole("button", { name: "Guardar cambios" });
+    expect(save).toBeDisabled();
+    expect(save).toHaveAttribute("aria-busy", "true");
   });
 
   it("disables save while the chain has empty or duplicate models", () => {

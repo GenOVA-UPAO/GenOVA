@@ -24,11 +24,13 @@ export function CapabilitiesBody({
   mediaStatus,
   onToggle,
 }: Readonly<CapabilitiesBodyProps>) {
+  // El error va antes que «sin datos»: si la carga falla nunca hay borrador y
+  // el esqueleto quedaba girando para siempre.
+  if (error && !loading) {
+    return <SectionError message={error} />;
+  }
   if (loading || !ready) {
     return <SettingListSkeleton rows={4} />;
-  }
-  if (error) {
-    return <SectionError message={error} />;
   }
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-card">

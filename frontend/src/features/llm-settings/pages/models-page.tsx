@@ -65,7 +65,7 @@ export function ModelsPage() {
         {page.dirty ? (
           <UnsavedChangesBar
             blockingMessage={page.chainMessage}
-            saving={page.admin.saving}
+            saving={page.saving}
             onDiscard={page.discard}
             onSave={() => {
               void page.saveAll();
