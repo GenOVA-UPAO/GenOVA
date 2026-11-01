@@ -418,6 +418,7 @@
   "visualPreviewEmptyHint": "Escribe una instrucción para que el asistente recomponga la estructura del recurso.",
   "no_se_pudo_iniciar_la_regeneracion_value": "No se pudo iniciar la regeneración. {{p0}}",
   "no_se_pudo_iniciar_la_regeneracion": "No se pudo iniciar la regeneración.",
+  "regeneracion_interrumpida": "Se dejó de seguir esta regeneración al salir del editor. Revisa el OVA para ver si se aplicó.",
   "no_se_pudo_guardar_tu_valoracion_intentalo_de_nuevo": "No se pudo guardar tu valoración. Inténtalo de nuevo.",
   "no_se_pudo_quitar_tu_valoracion": "No se pudo quitar tu valoración.",
   "gracias_por_tu_valoracion": "Gracias por tu valoración.",

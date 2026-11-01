@@ -418,6 +418,7 @@
   "visualPreviewEmptyHint": "Enter an instruction for the assistant to restructure the resource.",
   "no_se_pudo_iniciar_la_regeneracion_value": "Could not start regeneration. {{p0}}",
   "no_se_pudo_iniciar_la_regeneracion": "Could not start regeneration.",
+  "regeneracion_interrumpida": "This regeneration stopped being tracked when you left the editor. Check the OVA to see whether it was applied.",
   "no_se_pudo_guardar_tu_valoracion_intentalo_de_nuevo": "Could not save your feedback. Please try again.",
   "no_se_pudo_quitar_tu_valoracion": "Could not remove your feedback.",
   "gracias_por_tu_valoracion": "Thank you for your feedback.",
