@@ -1,7 +1,8 @@
 """Validador mínimo de JSON Schema (subconjunto que usan las plantillas).
 
 Soporta: type (object/array/string/integer/number/boolean), properties,
-required, additionalProperties=false, items, minItems, maxItems, enum,
+required, additionalProperties=false (las claves extra se eliminan con
+`prune`, no son error), items, minItems, maxItems, enum,
 minLength, maxLength. Sin dependencia externa: el subconjunto es lo que se
 puede pedir a los proveedores con salida estructurada.
 
@@ -48,6 +49,26 @@ def validate(data, schema: dict, path: str = "") -> list[str]:  # noqa: C901, PL
             if k in data:
                 errs += validate(data[k], sub, f"{path}.{k}" if path else k)
     return errs
+
+
+def prune(data, schema: dict):
+    """Quita, en el mismo objeto, las claves que el schema no declara cuando
+    `additionalProperties` es false. `validate` no las rechaza para no gastar un
+    reintento, pero ninguna clave extra del LLM llega al render: las de control
+    (`image_placeholder`, `image_credit_html`…) las escribe solo el motor."""
+    t = schema.get("type")
+    if t == "array" and isinstance(data, list):
+        for item in data:
+            prune(item, schema.get("items", {}))
+    elif t == "object" and isinstance(data, dict):
+        props = schema.get("properties", {})
+        if schema.get("additionalProperties") is False:
+            for key in [k for k in data if k not in props]:
+                del data[key]
+        for key, sub in props.items():
+            if key in data:
+                prune(data[key], sub)
+    return data
 
 
 def s(max_len: int | None = None, min_len: int = 1, **kw) -> dict:

@@ -18,13 +18,14 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Callable
 
 import httpx
 import structlog
 
 from llm.utils.utils import parse_json
 from ova_engine.domain_context import is_oracle_text
-from ova_engine.schema import validate
+from ova_engine.schema import prune, validate
 
 logger = structlog.get_logger(__name__)
 
@@ -201,8 +202,11 @@ def _run_model_attempts(
     llm_config,
     enabled_models,
     deadline: float | None,
+    check: Callable[[dict], list[str]] | None = None,
 ) -> tuple[dict | None, list[str]]:
     errors: list[str] = []
+    # Último JSON que cumple el schema pero no las reglas de `check`.
+    schema_ok: dict | None = None
     for attempt in range(attempts):
         ask = full
         if errors:
@@ -243,14 +247,20 @@ def _run_model_attempts(
             errors = ["la respuesta no es JSON válido"]
             continue
         errors = validate(data, schema)[:8]
+        if not errors and check is not None:
+            errors = check(data)[:8]
+            schema_ok = data if errors else schema_ok
         if not errors:
-            return data, []
+            return prune(data, schema), []
         logger.warning(
             "ova text schema errors",
             attempt=attempt,
             errors=errors[:3],
             model=model_entry[:2] if model_entry else None,
         )
+    if schema_ok is not None:
+        logger.warning("ova text content check still failing; accepting schema-valid JSON", errors=errors[:3])
+        return prune(schema_ok, schema), []
     return None, errors
 
 
@@ -267,6 +277,7 @@ def generate_json(
     timeout: float | None = None,
     model: str | None = None,
     db_facts: bool | None = None,
+    check: Callable[[dict], list[str]] | None = None,
 ) -> dict:
     backend = os.getenv("OVA_TEXT_BACKEND", "router").strip().lower()
     full = _full_prompt(prompt, schema, db_facts)
@@ -287,6 +298,7 @@ def generate_json(
             llm_config,
             enabled_models,
             deadline,
+            check,
         )
         if data is not None:
             return data

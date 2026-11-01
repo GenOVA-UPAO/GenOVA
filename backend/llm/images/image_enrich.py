@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import os
 from typing import Any
 
@@ -17,6 +18,13 @@ from llm.images.style_guide import guide_from_settings
 
 logger = structlog.get_logger(__name__)
 _SIZE = 512  # get_image_data_uri genera 512x512 por defecto
+
+
+def _plain_credit(credit: Any) -> Any:
+    """`Credit` como dict serializable; los renders leen ambos formatos."""
+    if dataclasses.is_dataclass(credit) and not isinstance(credit, type):
+        return dataclasses.asdict(credit)
+    return credit
 
 
 def image_items(json_data: Any) -> list[dict]:
@@ -132,7 +140,9 @@ def enrich_with_images(
                     ova_key=ova_key,
                 )
                 if res:
-                    item["image_credit"] = res.credit
+                    # Dict y no el dataclass `Credit`: `data` se guarda como JSONB en la
+                    # actividad del recurso y json.dumps fallaba con el dataclass.
+                    item["image_credit"] = _plain_credit(res.credit)
                     item["image_source"] = res.source
                     item["image_alt"] = res.alt
                     item["image_meta"] = res.meta
