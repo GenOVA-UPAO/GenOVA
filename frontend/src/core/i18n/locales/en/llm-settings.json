@@ -441,6 +441,7 @@
     "allTasks": "All tasks",
     "taskTypesAria": "Task types",
     "readOnlyTaskDesc": "This configuration is set by the administrator. With your own API key you can choose other models, billed to your account.",
+    "mediaPlatformOnly": "Images and videos always use the platform configuration; your own key does not change these models.",
     "addKey": "Add key"
   },
   "profiles": {
