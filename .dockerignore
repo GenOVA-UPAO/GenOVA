@@ -1,5 +1,28 @@
+# Contexto de los builds con raíz en el repo (backend/Dockerfile.prod y
+# Dockerfile.worker, también en Render). Con este contexto backend/.dockerignore
+# NO se aplica: todo lo que no se excluya aquí acaba en la imagen con
+# `COPY backend/ .`, incluidos los secretos de backend/.env.
 node_modules
+**/node_modules
 .git
 .github
 tests
 *.md
+
+# Secretos y configuración local: nunca en una capa de la imagen.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Entornos y cachés locales.
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.ruff_cache
+**/.pytest_cache
+**/.import_linter_cache
+
+# Salidas temporales del backend.
+backend/tmp
+backend/tools/outputs
+backend/tests/visual-output
