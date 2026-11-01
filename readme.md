@@ -248,7 +248,7 @@ cd backend
 uv sync                          # instala desde pyproject.toml
 uv run uvicorn main:app --reload --port 8000
 
-# Para incluir herramientas de desarrollo (ruff, pytest, requests, bs4):
+# Para incluir herramientas de desarrollo (ruff, pytest, requests, import-linter):
 uv sync --extra dev
 ```
 

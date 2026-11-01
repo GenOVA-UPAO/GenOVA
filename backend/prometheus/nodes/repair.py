@@ -9,6 +9,7 @@ final (`_persist_results`) cierre la fila como "error" en vez de dejarla colgada
 """
 
 import contextvars
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
@@ -55,6 +56,20 @@ def _pending_failures(state: OvaGenerationState) -> list[dict]:
     return pending
 
 
+def _retry_deadline(err: dict) -> float | None:
+    """Deadline del reintento: ahora + el presupuesto que le sobró al recurso.
+
+    repair corre después de todos los workers (con OVA_GEN_CONCURRENCY=1, uno tras
+    otro), así que el deadline absoluto del worker ya venció mientras el recurso
+    esperaba. Solo cuenta el tiempo trabajado; los errores de antes de
+    ``budget_left`` (checkpoints viejos) siguen usando el deadline absoluto.
+    """
+    left = err.get("budget_left")
+    if left is None:
+        return err.get("deadline")
+    return time.monotonic() + max(0.0, float(left))
+
+
 def repair_node(state: OvaGenerationState) -> dict:
     failures = _pending_failures(state)
     if not failures:
@@ -82,7 +97,7 @@ def repair_node(state: OvaGenerationState) -> dict:
         from prometheus.plans.plan_map import plan_for
 
         plan = err.get("plan") or plan_for(phase, rt)
-        deadline = err.get("deadline")
+        deadline = _retry_deadline(err)
         if job_stopped(job_id) or err.get("code", "").startswith("provider_auth"):
             return err, err.get("html"), list(err.get("defects") or [])
         if not can_spend(deadline):

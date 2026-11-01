@@ -3,6 +3,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    # quickjs no publica wheel linux/aarch64 y la imagen slim no trae compilador:
+    # en Apple Silicon el build nativo (arm64) fallaba con «gcc: No such file».
+    # Fijar amd64 lo construye y corre emulado (Rosetta/QEMU), igual que en Render.
+    platform: linux/amd64
     container_name: genova-backend-dev
     env_file:
       - ./backend/.env

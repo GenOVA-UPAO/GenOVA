@@ -24,6 +24,7 @@ from langgraph.types import Send
 
 from llm.auth_errors import is_provider_auth_error
 from prometheus.engine.budget import can_spend, deadline_at
+from prometheus.engine.budget import remaining as budget_remaining
 from prometheus.engine.job_control import job_stopped, persist_failure
 from prometheus.engine.job_trace import job_trace
 from prometheus.engine.runtime import _persist_outcome, _touch_job
@@ -131,6 +132,9 @@ def resource_worker(payload: dict) -> dict:
                     "error": str(exc),
                     "plan": plan,
                     "deadline": deadline,
+                    # Lo que le queda al recurso: repair corre tras todos los workers
+                    # y el deadline absoluto ya habría vencido esperándolos.
+                    "budget_left": max(0.0, budget_remaining(deadline)),
                     "code": code,
                     "exhausted": auth,
                 }
@@ -201,6 +205,7 @@ def resource_worker(payload: dict) -> dict:
                     "html": html,
                     "defects": remaining,
                     "deadline": deadline,
+                    "budget_left": max(0.0, budget_remaining(deadline)),
                 }
             ],
             "worker_signals": [signal],

@@ -198,3 +198,41 @@ def _persist_outcome(
 def _persist_done(job_id, phase: str, rt, html: str) -> None:
     """Compat: éxito sin defectos. Preferir `_persist_outcome` con `defects`."""
     _persist_outcome(job_id, phase, rt, html, defects=None)
+
+
+def _persist_patched_html(job_id, phase: str, rt, html: str) -> None:
+    """Escribe el HTML corregido por el editor en la fila del recurso, aunque ya esté
+    `done` o `degraded` (la reconciliación final salta esas filas y la
+    materialización lee `content` de la fila). No toca estado ni intentos.
+
+    La actividad estructurada (`record_activity`) queda ligada a la huella del HTML
+    anterior: su JSON trae el texto sin parchear, así que la exportación cae al HTML,
+    igual que tras una edición manual.
+    """
+    if not job_id:
+        return
+    db = SessionLocal()
+    try:
+        rows = (
+            db.execute(
+                select(OvaJobResource)
+                .where(
+                    OvaJobResource.job_id == uuid.UUID(str(job_id)),
+                    OvaJobResource.phase_type == phase,
+                )
+                .order_by(OvaJobResource.resource_order)
+            )
+            .scalars()
+            .all()
+        )
+        target = next((r for r in rows if str(r.resource_type) == str(rt)), None)
+        if target is None:
+            return
+        target.content = html
+        db.commit()
+    except Exception:  # noqa: BLE001 — el parche del editor es best-effort
+        logger.exception("editor patch persist failed", phase=phase, resource_type=rt)
+        with contextlib.suppress(Exception):
+            db.rollback()
+    finally:
+        db.close()
