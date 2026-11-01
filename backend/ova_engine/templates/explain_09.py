@@ -11,7 +11,7 @@ from ova_engine.html import (
     esc,
     json_data,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.schema import arr, i, obj, s
@@ -87,13 +87,7 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<button type="button" class="ova-option cmp-opt" data-c="{c}">{esc(x["concepto"])}</button>' for c, x in enumerate(comps)
     )
     best = max(1, min(3, int(reto["mejor"] or 1))) - 1
-    fig_html = render_image_figure(
-        data.get("imagen"),
-        data.get("image_placeholder"),
-        data.get("image_credit"),
-        data.get("image_credit_html", ""),
-        alt_fallback=f"Comparativa de {ctx.concept}",
-    )
+    fig_html = render_item_figure(data, alt_fallback=f"Comparativa de {ctx.concept}")
     credits_sec = render_credits_section(data)
 
     return f"""
