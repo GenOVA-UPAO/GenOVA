@@ -215,3 +215,10 @@ def test_dev_docker_renueva_el_node_modules_anonimo():
     if "/app/node_modules" in frontend.get("volumes", []):
         script = json.loads(_read("package.json"))["scripts"]["dev:docker"]
         assert "--renew-anon-volumes" in script or " -V" in script
+
+
+def test_qa_llm_real_no_corre_en_los_pr_de_dependabot():
+    data = yaml.safe_load(_read(".github/workflows/qa-llm-real.yml"))
+    for name, job in data["jobs"].items():
+        condition = str(job.get("if", ""))
+        assert "dependabot[bot]" in condition and "!=" in condition, name
