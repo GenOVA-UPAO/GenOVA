@@ -58,6 +58,16 @@ def _still_generating(ova: Ova, db: Session) -> bool:
     return ova.status == "generando"
 
 
+def _ova_generating() -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={
+            "error": "ova_generating",
+            "message": "El OVA ya está en proceso de generación.",
+        },
+    )
+
+
 @router.post("/{ova_id}/regenerar", summary="Regenerar los recursos de una OVA")
 @limiter.limit("10/minute")
 def regenerate_ova(
@@ -81,13 +91,7 @@ def regenerate_ova(
         return forbidden_response("No tienes permiso para editar este OVA.")
 
     if ova.status == "generando" and _still_generating(ova, db):
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={
-                "error": "ova_generating",
-                "message": "El OVA ya está en proceso de generación.",
-            },
-        )
+        return _ova_generating()
 
     active_version = get_active_version(ova_id, db)
     if not active_version:
@@ -155,6 +159,8 @@ def regenerate_ova(
         instruction=instruction,
         attachments=attachments,
     )
+    if job_id is None:  # otra petición lo reclamó entre la lectura y el claim
+        return _ova_generating()
 
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,

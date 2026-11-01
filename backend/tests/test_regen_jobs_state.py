@@ -429,3 +429,21 @@ def test_un_ova_sin_generacion_propia_responde_vacio_y_no_404():
     assert response.status_code == 200
     body = response.json()
     assert body["job_id"] is None and body["resources"] == []
+
+
+def test_dos_regeneraciones_simultaneas_solo_lanzan_una(db, engine):
+    # Dos pestañas (o un reintento) leen el OVA «listo» antes de que ninguna lo
+    # ponga en «generando»: solo la primera lo reclama y lanza.
+    ova = _seed(db)
+    otra = sessionmaker(bind=engine, future=True)()
+    copia_vieja = otra.get(Ova, ova.id)
+    launched = []
+
+    primera = _start(db, ova, launched)
+    segunda = _start(otra, copia_vieja, launched)
+    otra.close()
+
+    assert primera is not None and segunda is None
+    assert [job for job, _ in launched] == [primera]
+    assert len(db.execute(select(RegenJob)).scalars().all()) == 1
+    assert _ova_status(db, ova) == "generando"
