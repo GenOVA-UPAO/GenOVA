@@ -28,7 +28,11 @@ def assert_concept_allowed(concept: str, user) -> None:
 
 
 def generation_limits(user) -> dict:
-    """`llm_config` y `deadline` para `generate_resource`."""
+    """`llm_config`, `enabled_models` y `deadline` para `generate_resource`.
+
+    Como en los jobs, la lista de modelos activados del usuario acota sus
+    elecciones: un modelo que desactivó no se usa tampoco en la vista previa.
+    """
     overrides = honored_overrides(
         getattr(user, "llm_settings", None),
         getattr(user, "user_api_keys", None),
@@ -36,5 +40,6 @@ def generation_limits(user) -> dict:
     )
     return {
         "llm_config": with_owner(overrides, user.id),
+        "enabled_models": getattr(user, "enabled_models", None) or [],
         "deadline": time.monotonic() + budget_seconds(),
     }

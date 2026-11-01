@@ -18,12 +18,13 @@ PHASES = ("engage", "explore", "explain", "elaborate", "evaluate")
 
 @pytest.fixture(autouse=True)
 def _setup(monkeypatch):
+    import main  # noqa: F401 — registra el comprobador real al importarse
     from core.rate_limit import limiter
 
     monkeypatch.setattr(limiter, "enabled", False)
     previous = input_guardrail._checker
     input_guardrail.set_input_guardrail(None)
-    yield
+    yield previous
     input_guardrail.set_input_guardrail(previous)
 
 
@@ -75,19 +76,20 @@ def test_pasa_presupuesto_y_autor(phase, monkeypatch):
     mod = importlib.import_module(f"llm.phases.{phase}_router")
     seen = {}
     _patch(mod, monkeypatch, seen)
-    user = SimpleNamespace(id="u1", llm_settings={}, user_api_keys={})
+    enabled = [{"provider": "groq", "model_id": "m"}]
+    user = SimpleNamespace(id="u1", llm_settings={}, user_api_keys={}, enabled_models=enabled)
     before = time.monotonic()
     _call(mod, phase, "Regresión lineal", user)
     assert seen["deadline"] is not None and seen["deadline"] > before
     assert seen["llm_config"]["_owner_id"] == "u1"
+    assert seen["enabled_models"] == enabled
 
 
-def test_main_registra_el_guardarrail_de_generation():
-    import main
+def test_main_registra_el_guardarrail_de_generation(_setup):
     from generation.infrastructure.input_guardrail import prompt_refusal
 
-    assert main.prompt_refusal is prompt_refusal
-    assert main.set_input_guardrail is input_guardrail.set_input_guardrail
+    # `_setup` devuelve el comprobador que dejó registrado importar `main`.
+    assert _setup is prompt_refusal
 
 
 def test_prompt_refusal_traduce_el_rechazo(monkeypatch):
