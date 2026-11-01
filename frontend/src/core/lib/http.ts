@@ -36,6 +36,11 @@ function resolveApiBase(): string {
 export const API_BASE = resolveApiBase();
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+/**
+ * Subidas multipart: el temporizador cubre también el envío del cuerpo (hasta
+ * 5 × 20 MB), que en un enlace lento supera con creces los 15 s por defecto.
+ */
+export const UPLOAD_TIMEOUT_MS = 180_000;
 const AUTH_PATHS = new Set(["/api/auth/me", "/auth/login", "/auth/register"]);
 
 export interface HttpErrorOptions {
@@ -76,8 +81,30 @@ function isAuthEndpoint(path: string): boolean {
   return AUTH_PATHS.has(path) || path.startsWith("/api/auth/") || path.startsWith("/auth/");
 }
 
+/**
+ * Fallo sin respuesta HTTP (plazo agotado o red caída) como HttpError con texto
+ * traducido: el navegador lo da en inglés («Failed to fetch», «signal is
+ * aborted without reason») y las pantallas muestran `error.message` tal cual.
+ */
+function transportError(error: unknown): unknown {
+  let code = "";
+  if (error instanceof DOMException && error.name === "AbortError") code = "timeout";
+  else if (error instanceof TypeError) code = "network";
+  if (code === "") return error;
+  return new HttpError(apiErrorText(code, 0) ?? (error as Error).message, { status: 0, code });
+}
+
+function isFormDataBody(body: RequestInit["body"]): boolean {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
+/** Plazo explícito: el del llamador o, para subidas multipart, UPLOAD_TIMEOUT_MS. */
+function explicitTimeout(init: RequestInit, timeoutMs: number | undefined): number | undefined {
+  return timeoutMs ?? (isFormDataBody(init.body) ? UPLOAD_TIMEOUT_MS : undefined);
+}
+
 function buildHeaders(init: RequestInit): Record<string, string> {
-  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+  const isFormData = isFormDataBody(init.body);
   const initHeaders = (init.headers ?? {}) as Record<string, string>;
   const baseHeaders: Record<string, string> = { "X-Requested-With": "XMLHttpRequest" };
   if (init.body && !isFormData && !initHeaders["Content-Type"]) {
@@ -98,7 +125,11 @@ export async function apiFetch(
   // Auth y la primera petición tras inactividad pueden pillar el servidor
   // dormido (Render free): más margen y aviso al usuario si tarda.
   const coldCandidate = isAuthEndpoint(path) || !isServerWarm();
-  const { timeoutMs, done: endTracking } = planRequest(coldCandidate, opts.timeoutMs, DEFAULT_TIMEOUT_MS);
+  const { timeoutMs, done: endTracking } = planRequest(
+    coldCandidate,
+    explicitTimeout(init, opts.timeoutMs),
+    DEFAULT_TIMEOUT_MS,
+  );
   const ctrl = new AbortController();
   const t = setTimeout(() => {
     ctrl.abort();
@@ -120,6 +151,8 @@ export async function apiFetch(
     }
 
     return res;
+  } catch (error) {
+    throw transportError(error);
   } finally {
     clearTimeout(t);
     endTracking?.();

@@ -42,13 +42,17 @@ function isoFrom(hours: number, minutes: number): string {
   return `PT${hPart}${mPart}`;
 }
 
-/** «1 hora y 30 minutos» → «1h30m»: unidades abreviadas y sin separadores. */
+/**
+ * «1 hora y 30 minutos» / «1 hour and 30 minutes» → «1h30m»: unidades
+ * abreviadas y sin separadores. Las alternativas largas van primero para que
+ * «minutes» no quede en «m» + «utes».
+ */
 function compact(text: string): string {
   return text
     .toLowerCase()
-    .replaceAll(/horas?|hrs?/g, "h")
-    .replaceAll(/minutos?|mins?/g, "m")
-    .replaceAll(/\sy\s/g, " ")
+    .replaceAll(/horas?|hours?|hrs?/g, "h")
+    .replaceAll(/minutos?|minutes?|mins?/g, "m")
+    .replaceAll(/\s(?:y|and)\s/g, " ")
     .replaceAll(/[\s.]/g, "");
 }
 

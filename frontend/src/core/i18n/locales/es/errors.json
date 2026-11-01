@@ -26,7 +26,9 @@
     "invalid_name": "El nombre no es válido.",
     "invalid_fase_ids": "Alguna de las fases indicadas no es válida.",
     "unknown_format": "El formato de exportación no es compatible.",
-    "upload_error": "No se pudo subir el archivo."
+    "upload_error": "No se pudo subir el archivo.",
+    "network": "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "timeout": "El servidor tardó demasiado en responder. Inténtalo de nuevo."
   },
   "status": {
     "413": "El archivo es demasiado grande.",

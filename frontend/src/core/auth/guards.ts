@@ -32,9 +32,13 @@ export async function requireAuth({ request }: LoaderFunctionArgs) {
   return redirect(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
 }
 
-/** Signed-in users skip the auth pages. */
+/**
+ * Quien tiene sesión salta las páginas de acceso. Decide solo con una
+ * revalidación (la ventana corta evita la segunda petición): la caché sola,
+ * con /me fallando, cerraba un bucle /dashboard ↔ /login.
+ */
 export async function requireGuest() {
-  const user = authStore.getUser() ?? (await currentUser());
+  const user = await currentUser();
   return user ? redirect("/dashboard") : null;
 }
 
