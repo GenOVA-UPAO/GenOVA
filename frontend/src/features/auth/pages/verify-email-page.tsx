@@ -25,7 +25,9 @@ export function VerifyEmailPage() {
     ran.current = true;
     verifyEmail(token)
       .then(async () => {
-        await authStore.revalidate();
+        // El token ya se consumió: si /me falla (5xx, arranque en frío) la
+        // verificación sigue siendo un éxito; los guards revalidan después.
+        await authStore.revalidate().catch(() => null);
         setStatus("success");
       })
       .catch((error: unknown) => {
