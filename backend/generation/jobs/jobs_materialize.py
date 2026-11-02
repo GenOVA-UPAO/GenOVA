@@ -18,7 +18,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from core.educational_metadata import metadata_from_ova
-from core.text import ova_title
+from core.text import ova_description, ova_title
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
 from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
@@ -86,7 +86,9 @@ def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uui
 
     ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
     if ova is None:
-        ova = Ova(user_id=job.user_id, title=title, description=prompt, status=final_status)
+        ova = Ova(
+            user_id=job.user_id, title=title, description=ova_description(prompt), status=final_status
+        )
         db.add(ova)
         db.flush()
         job.ova_id = ova.id

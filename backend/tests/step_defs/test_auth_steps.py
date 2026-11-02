@@ -131,6 +131,21 @@ def client(monkeypatch):
     return TestClient(app)
 
 
+def test_registro_y_login_con_password_mayor_72_bytes(client):
+    # bcrypt>=5 lanzaba ValueError (500) con contraseñas de más de 72 bytes.
+    email = f"long_{uuid.uuid4().hex[:8]}@test.com"
+    password = "Contrasena1" + "x" * 70
+    r = client.post(
+        "/api/auth/register",
+        json={"email": email, "password": password, "full_name": "Long"},
+    )
+    # 201 con verificación de correo activa, 200 sin ella; nunca 500.
+    assert r.status_code in (200, 201)
+    # Sin verificar el correo el login no da sesión, pero la contraseña sí valida.
+    r = client.post("/api/auth/login", json={"email": email, "password": password})
+    assert r.status_code != 401
+
+
 # ── HU-008: Login ────────────────────────────────────────────────────────────
 
 

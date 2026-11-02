@@ -68,8 +68,14 @@ class EditPhases:
             for current in self.repo.list_phases(active.id)
         )
         version = self.repo.create_next_version(ova, active, phases)
+        # El orden solo es único dentro de un tipo (5E): buscar por ambos.
         edited_phase = next(
-            (item for item in version.phases if item.phase_order == phase.phase_order), None
+            (
+                item
+                for item in version.phases
+                if (item.phase_type, item.phase_order) == (phase.phase_type, phase.phase_order)
+            ),
+            None,
         )
         if edited_phase is not None:
             self.repo.record_micro_version(edited_phase.id, ova.id, data.content)
@@ -79,7 +85,9 @@ class EditPhases:
         return version
 
     def _resolve(self, ova_id: str, actor_id: str) -> tuple[EditorOva, EditorVersion]:
-        ova = self.repo.get_ova(ova_id)
+        # Bloquea el OVA antes de leer la versión activa: guardados concurrentes esperan
+        # y crean su versión sobre la del anterior en vez de chocar.
+        ova = self.repo.get_ova(ova_id, for_update=True)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
         # Todo lo de este caso de uso modifica el OVA: solo su autor.

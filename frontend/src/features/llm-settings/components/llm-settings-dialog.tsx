@@ -33,8 +33,15 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
     if (ok) onOpenChange(false);
   }
 
+  // El modal sigue montado tras cerrarse: si no se descarta el borrador, al
+  // reabrirlo mostraría lo cancelado y Guardar lo escribiría sobre lo más nuevo.
+  function close(next: boolean): void {
+    if (!next && !store.saving) store.discard();
+    onOpenChange(next);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-w-lg gap-5 sm:max-w-lg">
         <DialogHeader className="pr-8">
           <DialogTitle>{t("dialog.aiSettings")}</DialogTitle>
@@ -48,7 +55,7 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
                   to="/models"
                   className="text-primary underline-offset-4 hover:underline"
                   onClick={() => {
-                    onOpenChange(false);
+                    close(false);
                   }}
                 >
                   {t("page.title")}
@@ -65,7 +72,7 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
           <Button
             variant="outline"
             onClick={() => {
-              onOpenChange(false);
+              close(false);
             }}
             disabled={store.saving}
           >

@@ -317,6 +317,82 @@ def test_valid_resource_link_launch_opens_player_without_editor(env):
     assert (launch.subject, launch.has_evaluation, launch.can_post_score) == ("user-42", True, True)
 
 
+def test_phase_documents_are_sandboxed_even_on_direct_navigation(env):
+    """El HTML de fase (escrito por el dueño) nunca corre en el origen de la API."""
+    client, db = env["client"], env["db"]
+    for phase in db.query(OvaPhase).filter(OvaPhase.phase_type == "engage"):
+        phase.content = "<!doctype html><html><body><script>fetch('/api/x')</script></body></html>"
+    db.commit()
+    state, nonce = _login(client)
+    path = _player_path(_launch(client, state, _id_token(nonce, **_resource_claims(env["graded"]))))
+
+    resource = client.get(path + "content/resources/recurso_1.html")
+    assert resource.status_code == 200
+    csp = resource.headers["content-security-policy"]
+    assert csp == f"sandbox allow-scripts; frame-ancestors 'self' {ISSUER}"
+    # El shell generado por GenOVA y sus scripts no van en sandbox.
+    index_csp = client.get(path + "content/index.html").headers["content-security-policy"]
+    assert "sandbox" not in index_csp
+    scorm_csp = client.get(path + "content/resources/scorm.js").headers["content-security-policy"]
+    assert "sandbox" not in scorm_csp
+
+
+def test_player_package_uses_ova_theme_and_metadata(env):
+    """El alumno ve el tema y el idioma elegidos por el docente, no siempre UPAO/es."""
+    from core.package_themes import theme_css
+
+    db = env["db"]
+    ova = db.get(Ova, uuid.UUID(env["graded"]))
+    ova.package_theme = "alto-contraste"
+    ova.language = "en"
+    db.commit()
+
+    package = ova_content.build_player_package(db, env["graded"])
+    html = b"".join(data for name, data in package.files.items() if name.endswith(".html"))
+    assert theme_css("alto-contraste").encode() in html
+    assert theme_css("upao").encode() not in html
+    assert b'lang="en"' in html
+
+    # Cambiar el tema no sirve el paquete anterior desde la caché.
+    ova.package_theme = "oscuro"
+    db.commit()
+    package = ova_content.build_player_package(db, env["graded"])
+    html = b"".join(data for name, data in package.files.items() if name.endswith(".html"))
+    assert theme_css("oscuro").encode() in html
+
+
+def test_list_ready_ovas_runs_one_query_without_loading_phase_html(env):
+    """El selector no hace N+1 ni carga el contenido de las fases (videos embebidos)."""
+    from sqlalchemy import event
+
+    db = env["db"]
+    teacher = db.get(Ova, uuid.UUID(env["graded"])).user_id
+    owner = db.get(User, teacher)
+    for index in range(20):
+        _make_ova(db, owner, f"OVA {index}", ["engage", "evaluate"] if index % 2 else ["engage"])
+    db.commit()
+
+    statements: list[str] = []
+
+    def record(_conn, _cursor, statement, *_args):
+        statements.append(statement)
+
+    engine = db.get_bind()
+    event.listen(engine, "before_cursor_execute", record)
+    try:
+        summaries = ova_content.list_ready_ovas(db, str(teacher))
+    finally:
+        event.remove(engine, "before_cursor_execute", record)
+
+    assert len(summaries) == 22
+    assert len(statements) == 1
+    assert "content" not in statements[0].split("FROM")[0]
+    by_title = {summary.title: summary.has_evaluation for summary in summaries}
+    assert by_title["Fotosíntesis"] is True
+    assert by_title["Lectura libre"] is False
+    assert by_title["OVA 1"] is True and by_title["OVA 2"] is False
+
+
 def test_launch_rejects_invalid_signature(env):
     client = env["client"]
     state, nonce = _login(client)
@@ -634,3 +710,24 @@ def test_play_without_slash_adds_the_slash_in_the_browser(env):
 def test_play_without_slash_rejects_malformed_token(env, token):
     response = env["client"].get(f"/lti/play/{token}", follow_redirects=False)
     assert response.status_code == 404
+
+
+def test_tool_url_usa_la_configurada_aunque_la_peticion_llegue_por_http(monkeypatch):
+    # Detrás del proxy de Render la petición llega como http://: manda LTI_TOOL_URL.
+    from starlette.requests import Request
+
+    from lti.interface.http.router import tool_url
+
+    request = Request(
+        {
+            "type": "http",
+            "scheme": "http",
+            "server": ("genova-backend-lbdr.onrender.com", 80),
+            "path": "/lti/login",
+            "headers": [(b"host", b"genova-backend-lbdr.onrender.com")],
+        }
+    )
+    monkeypatch.setattr(settings, "lti_tool_url", "https://genova-backend-lbdr.onrender.com/")
+    assert tool_url(request) == "https://genova-backend-lbdr.onrender.com"
+    monkeypatch.setattr(settings, "lti_tool_url", "")
+    assert tool_url(request).startswith("http://")

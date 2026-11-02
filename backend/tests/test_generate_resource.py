@@ -18,7 +18,7 @@ def test_template_generation_returns_html_and_json(monkeypatch):
 
 def test_podcast_returns_player_and_monologue(monkeypatch):
     monkeypatch.setattr("llm.router.generar_texto", lambda *a, **k: "monólogo del podcast")
-    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda text: None)
+    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda text, **_: None)
     r = gen.generate_resource("engage", 3, "tema")
     assert r.raw_json == {"monologue": "monólogo del podcast"}
     assert r.html and r.defects == []

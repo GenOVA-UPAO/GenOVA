@@ -27,3 +27,12 @@ class UnfeasibleIntentError(EditorDomainError):
 
 class InvalidBlockError(EditorDomainError):
     """El bloque no tiene una estructura válida."""
+
+
+class EditConflictError(EditorDomainError):
+    """El cambio no se puede guardar sobre el estado actual del OVA (409)."""
+
+    def __init__(self, reason: str, motivo: str):
+        super().__init__(motivo)
+        self.reason = reason
+        self.motivo = motivo

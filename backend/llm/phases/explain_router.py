@@ -7,6 +7,8 @@ from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
 from core.topic_area import active_topic_area
+from llm.images.image_providers import build_image_settings
+from llm.phases._guard import CONCEPT_MAX_CHARS, assert_concept_allowed, generation_limits
 from llm.phases._rag import retrieve_phase_context
 from models import User
 from prometheus.plans.generate import generate_resource
@@ -18,7 +20,7 @@ logger = structlog.get_logger(__name__)
 
 class GenerateExplainRequest(BaseModel):
     resource_type: int
-    concept: str
+    concept: str = Field(max_length=CONCEPT_MAX_CHARS)
     upload_ids: list[str] = Field(default_factory=list)
 
 
@@ -45,6 +47,7 @@ def generate_explain_resource(
         raise HTTPException(status_code=400, detail="resource_type debe estar entre 1 y 10.")
     if len(concept) < 3:
         raise HTTPException(status_code=400, detail="El concepto debe tener al menos 3 caracteres.")
+    assert_concept_allowed(concept, current_user)
 
     meta = RECURSOS_META[n]
     contexto = retrieve_phase_context(
@@ -53,7 +56,9 @@ def generate_explain_resource(
 
     try:
         result = generate_resource(
-            "explain", n, concept, contexto=contexto, area=active_topic_area()
+            "explain", n, concept, contexto=contexto,
+            image_settings=build_image_settings(current_user, db), area=active_topic_area(),
+            **generation_limits(current_user),
         )
         return {
             **meta,

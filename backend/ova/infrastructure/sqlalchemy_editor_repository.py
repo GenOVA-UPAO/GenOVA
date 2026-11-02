@@ -32,12 +32,15 @@ class SqlAlchemyOvaEditorRepository:
         self._ovas: dict[str, Ova] = {}
         self._versions: dict[str, OvaVersion] = {}
 
-    def get_ova(self, ova_id: str) -> EditorOva | None:
+    def get_ova(self, ova_id: str, *, for_update: bool = False) -> EditorOva | None:
         if not is_uuid(ova_id):
             return None
-        row = self._db.execute(
-            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-        ).scalar_one_or_none()
+        query = select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+        if for_update:
+            # Serializa las escrituras que crean versión: dos guardados a la vez leían la
+            # misma versión activa y el segundo violaba uq_one_active_version_per_ova (500).
+            query = query.with_for_update()
+        row = self._db.execute(query).scalar_one_or_none()
         if row is None:
             return None
         self._ovas[str(row.id)] = row
@@ -142,7 +145,14 @@ class SqlAlchemyOvaEditorRepository:
         )
         self._db.add(row)
         self._db.flush()
+        sources = {
+            str(source.id): source
+            for source in self._db.execute(
+                select(OvaPhase).where(OvaPhase.version_id == active.id)
+            ).scalars()
+        }
         for phase in phases:
+            source = sources.get(phase.id)
             self._db.add(
                 OvaPhase(
                     version_id=row.id,
@@ -150,6 +160,10 @@ class SqlAlchemyOvaEditorRepository:
                     phase_order=phase.phase_order,
                     content=phase.content,
                     regenerated=False,
+                    resource_type_id=phase.resource_type_id,
+                    title=phase.title,
+                    # La copia es el mismo recurso: hereda su historial.
+                    lineage_id=(source.lineage_id or source.id) if source else None,
                 )
             )
         self._db.flush()
@@ -171,7 +185,12 @@ class SqlAlchemyOvaEditorRepository:
             module_title="OVA Generado por GenOVA",
             metadata=metadata_from_ova(ova),
             phases=[
-                {"type": phase.phase_type, "order": phase.phase_order, "content": phase.content}
+                {
+                    "type": phase.phase_type,
+                    "order": phase.phase_order,
+                    "content": phase.content,
+                    "title": phase.title,
+                }
                 for phase in phases
             ],
         )
@@ -197,12 +216,41 @@ class SqlAlchemyOvaEditorRepository:
         ova.storage_key = storage_key
         ova.file_path = file_path
 
+    def _lineage_filter(self, phase_id: str):
+        """Condición «misma línea de recurso que phase_id» (None si no existe).
+
+        Cada versión copia las fases con otro id; el linaje las une para que
+        el historial de micro-versiones sobreviva a guardados y regeneraciones.
+        """
+        if not is_uuid(phase_id):
+            return None
+        phase = self._db.get(OvaPhase, phase_id)
+        if phase is None:
+            return None
+        lineage = phase.lineage_id or phase.id
+        return (OvaPhase.lineage_id == lineage) | (OvaPhase.id == lineage)
+
+    def _micro_versions_query(self, phase_id: str, ova_id: str):
+        same_lineage = self._lineage_filter(phase_id)
+        if same_lineage is None:
+            return None
+        return (
+            select(OvaPhaseVersion)
+            .join(OvaPhase, OvaPhase.id == OvaPhaseVersion.phase_id)
+            .where(same_lineage, OvaPhaseVersion.ova_id == ova_id)
+        )
+
     def record_micro_version(self, phase_id: str, ova_id: str, content: str) -> None:
-        minor = self._db.execute(
-            select(func.max(OvaPhaseVersion.minor_number)).where(
-                OvaPhaseVersion.phase_id == phase_id, OvaPhaseVersion.ova_id == ova_id
-            )
-        ).scalar()
+        same_lineage = self._lineage_filter(phase_id)
+        minor = (
+            self._db.execute(
+                select(func.max(OvaPhaseVersion.minor_number))
+                .join(OvaPhase, OvaPhase.id == OvaPhaseVersion.phase_id)
+                .where(same_lineage, OvaPhaseVersion.ova_id == ova_id)
+            ).scalar()
+            if same_lineage is not None
+            else None
+        )
         self._db.add(
             OvaPhaseVersion(
                 phase_id=phase_id,
@@ -279,6 +327,9 @@ class SqlAlchemyOvaEditorRepository:
         self._versions[version_id].is_active = True
 
     def list_micro_versions(self, phase_id: str, ova_id: str) -> tuple[EditorMicroVersion, ...]:
+        query = self._micro_versions_query(phase_id, ova_id)
+        if query is None:
+            return ()
         return tuple(
             EditorMicroVersion(
                 id=str(row.id),
@@ -286,20 +337,19 @@ class SqlAlchemyOvaEditorRepository:
                 content=row.content,
                 created_at=row.created_at,
             )
-            for row in self._db.execute(
-                select(OvaPhaseVersion)
-                .where(OvaPhaseVersion.phase_id == phase_id, OvaPhaseVersion.ova_id == ova_id)
-                .order_by(OvaPhaseVersion.minor_number.desc())
-            )
+            for row in self._db.execute(query.order_by(OvaPhaseVersion.minor_number.desc()))
             .scalars()
             .all()
         )
 
     def get_micro_version(self, micro_id: str, phase_id: str) -> EditorMicroVersion | None:
+        same_lineage = self._lineage_filter(phase_id)
+        if same_lineage is None or not is_uuid(micro_id):
+            return None
         row = self._db.execute(
-            select(OvaPhaseVersion).where(
-                OvaPhaseVersion.id == micro_id, OvaPhaseVersion.phase_id == phase_id
-            )
+            select(OvaPhaseVersion)
+            .join(OvaPhase, OvaPhase.id == OvaPhaseVersion.phase_id)
+            .where(same_lineage, OvaPhaseVersion.id == micro_id)
         ).scalar_one_or_none()
         if row is None:
             return None

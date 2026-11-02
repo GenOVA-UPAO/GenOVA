@@ -104,14 +104,29 @@ def start_regen(
     worker: Callable[[str, str], None],
     instruction: str | None = None,
     attachments: list[dict] | None = None,
-) -> str:
+) -> str | None:
     """Pone el OVA en «generando», registra la regeneración y la lanza.
 
     `worker(job_id, ova_id)` lo inyecta el router (regen_launcher.launch_regen:
     hilo o cola arq); importarlo aquí crearía un ciclo con regen_service.
+
+    El paso a «generando» es un claim atómico: dos peticiones simultáneas (dos
+    pestañas, un reintento) leían «listo», lanzaban dos regeneraciones y la que
+    acababa segunda chocaba con la versión activa de la primera y dejaba el OVA
+    en «error». Devuelve None, sin lanzar nada, si otra ya lo reclamó.
     """
     from core.database import commit_or_500
+    from models import Ova
 
+    claimed = db.execute(
+        update(Ova)
+        .where(Ova.id == ova.id, Ova.status != "generando")
+        .values(status="generando")
+        .execution_options(synchronize_session=False)
+    )
+    if claimed.rowcount != 1:
+        db.rollback()
+        return None
     job_id = uuid.uuid4()
     ova.status = "generando"
     db.add(

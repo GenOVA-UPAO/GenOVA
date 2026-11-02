@@ -26,14 +26,16 @@ class ResumeJob:
         job = self.repo.get_owned(data.job_id, data.user_id)
         if job is None:
             raise JobNotFound()
-        if job.status == "running":
+        # `queued` también: su entrada de arq sigue en Redis y correría además.
+        if job.status in ("running", "queued"):
             raise JobAlreadyRunning()
         targets = self._targets(job.id, data.resource_ids)
         if not targets:
             return ResumeJobResult(
                 job_id=str(job.id), status=job.status, resumed=0, accepted=False
             )
-        self.repo.mark_resuming(job.id)
+        if not self.repo.mark_resuming(job.id):
+            raise JobAlreadyRunning()
         self.launcher.launch(job.id, targets)
         return ResumeJobResult(
             job_id=str(job.id), status="running", resumed=len(targets), accepted=True

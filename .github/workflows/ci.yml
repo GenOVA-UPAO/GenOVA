@@ -248,18 +248,27 @@ jobs:
       - name: Get bearer token (seed admin)
         id: auth
         run: |
+          set -o pipefail
           TOKEN=$(curl -sf -X POST http://localhost:8000/api/auth/login \
             -H "Content-Type: application/json" \
             -d '{"email":"admin@genova.ai","password":"admin1234password"}' | jq -r .access_token)
+          # Sin token Schemathesis corre con `Bearer null` y todo es un 401.
+          [ -n "$TOKEN" ] && [ "$TOKEN" != null ] || { echo 'seed login failed'; exit 1; }
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
 
       - name: Run Schemathesis
+        # `shell: bash` añade -o pipefail: sin él, el `| tee` ocultaba los fallos.
+        # Se excluye POST /api/auth/logout: con el Bearer compartido lo revoca
+        # (jwt_blocklist) y el resto de operaciones solo recibe «Token revocado»
+        # (401). El logout ya lo cubren las pruebas de pytest.
+        shell: bash
         run: |
           uvx --from 'schemathesis>=4,<5' schemathesis run \
             http://localhost:8000/openapi.json \
             --header "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
             --max-examples 20 \
             --exclude-path-regex '^/api/ova/jobs' \
+            --exclude-path '/api/auth/logout' \
             --report junit --report-junit-path schemathesis-report.xml \
             | tee schemathesis-output.txt
 

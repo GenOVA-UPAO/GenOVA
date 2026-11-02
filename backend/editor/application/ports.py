@@ -79,3 +79,10 @@ class EditorPhaseRepositoryPort(Protocol):
         instruction: str,
     ) -> dict[str, Any]:
         raise NotImplementedError
+
+
+class OvaRuntimePort(Protocol):
+    """Puerto para volver a montar el runtime UPAO (hoja base + componentes) en un recurso."""
+
+    def finalize(self, fragment: str, previous_html: str | None) -> str:
+        raise NotImplementedError

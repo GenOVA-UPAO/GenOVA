@@ -1,12 +1,24 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
-import { API_BASE } from "@/core/lib/http";
+import { API_BASE, HttpError } from "@/core/lib/http";
 import type { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
 
 import { jobOutcome, type JobSnapshot,type toResourceViewModel } from "../lib/ova-job-view-model";
 
 export const POLL_MS = 2000;
 export const STREAM_HEARTBEAT_MS = 15000;
+export const MAX_RETRY_MS = 60_000;
+
+/** 4xx que no se arregla reintentando (job ajeno, borrado o mal escrito). */
+function isPermanentFailure(error: unknown): boolean {
+  return (
+    error instanceof HttpError &&
+    error.status >= 400 &&
+    error.status < 500 &&
+    error.status !== 408 &&
+    error.status !== 429
+  );
+}
 
 export interface OvaJobSyncDeps {
   jobsApi: OvaJobsApiService;
@@ -22,11 +34,14 @@ export class OvaJobSyncRunner {
   private sseCtrl: AbortController | null = null;
   // A generation counter prevents an in-flight request from reviving a stopped runner.
   private pollGen = 0;
+  // Fallos seguidos de la consulta de estado: espacian los reintentos.
+  private failures = 0;
 
   constructor(private deps: OvaJobSyncDeps) {}
 
   start(jobId: string) {
     this.stop();
+    this.failures = 0;
     this.startSse(jobId);
     this.triggerPoll(jobId, this.pollGen);
   }
@@ -99,6 +114,7 @@ export class OvaJobSyncRunner {
       .getJobStatus(jobId)
       .then((raw) => {
         if (gen !== this.pollGen) return;
+        this.failures = 0;
         const snapshot = raw as JobSnapshot;
         this.deps.onSnapshot(snapshot);
         if (jobOutcome(snapshot, this.deps.getViewModel()).isTerminal) {
@@ -111,9 +127,17 @@ export class OvaJobSyncRunner {
           }, delay);
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (gen !== this.pollGen) return;
-        const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
+        // Un 404/403 no cambia por insistir: antes se consultaba cada 2 s
+        // mientras la pestaña siguiera abierta.
+        if (isPermanentFailure(error)) {
+          this.stop();
+          return;
+        }
+        this.failures += 1;
+        const base = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
+        const delay = Math.min(base * 2 ** Math.min(this.failures, 4), MAX_RETRY_MS);
         this.pollTimer = setTimeout(() => {
           this.triggerPoll(jobId, gen);
         }, delay);

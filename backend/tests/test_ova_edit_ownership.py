@@ -30,8 +30,10 @@ class _FakeEditorRepo:
         self.version = EditorVersion(
             id="v1", version_number=1, prompt="", is_active=True, created_at=None
         )
+        self.locked = False
 
-    def get_ova(self, ova_id: str) -> EditorOva | None:
+    def get_ova(self, ova_id: str, *, for_update: bool = False) -> EditorOva | None:
+        self.locked = self.locked or for_update
         return self.ova if ova_id == self.ova.id else None
 
     def get_or_create_active_version(self, ova: EditorOva) -> EditorVersion:
@@ -112,3 +114,21 @@ def test_el_editor_se_ve_mientras_se_regenera_pero_no_en_la_generacion_inicial()
     repo.get_active_version = lambda ova_id: None
     with pytest.raises(OvaGenerating):
         view.editor(VersionInput(ova_id="ova-1", version_id="", actor=OWNER))
+
+
+def test_las_escrituras_de_version_bloquean_el_ova_y_las_lecturas_no():
+    """Guardar, eliminar y revertir bloquean la fila del OVA (FOR UPDATE) antes de leer
+    la versión activa; así dos guardados a la vez no chocan con el índice de versión activa."""
+    repo = _FakeEditorRepo()
+    EditView(repo=repo).editor(VersionInput(ova_id="ova-1", version_id="", actor=OWNER))
+    assert repo.locked is False
+    with pytest.raises(OvaForbidden):
+        EditPhases(repo=repo).save(
+            PhaseContentInput(ova_id="ova-1", phase_id="p1", actor=ADMIN, content="<p/>")
+        )
+    assert repo.locked is True
+
+    repo = _FakeEditorRepo()
+    with pytest.raises(OvaForbidden):
+        EditView(repo=repo).revert(VersionInput(ova_id="ova-1", version_id="v1", actor=ADMIN))
+    assert repo.locked is True

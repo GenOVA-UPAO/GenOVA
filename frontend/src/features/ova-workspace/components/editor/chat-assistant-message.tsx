@@ -21,11 +21,17 @@ interface Props {
   cancel?: RegenCancel;
 }
 
+/** Un «en curso» que esta sesión no puede cancelar (no lo sigue) también se puede borrar. */
+function canRemove(running: boolean, cancel: RegenCancel | undefined): boolean {
+  return !running || (!cancel?.canCancel && !cancel?.cancelling);
+}
+
 /** Respuesta del sistema: alineada a la izquierda, sin burbuja, con icono de estado. */
 export function ChatAssistantMessage({ message, onRemove, cancel }: Readonly<Props>) {
   const { t } = useTranslation();
   const status = STATUS[message.status ?? "idle"];
   const running = message.status === "running";
+  const removable = canRemove(running, cancel);
   return (
     <li className="group flex items-start gap-2 pr-6">
       <span
@@ -47,7 +53,7 @@ export function ChatAssistantMessage({ message, onRemove, cancel }: Readonly<Pro
         </p>
         {running && <ChatRunningExtras percentage={message.percentage} cancel={cancel} />}
       </div>
-      {!running && (
+      {removable && (
         <ChatDeleteButton
           text={message.text}
           onDelete={() => {

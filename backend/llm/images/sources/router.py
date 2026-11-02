@@ -32,23 +32,18 @@ logger = structlog.get_logger(__name__)
 
 
 def _resolve_provider_and_key(settings: dict[str, Any]) -> tuple[str, str]:
+    """Proveedor y clave de los settings; sin proveedor no se genera.
+
+    Nunca cae a la clave de plataforma o de entorno: unos settings vacíos no
+    pueden saltarse el interruptor de imagen del admin ni su cadena.
+    """
     provider = settings.get("provider")
     api_key = settings.get("api_key")
     if provider and provider not in ("none", ""):
         return str(provider), str(api_key or "")
-
     if os.getenv("LOCAL_IMAGE_URL"):
+        # Solo desarrollo/QA: el servidor local de imágenes (SD) no cuesta nada.
         return "local", ""
-    if os.getenv("OPENROUTER_API_KEY"):
-        return "openrouter", os.getenv("OPENROUTER_API_KEY") or ""
-    try:
-        from llm.clients.clients import _get_provider_key
-
-        k = _get_provider_key("openrouter")
-        if k:
-            return "openrouter", k
-    except Exception:  # noqa: BLE001 — sin clave configurada: se usa el modelo local
-        pass
     return "", ""
 
 

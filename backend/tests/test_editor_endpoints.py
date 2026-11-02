@@ -19,6 +19,7 @@ from editor.application.use_cases import (
 )
 from editor.container import EditorUseCases, build_editor
 from editor.infrastructure.interpreters.rules import RulesIntentInterpreter
+from editor.infrastructure.runtime import OvaRuntimeAdapter
 from main import app
 
 client = TestClient(app)
@@ -85,7 +86,7 @@ def _build_test_editor(owner_id: str | None, phases: list[str] | None) -> Editor
             interpreters={"rules": rules, "hybrid": rules},
             default_backend="rules",
         ),
-        confirm_and_apply=ConfirmAndApplyUseCase(phase_repo=phase_repo),
+        confirm_and_apply=ConfirmAndApplyUseCase(phase_repo=phase_repo, runtime=OvaRuntimeAdapter()),
         record_feedback=RecordFeedbackUseCase(feedback_repo=feedback_repo),
     )
 
@@ -200,6 +201,58 @@ def test_confirm_and_apply_200_owner_success():
     assert data["success"] is True
     assert data["minor_number"] == 2
     assert "<upao-header" in data["html"]
+    # Se guarda con el runtime UPAO: sin él las etiquetas upao-* quedan sin definir.
+    assert "UPAO Components v" in data["html"]
+
+
+def test_admin_cannot_confirm_on_another_users_ova_but_can_interpret():
+    """El admin ve el OVA de otro docente pero no lo modifica (solo su creador)."""
+    owner_id = str(uuid.uuid4())
+    admin_id = str(uuid.uuid4())
+    ova_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    editor = _build_test_editor(owner_id=owner_id, phases=[phase_id])
+
+    app.dependency_overrides[get_current_user] = lambda: FakeUser(admin_id, is_admin=True)
+    app.dependency_overrides[build_editor] = lambda: editor
+    blocks = [{"id": "b1", "tipo": "header", "props": {"title": "Título"}}]
+
+    confirm = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/confirm",
+        json={"instruction": "x", "blocks": blocks},
+    )
+    assert confirm.status_code == 403
+    assert editor.confirm_and_apply.phase_repo.version_created is False
+
+    interpret = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/interpret-and-apply",
+        json={"instruction": "elimina el ejemplo", "blocks": blocks},
+    )
+    assert interpret.status_code == 200
+
+
+def test_confirm_and_apply_409_on_edit_conflict():
+    """Fase de una versión anterior u OVA generando: 409, no un 200 que pierde el cambio."""
+    from editor.domain.errors import EditConflictError
+
+    owner_id = str(uuid.uuid4())
+    ova_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    editor = _build_test_editor(owner_id=owner_id, phases=[phase_id])
+
+    def conflict(**_kwargs):
+        raise EditConflictError("ova_generating", "No se puede editar mientras genera.")
+
+    editor.confirm_and_apply.phase_repo.update_phase_and_create_version = conflict
+    app.dependency_overrides[get_current_user] = lambda: FakeUser(owner_id)
+    app.dependency_overrides[build_editor] = lambda: editor
+
+    res = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/confirm",
+        json={"instruction": "x", "blocks": [{"id": "b1", "tipo": "header", "props": {}}]},
+    )
+    assert res.status_code == 409
+    assert res.json()["detail"] == "No se puede editar mientras genera."
 
 
 def test_record_feedback_200_success():

@@ -107,17 +107,13 @@ def test_build_image_settings_uses_chain(monkeypatch):
             "defaults": {"imagen": {"provider": "runware", "model_id": "runware:100@1"}},
         },
     )
-    monkeypatch.setattr(
-        "llm.clients.key_resolver.resolve_key",
-        lambda *a, **k: "secret",
-    )
     out = resolve.build_image_settings(
         ova_settings={"max_images": 3}, user_api_keys={}, db=None
     )
     assert out["enabled"] is True
     assert out["provider"] == "runware"
     assert out["image_model"] == "runware:100@1"
-    assert out["api_key"] == "secret"
+    assert "api_key" not in out
     assert out["max_images"] == 3
 
 

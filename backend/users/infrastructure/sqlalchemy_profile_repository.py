@@ -15,7 +15,11 @@ from sqlalchemy.orm import Session
 from auth.domain.email import normalize_email
 from core.database import commit_or_500
 from models import PasswordResetToken, User
-from users.domain.errors import EmailAlreadyInUse, IncorrectCurrentPassword
+from users.domain.errors import (
+    EmailAlreadyInUse,
+    EmailChangeUnavailable,
+    IncorrectCurrentPassword,
+)
 from users.domain.profile import UserProfile
 
 
@@ -49,7 +53,7 @@ class SqlAlchemyUserProfileRepository:
         self._db = db
 
     def request_email_change(self, user_id: UUID, email: str, totp_code: str | None) -> None:
-        user = self._db.execute(select(User).where(User.id == user_id).with_for_update()).scalar_one()
+        user = self._db.execute(select(User).where(User.id == user_id)).scalar_one()
         if user.totp_enabled and not (
             user.totp_secret and totp_code
             and pyotp.TOTP(user.totp_secret).verify(totp_code, valid_window=1)
@@ -57,7 +61,13 @@ class SqlAlchemyUserProfileRepository:
             raise IncorrectCurrentPassword("Código TOTP inválido o ausente.")
         token = secrets.token_urlsafe(32)
         # Enviar antes de persistir: si SMTP falla, el correo actual sigue intacto.
-        send_email_change(email, token)
+        # Sin SMTP (EmailNotConfigured) o con un fallo de envío se responde 503 en
+        # vez de un 500 sin manejar. El envío no retiene el bloqueo de la fila.
+        try:
+            send_email_change(email, token)
+        except Exception as exc:  # EmailNotConfigured, smtplib.SMTPException, OSError
+            raise EmailChangeUnavailable() from exc
+        user = self._db.execute(select(User).where(User.id == user_id).with_for_update()).scalar_one()
         user.pending_email = email
         user.pending_email_token_hash = hashlib.sha256(token.encode()).hexdigest()
         user.pending_email_expires_at = datetime.now(UTC) + timedelta(minutes=30)

@@ -44,7 +44,8 @@ def _inherited_key(provider: str, user_id, db) -> str | None:
         if not link:
             return None
         owner = db.get(User, link.owner_user_id)
-        if not owner:
+        # Un dueño desactivado o eliminado no sigue pagando la generación de sus vinculados.
+        if not owner or not owner.is_active:
             return None
         key = (owner.user_api_keys or {}).get(provider, "").strip()
         return key or None
@@ -53,6 +54,15 @@ def _inherited_key(provider: str, user_id, db) -> str | None:
             "inherited key resolution: DB error", user_id=user_id, provider=provider, exc_info=True
         )
         return None
+
+
+def resolve_user_key(provider: str, user_api_keys: dict | None, db=None, user_id=None) -> str | None:
+    """Clave del propio usuario o la heredada de su vínculo; nunca la de plataforma."""
+    if user_api_keys:
+        k = user_api_keys.get(provider, "").strip()
+        if k:
+            return k
+    return _inherited_key(provider, user_id, db)
 
 
 def resolve_key(provider: str, user_api_keys: dict | None, db=None, user_id=None) -> str | None:

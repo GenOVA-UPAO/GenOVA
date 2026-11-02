@@ -11,6 +11,7 @@ import {
 } from "@/core/components/ui/select";
 
 import { joinModelValue, splitModelValue } from "../hooks/model-value";
+import { useFavoriteActions } from "../hooks/use-favorite-actions";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { isAllowedProvider, useOwnKeyProviders } from "../hooks/use-own-key-providers";
 import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
@@ -29,6 +30,7 @@ interface LlmSettingsModelSelectProps {
 export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSettingsModelSelectProps>) {
   const { t } = useTranslation("llm-settings");
   const store = useLlmSettings();
+  const favorites = useFavoriteActions();
   const allowed = useOwnKeyProviders();
   const cur = store.settings?.[tipo] ?? {};
   const current = joinModelValue(cur.provider, cur.model_id);
@@ -45,6 +47,8 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
       onValueChange={(value) => {
         const next = splitModelValue(value);
         store.setModel(tipo, next.provider, next.modelId);
+        // Con clave propia, lo elegido tiene que estar en favoritos para usarse.
+        favorites.keepPicked(next.provider, next.modelId);
       }}
     >
       <SelectTrigger aria-label={label} className="h-9 w-full min-w-0 flex-1 max-sm:h-11">

@@ -6,6 +6,15 @@ import { AdminRolesPage } from "./admin-roles-page";
 
 const mutateMode = vi.fn();
 const refetchRoles = vi.fn();
+const refetchMode = vi.fn();
+
+const modeQuery = {
+  data: { default_registration_role: "usuarios_prueba" } as
+    | { default_registration_role: string }
+    | undefined,
+  isError: false,
+  refetch: refetchMode,
+};
 
 const rolesQuery = {
   data: [] as { id: string; name: string; user_count?: number }[],
@@ -16,7 +25,7 @@ const rolesQuery = {
 
 vi.mock("../hooks/use-admin-roles", () => ({
   useRoles: () => rolesQuery,
-  useRegistrationMode: () => ({ data: { default_registration_role: "usuarios_prueba" } }),
+  useRegistrationMode: () => modeQuery,
   useSetRegistrationMode: () => ({ mutate: mutateMode, isPending: false }),
   useCreateRole: () => ({ mutate: vi.fn(), isPending: false, error: null, reset: vi.fn() }),
   useUpdateRole: () => ({ mutate: vi.fn(), isPending: false, error: null, reset: vi.fn() }),
@@ -30,6 +39,36 @@ describe("AdminRolesPage", () => {
     rolesQuery.data = [];
     rolesQuery.isLoading = false;
     rolesQuery.error = null;
+    refetchMode.mockClear();
+    modeQuery.data = { default_registration_role: "usuarios_prueba" };
+    modeQuery.isError = false;
+  });
+
+  it("si falla la carga del modo, el switch queda deshabilitado, sin marcar y con reintento", async () => {
+    modeQuery.data = undefined;
+    modeQuery.isError = true;
+    const user = userEvent.setup();
+    render(<AdminRolesPage />);
+
+    const toggle = screen.getByRole("switch", { name: "Modo tesis" });
+    expect(toggle).toBeDisabled();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByText("No se pudo consultar el modo de registro.")).toBeInTheDocument();
+    expect(screen.queryByText(/«Usuarios prueba»/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Reintentar" }));
+    expect(refetchMode).toHaveBeenCalled();
+    expect(mutateMode).not.toHaveBeenCalled();
+  });
+
+  it("mientras carga el modo, el switch está deshabilitado y no afirma ningún modo", () => {
+    modeQuery.data = undefined;
+    render(<AdminRolesPage />);
+
+    const toggle = screen.getByRole("switch", { name: "Modo tesis" });
+    expect(toggle).toBeDisabled();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByText("Consultando el modo de registro…")).toBeInTheDocument();
   });
 
   it("el switch de Modo tesis refleja el modo activo y es accesible", () => {

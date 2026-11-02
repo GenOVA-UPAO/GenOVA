@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 MAX_PHASES_PER_TYPE = 4
+# Fases 5E: las únicas que la regeneración sabe generar (regen_pipelines).
+PHASE_TYPES: frozenset[str] = frozenset(
+    {"engage", "explore", "explain", "elaborate", "evaluate"}
+)
 SUBELEMENT_SUPPORTED_TYPES: frozenset[str] = frozenset()
 PLACEHOLDER_CONTENT = (
     "Este recurso fue creado mediante prompt y está pendiente de regeneración.\n"

@@ -9,7 +9,7 @@
     "lint": "pnpm --filter frontend lint",
     "typecheck": "pnpm --filter frontend typecheck",
     "format": "pnpm --filter frontend format",
-    "dev:docker": "docker compose up --build",
+    "dev:docker": "docker compose up --build --renew-anon-volumes",
     "prod:docker": "docker compose -f docker-compose.prod.yml up --build",
     "test:vitest": "pnpm --filter frontend test",
     "test:unit": "pnpm --filter genova-tests test:unit",

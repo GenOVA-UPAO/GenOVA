@@ -84,6 +84,8 @@ export function useModelsPage() {
     taskIssues,
     chainMessage,
     dirty,
+    // Sin esto, para quien no es admin el botón Guardar nunca se bloqueaba.
+    saving: admin.saving || store.saving,
     onDraftChange: (next: Draft) => {
       admin.setDraft(next);
     },
@@ -119,7 +121,8 @@ async function saveAllChanges(
   if (chainInvalid) return;
   try {
     const adminRes = admin.adminDirty ? await admin.save() : null;
-    if (store.dirty) await store.save();
+    // save() ya avisa del error y devuelve false: no se anuncia «Cambios guardados».
+    if (store.dirty && !(await store.save())) return;
     dismissPendingChangesToast();
     // Con la config de plataforma, el aviso dice qué cambió y ofrece «Deshacer».
     announce(t("llm-settings:page.savedChanges"), historyOf(adminRes));

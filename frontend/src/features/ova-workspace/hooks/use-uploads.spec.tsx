@@ -27,6 +27,13 @@ describe('useOvaUploads', () => {
     expect(result.current.uploading).toBe(false);
     expect(result.current.uploadError).toBe('Sin conexión');
   });
+  it('translates a timeout abort instead of showing the raw browser text', async () => {
+    vi.mocked(api.uploadTemporaryFiles).mockRejectedValue(Object.assign(new Error('signal is aborted without reason'), { name: 'AbortError' }));
+    const { result } = setup();
+    await act(() => result.current.addFiles([new File(['x'], 'ref.pdf')]));
+    expect(result.current.uploadError).toBe('La subida tardó demasiado. Revisa tu conexión o sube archivos más pequeños.');
+    expect(result.current.uploadError).not.toContain('signal is aborted');
+  });
   it('surfaces per-file errors from successful HTTP responses', async () => {
     vi.mocked(api.uploadTemporaryFiles).mockResolvedValue({ errors: [{ message: 'Archivo demasiado grande' }] });
     const { result } = setup();

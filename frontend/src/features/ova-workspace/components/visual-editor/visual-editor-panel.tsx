@@ -22,6 +22,11 @@ function resolveActiveSpec(spec: VisualSpec | null, blocks: ResourceBlock[]): Vi
   return buildInitialSpec(blocks);
 }
 
+function resolveActivePhaseId(phases: PhaseWithContent[], selected: { id: string; index: number }): string {
+  const active = phases.find((phase) => phase.id === selected.id) ?? phases.at(selected.index) ?? phases.at(0);
+  return active?.id ?? "";
+}
+
 function resolveDisplayedIntent(composer: ReturnType<typeof useVisualComposer>) {
   const pending = composer.pendingConfirmation;
   if (pending) {
@@ -39,7 +44,11 @@ function resolveDisplayedIntent(composer: ReturnType<typeof useVisualComposer>) 
 }
 
 export function VisualEditorPanel({ ovaId, phases }: Readonly<Props>) {
-  const [activePhaseId, setActivePhaseId] = useState<string>(() => phases[0]?.id ?? "");
+  const [selected, setSelected] = useState(() => ({ id: phases[0]?.id ?? "", index: 0 }));
+  // Guardar o regenerar crea una versión nueva y cambia todos los ids: se
+  // sigue al recurso en la misma posición. Con el id viejo, «Aplicar»
+  // escribía en una versión inactiva y el OVA activo no recibía el cambio.
+  const activePhaseId = resolveActivePhaseId(phases, selected);
 
   const { data: rawBlocks, isLoading: isLoadingBlocks } = usePhaseBlocks(ovaId, activePhaseId);
   const baseBlocks = rawBlocks ?? [];
@@ -53,9 +62,14 @@ export function VisualEditorPanel({ ovaId, phases }: Readonly<Props>) {
   const canApply = activeSpec !== null && currentBlocks.length > 0;
 
   const handleSelectPhase = (phaseId: string) => {
-    setActivePhaseId(phaseId);
+    setSelected({ id: phaseId, index: Math.max(0, phases.findIndex((phase) => phase.id === phaseId)) });
     composer.resetState();
   };
+  if (activePhaseId !== selected.id) {
+    // El recurso cambió de id: lo editado en memoria era de la versión anterior.
+    setSelected({ ...selected, id: activePhaseId });
+    composer.resetState();
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-3 sm:p-5">

@@ -53,6 +53,7 @@ CREATE TABLE ova_phases (
   regenerated BOOLEAN NOT NULL DEFAULT 0,
   resource_type_id INTEGER,
   title VARCHAR(120),
+  lineage_id TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 """
@@ -160,3 +161,18 @@ def test_regen_heals_an_ova_whose_active_version_was_poisoned(session, monkeypat
     ova = _seed(session, poisoned=True)
     started = _regen(session, monkeypatch, ova, regen_router.RegenRequest(prompt=""))
     assert started["prompt"] == TOPIC
+
+
+def test_si_otra_peticion_reclamo_el_ova_responde_409(session, monkeypatch):
+    """start_regen devuelve None cuando pierde el claim: no se acepta (202)."""
+    ova = _seed(session, poisoned=False)
+    monkeypatch.setattr(regen_router, "start_regen", lambda *a, **k: None)
+    monkeypatch.setattr(regen_router, "is_ova_owner", lambda *_: True)
+    response = regen_router.regenerate_ova.__wrapped__(
+        request=None,
+        ova_id=ova.id,
+        payload=regen_router.RegenRequest(prompt=""),
+        current_user=object(),
+        db=session,
+    )
+    assert response.status_code == 409

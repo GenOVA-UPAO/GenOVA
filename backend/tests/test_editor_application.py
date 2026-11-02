@@ -27,6 +27,7 @@ from editor.domain.model import (
 )
 from editor.infrastructure.interpreters.hybrid import HybridIntentInterpreter
 from editor.infrastructure.interpreters.rules import RulesIntentInterpreter
+from editor.infrastructure.runtime import OvaRuntimeAdapter
 from editor.infrastructure.verifier import format_blocks_summary
 
 
@@ -228,7 +229,7 @@ def test_interpret_and_apply_post_verification_triggers_confirmation():
 
 def test_confirm_and_apply_unauthorized():
     phase_repo = MockPhaseRepo(can_edit_val=False)
-    uc = ConfirmAndApplyUseCase(phase_repo=phase_repo)
+    uc = ConfirmAndApplyUseCase(phase_repo=phase_repo, runtime=OvaRuntimeAdapter())
 
     with pytest.raises(EditorDomainError, match="No tienes permisos"):
         uc.execute(ConfirmAndApplyInput(
@@ -243,7 +244,7 @@ def test_confirm_and_apply_unauthorized():
 
 def test_confirm_and_apply_success():
     phase_repo = MockPhaseRepo(can_edit_val=True)
-    uc = ConfirmAndApplyUseCase(phase_repo=phase_repo)
+    uc = ConfirmAndApplyUseCase(phase_repo=phase_repo, runtime=OvaRuntimeAdapter())
 
     blocks = _sample_blocks()
     res = uc.execute(ConfirmAndApplyInput(
@@ -259,6 +260,65 @@ def test_confirm_and_apply_success():
     assert res["version_id"] == "v-1"
     assert "<upao-header" in res["html"]
     assert len(phase_repo.updated_calls) == 1
+
+
+def test_confirm_and_apply_keeps_ova_runtime():
+    """El recurso guardado sigue siendo un documento con hoja base, componentes y paleta."""
+    from llm.utils.ova_runtime import inject_runtime
+
+    phase_repo = MockPhaseRepo(can_edit_val=True)
+    palette = {"primary": "#112233", "accent": "#445566"}
+    previous = inject_runtime(
+        "<!doctype html><html><head></head><body><p>x</p></body></html>",
+        css=True,
+        components=True,
+        palette=palette,
+    )
+    phase_repo.get_phase_content = lambda _ova_id, _phase_id: previous
+    uc = ConfirmAndApplyUseCase(phase_repo=phase_repo, runtime=OvaRuntimeAdapter())
+
+    res = uc.execute(ConfirmAndApplyInput(
+        ova_id="ova-1",
+        phase_id="fase-1",
+        instruction="x",
+        blocks=[ResourceBlock(id="b1", tipo="header", props={"title": "Hola"})],
+        actor_id="user-owner",
+        is_admin=False,
+    ))
+
+    saved = phase_repo.updated_calls[0]["html_content"]
+    assert saved.lower().startswith("<!doctype html")
+    assert "UPAO Components v" in saved
+    assert '<style id="ova-base" data-palette="#112233,#445566"' in saved
+    assert '<upao-header title="Hola"' in saved
+    assert res["html"] == saved
+
+
+def test_confirm_and_apply_keeps_free_colors_without_base_css():
+    """Un recurso con colores libres (solo componentes) no recibe la hoja UPAO."""
+    from llm.utils.ova_runtime import inject_runtime
+
+    phase_repo = MockPhaseRepo(can_edit_val=True)
+    previous = inject_runtime(
+        "<!doctype html><html><head></head><body><p>x</p></body></html>",
+        css=False,
+        components=True,
+    )
+    phase_repo.get_phase_content = lambda _ova_id, _phase_id: previous
+    uc = ConfirmAndApplyUseCase(phase_repo=phase_repo, runtime=OvaRuntimeAdapter())
+
+    uc.execute(ConfirmAndApplyInput(
+        ova_id="ova-1",
+        phase_id="fase-1",
+        instruction="x",
+        blocks=_sample_blocks(),
+        actor_id="user-owner",
+        is_admin=False,
+    ))
+
+    saved = phase_repo.updated_calls[0]["html_content"]
+    assert "UPAO Components v" in saved
+    assert 'id="ova-base"' not in saved
 
 
 # =========================================================================

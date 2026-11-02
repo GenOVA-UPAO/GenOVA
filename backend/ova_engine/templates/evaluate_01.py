@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import structlog
+
 from ova_engine.contract import Param, RenderContext, TemplateSpec
 from ova_engine.domain_context import domain_for
 from ova_engine.html import PROGRESS_JS, esc, json_data, script
 from ova_engine.schema import arr, b, obj, s
-from ova_engine.templates._evaluate_common import EV_CSS, trim_to_param
+from ova_engine.templates._evaluate_common import EV_CSS, single_correct_errors, trim_to_param
+
+logger = structlog.get_logger(__name__)
 
 PARAMS = (
     Param("num_questions", 6, min=4, max=10, help="Número de preguntas del quiz"),
@@ -54,10 +58,15 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 
 def _fix_correct(opts: list) -> list[int]:
     flags = [bool(o.get("correcta")) for o in opts]
-    if flags.count(True) != 1:  # el LLM es entrada no confiable: una sola correcta
+    if flags.count(True) != 1:  # último recurso: `check` ya pidió corregirlo al LLM
+        logger.warning("quiz answer key remapped", template="evaluate:1", correctas=flags.count(True))
         first = flags.index(True) if True in flags else 0
         flags = [i == first for i in range(len(opts))]
     return flags
+
+
+def check(data: dict, p: dict) -> list[str]:
+    return single_correct_errors(data.get("preguntas"), "preguntas:")
 
 
 def render(data: dict, ctx: RenderContext) -> str:
@@ -155,4 +164,5 @@ SPEC = TemplateSpec(
     render=render,
     sample=sample,
     normalize=trim_to_param("preguntas", "num_questions"),
+    check=check,
 )

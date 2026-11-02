@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/core/components/ui/button";
 
 import { fetchPhaseVersions, revertPhaseVersion } from "../../api/ova-workspace.api";
-import { ovaWorkspaceKey } from "../../hooks/use-ova-workspace";
+import { ovaWorkspaceKey, phaseVersionsKey } from "../../hooks/use-ova-workspace";
 import type { PhaseMicroVersion } from "../../lib/version-history.types";
 import { ModalActions } from "../shared/modal-actions";
 import { WorkspaceModal } from "../shared/workspace-modal";
@@ -22,7 +22,7 @@ export default function PhaseVersionHistory({ ovaId, phaseId, resourceName, onCl
   const { t } = useTranslation("workspace-versioning");
   const client = useQueryClient();
   const [selected, setSelected] = useState<PhaseMicroVersion>();
-  const versions = useQuery({ queryKey: ["ova-phase-versions", ovaId, phaseId], queryFn: () => fetchPhaseVersions(ovaId, phaseId) });
+  const versions = useQuery({ queryKey: phaseVersionsKey(ovaId, phaseId), queryFn: () => fetchPhaseVersions(ovaId, phaseId) });
   const revert = useMutation({
     mutationFn: (id: string) => revertPhaseVersion(ovaId, phaseId, id),
     onSuccess: async () => {

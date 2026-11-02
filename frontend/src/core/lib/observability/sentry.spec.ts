@@ -50,4 +50,21 @@ describe("sentry opcional", () => {
       msg: "fallo [key]",
     });
   });
+
+  it("scrubEvent quita los tokens de la URL de la página y de los breadcrumbs", () => {
+    const event = {
+      request: { url: "https://app/reset-password?token=abc123#x", method: "GET" },
+      breadcrumbs: [
+        { category: "navigation", data: { from: "/login", to: "/reset-password?token=abc123" } },
+        { category: "fetch", data: { url: "/api/auth/verify-email?token=abc123", method: "POST" } },
+      ],
+      extra: { note: "fallo en /verificar-correo?token=abc123&x=1" },
+    } as unknown as ErrorEvent;
+
+    const out = scrubEvent(event);
+
+    expect(JSON.stringify(out)).not.toContain("abc123");
+    expect(out.request?.url).toBe("https://app/reset-password");
+    expect(out.breadcrumbs?.[0]?.data).toEqual({ from: "/login", to: "/reset-password" });
+  });
 });

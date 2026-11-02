@@ -47,6 +47,14 @@ class UniversityIdAlreadyInUse(UserError):
         super().__init__(detail)
 
 
+class EmailChangeUnavailable(UserError):
+    def __init__(
+        self,
+        detail: str = "No se puede cambiar el correo: el envío de correos no está disponible.",
+    ) -> None:
+        super().__init__(detail)
+
+
 class PasswordConfirmationMismatch(UserError):
     def __init__(
         self, detail: str = "La nueva contraseña y su confirmación no coinciden."

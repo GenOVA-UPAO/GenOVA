@@ -46,7 +46,7 @@ def test_sin_clave_propia_no_se_acepta_un_modelo_fuera_de_la_lista(user_keys, mo
 def test_la_llamada_usa_la_clave_propia(user_keys, monkeypatch):
     seen: list[tuple[str, str | None]] = []
 
-    def fake_chat(provider, model_id, prompt, max_tokens, extra, timeout=None, key=None):
+    def fake_chat(provider, model_id, prompt, max_tokens, extra, timeout=None, key=None, deadline=None):
         seen.append((provider, key))
         return "ok"
 
@@ -60,7 +60,7 @@ def test_la_llamada_usa_la_clave_propia(user_keys, monkeypatch):
 def test_sin_autor_se_usa_la_clave_de_plataforma(user_keys, monkeypatch):
     seen: list[str | None] = []
 
-    def fake_chat(provider, model_id, prompt, max_tokens, extra, timeout=None, key=None):
+    def fake_chat(provider, model_id, prompt, max_tokens, extra, timeout=None, key=None, deadline=None):
         seen.append(key)
         return "ok"
 

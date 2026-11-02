@@ -262,3 +262,20 @@ def test_vision_tambien_se_reproduce(tmp_path, monkeypatch):
     monkeypatch.setattr(router, "_provider_vision_once", lambda *a, **k: pytest.fail("red"))
     with use_cassette(c.path):
         assert router.generar_vision(msgs) == "Un diagrama del ciclo de Calvin."
+
+
+def test_la_documentacion_de_cassettes_apunta_a_scripts_y_tests_que_existen():
+    """El readme y CassetteMissError no deben mandar a scripts o tests borrados."""
+    import re
+    from pathlib import Path
+
+    backend = Path(__file__).resolve().parents[1]
+    texts = [
+        (backend / "llm" / "cassette.py").read_text(encoding="utf-8"),
+        (backend.parent / "readme.md").read_text(encoding="utf-8"),
+    ]
+    for text in texts:
+        for name in re.findall(r"scripts[./]([a-z_]+)(?:\.py)?\b", text):
+            assert (backend / "scripts" / f"{name}.py").exists() or (backend / "scripts" / name).is_dir(), name
+        for test in re.findall(r"tests/(test_[a-z0-9_]+\.py)", text):
+            assert (backend / "tests" / test).exists(), test

@@ -10,7 +10,6 @@ La clave nunca vuelve en la respuesta ni se registra.
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from auth.dependencies import get_current_user
 from core.rate_limit import limiter
 from llm.catalog.provider_check import check_provider_key
 from llm.providers import ALL_PROVIDERS
@@ -21,6 +20,7 @@ from users.interface.http.admin_llm_probe_router import (
     ensure_probe_allowed,
     ensure_text_provider,
 )
+from users.interface.http.models_access import require_models_access
 
 router = APIRouter(tags=["Ajustes de usuario"])
 
@@ -35,7 +35,7 @@ def _own_key(user: User, provider: str) -> str | None:
 def test_own_model(
     request: Request,
     body: ModelTestRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_models_access),
 ):
     """Llamada mínima al modelo con la clave propia. Siempre 200 salvo que no
     haya clave propia (403) o se haya pasado el límite de pruebas (429)."""
@@ -55,7 +55,7 @@ def test_own_model(
 def check_own_provider(
     request: Request,
     provider: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_models_access),
 ):
     if provider not in ALL_PROVIDERS:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proveedor desconocido.")
