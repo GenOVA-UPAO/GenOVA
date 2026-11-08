@@ -1,12 +1,12 @@
 # Core infrastructure — strictly pinned for reproducibility (latest at 2026-06-19)
 fastapi==0.162.0
 uvicorn[standard]==0.54.0
-sqlalchemy==2.1.6
-psycopg[binary]==3.3.6
+sqlalchemy==2.1.8
+psycopg[binary]==3.3.8
 python-dotenv==1.2.4
 bcrypt==5.0.0
 PyJWT==2.15.1
-python-multipart==0.0.32
+python-multipart==0.0.33
 pydantic[email]==2.14.2
 pydantic-settings==2.16.2
 slowapi==0.1.10
@@ -23,9 +23,9 @@ prometheus-fastapi-instrumentator==8.1.0
 logfire[sqlalchemy]==5.4.0
 structlog==26.1.0
 # Multi-agent orchestration (Prometheus via LangGraph) + LangSmith traces
-langgraph==1.2.18
+langgraph==1.2.20
 langgraph-checkpoint-postgres==3.2.0
-langsmith==0.14.16
+langsmith==0.14.17
 # AI SDKs
 openai==3.3.0
 groq==1.7.0
@@ -35,7 +35,7 @@ lameenc==1.9.0
 pillow==13.0.0
 # Structured LLM output (Pydantic-validated JSON + auto-retry) — wraps openai/groq
 instructor==1.17.0
-supabase==2.33.0
+supabase==2.34.0
 google-genai==2.34.0
 pypdf==6.21.4
 python-docx==1.2.0
