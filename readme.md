@@ -644,7 +644,7 @@ backend-bdd (pytest-bdd, coverage) ─────┤     al final, a11y informa
 frontend-unit (cucumber-js BDD) ────────┤
 frontend-vitest (pnpm test:vitest) ─────┘
 
-api-contract (Schemathesis, continue-on-error)
+api-contract (Schemathesis, informativo: continue-on-error en el paso)
 security-audit (pnpm audit --prod + pip-audit)
 ```
 
