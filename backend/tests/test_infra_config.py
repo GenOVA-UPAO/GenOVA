@@ -113,6 +113,17 @@ def _render_env(service: dict) -> dict[str, dict]:
     return {var["key"]: var for var in service.get("envVars", []) if "key" in var}
 
 
+def test_render_fija_un_modelo_remoto_para_los_diagramas():
+    # Sin OVA_DIAGRAM_MODEL el segundo intento de diagrama va a un Ollama en
+    # localhost, que en Render no existe (ConnectError en cada intento).
+    for service in yaml.safe_load(_read("render.yaml"))["services"]:
+        env = _render_env(service)
+        if env.get("ENV", {}).get("value") != "production":
+            continue
+        model = str(env.get("OVA_DIAGRAM_MODEL", {}).get("value", ""))
+        assert "/" in model, f"{service['name']}: OVA_DIAGRAM_MODEL debe ser un id de OpenRouter"
+
+
 def test_render_fija_lti_tool_url_https_en_produccion():
     for service in yaml.safe_load(_read("render.yaml"))["services"]:
         env = _render_env(service)

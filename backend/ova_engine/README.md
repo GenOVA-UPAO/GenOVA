@@ -21,6 +21,7 @@ plantilla, siempre iguales y probados. Fallo del texto → respaldo al plan clá
 | `OVA_DECISION_MIN_CONFIDENCE` | `0.35` | por debajo → se queda la regla |
 | `OVA_TEXT_BACKEND` | `router` (def.) / `local` | `local` = Ollama con salida estructurada |
 | `OVA_LOCAL_LLM_URL` / `OVA_LOCAL_LLM_MODEL` | `http://localhost:11435` / `qwen3:8b` | simulación local |
+| `OVA_DIAGRAM_MODEL` | vacío (def.) / id de OpenRouter (con `/`) / modelo Ollama | modelo del segundo intento de diagrama. Con `/` va a OpenRouter con JSON estricto; si falla, o si está vacío, cae al Ollama de `OVA_LOCAL_LLM_URL`. En producción (Render) no hay Ollama: hay que definirla (`render.yaml` usa `google/gemini-2.5-flash`) |
 | `OVA_DIAGRAM_TIMEOUT` | `60` | segundos de timeout por llamada que genera un diagrama (remota o local); súbelo si el modelo tarda en cargar |
 | `OVA_DIAGRAM_RETRIES` | `2` | máximo de intentos totales (incluye el primero); `1` desactiva reintentos; valores menores que 1 se ajustan a 1 |
 
