@@ -16,6 +16,8 @@ interface Props {
   onClear: () => void;
   onSelectPrompt?: (prompt: string) => void;
   cancel?: RegenCancel;
+  /** Regeneración en curso: borrar el hilo eliminaría el mensaje que se está actualizando. */
+  busy?: boolean;
 }
 
 function countLabel(count: number, t: TFunction): string {
@@ -23,7 +25,7 @@ function countLabel(count: number, t: TFunction): string {
 }
 
 /** Hilo de instrucciones: lo más reciente abajo, como en cualquier chat. */
-export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt, cancel }: Readonly<Props>) {
+export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt, cancel, busy = false }: Readonly<Props>) {
   const { t } = useTranslation();
   const list = useRef<HTMLOListElement>(null);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -47,6 +49,7 @@ export function ChatHistory({ messages, onRemove, onClear, onSelectPrompt, cance
           variant="ghost"
           size="xs"
           className="text-muted-foreground hover:text-destructive"
+          disabled={busy}
           onClick={() => {
             setConfirmClear(true);
           }}

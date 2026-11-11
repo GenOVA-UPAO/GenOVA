@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 import { AuthExpiredBus } from "@/core/lib/auth-expired-bus";
+import { queryClient } from "@/core/lib/query-client";
 
 import {
   authApi,
@@ -12,6 +13,10 @@ import {
 } from "./auth.service";
 
 type Listener = () => void;
+
+/** Identidad de la sesión: `null` sin sesión, el id (o "") con ella. */
+const sessionKey = (user: MeUser | null): string | null =>
+  user ? String(user.id ?? "") : null;
 
 /**
  * Session state shared by route loaders (guards) and components.
@@ -48,6 +53,10 @@ class AuthStore {
   setUser(user: MeUser | null): void {
     if (user) writeCachedUser(user);
     else clearCachedUser();
+    // Las claves de TanStack Query no llevan el usuario: si la sesión termina o
+    // cambia de cuenta (expiración, otro login en la misma pestaña) se vacía la
+    // caché para que nadie vea datos de la cuenta anterior.
+    if (sessionKey(this.user) !== sessionKey(user)) queryClient.clear();
     this.user = user;
     this.emit();
   }

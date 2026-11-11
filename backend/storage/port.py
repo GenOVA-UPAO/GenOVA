@@ -31,3 +31,7 @@ class FileStoragePort(Protocol):
 
     def delete_zip(self, object_key: str) -> None:
         raise NotImplementedError
+
+    def delete_prefix(self, folder: str, name_prefix: str) -> None:
+        """Borra (best-effort) los objetos de `folder` cuyo nombre empieza por `name_prefix`."""
+        raise NotImplementedError

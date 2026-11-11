@@ -39,7 +39,9 @@ class PyotpTotpAuthenticator:
         return bool(pyotp.TOTP(secret).verify(code, valid_window=1))
 
     def verify_backup(self, code: str, hashed: str) -> bool:
-        return _verify_backup(code, hashed)
+        # Los códigos se generan en hexadecimal en mayúsculas; el usuario puede
+        # teclearlos en minúsculas o con espacios.
+        return _verify_backup(code.strip().replace(" ", "").upper(), hashed)
 
 
 class InMemoryTotpTicketConsumer:

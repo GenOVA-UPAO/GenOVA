@@ -3,6 +3,7 @@ import { lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePhaseDrag } from "../../hooks/use-phase-drag";
+import { useStableRowKeys } from "../../hooks/use-stable-row-keys";
 import { phaseMeta } from "../../lib/phase-meta";
 import { applyReorder } from "../../lib/resource-reorder";
 import type { PhaseWithContent } from "../../lib/types";
@@ -41,6 +42,7 @@ export function WorkspaceResourceList({
 }: Readonly<Props>) {
   const { t } = useTranslation();
   const drag = usePhaseDrag(phases, onReorder);
+  const rowKey = useStableRowKeys(phases);
   const [adding, setAdding] = useState(false);
   const label = phaseMeta(phaseType, t).label || phaseType;
   const heading = `phase-section-${phaseType}`;
@@ -67,7 +69,7 @@ export function WorkspaceResourceList({
       <ul className="space-y-3">
         {phases.map((phase, index) => (
           <WorkspaceResourceRow
-            key={phase.id}
+            key={rowKey(phase)}
             phase={phase}
             index={index}
             total={phases.length}

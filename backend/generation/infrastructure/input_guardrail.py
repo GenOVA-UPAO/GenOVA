@@ -17,6 +17,7 @@ from uuid import UUID
 
 import structlog
 
+from generation.domain.errors import GenerationError
 from generation.domain.guardrails import (
     LlmVerdict,
     evaluate_input,
@@ -195,3 +196,16 @@ class InputGuardrailChecker:
             max_tokens=_LLM_MAX_TOKENS,
             llm_config=llm_config,
         )
+
+
+def prompt_refusal(prompt: str, user_id: UUID) -> tuple[str, str] | None:
+    """Mismo guardarraíl que al crear un job, como (código, mensaje) o None.
+
+    Es el comprobador que `main.py` registra en `core.input_guardrail` para las
+    vistas previas de fase (`/api/agents/<fase>/generate`).
+    """
+    try:
+        InputGuardrailChecker().assert_allowed(prompt, user_id)
+    except GenerationError as err:
+        return err.code, err.public_message
+    return None

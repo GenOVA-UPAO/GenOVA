@@ -45,7 +45,7 @@ def test_sin_clave_no_sintetiza():
 
 
 def test_si_la_sintesis_falla_devuelve_none(monkeypatch):
-    def falla(text, key):
+    def falla(text, key, timeout=None):
         raise RuntimeError("OpenRouter TTS 402: sin crédito")
 
     monkeypatch.setattr(tts_openrouter, "_stream_pcm", falla)
@@ -58,21 +58,21 @@ def sin_claves(monkeypatch):
 
 
 def test_podcast_usa_mp3_de_openrouter(monkeypatch, sin_claves):
-    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda text, key: b"\xff\xfbmp3")
+    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda text, key, timeout=None: b"\xff\xfbmp3")
     b64, mime = podcast.podcast_audio("Hola")
     assert mime == "audio/mpeg" and b64
 
 
 def test_podcast_cae_a_groq_si_openrouter_falla(monkeypatch, sin_claves):
-    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda text, key: None)
-    monkeypatch.setattr(podcast, "generar_audio_tts", lambda text: b"RIFFwav")
+    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda text, key, timeout=None: None)
+    monkeypatch.setattr(podcast, "generar_audio_tts", lambda text, **_: b"RIFFwav")
     assert podcast.podcast_audio("Hola")[1] == "audio/wav"
 
 
 def test_podcast_sin_audio_si_todo_falla(monkeypatch, sin_claves):
-    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda text, key: None)
+    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda text, key, timeout=None: None)
 
-    def groq_falla(text):
+    def groq_falla(text, **_):
         raise RuntimeError("sin clave")
 
     monkeypatch.setattr(podcast, "generar_audio_tts", groq_falla)
@@ -98,3 +98,52 @@ def test_el_monologo_se_queda_sin_markdown():
     assert limpio.startswith("Árboles de decisión")
     assert "Un nodo decide." in limpio
     assert "la guía" in limpio and "http" not in limpio
+
+
+def test_podcast_sin_presupuesto_no_sintetiza(monkeypatch, sin_claves):
+    import time
+
+    calls = []
+    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", lambda *a, **k: calls.append("or"))
+    monkeypatch.setattr(podcast, "generar_audio_tts", lambda *a, **k: calls.append("groq"))
+    assert podcast.podcast_audio("Hola", deadline=time.monotonic() + 1) is None
+    assert calls == []
+
+
+def test_podcast_acota_la_espera_al_presupuesto(monkeypatch, sin_claves):
+    import time
+
+    seen = {}
+
+    def fake_mp3(text, key, timeout=None):
+        seen["timeout"] = timeout
+        return b"\xff\xfbmp3"
+
+    monkeypatch.setattr(tts_openrouter, "synthesize_mp3", fake_mp3)
+    assert podcast.podcast_audio("Hola", deadline=time.monotonic() + 100)[1] == "audio/mpeg"
+    assert seen["timeout"] <= 100
+
+
+def test_groq_con_presupuesto_sin_reintentos_ni_respaldo_tardio(monkeypatch):
+
+    from llm.podcast import audio_helpers
+
+    built = []
+
+    class FakeSpeech:
+        def create(self, **kwargs):
+            raise RuntimeError("Connection error")
+
+    class FakeGroq:
+        def __init__(self, **kwargs):
+            built.append(kwargs)
+            self.audio = type("A", (), {"speech": FakeSpeech()})()
+
+    monkeypatch.setattr(audio_helpers, "Groq", FakeGroq)
+    monkeypatch.setattr("llm.clients.clients._get_provider_key", lambda provider: "gsk")
+    clock = [1000.0]
+    monkeypatch.setattr(audio_helpers.time, "monotonic", lambda: clock[0])
+    with pytest.raises(RuntimeError):
+        audio_helpers.generar_audio_tts("hola", deadline=1010.0)
+    assert len(built) == 1  # sin tiempo para playai: no se reintenta
+    assert built[0]["max_retries"] == 0 and built[0]["timeout"] <= 10

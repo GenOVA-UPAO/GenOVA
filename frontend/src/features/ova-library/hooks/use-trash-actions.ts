@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ovaLibraryApi } from "../api/ova-library.api";
+import { toastBatchResult } from "../lib/batch-toast";
 import { useOvaMutation } from "./use-ova-library";
 
 /** Maneja las acciones de restauración y borrado permanente en la papelera. */
@@ -17,8 +18,8 @@ export function useTrashActions() {
   const batchDeleteForeverMutation = useOvaMutation(ovaLibraryApi.batchDeleteForever);
   const emptyTrashMutation = useOvaMutation(async () => {
     const ids = await ovaLibraryApi.trashIds();
-    if (ids.length > 0) await ovaLibraryApi.batchDeleteForever(ids);
-    return ids.length;
+    if (ids.length === 0) return { deleted: [], skipped: [] };
+    return ovaLibraryApi.batchDeleteForever(ids);
   });
 
   const restoreOva = async (id: string) => {
@@ -49,10 +50,10 @@ export function useTrashActions() {
     }
   };
 
-  const runBulk = async (task: () => Promise<string>, errorMessage: string) => {
+  const runBulk = async (task: () => Promise<void>, errorMessage: string) => {
     setBulkLoading(true);
     try {
-      toast.success(await task());
+      await task();
       return true;
     } catch {
       toast.error(errorMessage);
@@ -64,20 +65,20 @@ export function useTrashActions() {
 
   const batchRestore = (ids: string[]) =>
     runBulk(async () => {
-      await batchRestoreMutation.mutateAsync(ids);
-      return i18n.t("ova-library:restored", { count: ids.length });
+      const res = await batchRestoreMutation.mutateAsync(ids);
+      toastBatchResult("ova-library:restored", res.restored.length, res.skipped.length);
     }, i18n.t("ova-library:no_se_pudieron_restaurar_los_ovas"));
 
   const batchDeleteForever = (ids: string[]) =>
     runBulk(async () => {
-      await batchDeleteForeverMutation.mutateAsync(ids);
-      return i18n.t("ova-library:deleted", { count: ids.length });
+      const res = await batchDeleteForeverMutation.mutateAsync(ids);
+      toastBatchResult("ova-library:deleted", res.deleted.length, res.skipped.length);
     }, i18n.t("ova-library:no_se_pudieron_eliminar_los_ovas"));
 
   const emptyTrash = () =>
     runBulk(async () => {
-      const count = await emptyTrashMutation.mutateAsync(undefined);
-      return i18n.t("ova-library:emptied", { count });
+      const res = await emptyTrashMutation.mutateAsync(undefined);
+      toastBatchResult("ova-library:emptied", res.deleted.length, res.skipped.length);
     }, i18n.t("ova-library:no_se_pudo_vaciar_la_papelera"));
 
   return {

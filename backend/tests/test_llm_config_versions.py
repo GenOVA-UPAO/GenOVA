@@ -27,6 +27,7 @@ from core.shared_throttle import MemoryWindow  # noqa: E402
 from llm.utils import llm_config_store, model_probe  # noqa: E402
 from llm.utils import llm_config_versions as versions  # noqa: E402
 from users.interface.http.admin_platform_settings_router import router as admin_router  # noqa: E402
+from users.interface.http.models_access import require_models_access  # noqa: E402
 from users.interface.http.settings_model_test_router import router as user_router  # noqa: E402
 
 FLASH = {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"}
@@ -231,6 +232,8 @@ def api(kv, monkeypatch):
     app.include_router(user_router, prefix="/api/users")
     app.dependency_overrides[get_db] = _db
     app.dependency_overrides[get_current_user] = lambda: principal["p"]
+    # El gate de permisos de modelos se prueba en test_models_permission_gate.py.
+    app.dependency_overrides[require_models_access] = lambda: principal["p"]
 
     def as_user(keys=None):
         principal["p"] = _Principal(user_uid, keys)

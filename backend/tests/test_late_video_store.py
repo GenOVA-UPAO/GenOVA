@@ -50,7 +50,7 @@ CREATE TABLE ova_versions (
 CREATE TABLE ova_phases (
   id TEXT PRIMARY KEY, version_id TEXT NOT NULL, phase_type VARCHAR(30) NOT NULL,
   phase_order INTEGER NOT NULL, content TEXT NOT NULL, regenerated BOOLEAN NOT NULL DEFAULT 0,
-  resource_type_id INTEGER, title VARCHAR(120),
+  resource_type_id INTEGER, title VARCHAR(120), lineage_id TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE ova_jobs (

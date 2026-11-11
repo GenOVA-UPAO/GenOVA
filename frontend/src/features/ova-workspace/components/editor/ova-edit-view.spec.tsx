@@ -3,10 +3,14 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HttpError } from "@/core/lib/http";
+import { ovaJobsApi } from "@/core/services/ova-jobs-api.service";
+
 import * as jobsApi from "../../api/ova-jobs.api";
 import * as api from "../../api/ova-workspace.api";
 import { OvaEditView } from "./ova-edit-view";
 
+vi.mock("@microsoft/fetch-event-source", () => ({ fetchEventSource: vi.fn(() => new Promise(() => undefined)) }));
 vi.mock("./workspace-panel-toolbar", () => ({ WorkspacePanelToolbar: () => null }));
 vi.mock("../viewer/ova-five-e-viewer", () => ({ default: () => null }));
 vi.mock("../../api/ova-workspace.api", async (original) => ({
@@ -111,6 +115,39 @@ describe("OvaEditView event wiring", () => {
       ]);
     });
   });
+  it("reorders only the resources of the moved phase", async () => {
+    // Un OVA real tiene varias fases: el backend rechaza con 422 una lista
+    // que mezcla tipos, así que «explore» no debe viajar en el PATCH.
+    // El editor pide el OVA varias veces al montar: un `Once` lo consumía la
+    // primera petición y la prueba acababa usando el fixture de solo «engage».
+    const fetchWorkspace = vi.mocked(api.fetchOvaWorkspace);
+    const original = fetchWorkspace.getMockImplementation();
+    fetchWorkspace.mockResolvedValue({
+      title: "OVA de prueba",
+      status: "listo",
+      current_version: {
+        version_number: 2,
+        phases: [
+          { id: "a", phase_type: "engage", phase_order: 0, title: "Primer recurso", content: "<p>1</p>" },
+          { id: "b", phase_type: "engage", phase_order: 1, title: "Segundo recurso", content: "<p>2</p>" },
+          { id: "c", phase_type: "explore", phase_order: 2, title: "Tercer recurso", content: "<p>3</p>" },
+        ],
+      },
+    });
+    try {
+      await setup();
+      expect(screen.getAllByRole("button", { name: "Regenerar recurso" })).toHaveLength(3);
+      fireEvent.click(screen.getByRole("button", { name: "Subir Segundo recurso" }));
+      await waitFor(() => {
+        expect(api.reorderOvaPhases).toHaveBeenCalledWith("ova-1", [
+          { phase_id: "b", new_order: 0 },
+          { phase_id: "a", new_order: 1 },
+        ]);
+      });
+    } finally {
+      if (original) fetchWorkspace.mockImplementation(original);
+    }
+  });
   it("regenerates only the requested phase", async () => {
     await setup();
     fireEvent.click(screen.getAllByRole("button", { name: "Regenerar recurso" })[0]);
@@ -196,5 +233,58 @@ describe("OvaEditView event wiring", () => {
       "aria-current",
       "true",
     );
+  });
+});
+
+describe("OvaEditView conflicts", () => {
+  const noVersion = () =>
+    new HttpError("Este OVA no tiene recursos guardados. Reintenta la generación desde Mis OVAs.", {
+      status: 409,
+      code: "generation_no_version",
+    });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(jobsApi.fetchOvaJobByOvaId).mockResolvedValue({ job_id: "job-1" });
+  });
+  function renderView() {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <OvaEditView ovaId="ova-1" />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+  it("offers to retry a failed generation that left the OVA without a version", async () => {
+    vi.mocked(api.fetchOvaWorkspace).mockRejectedValueOnce(noVersion());
+    vi.spyOn(ovaJobsApi, "getJobStatus").mockResolvedValue({
+      job_id: "job-1",
+      status: "error",
+      resources: [{ id: "r1", phase_type: "engage", resource_type: "Cómic Interactivo", status: "error" }],
+    });
+    renderView();
+    expect(await screen.findByRole("button", { name: "Reintentar generación" })).toBeInTheDocument();
+  });
+  it("shows the backend message when the finished job still left the OVA without a version", async () => {
+    vi.mocked(api.fetchOvaWorkspace).mockRejectedValue(noVersion());
+    vi.spyOn(ovaJobsApi, "getJobStatus").mockResolvedValue({
+      job_id: "job-1",
+      status: "done",
+      resources: [{ id: "r1", phase_type: "engage", resource_type: "Cómic Interactivo", status: "done" }],
+    });
+    renderView();
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Este OVA no tiene recursos guardados. Reintenta la generación desde Mis OVAs.",
+    );
+  });
+  it("keeps the generating panel while the OVA is still being generated", async () => {
+    vi.mocked(api.fetchOvaWorkspace).mockRejectedValueOnce(
+      new HttpError("La OVA se está generando.", { status: 409, code: "ova_generating" }),
+    );
+    renderView();
+    await waitFor(() => {
+      expect(jobsApi.fetchOvaJobByOvaId).toHaveBeenCalledWith("ova-1");
+    });
   });
 });

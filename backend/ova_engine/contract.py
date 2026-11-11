@@ -81,6 +81,11 @@ class TemplateSpec:
     # pedidos, ajusta contadores). Función pura `(data, params) -> data`; se aplica tras
     # `generate_json` y también sobre `sample`. None = sin normalización.
     normalize: Callable[[dict, dict], dict] | None = None
+    # Reglas de contenido que el JSON Schema no expresa (p. ej. «exactamente una opción
+    # correcta»). `(data, params) -> errores`; los errores se devuelven al LLM en el
+    # reintento como los del schema. Si siguen tras los reintentos, se acepta el JSON
+    # (cumple el schema) y `render` aplica su reparación conservadora. None = sin reglas.
+    check: Callable[[dict, dict], list[str]] | None = None
 
     @property
     def key(self) -> str:

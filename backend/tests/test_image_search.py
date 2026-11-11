@@ -123,6 +123,28 @@ def test_candidate_filtering_and_ranking():
     assert score > 20.0
 
 
+def test_filter_candidates_uses_shared_credit_rules():
+    """La búsqueda y el render comparten las reglas de crédito (contract.GENERIC_CREDIT_VALUES)."""
+    base = {
+        "title": "Fiber optic patch panel in a telecom room",
+        "description": "Fiber optic cables",
+        "url": "https://example.com/fiber.jpg",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Fiber.jpg",
+        "width": 1024,
+        "height": 768,
+        "license": "CC BY-SA 4.0",
+        "author": "Jane Doe",
+    }
+    rejected = [
+        {**base, "author": "Wikimedia"},  # la plataforma no es el autor
+        {**base, "author": "Comunidad libre"},  # texto de relleno
+        {**base, "author": "Autor Openverse"},
+        {**base, "source_url": "#", "url": "#"},
+    ]
+    assert filter_candidates(rejected) == []
+    assert [c["author"] for c in filter_candidates([base])] == ["Jane Doe"]
+
+
 def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
     monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path / "cache"))
     # Prueba el flujo de red/licencias, no CLIP (opcional): se fuerza sin verificación visual.
@@ -294,3 +316,27 @@ def test_search_skipped_without_clip(monkeypatch, tmp_path):
     monkeypatch.setattr("llm.images.sources.search.search_openverse", lambda *a, **k: [])
     monkeypatch.setattr("llm.images.sources.search.filter_candidates", lambda c: c)
     assert src.fetch(ImageRequest(tipo="foto", descripcion="servidores", consulta="server rack")) is None
+
+
+def test_search_without_clip_makes_no_provider_requests(monkeypatch):
+    """Sin CLIP no se gasta ninguna petición: el resultado se descartaría igual."""
+    from llm.images.clip_rerank import ClipReranker
+
+    monkeypatch.setenv("IMAGE_CACHE", "0")
+    monkeypatch.delenv("IMAGE_SEARCH_WITHOUT_CLIP", raising=False)
+    fake = type("R", (), {"available": False})()
+    monkeypatch.setattr(ClipReranker, "get_instance", classmethod(lambda cls: fake))
+    calls = []
+    monkeypatch.setattr("llm.images.sources.search.search_wikimedia", lambda *a, **k: calls.append("w") or [])
+    monkeypatch.setattr("llm.images.sources.search.search_openverse", lambda *a, **k: calls.append("o") or [])
+    src = SearchSource()
+    assert src.fetch(ImageRequest(tipo="foto", descripcion="servidores", consulta="server rack")) is None
+    assert calls == []
+
+
+def test_http_session_ignores_long_retry_after():
+    from llm.images.sources.search import create_http_session
+
+    retry = create_http_session().get_adapter("https://x").max_retries
+    assert retry.respect_retry_after_header is False
+    assert retry.backoff_max <= 5

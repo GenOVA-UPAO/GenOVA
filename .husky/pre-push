@@ -25,27 +25,35 @@ for candidate in backend/.venv/bin/python backend/.venv/Scripts/python.exe; do
   fi
 done
 
-# run_backend_tool <módulo> <mensaje> -- <argumentos...>
-run_backend_tool() {
+# run_backend_python <módulo requerido> <argumentos de python...>: ejecuta el
+# primer intérprete del backend que puede importar el módulo.
+run_backend_python() {
   module="$1"
   shift
   if [ -n "$backend_py" ] && ( cd backend && "../$backend_py" -c "import $module" ) >/dev/null 2>&1; then
-    ( cd backend && "../$backend_py" -m "$module" "$@" )
+    ( cd backend && "../$backend_py" "$@" )
   elif python -c "import $module" >/dev/null 2>&1; then
-    ( cd backend && python -m "$module" "$@" )
+    ( cd backend && python "$@" )
   elif command -v uv >/dev/null 2>&1 && ( cd backend && uv run --no-sync python -c "import $module" ) >/dev/null 2>&1; then
-    ( cd backend && uv run --no-sync python -m "$module" "$@" )
+    ( cd backend && uv run --no-sync python "$@" )
   else
     echo "[pre-push] $module no disponible en el entorno — se omite (CI lo comprueba igualmente)"
     echo "[pre-push] recupéralo con: cd backend && uv sync --extra dev"
   fi
 }
 
+# run_backend_tool <módulo> <argumentos...>: `python -m <módulo>`.
+run_backend_tool() {
+  run_backend_python "$1" -m "$@"
+}
+
 echo "[pre-push] Backend: ruff"
 run_backend_tool ruff check .
 
 echo "[pre-push] Backend: fronteras de arquitectura (import-linter) + tamaño de módulos"
-run_backend_tool importlinter.cli lint
+# Ejecutar importlinter.cli como módulo no hace nada (no tiene __main__) y
+# salía con 0: se llama a la función del script de consola `lint-imports`.
+run_backend_python importlinter -c 'import sys; from importlinter.cli import lint_imports_command; sys.exit(lint_imports_command())'
 if [ -n "$backend_py" ]; then
   ( cd backend && "../$backend_py" scripts/check_module_size.py )
 fi

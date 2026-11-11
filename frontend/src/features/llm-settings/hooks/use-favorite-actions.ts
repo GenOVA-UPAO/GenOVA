@@ -19,12 +19,22 @@ export function useFavoriteActions() {
 
   const toggle = async (provider: string, modelId: string): Promise<void> => {
     if (!store) return;
-    if (!isAdmin && store.isModelEnabled(provider, modelId)) {
+    const enabled = store.isModelEnabled(provider, modelId);
+    if (!isAdmin && enabled) {
       const task = favoriteInUseBy(store.settings, { provider, model_id: modelId });
       if (task) {
         toast.error(t("favorites.inUseError", { task }));
         return;
       }
+    }
+    // Al marcar el primer favorito de un proveedor, los modelos en uso de ese
+    // proveedor dejarían de valer: se añaden junto con el marcado.
+    if (!isAdmin && !enabled && store.addFavorites) {
+      const picked = { provider, model_id: modelId };
+      await store.addFavorites(
+        favoritesToAdd(store.enabledModels, picked, userModelsInUse(store.settings)),
+      );
+      return;
     }
     await store.toggleFavorite(provider, modelId);
   };

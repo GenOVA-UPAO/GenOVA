@@ -58,6 +58,7 @@ CREATE TABLE ova_phases (
   regenerated BOOLEAN NOT NULL DEFAULT 0,
   resource_type_id INTEGER,
   title VARCHAR(120),
+  lineage_id TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 """
@@ -199,3 +200,82 @@ def test_create_next_version_after_revert_uses_max_plus_one(session, monkeypatch
         .all()
     )
     assert sorted(stored) == [1, 2, 3]
+
+
+def test_create_next_version_keeps_titles_and_resource_types(session, monkeypatch, tmp_path):
+    """Guardar/eliminar un recurso no borra título ni tipo de recurso de las demás fases."""
+    import scorm
+
+    ova_row, v1, v2 = _seed_ova_with_two_versions(session)
+    # UUID nativo: SQLite no coercea str en columnas UUID.
+    original_list_phases = SqlAlchemyOvaEditorRepository.list_phases
+    monkeypatch.setattr(
+        SqlAlchemyOvaEditorRepository,
+        "list_phases",
+        lambda self, vid: original_list_phases(self, uuid.UUID(str(vid))),
+    )
+    repo = SqlAlchemyOvaEditorRepository(session)
+    repo._versions[v2.id] = v2
+    repo._ovas[str(ova_row.id)] = ova_row
+    editor_ova = EditorOva(
+        id=ova_row.id,
+        owner_id=ova_row.user_id,
+        title=ova_row.title,
+        description=ova_row.description,
+        status=ova_row.status,
+    )
+    active = EditorVersion(
+        id=v2.id, version_number=2, prompt=v2.prompt, is_active=True, created_at=v2.created_at
+    )
+    phases = tuple(
+        EditorPhase(
+            id=str(uuid.uuid4()),
+            phase_type="engage",
+            phase_order=order,
+            content=f"<p>{title}</p>",
+            regenerated=False,
+            resource_type_id=order,
+            title=title,
+        )
+        for order, title in enumerate(("Video", "Lectura", "Quiz"), start=1)
+    )
+    created = repo.create_next_version(editor_ova, active, phases)
+    created_id = uuid.UUID(created.id)
+
+    stored = session.execute(
+        select(OvaPhase).where(OvaPhase.version_id == created_id).order_by(OvaPhase.phase_order)
+    ).scalars()
+    expected = [("Video", 1), ("Lectura", 2), ("Quiz", 3)]
+    assert [(p.title, p.resource_type_id) for p in stored] == expected
+
+    captured = {}
+    monkeypatch.setattr(scorm, "build_scorm_zip_bytes", lambda **kw: captured.update(kw) or b"zip")
+    monkeypatch.setattr(
+        "ova.infrastructure.sqlalchemy_editor_repository.is_configured", lambda: False
+    )
+    monkeypatch.setattr(
+        "ova.infrastructure.sqlalchemy_editor_repository.metadata_from_ova", lambda _ova: None
+    )
+    monkeypatch.setenv("OVA_OUTPUT_DIR", str(tmp_path))
+    repo.rebuild_scorm(str(ova_row.id), created_id, str(ova_row.user_id))
+    assert [phase["title"] for phase in captured["phases"]] == ["Video", "Lectura", "Quiz"]
+
+
+def test_get_ova_for_update_locks_the_row():
+    """Las escrituras de versión piden FOR UPDATE; las lecturas no."""
+    from unittest.mock import MagicMock
+
+    from sqlalchemy.dialects import postgresql
+
+    db = MagicMock()
+    db.execute.return_value.scalar_one_or_none.return_value = None
+    repo = SqlAlchemyOvaEditorRepository(db)
+    ova_id = str(uuid.uuid4())
+
+    def compiled() -> str:
+        return str(db.execute.call_args.args[0].compile(dialect=postgresql.dialect()))
+
+    repo.get_ova(ova_id, for_update=True)
+    assert "FOR UPDATE" in compiled()
+    repo.get_ova(ova_id)
+    assert "FOR UPDATE" not in compiled()

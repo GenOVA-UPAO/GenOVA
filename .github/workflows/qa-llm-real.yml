@@ -24,6 +24,9 @@ concurrency:
 jobs:
   qa:
     name: QA contenido (LLM real)
+    # Los PR de Dependabot (bump mensual de acciones) tocan este workflow pero no
+    # reciben secretos: sin QA_OPENROUTER_API_KEY fallaban siempre los 12 casos.
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:
@@ -64,7 +67,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - name: Install backend deps

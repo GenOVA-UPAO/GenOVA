@@ -76,6 +76,14 @@
     return /^(?:data:image\/|https?:\/\/|\/|\.\/)/i.test(src) ? src : '';
   };
 
+  /* Los atributos de texto nunca se vuelven marcado: getAttribute() devuelve el
+     valor ya decodificado (el esc() de la plantilla se deshace), así que todo
+     atributo que se interpola en innerHTML pasa por aquí. El contenido rico va
+     en slots. Los iconos (`icon`) son SVG de la plantilla y se insertan tal cual. */
+  const text = value => String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+
   /* ── Base class ─────────────────────────────────────────────────────── */
   class UE extends HTMLElement {
     constructor() { super(); this.attachShadow({ mode: 'open' }); }
@@ -122,12 +130,12 @@ ${s}
       `) + `
       <div class="card">
         <div class="head">
-          ${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ''}
+          ${eyebrow ? `<p class="eyebrow">${text(eyebrow)}</p>` : ''}
           <div class="title-row">
             ${icon ? `<span class="icon" aria-hidden="true">${icon}</span>` : ''}
-            ${title ? `<h1 class="title">${title}</h1>` : ''}
+            ${title ? `<h1 class="title">${text(title)}</h1>` : ''}
           </div>
-          ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ''}
+          ${subtitle ? `<p class="subtitle">${text(subtitle)}</p>` : ''}
         </div>
         <div class="body"><slot></slot></div>
       </div>`;
@@ -170,10 +178,10 @@ ${s}
       `) + `
       <div class="wrap"${open ? ' open' : ''} role="group">
         <div class="head" role="button" tabindex="0" aria-expanded="${open}">
-          <span class="num">${num}</span>
+          <span class="num">${text(num)}</span>
           <div class="titles">
-            ${label ? `<p class="t-label">${label}</p>` : ''}
-            <p class="t-title">${title}</p>
+            ${label ? `<p class="t-label">${text(label)}</p>` : ''}
+            <p class="t-title">${text(title)}</p>
           </div>
           <span class="chevron" aria-hidden="true">▼</span>
         </div>
@@ -224,11 +232,11 @@ ${s}
         .btn.wrong .fb{display:block;background:${T.dangerBg};color:#991b1b}
         .status{font-size:1rem;margin-left:auto;flex-shrink:0}
       `) + `
-      <button class="btn" type="button" data-group="${group}" data-correct="${correct}">
-        <span class="badge">${val}</span>
+      <button class="btn" type="button" data-group="${text(group)}" data-correct="${correct}">
+        <span class="badge">${text(val)}</span>
         <div class="text">
           <span class="main-text"><slot></slot></span>
-          ${feedback ? `<div class="fb" role="alert">${feedback}</div>` : ''}
+          ${feedback ? `<div class="fb" role="alert">${text(feedback)}</div>` : ''}
         </div>
         <span class="status" aria-hidden="true"></span>
       </button>`;
@@ -280,7 +288,7 @@ ${s}
         .inner{padding:16px 18px;background:${T.accentTint};border-radius:${T.radiusSm};
           border-left:4px solid ${T.accent};font-size:.95rem;line-height:1.65;color:${T.text}}
       `) + `
-      <button class="btn" aria-expanded="false">${icon} <span>${label}</span></button>
+      <button class="btn" aria-expanded="false">${icon} <span>${text(label)}</span></button>
       <div class="body" role="region"><div class="inner"><slot></slot></div></div>`;
       const btn  = this.$('.btn');
       const body = this.$('.body');
@@ -322,9 +330,9 @@ ${s}
           transition:background .3s,transform .25s ${T.ease}}
         .dot.done{background:${T.accent};transform:scale(1.2)}
       `) + `
-      <div class="wrap" role="progressbar" aria-valuemin="0" aria-valuemax="${this._total}" aria-valuenow="${this._cur}" aria-label="${label}">
+      <div class="wrap" role="progressbar" aria-valuemin="0" aria-valuemax="${this._total}" aria-valuenow="${this._cur}" aria-label="${text(label)}">
         <div class="row">
-          <span class="lbl">${label}</span>
+          <span class="lbl">${text(label)}</span>
           ${showF ? `<span class="frac"><span id="cn">${this._cur}</span>/${this._total}</span>` : ''}
         </div>
         <div class="track"><div class="fill" id="fill"></div></div>
@@ -373,9 +381,9 @@ ${s}
         .time.danger{color:${T.danger};animation:upao-pulse .8s infinite}
         .icon{font-size:1.1rem}
       `) + `
-      <div class="wrap" role="timer" aria-live="off" aria-label="${label}">
+      <div class="wrap" role="timer" aria-live="off" aria-label="${text(label)}">
         <span class="icon" aria-hidden="true">${ICON.clock}</span>
-        <div><div class="lbl">${label}</div><div class="time" id="t">${this._fmt(this._rem)}</div></div>
+        <div><div class="lbl">${text(label)}</div><div class="time" id="t">${this._fmt(this._rem)}</div></div>
       </div>`;
       const tick = () => {
         const elapsed = (Date.now() - this._start) / 1000;
@@ -416,10 +424,10 @@ ${s}
           color:#fff;text-align:right;animation:upao-count-up .25s ${T.ease}}
         .max{font-size:.85rem;font-weight:600}
       `) + `
-      <div class="wrap" role="status" aria-live="polite" aria-label="${label}: ${this._val} de ${max}">
+      <div class="wrap" role="status" aria-live="polite" aria-label="${text(label)}: ${this._val} de ${text(max)}">
         <span aria-hidden="true">${ICON.trophy}</span>
-        <div class="lbl">${label}</div>
-        <div class="fig"><span class="val" id="v">${this._val}</span><span class="max">/ ${max}</span></div>
+        <div class="lbl">${text(label)}</div>
+        <div class="fig"><span class="val" id="v">${this._val}</span><span class="max">/ ${text(max)}</span></div>
       </div>`;
       this.set = (n) => {
         this._val = n;
@@ -465,11 +473,11 @@ ${s}
         .dot.done{background:${T.accent}}
       `) + `
       <nav class="nav" aria-label="Navegación de pasos">
-        <button class="btn prev" id="prev" aria-label="${pLbl}">${pLbl}</button>
+        <button class="btn prev" id="prev" aria-label="${text(pLbl)}">${text(pLbl)}</button>
         <div class="dots" role="list" aria-label="Pasos">${Array.from({ length: this._total }, (_, i) =>
           `<div class="dot${i + 1 === this._cur ? ' active' : i + 1 < this._cur ? ' done' : ''}" data-i="${i + 1}" role="listitem" aria-label="Paso ${i + 1}"></div>`
         ).join('')}</div>
-        <button class="btn next" id="next" aria-label="${nLbl}">${nLbl}</button>
+        <button class="btn next" id="next" aria-label="${text(nLbl)}">${text(nLbl)}</button>
       </nav>`;
       const upd = () => {
         this.$('#prev').disabled = this._cur <= 1;
@@ -532,12 +540,12 @@ ${s}
           border-top:none}
       `) + `
       <div class="panel" role="figure">
-        <div class="num-badge" aria-label="Panel ${num}">${num}</div>
+        <div class="num-badge" aria-label="Panel ${text(num)}">${text(num)}</div>
         <div class="img-wrap">
           <slot name="art"></slot>
-          ${hasArt ? '' : src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">${ICON.bot}</div>`}
+          ${hasArt ? '' : src ? `<img src="${text(src)}" alt="${text(alt)}" loading="lazy">` : `<div class="no-img" aria-hidden="true">${ICON.bot}</div>`}
         </div>
-        <p class="char-label">${char}</p>
+        <p class="char-label">${text(char)}</p>
         <div class="bubble"><slot></slot></div>
       </div>`;
     }
@@ -592,20 +600,20 @@ ${s}
       <div class="card">
         <div class="head">
           <span class="mic" aria-hidden="true">${ICON.mic}</span>
-          <div><div class="htitle">Micro-Podcast</div><div class="hsub">${concept}</div></div>
+          <div><div class="htitle">Micro-Podcast</div><div class="hsub">${text(concept)}</div></div>
         </div>
         <div class="body">
-          ${src ? `<audio id="aud" src="${src}" preload="auto"></audio>` : ''}
+          ${src ? `<audio id="aud" src="${text(src)}" preload="auto"></audio>` : ''}
           <div class="wave" id="wave">${bars}</div>
           <div class="controls">
-            <button class="btn play" id="play" aria-label="Reproducir">${ICON.play} Reproducir</button>
+            <button class="btn play" id="play">${ICON.play} Reproducir</button>
             <button class="btn ghost" id="rep" aria-label="Repetir">↺ Repetir</button>
           </div>
           ${src ? `<div class="track" id="track" role="slider" aria-label="Progreso del audio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div class="fill" id="fill"></div>
           </div>
           <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>` : ''}
-          ${transcript ? `<div class="transcript" role="note">${transcript}</div>` : ''}
+          ${transcript ? `<div class="transcript" role="note">${text(transcript)}</div>` : ''}
           <p class="status" id="st" aria-live="polite"></p>
         </div>
       </div>`;
@@ -658,7 +666,9 @@ ${s}
       // y creaba un segundo foco interactivo dentro del botón de la plantilla.
       if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
       if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
-      if (!this.hasAttribute('aria-label')) this.setAttribute('aria-label', 'Elemento: ' + id);
+      // El nombre accesible sale del contenido visible (WCAG 2.5.3); el item-id
+      // es un identificador interno y solo se usa si el elemento no tiene texto.
+      if (!this.hasAttribute('aria-label') && !this.textContent.trim()) this.setAttribute('aria-label', 'Elemento ' + id);
       this.shadowRoot.innerHTML = this.css(`
         .item{padding:11px 16px;border:2px solid ${T.border};border-radius:${T.radiusSm};
           background:${T.surface};cursor:grab;font-size:.93rem;font-weight:500;
@@ -674,7 +684,7 @@ ${s}
           animation:upao-shake .3s ${T.ease}}
         .grip{color:${T.muted};font-size:.9rem;cursor:grab}
       `) + `
-      <div class="item" draggable="true" data-id="${id}" data-cat="${cat}">
+      <div class="item" draggable="true" data-id="${text(id)}" data-cat="${text(cat)}">
         <span class="grip" aria-hidden="true">⠿</span>
         <slot></slot>
       </div>`;
@@ -714,8 +724,8 @@ ${s}
         .hint{font-size:.75rem;color:${T.muted}}
         .dropped{font-size:.9rem;color:${T.text};font-weight:500}
       `) + `
-      <div class="zone" role="region" aria-label="Zona: ${label}" aria-dropeffect="move">
-        <div class="lbl">${label}</div>
+      <div class="zone" role="region" aria-label="Zona: ${text(label)}" aria-dropeffect="move">
+        <div class="lbl">${text(label)}</div>
         <div class="hint" id="hint">Arrastra aquí</div>
         <div class="dropped" id="dropped" hidden></div>
       </div>`;
@@ -763,8 +773,8 @@ ${s}
         .hint{font-size:.78rem;color:${T.muted};margin-top:8px}
       `) + `
       <div class="wrap">
-        <button class="btn" id="btn"${locked ? ' disabled' : ''} aria-label="${label}">
-          <span id="icon" aria-hidden="true">${ICON.flag}</span> <span id="lbl">${label}</span>
+        <button class="btn" id="btn"${locked ? ' disabled' : ''}>
+          <span id="icon" aria-hidden="true">${ICON.flag}</span> <span id="lbl">${text(label)}</span>
         </button>
         ${locked ? `<p class="hint" id="hint" aria-live="polite">Completa la actividad para continuar</p>` : ''}
       </div>`;
@@ -795,10 +805,6 @@ ${s}
     }
   }
 
-  /* Text attributes never become markup; rich content belongs in slots. */
-  const text = value => String(value ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
   const PANEL_CSS = `
     .panel{padding:clamp(16px,4vw,24px);background:${T.surface};border:1px solid ${T.border};border-radius:${T.radius}}
     h2,legend{font-family:${T.fontDisp};font-size:clamp(1.1rem,3vw,1.35rem);line-height:1.3;color:${T.primary};font-weight:700}

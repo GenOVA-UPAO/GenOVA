@@ -23,11 +23,16 @@ const entry = (id: string, source: string, text: string): HistoryEntry => ({
   changes: [{ task: "texto", field: "primary", before: "A", after: "B", text }],
 });
 
-function renderSheet() {
+function renderSheet(props: { onOpenChange?: () => void; onDiscardDraft?: () => void } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <HistorySheet open onOpenChange={vi.fn()} dirty={false} onDiscardDraft={vi.fn()} />
+      <HistorySheet
+        open
+        onOpenChange={props.onOpenChange ?? vi.fn()}
+        dirty={false}
+        onDiscardDraft={props.onDiscardDraft ?? vi.fn()}
+      />
     </QueryClientProvider>,
   );
 }
@@ -49,6 +54,20 @@ describe("HistorySheet", () => {
     const dialog = await screen.findByRole("alertdialog");
     await userEvent.click(within(dialog).getByRole("button", { name: "Deshacer cambio" }));
     expect(api.restoreConfigVersion).toHaveBeenCalledWith("h2", "before");
+  });
+
+  it("si falla deshacer conserva el borrador y deja abierta la confirmación", async () => {
+    api.restoreConfigVersion.mockRejectedValue(new Error("boom"));
+    const onOpenChange = vi.fn();
+    const onDiscardDraft = vi.fn();
+    renderSheet({ onOpenChange, onDiscardDraft });
+    await userEvent.click(await screen.findByRole("button", { name: "Deshacer el último cambio" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Deshacer cambio" }));
+    expect(api.restoreConfigVersion).toHaveBeenCalledWith("h2", "before");
+    expect(onDiscardDraft).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
   });
 
   it("restaura una versión anterior tal como quedó", async () => {

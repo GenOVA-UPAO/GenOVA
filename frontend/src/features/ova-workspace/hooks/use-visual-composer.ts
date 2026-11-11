@@ -16,6 +16,8 @@ import type {
   ResourceBlock,
   VisualSpec,
 } from "../lib/visual-editor.types";
+import { ovaWorkspaceKey, phaseVersionsKey } from "./use-ova-workspace";
+import { phaseBlocksKey } from "./use-phase-blocks";
 
 const ignoreError = () => undefined;
 
@@ -173,15 +175,15 @@ async function persistPhaseVersion(params: PersistParams): Promise<boolean> {
     params.instruction ?? i18n.t("workspace:edicion_en_editor_visual")
   );
   if (ok) {
-    await Promise.all([
-      params.queryClient.invalidateQueries({
-        queryKey: ["phase-blocks", params.ovaId, params.phaseIdToApply],
-      }),
-      params.queryClient.invalidateQueries({
-        queryKey: ["phase-versions", params.ovaId, params.phaseIdToApply],
-      }),
-      params.queryClient.invalidateQueries({ queryKey: ["ova", params.ovaId] }),
-    ]);
+    // Las mismas keys que usan los bloques, el historial, la vista previa y
+    // «Mis OVAs»: con keys distintas nada se refrescaba y un guardado
+    // posterior desde «Editar» sobrescribía el cambio visual.
+    const { queryClient, ovaId, phaseIdToApply } = params;
+    await Promise.all(
+      [phaseBlocksKey(ovaId, phaseIdToApply), phaseVersionsKey(ovaId, phaseIdToApply), ovaWorkspaceKey(ovaId), ["ova"]].map(
+        (queryKey) => queryClient.invalidateQueries({ queryKey }),
+      ),
+    );
   }
   return ok;
 }

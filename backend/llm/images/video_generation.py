@@ -351,11 +351,15 @@ def generate_video(
     options: VideoOptions | None = None,
     heartbeat: Callable[[], None] | None = None,
     reuse_key: str | None = None,
+    deadline: float | None = None,
 ) -> VideoResult | VideoPending | None:
     """Primer video que salga de la cadena, dentro de un único tope de espera.
 
     Un trabajo que sigue en marcha al llegar el tope (`VideoPending`) cierra la
     cadena: el tope ya se gastó y ese video está pagado.
+
+    `deadline` fija el tope desde fuera (p. ej. desde que se encargó, no desde que
+    un hilo libre lo recoge): si ya no queda tiempo, no se encarga ni se paga nada.
     """
     clean = " ".join((prompt or "").split())[:1500]
     if not clean or not chain:
@@ -364,8 +368,14 @@ def generate_video(
         logger.info("video reused", provider=hit.provider, model=hit.model_id, pending=isinstance(hit, VideoPending))
         return hit
     options = options or default_options()
-    deadline = time.monotonic() + options.timeout_s
+    fixed = deadline is not None
+    deadline = deadline if fixed else time.monotonic() + options.timeout_s
+    # Con un tope corto configurado (mín. 30 s) el primer intento sigue cabiendo.
+    first_min = min(_MIN_ATTEMPT_S, options.timeout_s / 2)
     for i, entry in enumerate(chain):
+        if i == 0 and fixed and deadline - time.monotonic() < first_min:
+            logger.info("video not started: its wait budget ran out in the queue")
+            break
         if i > 0 and deadline - time.monotonic() < _MIN_ATTEMPT_S:
             logger.info("video chain stopped: not enough time left", tried=i)
             break

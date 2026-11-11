@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
-import type { TaskDraft } from "../lib/llm-config-draft";
+import { isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 import type { EnabledModel } from "../lib/user-llm-settings.types";
 import { ModelTaskCardChips } from "./model-task-card-chips";
@@ -35,6 +35,8 @@ export function ModelsReadOnlyTask({
 }: Readonly<ModelsReadOnlyTaskProps>) {
   const { t } = useTranslation("llm-settings");
   const subtitle = platformSubtitle(task, draft, adminModels, defaults) ?? t("tasks.noModel");
+  // El backend no guarda elección propia para imagen ni video: no se ofrece.
+  const media = isMediaTask(task);
   return (
     <div className="space-y-4">
       <div className="space-y-4 rounded-lg border border-border px-4 py-3.5">
@@ -49,7 +51,12 @@ export function ModelsReadOnlyTask({
           num={num}
         />
       </div>
-      {hasOwnLlmKey ? (
+      {media ? (
+        <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+          {t("page.mediaPlatformOnly")}
+        </p>
+      ) : null}
+      {!media && hasOwnLlmKey ? (
         <UserOverrideSection
           task={task}
           chip={chip}
@@ -57,7 +64,8 @@ export function ModelsReadOnlyTask({
           userDisabled={saving}
           bounds={bounds}
         />
-      ) : (
+      ) : null}
+      {!media && !hasOwnLlmKey ? (
         <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border px-4 py-3 sm:flex-row sm:items-center">
           <p className="min-w-0 flex-1 text-sm text-muted-foreground">
             {t("page.readOnlyTaskDesc")}
@@ -66,7 +74,7 @@ export function ModelsReadOnlyTask({
             {t("page.addKey")}
           </Button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

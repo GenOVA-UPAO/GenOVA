@@ -6,7 +6,12 @@ from dataclasses import dataclass
 
 from ova.application.dto import AddPhaseInput
 from ova.application.ports import OvaEditorRepository
-from ova.domain.editor import MAX_PHASES_PER_TYPE, EditorPhase, placeholder_content
+from ova.domain.editor import (
+    MAX_PHASES_PER_TYPE,
+    PHASE_TYPES,
+    EditorPhase,
+    placeholder_content,
+)
 from ova.domain.errors import OvaEditError, OvaForbidden, OvaGenerating, OvaNotFound
 from ova.domain.model import EDIT_FORBIDDEN, can_edit_ova
 
@@ -19,6 +24,10 @@ class AddPhase:
         phase_type = data.phase_type.strip()
         if not phase_type:
             raise OvaEditError(400, "invalid_type", "El tipo de fase no puede estar vacío.")
+        # Un tipo fuera de las 5E no se puede regenerar nunca y uno de más de 30
+        # caracteres rompía el INSERT (String(30)) con un 500.
+        if phase_type not in PHASE_TYPES:
+            raise OvaEditError(400, "invalid_type", "El tipo de fase no es válido.")
         prompt = data.prompt.strip()
         if not prompt:
             raise OvaEditError(400, "prompt_required", "El prompt no puede estar vacío.")
@@ -31,16 +40,16 @@ class AddPhase:
         if ova.status == "generando":
             raise OvaGenerating("No se puede editar mientras genera.")
         version = self.repo.get_or_create_active_version(ova)
-        if self.repo.count_phases(version.id, data.phase_type) >= MAX_PHASES_PER_TYPE:
+        if self.repo.count_phases(version.id, phase_type) >= MAX_PHASES_PER_TYPE:
             raise OvaEditError(
                 422,
                 "max_phases_reached",
-                f"La fase '{data.phase_type}' ya tiene el máximo de {MAX_PHASES_PER_TYPE} recursos.",
+                f"La fase '{phase_type}' ya tiene el máximo de {MAX_PHASES_PER_TYPE} recursos.",
             )
         phase = self.repo.add_phase(
             version.id,
-            data.phase_type,
-            self.repo.next_phase_order(version.id, data.phase_type),
+            phase_type,
+            self.repo.next_phase_order(version.id, phase_type),
             placeholder_content(prompt),
         )
         self.repo.record_micro_version(phase.id, ova.id, phase.content)

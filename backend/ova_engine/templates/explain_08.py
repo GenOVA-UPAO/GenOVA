@@ -13,7 +13,7 @@ from ova_engine.html import (
     esc,
     json_data,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.icons import icon
@@ -117,7 +117,7 @@ def _svg(blocks: list[dict]) -> str:
             f"<title>{nm}: {rol}</title>"
             f'<rect x="{x}" y="{y}" width="{w}" height="{h_blk}" rx="12" class="fw-rect"/>'
             f'<circle cx="{x + 24}" cy="{y + h_blk / 2}" r="13" fill="var(--surface)"/>'
-            f'<text x="{x + 24}" y="{y + h_blk / 2 + 5}" text-anchor="middle" class="fw-num">{k + 1}</text>'
+            f'<text x="{x + 24}" y="{y + h_blk / 2 + 5}" text-anchor="middle" class="fw-num">{k + 1}</text> '
             f'<text x="{x + 48}" y="{y + h_blk / 2 + 5}" class="fw-name">{nm}</text></g>'
         )
     parts.append("</svg>")
@@ -135,13 +135,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     )
     flujo = [{"paso": f["paso"], "bloque": max(1, min(n, int(f["bloque"] or 1))) - 1} for f in data["flujo"]]
     steps = "".join(f"<li>{esc(_strip_num(f['paso']))}</li>" for f in flujo)
-    fig_html = render_image_figure(
-        data.get("imagen"),
-        data.get("image_placeholder"),
-        data.get("image_credit"),
-        data.get("image_credit_html", ""),
-        alt_fallback=f"Diagrama arquitectónico de {ctx.concept}",
-    )
+    fig_html = render_item_figure(data, alt_fallback=f"Diagrama arquitectónico de {ctx.concept}")
     credits_sec = render_credits_section(data)
 
     return f"""

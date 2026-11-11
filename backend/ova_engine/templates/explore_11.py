@@ -205,6 +205,39 @@ GGB_CSS = """
 </style>
 """
 
+# Comparación de respuestas de las consignas (aparte para poder probarla sin navegador).
+ANSWER_JS = r"""
+function norm(t) {
+  return String(t == null ? '' : t)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+// Solo es número una respuesta que es entera un número: parseFloat('2x') daba 2.
+const NUM_RE = /^[-+]?\d+(?:[.,]\d+)?$/;
+// Artículos y preposiciones que no cambian la respuesta («el eje y» = «eje y»).
+const STOPWORDS = new Set(['el', 'la', 'los', 'las', 'un', 'una', 'de', 'del', 'al', 'en']);
+const answerTokens = t => t.split(' ').filter(w => w && !STOPWORDS.has(w));
+// Sin coincidencias parciales: «a» no vale por «hacia abajo» ni «-2» por «2».
+function sameAnswer(value, expected) {
+  const val = norm(value);
+  const exp = norm(expected);
+  if (!val || !exp) return false;
+  // Fórmulas: «y=2x+1» es la misma respuesta que «y = 2x + 1».
+  if (val === exp || val.replace(/ /g, '') === exp.replace(/ /g, '')) return true;
+  if (NUM_RE.test(val) && NUM_RE.test(exp)) {
+    const a = parseFloat(val.replace(',', '.'));
+    const b = parseFloat(exp.replace(',', '.'));
+    return Math.abs(a - b) <= Math.max(0.05, Math.abs(b) * 0.01);
+  }
+  const got = answerTokens(val);
+  const want = answerTokens(exp);
+  return want.length > 0 && got.length === want.length && want.every(w => got.includes(w));
+}
+"""
+
 GGB_JS = """
 const ggbData = JSON.parse(document.getElementById('ova-data').textContent);
 const totalSteps = ggbData.total;
@@ -272,15 +305,6 @@ function mountGgb() {
 
 initGgb();
 
-function norm(t) {
-  return String(t == null ? '' : t)
-    .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\\s+/g, ' ')
-    .trim();
-}
-
 window.checkStep = function (k) {
   const item = consignas[k - 1];
   if (!item) return;
@@ -291,7 +315,6 @@ window.checkStep = function (k) {
   const badge = document.getElementById('badge-' + k);
 
   const val = norm(input.value);
-  const exp = norm(item.respuesta_esperada);
 
   if (!val) {
     fb.hidden = false;
@@ -300,12 +323,7 @@ window.checkStep = function (k) {
     return;
   }
 
-  const numVal = parseFloat(val.replace(',', '.'));
-  const numExp = parseFloat(exp.replace(',', '.'));
-  const isNumericMatch = !isNaN(numVal) && !isNaN(numExp) && Math.abs(numVal - numExp) < 0.05;
-  const isTextMatch = val === exp || exp.includes(val) || val.includes(exp);
-
-  if (isNumericMatch || isTextMatch) {
+  if (sameAnswer(val, item.respuesta_esperada)) {
     fb.hidden = false;
     fb.className = 'ggb-fb is-ok';
     fb.textContent = '¡Correcto! ' + item.feedback_correcto;
@@ -393,7 +411,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
 {json_data({"total": n, "comandos": safe_cmds, "consignas": consignas})}
 {script(PROGRESS_JS)}
-{script(GGB_JS)}
+{script(ANSWER_JS + GGB_JS)}
 """
 
 

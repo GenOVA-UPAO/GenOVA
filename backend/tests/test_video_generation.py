@@ -337,8 +337,8 @@ def test_recurso_de_video_con_tarea_activa_encarga_el_video(monkeypatch):
     monkeypatch.setattr(vg, "video_chain_for", lambda cfg: chain)
     pedido = {}
 
-    def fake_generate(prompt, got_chain, *, reuse_key=None):
-        pedido.update(prompt=prompt, chain=got_chain, reuse_key=reuse_key)
+    def fake_generate(prompt, got_chain, *, reuse_key=None, deadline=None):
+        pedido.update(prompt=prompt, chain=got_chain, reuse_key=reuse_key, deadline=deadline)
         return _result()
 
     monkeypatch.setattr(vg, "generate_video", fake_generate)
@@ -347,6 +347,7 @@ def test_recurso_de_video_con_tarea_activa_encarga_el_video(monkeypatch):
     html = video_step.attach_video("<body><h1>Agua</h1></body>", pending)
 
     assert pedido["prompt"] == "Rain over a lake" and pedido["chain"] == chain and pedido["reuse_key"]
+    assert pedido["deadline"] is not None
     assert '<video controls playsinline preload="metadata" src="data:video/mp4;base64,' in html
     assert 'data-genova-video-model="openrouter/google/veo-3.1-lite"' in html
 
@@ -436,3 +437,38 @@ def test_fake_mete_el_video_en_los_recursos_de_video(monkeypatch):
     assert "<video" in con_video and "data:video/webm;base64," in con_video
     assert sin_video == stub
     assert with_fake_media(stub, "engage", "Cómic Interactivo", "agua", None, {}) == stub
+
+
+def test_video_en_cola_se_cancela_al_vencer_la_espera(monkeypatch):
+    """Si attach_video deja de esperar, el video aún en cola no llega a encargarse."""
+    import threading
+
+    chain = [_entry("google/veo-3.1-lite")]
+    monkeypatch.setattr(vg, "video_chain_for", lambda cfg: chain)
+    calls = []
+    monkeypatch.setattr(vg, "generate_video", lambda *a, **k: calls.append(a) or _result())
+    release = threading.Event()
+    blockers = [video_step._POOL.submit(release.wait) for _ in range(video_step._POOL._max_workers)]
+    try:
+        pending = video_step.start_video("explore", 4, "agua", {"prompt_video": "Rain"}, {})
+        short = VideoOptions(
+            duration_s=4, resolution="480p", aspect_ratio="16:9", timeout_s=0.01, poll_s=1.0, max_bytes=1
+        )
+        monkeypatch.setattr(vg, "default_options", lambda: short)
+        monkeypatch.setattr(video_step, "_WAIT_SLACK_S", 0.0)
+        html = "<body><p>guion</p></body>"
+        assert video_step.attach_video(html, pending) == html
+        assert pending.cancelled()
+    finally:
+        release.set()
+        for b in blockers:
+            b.result(timeout=5)
+    assert calls == []
+
+
+def test_generate_video_no_encarga_si_el_tope_se_gasto_en_la_cola(monkeypatch):
+    import time
+
+    monkeypatch.setattr(vg, "_one", lambda *a, **k: pytest.fail("no debía encargar el video"))
+    late = time.monotonic() + 1.0  # casi todo el tope se fue esperando un hilo libre
+    assert generate_video("Rain", [_entry("google/veo-3.1-lite")], options=OPTIONS, deadline=late) is None

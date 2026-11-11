@@ -42,7 +42,8 @@ export function HistorySheet({
     setBusy(true);
     try {
       if (undo) {
-        await feedback.undo(entry.id);
+        // Si falla, la config no cambió: no se pierde el borrador ni se cierra.
+        if (!(await feedback.undo(entry.id))) return;
       } else {
         const res = await history.restore.mutateAsync(entry.id);
         await feedback.refresh();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { RoleFormPayload } from "../api/admin-roles.api";
 import { errorMessage } from "../lib/error-message";
 import type { Role } from "../lib/types";
+import { TESIS_ROLE } from "../pages/admin-roles-page.helpers";
 import {
   useCreateRole,
   useDeleteRole,
@@ -15,10 +16,34 @@ import {
 
 const connectError = () => t("admin:roles.connectError");
 
-export function useAdminRolesController() {
-  const rolesQuery = useRoles();
+/**
+ * Estado del modo tesis. Sin respuesta del servidor (cargando o con error) no se
+ * supone ningún modo: el interruptor queda deshabilitado y sin marcar, para no
+ * mostrar «Activado» ni escribir un valor deducido de un supuesto.
+ */
+function useRegistrationModeState() {
   const modeQuery = useRegistrationMode();
   const setMode = useSetRegistrationMode();
+  const modeRole = modeQuery.data?.default_registration_role;
+
+  return {
+    tesis: modeRole === TESIS_ROLE,
+    savingMode: setMode.isPending,
+    modeUnavailable: modeRole === undefined,
+    modeError: modeQuery.isError,
+    toggleMode: () => {
+      if (modeRole === undefined) return;
+      setMode.mutate(modeRole === TESIS_ROLE ? "usuario" : TESIS_ROLE);
+    },
+    retryMode: () => {
+      void modeQuery.refetch();
+    },
+  };
+}
+
+export function useAdminRolesController() {
+  const rolesQuery = useRoles();
+  const mode = useRegistrationModeState();
   const createRole = useCreateRole();
   const updateRole = useUpdateRole();
   const deleteRole = useDeleteRole();
@@ -28,7 +53,6 @@ export function useAdminRolesController() {
   const [deletingRole, setDeletingRole] = useState<Role | null>(null);
 
   const formMutation = editingRole !== null ? updateRole : createRole;
-  const modeRole = modeQuery.data?.default_registration_role ?? "usuarios_prueba";
 
   const closeForm = () => {
     setIsFormOpen(false);
@@ -65,11 +89,7 @@ export function useAdminRolesController() {
     roles: rolesQuery.data ?? [],
     isLoading: rolesQuery.isLoading,
     error: rolesQuery.error ? errorMessage(rolesQuery.error, connectError()) : "",
-    tesis: modeRole === "usuarios_prueba",
-    savingMode: setMode.isPending,
-    toggleMode: () => {
-      setMode.mutate(modeRole === "usuarios_prueba" ? "usuario" : "usuarios_prueba");
-    },
+    ...mode,
     isFormOpen,
     editingRole,
     formError: formMutation.error ? errorMessage(formMutation.error, connectError()) : "",

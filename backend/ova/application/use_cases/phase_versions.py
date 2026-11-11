@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from ova.application.dto import PhaseVersionInput
 from ova.application.ports import OvaEditorRepository
 from ova.domain.editor import EditorMicroVersion
-from ova.domain.errors import OvaEditError, OvaForbidden, OvaNotFound
+from ova.domain.errors import OvaEditError, OvaForbidden, OvaGenerating, OvaNotFound
 from ova.domain.model import EDIT_FORBIDDEN, can_edit_ova, can_read_ova
 
 
@@ -48,6 +48,10 @@ class PhaseVersions:
             raise OvaNotFound("OVA no encontrado.")
         if not can_edit_ova(ova.owner_id, data.actor):
             raise OvaForbidden(EDIT_FORBIDDEN)
+        # Igual que guardar o revertir una versión: con una regeneración en curso,
+        # regen_persist pisaría (o sería pisado por) este cambio.
+        if ova.status == "generando":
+            raise OvaGenerating("No se puede revertir mientras genera.")
         micro = self.repo.get_micro_version(data.micro_version_id, data.phase_id)
         if micro is None:
             raise OvaEditError(404, "not_found", "Micro-versión no encontrada.")
@@ -60,6 +64,9 @@ class PhaseVersions:
             )
         self.repo.set_phase_content(data.phase_id, micro.content)
         self.repo.record_micro_version(data.phase_id, data.ova_id, micro.content)
+        # El zip SCORM guardado es lo que sirven la descarga y el LMS: sin
+        # reconstruirlo seguían con el contenido anterior al revert.
+        self.repo.rebuild_scorm(ova.id, active.id, data.actor.id)
         self.repo.commit("revert_phase_version")
         return {
             "message": f"Fase revertida a micro-versión {micro.minor_number}.",

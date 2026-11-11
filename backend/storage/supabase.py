@@ -22,6 +22,8 @@ logger = structlog.get_logger(__name__)
 
 DEFAULT_BUCKET = "scorm-packages"
 DEFAULT_SIGNED_URL_TTL = 3600  # 1 hour
+# Paquetes por OVA (uno por versión): de sobra para un listado de purga.
+_LIST_LIMIT = 1000
 
 
 class SupabaseFileStorage(FileStoragePort):
@@ -123,3 +125,18 @@ class SupabaseFileStorage(FileStoragePort):
             client.storage.from_(self._bucket_name()).remove([object_key])
         except Exception:
             logger.exception("Supabase delete falló", object_key=object_key)
+
+    def delete_prefix(self, folder: str, name_prefix: str) -> None:
+        """Best-effort, como `delete_zip`: lista la carpeta filtrando por nombre y borra."""
+        try:
+            bucket = self._get_client().storage.from_(self._bucket_name())
+            entries = bucket.list(folder, {"search": name_prefix, "limit": _LIST_LIMIT})
+            keys = [
+                f"{folder}/{entry['name']}"
+                for entry in entries or []
+                if str(entry.get("name", "")).startswith(name_prefix)
+            ]
+            if keys:
+                bucket.remove(keys)
+        except Exception:
+            logger.exception("Supabase delete_prefix falló", folder=folder, prefix=name_prefix)

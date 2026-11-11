@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/core/components/ui/input";
 
 import { describedBy } from "../lib/described-by";
+import { UNIVERSITY_ID_MAX_DIGITS } from "../lib/profile-schemas";
 import type { ProfileFormValues } from "../lib/types";
 import { FormField } from "./form-field";
 
@@ -75,6 +76,7 @@ export function ProfileIdentityFields({
           id="universityId"
           type="text"
           inputMode="numeric"
+          maxLength={UNIVERSITY_ID_MAX_DIGITS}
           autoComplete="off"
           value={values.university_id}
           disabled={disabled}

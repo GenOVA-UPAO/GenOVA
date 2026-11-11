@@ -1,20 +1,32 @@
-FROM python:3.12-slim
+# Misma versión que CI (setup-python 3.11): lo que se prueba es lo que corre.
+FROM python:3.11-slim
 
 # uv: instalador de dependencias ~10x más rápido que pip (binario oficial).
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# Versión fija: con :latest dos builds del mismo commit podían usar uv distintos.
+COPY --from=ghcr.io/astral-sh/uv:0.11.32 /uv /uvx /bin/
 
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy
+# La generación usa muchos hilos: glibc abre un arena de malloc por hilo (hasta
+# 8×núcleos) y casi nunca devuelve esa memoria al sistema, así que la RSS solo
+# sube. Con 2 arenas el proceso cabe en instancias de 512 MB (Render free).
+ENV MALLOC_ARENA_MAX=2
 
 # Railway builds from repo root with dockerfilePath=/backend/Dockerfile.worker,
 # so COPY paths must include the backend/ prefix.
 COPY backend/requirements.txt ./
-RUN uv pip install --system -r requirements.txt
+# --no-cache: la caché de wheels no queda en la capa (casi duplicaba la imagen).
+RUN uv pip install --system --no-cache -r requirements.txt
 
-COPY backend/ .
+# Sin root: un fallo en un parser de subidas (pypdf, docx, pptx, lxml, Pillow) no
+# da root en el contenedor. /app es del usuario porque la app escribe ahí (zips
+# SCORM y uploads temporales por defecto); --chown evita una capa duplicada.
+RUN useradd --create-home --uid 10001 app && chown app:app /app
+COPY --chown=app:app backend/ .
+USER app
 
 # Worker arq (F5.1): consume la cola de generación (queue.py) fuera del proceso
 # web. Mismo código que el backend; solo cambia el entrypoint. El override de

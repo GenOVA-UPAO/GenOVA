@@ -1,5 +1,33 @@
+# Contexto = raíz del repo: lo usan backend/Dockerfile.prod y Dockerfile.worker
+# (render.yaml y docker-compose.prod.yml). backend/.dockerignore NO aplica aquí
+# (solo vale con contexto ./backend, el compose de desarrollo), así que todo lo que
+# `COPY backend/ .` no debe meter en la imagen se excluye en este archivo.
 node_modules
+**/node_modules
 .git
 .github
 tests
 *.md
+
+# Secretos locales: `pnpm prod:docker` exige backend/.env y sin esto quedaba
+# copiado en /app/.env dentro de la capa de la imagen.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Entorno y cachés locales de Python.
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/.import_linter_cache
+
+# Datos locales del backend (zips SCORM de usuarios, uploads, salidas de pruebas).
+backend/**/scorm_output
+backend/tmp
+backend/tests
+backend/tools/outputs
+# Logs locales (gitignorados, como el del Prompt Lab): no son parte de la imagen.
+**/*.log
+backend/tools/prompt_lab_log.jsonl

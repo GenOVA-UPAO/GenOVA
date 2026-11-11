@@ -14,10 +14,11 @@ import sys
 os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import bcrypt  # noqa: E402
 import pytest  # noqa: E402
 
 from auth.domain.email import normalize_email  # noqa: E402
-from core.security import password_complexity_ok  # noqa: E402
+from core.security import hash_password, password_complexity_ok, verify_password  # noqa: E402
 
 
 @pytest.mark.parametrize(
@@ -65,3 +66,18 @@ def test_normalize_email(raw, expected):
 def test_normalize_email_evita_duplicados():
     """La razón de ser: dos formas del mismo correo colisionan en la misma clave."""
     assert normalize_email("Ana.Perez+genova@gmail.com") == normalize_email("anaperez@gmail.com")
+
+
+# bcrypt>=5 lanza ValueError con más de 72 bytes: registro/reset/cambio daban 500.
+@pytest.mark.parametrize("pw", ["Contrasena1" + "x" * 70, "ñ" * 39 + "1"])
+def test_password_mayor_72_bytes_hashea_y_verifica(pw):
+    assert len(pw.encode()) > 72
+    h = hash_password(pw)
+    assert verify_password(pw, h)
+    assert not verify_password("otra" + pw, h)
+
+
+def test_hash_legacy_truncado_sigue_verificando():
+    pw = "Contrasena1" + "x" * 70
+    legacy = bcrypt.hashpw(pw.encode()[:72], bcrypt.gensalt(4)).decode()
+    assert verify_password(pw, legacy)

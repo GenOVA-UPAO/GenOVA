@@ -64,5 +64,10 @@
     "clientId": "Copy the Client ID shown in your LMS.",
     "deployments": "Enter at least one Deployment ID.",
     "url": "Paste the full URL (https://…)."
+  },
+  "toast": {
+    "created": "Platform registered",
+    "updated": "Platform updated",
+    "deleted": "Platform deleted"
   }
 }

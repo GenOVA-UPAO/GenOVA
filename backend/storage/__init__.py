@@ -35,10 +35,15 @@ def delete_zip(object_key: str) -> None:
     get_file_storage().delete_zip(object_key)
 
 
+def delete_prefix(folder: str, name_prefix: str) -> None:
+    get_file_storage().delete_prefix(folder, name_prefix)
+
+
 __all__ = [
     "FileStoragePort",
     "StorageError",
     "SupabaseFileStorage",
+    "delete_prefix",
     "delete_zip",
     "get_file_storage",
     "is_configured",

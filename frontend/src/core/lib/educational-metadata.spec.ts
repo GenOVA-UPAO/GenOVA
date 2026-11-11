@@ -15,6 +15,11 @@ describe("parseLearningTime", () => {
     ["1:30", "PT1H30M"],
     ["PT30M", "PT30M"],
     ["pt1h30m", "PT1H30M"],
+    // Interfaz en inglés.
+    ["45 minutes", "PT45M"],
+    ["1 hour 30 minutes", "PT1H30M"],
+    ["2 hours", "PT2H"],
+    ["1 hour and 5 mins", "PT1H5M"],
   ])("«%s» → %s", (input, expected) => {
     expect(parseLearningTime(input)).toBe(expected);
   });

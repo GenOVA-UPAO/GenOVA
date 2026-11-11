@@ -24,6 +24,7 @@ from editor.infrastructure.interpreters.llm import LlmIntentInterpreter
 from editor.infrastructure.interpreters.rules import RulesIntentInterpreter
 from editor.infrastructure.phase_repository import SqlAlchemyEditorPhaseRepository
 from editor.infrastructure.repository import SqlAlchemyEditorFeedbackRepository
+from editor.infrastructure.runtime import OvaRuntimeAdapter
 from editor.infrastructure.verifier import LayaPostVerifier
 
 
@@ -96,6 +97,8 @@ def build_editor(db: Session = Depends(get_db)) -> EditorUseCases:
             post_verifier=post_verifier,
             enable_post_verification_default=enable_pv_default,
         ),
-        confirm_and_apply=ConfirmAndApplyUseCase(phase_repo=phase_repo),
+        confirm_and_apply=ConfirmAndApplyUseCase(
+            phase_repo=phase_repo, runtime=OvaRuntimeAdapter()
+        ),
         record_feedback=RecordFeedbackUseCase(feedback_repo=feedback_repo),
     )

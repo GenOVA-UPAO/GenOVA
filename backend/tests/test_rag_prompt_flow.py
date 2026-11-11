@@ -74,7 +74,7 @@ def test_podcast_lleva_el_material(monkeypatch):
         return "Guion de podcast sobre cuántica"
 
     monkeypatch.setattr("llm.router.generar_texto", fake)
-    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda text: None)
+    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda text, **_: None)
     gen.generate_resource("engage", 3, "Cuántica", contexto=CTX)
     assert len(prompts) == 1
     assert MARK in prompts[0][1]

@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - run: uvx ruff check backend/
@@ -102,7 +102,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -173,7 +173,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -224,7 +224,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -248,18 +248,27 @@ jobs:
       - name: Get bearer token (seed admin)
         id: auth
         run: |
+          set -o pipefail
           TOKEN=$(curl -sf -X POST http://localhost:8000/api/auth/login \
             -H "Content-Type: application/json" \
             -d '{"email":"admin@genova.ai","password":"admin1234password"}' | jq -r .access_token)
+          # Sin token Schemathesis corre con `Bearer null` y todo es un 401.
+          [ -n "$TOKEN" ] && [ "$TOKEN" != null ] || { echo 'seed login failed'; exit 1; }
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
 
       - name: Run Schemathesis
+        # `shell: bash` añade -o pipefail: sin él, el `| tee` ocultaba los fallos.
+        # Se excluye POST /api/auth/logout: con el Bearer compartido lo revoca
+        # (jwt_blocklist) y el resto de operaciones solo recibe «Token revocado»
+        # (401). El logout ya lo cubren las pruebas de pytest.
+        shell: bash
         run: |
           uvx --from 'schemathesis>=4,<5' schemathesis run \
             http://localhost:8000/openapi.json \
             --header "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
             --max-examples 20 \
             --exclude-path-regex '^/api/ova/jobs' \
+            --exclude-path '/api/auth/logout' \
             --report junit --report-junit-path schemathesis-report.xml \
             | tee schemathesis-output.txt
 
@@ -318,7 +327,7 @@ jobs:
       - name: pnpm audit (prod)
         run: pnpm audit --prod --audit-level high
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - name: pip-audit (backend)
@@ -377,7 +386,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.3
         with: { enable-cache: true }
 
       - name: Install backend deps

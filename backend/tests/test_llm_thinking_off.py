@@ -29,7 +29,7 @@ class _CapturingChat:
     def __init__(self):
         self.calls = []
 
-    def __call__(self, provider, model_id, prompt, max_tokens, extra, timeout, key=None):
+    def __call__(self, provider, model_id, prompt, max_tokens, extra, timeout, key=None, deadline=None):
         self.calls.append({"extra": dict(extra or {})})
         return "{}"
 

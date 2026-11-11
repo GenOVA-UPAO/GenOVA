@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from auth.domain.errors import EmailAlreadyRegistered
 from auth.domain.user import RegisteredUser
 from core.database import commit_or_500
+from core.security import token_digest
 from models import EmailVerificationToken, PlatformConfig, Role, User, UserRole
 
 
@@ -55,7 +56,7 @@ class SqlAlchemyRegistrationRepository:
                 self._db.add(
                     EmailVerificationToken(
                         user_id=user.id,
-                        token=verification_token,
+                        token=token_digest(verification_token),
                         expires_at=verification_expires_at,
                     )
                 )

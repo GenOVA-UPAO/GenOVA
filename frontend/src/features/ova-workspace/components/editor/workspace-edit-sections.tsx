@@ -5,6 +5,7 @@ import { useOvaLatestJob } from "../../hooks/use-ova-latest-job";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import { phaseMeta } from "../../lib/phase-meta";
 import { addedResourceRegenPayload, buttonRegenPayload } from "../../lib/regen-chat";
+import { groupReorderPayload } from "../../lib/resource-reorder";
 import type { PhaseWithContent } from "../../lib/types";
 import { sectionTypes } from "../../lib/workspace-sections";
 import { WorkspaceResourceList } from "./workspace-resource-list";
@@ -22,13 +23,7 @@ export function WorkspaceEditSections({ ovaId, phases, regen }: Readonly<Props>)
   const latestJob = useOvaLatestJob(ovaId);
   const configured = (latestJob.data?.resources ?? []).map((resource) => resource.phase_type);
   const handleGroupReorder = (phaseType: string, group: PhaseWithContent[]) => {
-    let index = 0;
-    const reordered = phases.map((phase) =>
-      phase.phase_type === phaseType ? group[index++] : phase,
-    );
-    workspace.reorder.mutate(
-      reordered.map((phase, order) => ({ phase_id: phase.id, new_order: order })),
-    );
+    workspace.reorder.mutate(groupReorderPayload(phases, phaseType, group));
   };
   return sectionTypes(phases, configured).map((phaseType) => (
     <WorkspaceResourceList

@@ -2,7 +2,7 @@
 
 import structlog
 from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from auth.dependencies import get_current_user
 from core.rate_limit import limiter
@@ -19,7 +19,7 @@ router = APIRouter(tags=["OVA · Fases y versiones"])
 
 class AddPhaseRequest(BaseModel):
     phase_type: str
-    prompt: str
+    prompt: str = Field(max_length=4000)
 
 
 @router.post("/{ova_id}/fases", summary="Añadir una fase a la OVA")

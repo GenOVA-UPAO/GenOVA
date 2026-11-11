@@ -248,7 +248,7 @@ cd backend
 uv sync                          # instala desde pyproject.toml
 uv run uvicorn main:app --reload --port 8000
 
-# Para incluir herramientas de desarrollo (ruff, pytest, requests, bs4):
+# Para incluir herramientas de desarrollo (ruff, pytest, requests, import-linter):
 uv sync --extra dev
 ```
 
@@ -348,21 +348,25 @@ chequeo de JS, crítico, editor y SCORM, todo ejecutándose de verdad.
   data URIs); si no casa, mismo prompt con otro modelo; y, salvo modo estricto,
   la siguiente entrada con la misma forma (prompt retocado sin regrabar; avisa
   en el log).
-- Cassettes: `backend/tests/fixtures/llm_cassettes/<fase>_<NN>.json` (uno por
-  tipo de recurso) y `ova_full.json` (editor del OVA completo). Guardan un
-  extracto del prompt y la respuesta; nunca claves.
+- Cassettes: un JSON por sesión. Con `LLM_CASSETTE_MODE` se usa
+  `$LLM_CASSETTE_DIR/session.json` (por defecto
+  `backend/tests/fixtures/llm_cassettes/session.json`); desde código,
+  `use_cassette(ruta, mode="record"|"replay")` activa el fichero que se le pase.
+  Guardan un extracto del prompt y la respuesta; nunca claves.
 - Los medios no se graban: sin imágenes ni video y el podcast sin TTS.
 
 ```bash
 # Tests (sin red ni claves, segundos):
-pytest tests/test_resource_generation_replay.py tests/test_llm_cassette.py
+pytest tests/test_llm_cassette.py
 
-# Grabar (gasta crédito; la clave SOLO en el entorno del proceso). Todo el texto
-# va a openrouter/deepseek/deepseek-v4-flash; se detiene al superar --cap-usd:
+# Grabar (gasta crédito; la clave SOLO en el entorno del proceso): se levanta el
+# backend en modo record y se generan los recursos que se quieran grabar. No hay
+# tope de gasto automático: genera solo lo necesario.
 OPENROUTER_API_KEY=sk-or-... LANGSMITH_TRACING=false RAG_DISABLED=1 \
-  python -m scripts.record_llm_cassettes --only evaluate:1 --cap-usd 0.15
-python -m scripts.record_llm_cassettes --skip-existing      # los que falten
-python -m scripts.record_llm_cassettes --ova --no-resources # OVA completo (editor)
+  LLM_CASSETTE_MODE=record LLM_CASSETTE_DIR=tests/fixtures/llm_cassettes \
+  uvicorn main:app --port 8000
+# Reproducir lo grabado sin red:
+LLM_CASSETTE_MODE=replay LLM_CASSETTE_DIR=tests/fixtures/llm_cassettes uvicorn main:app
 ```
 
 Los tests de inyección de fallos escriben entradas de error a mano (401, 429,
@@ -591,7 +595,7 @@ Hay redirecciones de URLs antiguas (`/crear-ova` → `/crear`, `/modelos` → `/
 - **CORS** restringido a métodos `GET/POST/PATCH/PUT/DELETE/OPTIONS` y headers `Authorization, Content-Type, Accept, X-Requested-With`.
 - **Lockout**: 5 intentos fallidos → 15 min bloqueo.
 - **Fallback chain LLM**: errores recuperables (rate-limit, 402, 5xx) caen a un modelo Groq de respaldo en lugar de exponer el fallo al cliente.
-- **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token.
+- **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token. En BD solo se guarda su SHA-256 (`core.security.token_digest`), igual que el de verificación de correo; el enlace propio dura 1 h y el que envía un admin, 24 h.
 - **Sin secretos hardcodeados.** `auth/infrastructure/email_adapters.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
 - **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 

@@ -38,7 +38,7 @@ def cadena(monkeypatch):
 def llamadas(monkeypatch):
     calls: list[tuple[str, str]] = []
 
-    def fake_chat(provider, model_id, prompt, max_tokens, extra, timeout=None, key=None):
+    def fake_chat(provider, model_id, prompt, max_tokens, extra, timeout=None, key=None, deadline=None):
         calls.append((provider, model_id))
         return f"ok:{provider}"
 

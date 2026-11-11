@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from core.ids import is_uuid
 from editor.application.ports import EditorPhaseRepositoryPort
+from editor.domain.errors import EditConflictError
 from models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion
 
 
@@ -35,8 +36,8 @@ class SqlAlchemyEditorPhaseRepository(EditorPhaseRepositoryPort):
         return row is not None
 
     def can_edit(self, ova_id: str, actor_id: str, is_admin: bool) -> bool:
-        if is_admin:
-            return True
+        # Solo quien creó el OVA lo modifica: el admin lo ve pero no lo edita
+        # (misma regla que `ova.domain.model`), así que `is_admin` no da permiso.
         owner = self.get_ova_owner(ova_id)
         if owner is None:
             return False
@@ -62,22 +63,31 @@ class SqlAlchemyEditorPhaseRepository(EditorPhaseRepositoryPort):
         html_content: str,
         instruction: str,
     ) -> dict[str, Any]:
+        # Bloquea el OVA mientras se escribe: serializa con guardados y regeneraciones.
+        ova = self._db.execute(
+            select(Ova).where(Ova.id == ova_id).with_for_update()
+        ).scalar_one_or_none()
+        if ova is not None and ova.status == "generando":
+            # La regeneración en curso copiaría el contenido que leyó antes y borraría este cambio.
+            raise EditConflictError("ova_generating", "No se puede editar mientras genera.")
         active = self._db.execute(
             select(OvaVersion).where(OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True))
         ).scalar_one_or_none()
-        if active is None:
-            # Si no hay versión activa, buscar la última versión
-            active = self._db.execute(
-                select(OvaVersion).where(OvaVersion.ova_id == ova_id).order_by(OvaVersion.version_number.desc())
-            ).scalars().first()
-
-        phase = self._db.execute(
-            select(OvaPhase).where(OvaPhase.id == phase_id)
-        ).scalar_one_or_none()
-
-        if phase:
-            phase.content = html_content
-            phase.regenerated = True
+        phase = (
+            self._db.execute(
+                select(OvaPhase).where(OvaPhase.id == phase_id, OvaPhase.version_id == active.id)
+            ).scalar_one_or_none()
+            if active is not None
+            else None
+        )
+        if phase is None:
+            # Fase de una versión anterior (el historial es inmutable): el editor está desfasado.
+            raise EditConflictError(
+                "phase_not_active",
+                "El recurso cambió desde que abriste el editor. Recarga para editar la versión actual.",
+            )
+        phase.content = html_content
+        phase.regenerated = True
 
         minor = self._db.execute(
             select(func.max(OvaPhaseVersion.minor_number)).where(
@@ -99,5 +109,5 @@ class SqlAlchemyEditorPhaseRepository(EditorPhaseRepositoryPort):
         return {
             "minor_number": next_minor,
             "phase_id": phase_id,
-            "version_id": str(active.id) if active else None,
+            "version_id": str(active.id),
         }
