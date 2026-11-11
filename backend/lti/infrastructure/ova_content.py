@@ -147,6 +147,10 @@ def build_player_package(db: Session, ova_id: str) -> PlayerPackage | None:
     with _cache_lock:
         _cache[key] = (now, package)
         _cache.move_to_end(key)
+        # Los paquetes caducados se sueltan ya: llevan los medios del OVA en base64
+        # y, sin esto, seguían en RAM hasta que hubiera más de _CACHE_MAX.
+        for stale in [k for k, (ts, _) in _cache.items() if now - ts >= _CACHE_TTL_S]:
+            del _cache[stale]
         while len(_cache) > _CACHE_MAX:
             _cache.popitem(last=False)
     return package

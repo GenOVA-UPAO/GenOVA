@@ -8,6 +8,10 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy
+# La generación usa muchos hilos: glibc abre un arena de malloc por hilo (hasta
+# 8×núcleos) y casi nunca devuelve esa memoria al sistema, así que la RSS solo
+# sube. Con 2 arenas el proceso cabe en instancias de 512 MB (Render free).
+ENV MALLOC_ARENA_MAX=2
 
 # Railway builds from repo root with dockerfilePath=/backend/Dockerfile.prod,
 # so COPY paths must include the backend/ prefix.

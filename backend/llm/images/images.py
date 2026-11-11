@@ -21,8 +21,12 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
+# Caché en RAM de data URIs (cada imagen pesa cientos de KB en base64). Se acota
+# por tamaño total, no solo por número: 100 imágenes llegaban a ~150 MB en un
+# proceso de 512 MB. La caché persistente es la de disco (image_cache).
 _cache: dict[str, str] = {}
-_MAX_CACHE = 100
+_MAX_CACHE = 32
+_MAX_CACHE_CHARS = 16 * 1024 * 1024
 _TIMEOUT = 60.0
 
 # Hub model id → {provider: provider_model_id}. Used when Hub mapping fetch fails.
@@ -35,6 +39,16 @@ _STATIC_PROVIDER_IDS: dict[str, dict[str, str]] = {
         "wavespeed": "wavespeed-ai/flux-schnell",
     },
 }
+
+
+def _cache_put(key: str, uri: str) -> None:
+    if len(uri) > _MAX_CACHE_CHARS // 4:
+        return
+    _cache[key] = uri
+    while _cache and (
+        len(_cache) > _MAX_CACHE or sum(map(len, _cache.values())) > _MAX_CACHE_CHARS
+    ):
+        _cache.pop(next(iter(_cache)))
 
 
 def _cache_key(prompt: str, w: int, h: int, model: str, provider: str) -> str:
@@ -164,9 +178,7 @@ def fetch_image_data_uri(
             ct = resp.headers.get("content-type", "image/jpeg")
 
         uri = f"data:{ct};base64," + base64.b64encode(data).decode("ascii")
-        if len(_cache) >= _MAX_CACHE:
-            _cache.pop(next(iter(_cache)))
-        _cache[key] = uri
+        _cache_put(key, uri)
         return uri
     except Exception as exc:
         logger.warning(
