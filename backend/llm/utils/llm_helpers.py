@@ -47,15 +47,10 @@ _FALLBACK_OR_MODEL = "google/gemma-4-31b-it:free"
 # almost always responds within free tier.
 _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
-        # Laguna S 2.1 (Poolside) es un modelo de código con 262k de contexto y
-        # 32k de salida (caben los 24k de _CODE_MAX_TOKENS). Medido en 2026-09
-        # con un quiz HTML en español: HTML completo, JS válido y sin mezclar
-        # inglés, en ~48 s y respondiendo siempre. Sustituye a Qwen3.8 27B
-        # :free, que no se conserva detrás: su único proveedor devolvía 429 en
-        # casi todos los intentos (1 de ~25), tardó 333 s y su JS no compilaba
-        # (comillas sin escapar). Un eslabón que casi nunca responde solo añade
-        # esperas antes de llegar a Gemma y a Groq.
-        ("openrouter", "poolside/laguna-s-2.1:free", {}),
+        # Laguna S 2.1 :free (Poolside) iba primero, pero salió de OpenRouter
+        # (2026-11): cada caída del principal probaba antes un modelo inexistente.
+        # Qwen3.8 27B :free tampoco existe ya. No se pone otro :free sin medirlo
+        # antes con un quiz HTML en español (ver el historial de este bloque).
         ("openrouter", _FALLBACK_OR_MODEL, {}),
         # Sustituye a Llama 3.3 70B (retirado). Qwen3.8 27B en Groq solo deja
         # 16k tokens de salida, menos que los 24k de _CODE_MAX_TOKENS.
