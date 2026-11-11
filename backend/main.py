@@ -23,6 +23,7 @@ from auth.dependencies import require_admin
 from auth.interface.http.router import router as auth_router
 from core.config import settings
 from core.database import Base, engine
+from core.env_check import check_env_credentials
 from core.http_errors import data_error_handler
 from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
 from core.input_guardrail import set_input_guardrail
@@ -163,6 +164,8 @@ def _background_catalog_refresh() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    # Una clave mal pegada solo fallaba al usarla, sin nombrar la variable.
+    check_env_credentials()
     run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
