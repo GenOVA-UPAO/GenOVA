@@ -83,28 +83,8 @@ CATALOG_ENTRIES = [
         "active": True,
         "modality": "text",
     },
-    {
-        "provider": "openrouter",
-        "model_id": "poolside/laguna-s-2.1:free",
-        "label": "Laguna S 2.1 (OpenRouter · free)",
-        "task": "codigo",
-        "pricing": None,
-        "context_length": None,
-        "active": True,
-        "modality": "text",
-        "notes": "Modelo de código de Poolside, gratis: respaldo de Código. "
-        "HTML/JS válido y buen español; razonamiento apagado por defecto.",
-    },
-    {
-        "provider": "openrouter",
-        "model_id": "qwen/qwen3.8-27b:free",
-        "label": "Qwen3.8 27B (OpenRouter · free)",
-        "task": "codigo",
-        "pricing": None,
-        "context_length": None,
-        "active": True,
-        "modality": "text",
-    },
+    # Laguna S 2.1 :free (Poolside) y Qwen3.8 27B :free salieron de OpenRouter
+    # (2026-11, GET /api/v1/models): el refresco los marcaba «model not found in API».
     {
         "provider": "openrouter",
         "model_id": "google/gemini-2.5-flash",

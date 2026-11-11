@@ -149,6 +149,9 @@ def _refresh_catalog() -> None:
 
 async def resume_orphans(ctx) -> None:
     """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado)."""
+    from core.env_check import check_env_credentials
+
+    check_env_credentials()
     try:
         await asyncio.to_thread(_refresh_catalog)
     except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
