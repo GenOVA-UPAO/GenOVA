@@ -102,6 +102,13 @@ services:
       # afirmaciones falsas o fuera de tema antes del render.
       - key: OVA_CONTENT_REVIEW
         value: "1"
+      # Modelo del segundo intento de diagrama (cuando el recurso no trae uno válido).
+      # Sin esta variable el código cae a un Ollama en localhost:11435, que en Render
+      # no existe: cada intento acababa en ConnectError y el diagrama se perdía. Un id
+      # con «/» va a OpenRouter (usa OPENROUTER_API_KEY) con JSON estricto; Gemini 2.5
+      # Flash lo admite y cuesta ≤ ~$0.008 por diagrama (3000 tokens de salida).
+      - key: OVA_DIAGRAM_MODEL
+        value: google/gemini-2.5-flash
 
       # ─── Pool de BD — free tier de Supabase ────────────────────────────────
       - key: DB_POOL_SIZE
