@@ -13,6 +13,10 @@ const SENSITIVE_KEY =
   /pass(word|wd)?|secret|token|api[-_]?key|authorization|cookie|prompt|credential/i;
 const SECRET_VALUE =
   /\b(?:sk-or|sk|gsk|hf|fal)[-_][A-Za-z0-9_-]{8,}|\bBearer\s+[A-Za-z0-9._-]+|\beyJ[A-Za-z0-9._-]{10,}/g;
+/** Tokens de un solo uso en URLs (restablecer contraseña, verificar correo). */
+const URL_SECRET_PARAM = /([?&#](?:token|code|ticket)=)[^&#\s]+/gi;
+/** Campos de breadcrumbs (navegación, fetch/xhr) que llevan una URL completa. */
+const BREADCRUMB_URL_KEYS = ["url", "from", "to"] as const;
 
 function envString(
   name: "VITE_SENTRY_DSN" | "VITE_SENTRY_ENVIRONMENT" | "VITE_SENTRY_RELEASE",
@@ -29,8 +33,15 @@ export function isSentryEnabled(): boolean {
   return getSentryDsn() !== undefined;
 }
 
+/** URL sin query ni hash: ahí viajan los tokens de /reset-password y /verify-email. */
+function stripQuery(url: string | undefined): string | undefined {
+  return url?.split(/[?#]/)[0];
+}
+
 function clean(value: unknown): unknown {
-  if (typeof value === "string") return value.replace(SECRET_VALUE, "[key]");
+  if (typeof value === "string") {
+    return value.replace(SECRET_VALUE, "[key]").replace(URL_SECRET_PARAM, `$1${REDACTED}`);
+  }
   if (Array.isArray(value)) return value.map(clean);
   if (value !== null && typeof value === "object") {
     return Object.fromEntries(
@@ -40,15 +51,28 @@ function clean(value: unknown): unknown {
   return value;
 }
 
+function stripBreadcrumbUrls(breadcrumbs: ErrorEvent["breadcrumbs"]): ErrorEvent["breadcrumbs"] {
+  return breadcrumbs?.map((crumb) => {
+    if (!crumb.data) return crumb;
+    const data: Record<string, unknown> = { ...crumb.data };
+    for (const key of BREADCRUMB_URL_KEYS) {
+      if (typeof data[key] === "string") data[key] = stripQuery(data[key]);
+    }
+    return { ...crumb, data };
+  });
+}
+
 /** `beforeSend`: strips tokens, keys, cookies, headers and bodies from the event. */
 export function scrubEvent<T extends ErrorEvent>(event: T): T {
   const scrubbed = { ...event };
   delete scrubbed.user;
   if (scrubbed.request) {
     // Se conserva solo lo no sensible (url, method); fuera cabeceras, cookies, cuerpo y query.
+    // HttpContext pone location.href en request.url sin pasar por dataCollection.
     const { url, method } = scrubbed.request;
-    scrubbed.request = { url, method };
+    scrubbed.request = { url: stripQuery(url), method };
   }
+  if (scrubbed.breadcrumbs) scrubbed.breadcrumbs = stripBreadcrumbUrls(scrubbed.breadcrumbs);
   for (const key of ["exception", "breadcrumbs", "extra", "contexts", "message"] as const) {
     if (key in scrubbed) (scrubbed as Record<string, unknown>)[key] = clean(scrubbed[key]);
   }

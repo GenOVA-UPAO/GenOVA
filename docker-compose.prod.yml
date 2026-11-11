@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile.prod
+    # quickjs no publica wheel linux/aarch64 y la imagen slim no trae compilador:
+    # en Apple Silicon el build nativo (arm64) fallaba con «gcc: No such file».
+    # Fijar amd64 lo construye y corre emulado (Rosetta/QEMU), igual que en Render.
+    platform: linux/amd64
     container_name: genova-backend-prod
     # Un solo proceso uvicorn (Dockerfile.prod). Si se sube a varios
     # (WEB_CONCURRENCY>1), define REDIS_URL en backend/.env y añade un servicio
@@ -10,8 +14,14 @@ services:
     # queda por proceso; con Redis y sin worker la generación se queda en cola.
     env_file:
       - ./backend/.env
+    environment:
+      # Solo nginx (red interna) y el propio host llegan al backend: se confía
+      # en su X-Forwarded-Proto/For para que request.base_url sea el público.
+      FORWARDED_ALLOW_IPS: '*'
+    # El tráfico entra por el gateway nginx (:80); el 8000 queda solo en
+    # loopback del host para depurar.
     ports:
-      - '8000:8000'
+      - '127.0.0.1:8000:8000'
     healthcheck:
       test: ['CMD', 'python', '-c', 'import urllib.request; urllib.request.urlopen("http://localhost:8000/health")']
       interval: 15s

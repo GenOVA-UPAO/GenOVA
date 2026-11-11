@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 from auth.application.dto import RequestPasswordResetInput
 from auth.application.ports import EmailSender, PasswordResetTokenRepository, TokenGenerator
 from auth.domain.email import normalize_email
+from auth.domain.reset_policy import SELF_SERVICE_RESET_TTL
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,6 +26,6 @@ class RequestPasswordReset:
         self.repo.replace_for_user(
             user.id,
             token,
-            datetime.now(UTC) + timedelta(hours=1),
+            datetime.now(UTC) + SELF_SERVICE_RESET_TTL,
         )
         self.emails.send_password_reset(user, token)

@@ -1,6 +1,7 @@
 """Dominio puro del editor visual."""
 
 from editor.domain.errors import (
+    EditConflictError,
     EditorDomainError,
     GuardRejectedError,
     InvalidBlockError,
@@ -66,6 +67,7 @@ from editor.domain.segmentation import (
 
 __all__ = [
     "ApplyIntentResult",
+    "EditConflictError",
     "EditResult",
     "EditorDomainError",
     "GuardCheckResult",

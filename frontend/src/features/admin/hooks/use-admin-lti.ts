@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import i18n from "i18next";
 import { toast } from "sonner";
 
 import {
@@ -25,7 +26,7 @@ export function useSaveLtiPlatform() {
       saveLtiPlatform(id, payload),
     onSuccess: (_data, { id }) => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.ltiPlatforms });
-      toast.success(id ? "Plataforma actualizada" : "Plataforma registrada");
+      toast.success(i18n.t(id ? "lti:toast.updated" : "lti:toast.created"));
     },
   });
 }
@@ -36,7 +37,7 @@ export function useDeleteLtiPlatform() {
     mutationFn: (id: string) => deleteLtiPlatform(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.ltiPlatforms });
-      toast.success("Plataforma eliminada");
+      toast.success(i18n.t("lti:toast.deleted"));
     },
     onError: (error) => {
       toast.error(error.message);

@@ -21,7 +21,8 @@ class UserRoleUpdate(BaseModel):
 class UserProfileAdminUpdate(BaseModel):
     full_name: str = Field(..., min_length=3, max_length=100)
     email: EmailStr
-    university_id: int | None = Field(default=None, ge=1)
+    # users.university_id es INTEGER (int4): por encima, el UPDATE daba 500 en vez de 422.
+    university_id: int | None = Field(default=None, ge=1, le=2_147_483_647)
     gender: str | None = Field(default=None, max_length=20)
     phone_number: str | None = Field(default=None, max_length=20)
 

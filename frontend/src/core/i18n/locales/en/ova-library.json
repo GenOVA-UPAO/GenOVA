@@ -22,6 +22,8 @@
   "deleted_other": "{{count}} OVAs permanently deleted",
   "emptied_one": "Trash emptied: {{count}} OVA deleted",
   "emptied_other": "Trash emptied: {{count}} OVAs deleted",
+  "skipped_one": "{{count}} OVA skipped: it changed state or is no longer available",
+  "skipped_other": "{{count}} OVAs skipped: they changed state or are no longer available",
   "withStatus": " with status ‘{{status}}’",
   "no_se_pudo_descargar_el_archivo": "Could not download the file.",
   "descargar_elegir_formato": "Download, choose format",

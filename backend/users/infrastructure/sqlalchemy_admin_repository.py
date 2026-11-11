@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from auth.domain.email import normalize_email
+from auth.domain.reset_policy import ADMIN_RESET_TTL
 from core.database import commit_or_500
+from core.security import token_digest
 from models import PasswordResetToken, Role, User, UserRole
 from users.domain.admin import (
     AdminRoleSummary,
@@ -66,14 +68,15 @@ class SqlAlchemyAdminUserRepository:
         return [_to_summary(u) for u in users_db]
 
     def is_admin(self, user_id: UUID) -> bool:
-        role = (
-            self._db.execute(
-                select(Role).join(UserRole).where(UserRole.user_id == user_id)
-            )
-            .scalars()
-            .first()
+        # Mismo predicado que el guard de auth: con varias filas en user_roles
+        # (BU-002) basta con que una sea «administrador», sin depender del orden.
+        stmt = select(
+            select(UserRole.user_id)
+            .join(Role, Role.id == UserRole.role_id)
+            .where(UserRole.user_id == user_id, Role.name == "administrador")
+            .exists()
         )
-        return role is not None and role.name == "administrador"
+        return bool(self._db.execute(stmt).scalar())
 
     def assert_can_touch_target(self, caller_id: UUID, target_id: UUID) -> None:
         # Cortocircuito idéntico al helper original: la consulta del caller
@@ -168,7 +171,9 @@ class SqlAlchemyAdminUserRepository:
         self._db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
         self._db.flush()
         token = secrets.token_urlsafe(32)
-        expires_at = datetime.now(UTC) + timedelta(hours=24)
-        self._db.add(PasswordResetToken(user_id=user_id, token=token, expires_at=expires_at))
+        expires_at = datetime.now(UTC) + ADMIN_RESET_TTL
+        self._db.add(
+            PasswordResetToken(user_id=user_id, token=token_digest(token), expires_at=expires_at)
+        )
         commit_or_500(self._db, op="reset_password_email_token")
         return token

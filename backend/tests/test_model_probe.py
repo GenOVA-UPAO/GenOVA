@@ -188,3 +188,25 @@ def test_check_provider_fake_keys(monkeypatch):
     assert ok["code"] == "connected" and ok["models"] == len(provider_listing._FAKE_IDS["groq"])
     assert bad["code"] == "invalid_key"
     assert down["code"] == "unreachable"
+
+
+def test_classify_provider_auth_error_is_invalid_key():
+    from llm.auth_errors import ProviderAuthError
+
+    assert classify_probe_error(ProviderAuthError("openrouter", personal=True)) == "invalid_key"
+    assert classify_probe_error(ProviderAuthError("openrouter")) == "invalid_key"
+
+
+def test_revoked_key_through_real_chat_once_is_invalid_key(monkeypatch):
+    """Por el `_chat_once` real: el 401 del SDK llega como ProviderAuthError."""
+    monkeypatch.setattr(model_probe.settings, "llm_fake", False)
+    monkeypatch.setattr("llm.cassette.active", lambda: None)
+
+    def reject(*_a, **_k):
+        raise _status_error(openai.AuthenticationError, 401, f"Incorrect API key: {SECRET}")
+
+    monkeypatch.setattr("llm.router._provider_chat_once", reject)
+    monkeypatch.setattr("llm.clients.key_resolver.environment_key", lambda provider: None)
+    out = probe_model("openrouter", "x/y", SECRET, key_source="own")
+    assert out["code"] == "invalid_key"
+    assert SECRET not in repr(out)

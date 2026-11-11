@@ -58,7 +58,8 @@ class JobRepository(Protocol):
     def resumable_subset(self, job_id: UUID, requested: list[UUID]) -> list[UUID]:
         raise NotImplementedError
 
-    def mark_resuming(self, job_id: UUID) -> None:
+    def mark_resuming(self, job_id: UUID) -> bool:
+        """Reclama el job para un nuevo run; False si ya tiene uno activo."""
         raise NotImplementedError
 
     def cancel(self, job_id: UUID) -> None:

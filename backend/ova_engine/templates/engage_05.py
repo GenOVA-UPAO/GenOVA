@@ -14,7 +14,7 @@ from ova_engine.html import (
     PROGRESS_JS,
     esc,
     render_credits_section,
-    render_image_figure,
+    render_item_figure,
     script,
 )
 from ova_engine.icons import icon
@@ -301,9 +301,9 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'  <div class="dilema-option-head">'
             f'    <div class="dilema-option-info">'
             f'      <span class="dilema-option-badge" aria-hidden="true">{letter}</span>'
-            f'      <p class="dilema-option-text"><strong>Postura {letter}:</strong> {opt_text}</p>'
+            f'      <p class="dilema-option-text" id="opt-text-{k}"><strong>Postura {letter}:</strong> {opt_text}</p>'
             f"    </div>"
-            f'    <button type="button" class="ova-btn dilema-vote-btn" data-index="{k}" data-letter="{letter}" data-opt-id="{opt_id}" aria-pressed="false" aria-label="Votar postura {letter}: {opt_text}">'
+            f'    <button type="button" class="ova-btn dilema-vote-btn" data-index="{k}" data-letter="{letter}" data-opt-id="{opt_id}" aria-pressed="false" aria-describedby="opt-text-{k}">'
             f'      <span class="dilema-vote-label">Votar postura {letter}</span>'
             f"    </button>"
             f"  </div>"
@@ -322,13 +322,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
     options_html = "".join(options_html_list)
 
-    fig_html = render_image_figure(
-        data.get("imagen"),
-        data.get("image_placeholder"),
-        data.get("image_credit"),
-        data.get("image_credit_html", ""),
-        alt_fallback=f"Dilema ético en la gestión de {ctx.concept}",
-    )
+    fig_html = render_item_figure(data, alt_fallback=f"Dilema ético en la gestión de {ctx.concept}")
     credits_sec = render_credits_section(data)
 
     return f"""{_STYLE}{IMAGE_FIGURE_CSS}
@@ -411,7 +405,7 @@ voteButtons.forEach(function (btn) {
     btn.setAttribute('aria-pressed', 'true');
     const activeLbl = btn.querySelector('.dilema-vote-label');
     if (activeLbl) {
-      activeLbl.textContent = '✓ Postura ' + letter + ' elegida';
+      activeLbl.innerHTML = '<span aria-hidden="true">✓</span> Postura ' + letter + ' elegida';
     }
 
     window.ovaMark('voto');

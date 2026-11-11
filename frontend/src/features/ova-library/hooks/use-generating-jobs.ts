@@ -1,15 +1,18 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { HttpError } from "@/core/lib/http";
+import { useCurrentUser } from "@/core/auth/auth-store";
 import { ovaJobsApi } from "@/core/services/ova-jobs-api.service";
 
 import type { JobPollData, OvaJobInfo } from "../lib/job-types";
+import { isOwnOva } from "../lib/ova-card-format";
 import type { OvaListItem } from "../lib/types";
 import { ovaKeys } from "./use-ova-library";
 
 const POLL_MS = 4000;
-const TERMINAL = new Set(["done", "error", "interrupted"]);
+// Solo un job en cola o en curso puede avanzar. Cualquier otro estado (terminal,
+// o "none" cuando el usuario no tiene job para ese OVA) detiene el sondeo.
+const ACTIVE = new Set(["queued", "running"]);
 
 function computeProgress(job: JobPollData | null): { done: number; total: number } | null {
   if (!job?.resources?.length) return null;
@@ -21,33 +24,33 @@ function computeProgress(job: JobPollData | null): { done: number; total: number
 /** Sondea el progreso de jobs para OVAs con estado "generando" mediante TanStack Query. */
 export function useGeneratingJobs(ovas: OvaListItem[]) {
   const qc = useQueryClient();
-  const generatingOvas = ovas.filter((o) => o.status === "generando");
+  const userId = useCurrentUser()?.id;
+  // GET /api/jobs?ova_id= solo ve los jobs propios: los OVAs ajenos (alcance
+  // "todos" del admin) siempre responderían "none", así que no se sondean.
+  const generatingOvas = ovas.filter((o) => o.status === "generando" && isOwnOva(o, userId));
   const ids = generatingOvas.map((o) => o.id);
 
   const results = useQueries({
     queries: ids.map((ovaId) => ({
       queryKey: ["ovaJob", ovaId],
-      queryFn: async (): Promise<JobPollData | null> => {
-        try {
-          return (await ovaJobsApi.getJobByOvaId(ovaId)) as JobPollData;
-        } catch (err) {
-          // Si el job no existe (404), tratamos el OVA como sin job activo
-          if (err instanceof HttpError && err.status === 404) return null;
-          throw err;
-        }
+      queryFn: async (): Promise<JobPollData> => {
+        const data = (await ovaJobsApi.getJobByOvaId(ovaId)) as JobPollData;
+        // Al terminar el job, el backend saca al OVA de "generando": se refresca
+        // la lista para que la tarjeta deje de verse ocupada (y se desmonte este sondeo).
+        if (!ACTIVE.has(data.status ?? "")) void qc.invalidateQueries({ queryKey: ovaKeys.all });
+        return data;
       },
       staleTime: 0,
-      refetchInterval: (query: { state: { data?: JobPollData | null } }) => {
-        const status = query.state.data?.status;
-        return status !== undefined && !TERMINAL.has(status) ? POLL_MS : false;
-      },
+      refetchInterval: (query: { state: { data?: JobPollData } }) =>
+        ACTIVE.has(query.state.data?.status ?? "") ? POLL_MS : false,
     })),
   });
 
   const jobs: Record<string, OvaJobInfo> = {};
   ids.forEach((ovaId, i) => {
     const data = results[i]?.data;
-    if (!data) return;
+    // "none": el OVA no tiene job del usuario; no hay progreso que mostrar.
+    if (!data || data.status === "none") return;
     jobs[ovaId] = {
       jobId: data.job_id ?? null,
       status: data.status ?? null,

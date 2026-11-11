@@ -308,9 +308,10 @@ class LtiService:
             raise LtiValidationError(
                 "Esta selección ya se envió al LMS. Vuelve a empezar desde el curso."
             )
-        owner_id, choices = self.deep_link_choices(launch)
-        chosen = next((o for o in choices if o.id == ova_id), None)
-        if owner_id is None or chosen is None:
+        owner_id = ova_content.find_user_id_by_email(self.db, launch.email)
+        # Solo se valida la OVA elegida, no toda la biblioteca del docente.
+        chosen = ova_content.get_ready_ova(self.db, ova_id, owner_id=owner_id) if owner_id else None
+        if chosen is None:
             raise LtiForbidden("Esa OVA no es tuya o todavía no está lista.")
         claims = deep_linking_response_claims(
             client_id=platform.client_id,

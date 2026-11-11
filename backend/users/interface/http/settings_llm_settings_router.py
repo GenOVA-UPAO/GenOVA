@@ -50,6 +50,7 @@ from users.domain.llm_settings import (
     providers_and_types,
 )
 from users.interface.http.error_map import to_http_exception
+from users.interface.http.models_access import require_models_access
 
 router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
@@ -182,7 +183,7 @@ def _catalog_status(db) -> dict:
 @limiter.limit("3/minute")
 def refresh_llm_catalog(
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_models_access),
     db=Depends(get_db),
 ):
     """Re-fetch the provider catalogs on demand (retry path after a transient
@@ -206,7 +207,7 @@ def refresh_llm_catalog(
 def put_llm_settings(
     request: Request,
     payload: LlmSettingsUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_models_access),
     users: UsersUseCases = Depends(build_users),
 ):
     """Validate against the catalog and persist. 400 on any invalid model/timeout.

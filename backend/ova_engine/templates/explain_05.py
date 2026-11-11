@@ -512,12 +512,13 @@ _STYLE = """
 """
 
 
-def _svg_text_lines(text: str, cx: float, max_chars: int = 14) -> str:
-    """Divide texto del componente en hasta 2 líneas centradas dentro del nodo SVG."""
+def _svg_text_lines(text: str, max_chars: int = 14) -> list[tuple[int, str]]:
+    """Divide texto del componente en hasta 2 líneas centradas dentro del nodo SVG.
+    Devuelve `(desplazamiento vertical, texto)` por línea."""
     words = text.split()
     if len(text) <= max_chars or len(words) <= 1:
         t = text if len(text) <= max_chars else text[: max_chars - 1] + "…"
-        return f'<tspan x="{cx:.1f}" dy="0">{esc(t)}</tspan>'
+        return [(0, t)]
 
     line1, line2 = [], []
     curr_len = 0
@@ -539,13 +540,10 @@ def _svg_text_lines(text: str, cx: float, max_chars: int = 14) -> str:
     if len(s2) > max_chars:
         s2 = s2[: max_chars - 1] + "…"
 
-    return (
-        f'<tspan x="{cx:.1f}" dy="-6">{esc(s1)}</tspan>'
-        f'<tspan x="{cx:.1f}" dy="14">{esc(s2)}</tspan>'
-    )
+    return [(-6, s1), (8, s2)]
 
 
-def _sublabel_lines(text: str, cx: float, max_chars: int = 22) -> str:
+def _sublabel_lines(text: str, max_chars: int = 22) -> list[tuple[int, str]]:
     """Título del paso en hasta 2 líneas bajo el nodo (sin truncar a 18 caracteres)."""
     words = text.split()
     line1: list[str] = []
@@ -557,10 +555,17 @@ def _sublabel_lines(text: str, cx: float, max_chars: int = 22) -> str:
     rest = " ".join(words[len(line1):])
     if len(rest) > max_chars:
         rest = rest[: max_chars - 1] + "…"
-    out = f'<tspan x="{cx:.1f}" dy="0">{esc(" ".join(line1))}</tspan>'
-    if rest:
-        out += f'<tspan x="{cx:.1f}" dy="13">{esc(rest)}</tspan>'
-    return out
+    return [(0, " ".join(line1))] + ([(13, rest)] if rest else [])
+
+
+def _svg_text(cls: str, cx: float, y: float, lines: list[tuple[int, str]]) -> str:
+    """Un `<text>` por línea. El espacio entre ellos no se pinta (a diferencia del que
+    separaría dos `<tspan>`), pero separa las palabras del texto visible del nodo, que
+    su nombre accesible debe contener (WCAG 2.5.3)."""
+    return " ".join(
+        f'<text class="{cls}" x="{cx:.1f}" y="{y + dy:.1f}" text-anchor="middle">{esc(t)}</text>'
+        for dy, t in lines
+    )
 
 
 def normalize(data: dict, params: dict) -> dict:
@@ -620,24 +625,23 @@ def render(data: dict, ctx: RenderContext) -> str:
             )
 
         # Nodo interactivo SVG
-        tspans = _svg_text_lines(comp_text, cx)
         nodes_svg.append(
             f'<g class="node-group{" is-active" if k == 0 else ""}" id="node-{step_num}" '
             f'data-step="{step_num}" data-cx="{cx:.1f}" data-cy="{packet_y:.1f}" tabindex="0" role="button" '
-            f'aria-label="Paso {step_num}: {esc(comp_text)}"><title>{esc(title_text)}</title>'
+            f'aria-label="Paso {step_num}: {esc(comp_text)}, {esc(title_text)}"><title>{esc(title_text)}</title>'
             f'<rect class="node-rect" x="{bx:.1f}" y="{by:.1f}" width="{bw:.1f}" height="{bh:.1f}" rx="12"/>'
             f'<circle class="node-badge" cx="{cx:.1f}" cy="{by + 18:.1f}" r="11"/>'
-            f'<text class="node-badge-text" x="{cx:.1f}" y="{by + 19:.1f}" text-anchor="middle">{step_num}</text>'
-            f'<text class="node-text" x="{cx:.1f}" y="{by + 48:.1f}" text-anchor="middle">{tspans}</text>'
-            f'<text class="node-sublabel" x="{cx:.1f}" y="{by + bh + 18:.1f}" text-anchor="middle">{_sublabel_lines(title_text, cx)}</text>'
+            f'<text class="node-badge-text" x="{cx:.1f}" y="{by + 19:.1f}" text-anchor="middle">{step_num}</text> '
+            f'{_svg_text("node-text", cx, by + 48, _svg_text_lines(comp_text))} '
+            f'{_svg_text("node-sublabel", cx, by + bh + 18, _sublabel_lines(title_text))}'
             f'</g>'
         )
 
         # Botón selector en la botonera de pasos
         stepper_html.append(
             f'<button type="button" class="stepper-btn{" is-active" if k == 0 else ""}" '
-            f'id="step-btn-{step_num}" data-step="{step_num}" aria-label="Ir al paso {step_num}: {esc(title_text)}">'
-            f'<span class="stepper-num">{step_num}</span>'
+            f'id="step-btn-{step_num}" data-step="{step_num}" aria-label="Ir al paso {step_num}: {esc(comp_text)}, {esc(title_text)}">'
+            f'<span class="stepper-num">{step_num}</span> '
             f'<span class="stepper-text">{esc(comp_text)}</span>'
             f'</button>'
         )

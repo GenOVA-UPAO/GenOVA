@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { triggerOvaRegeneration } from "../api/ova-workspace.api";
 import { assistantRunningMessage, type RegenChatMessage, type RegenPayload, userChatMessage } from "../lib/regen-chat";
+import { useOrphanRegenMessages } from "./use-orphan-regen-messages";
 import { useRegenCancel } from "./use-regen-cancel";
 import { useRegenerationProgress } from "./use-regeneration-progress";
 import { useWorkspaceChat } from "./use-workspace-chat";
@@ -43,6 +44,14 @@ export function useChatRegeneration(ovaId: string) {
       throw new RegenStartError(text);
     }
   } });
+  useOrphanRegenMessages({
+    ovaId,
+    messages: chat.data,
+    own: assistant,
+    starting: request.isPending,
+    patch,
+    adopt: (message, activeJobId) => { setAssistant(message); setJobId(activeJobId); },
+  });
   const active = chat.data?.find((message) => message.id === assistant?.id);
   const busy = request.isPending || (active?.status === 'running' && !progress.error);
   // Solo los fallos que no llegaron al hilo (p. ej. no se pudo guardar el mensaje).

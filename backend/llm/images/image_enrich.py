@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import os
 from typing import Any
 
@@ -11,6 +12,7 @@ from llm.images import image_cache
 from llm.images.image_compress import compress_data_uri
 from llm.images.image_placeholder import IMG_PLACEHOLDER
 from llm.images.image_providers import get_image_data_uri, hf_last_resort
+from llm.images.image_settings_resolve import with_resolved_keys
 from llm.images.media_fake import fake_media_enabled
 from llm.images.style_guide import guide_from_settings
 
@@ -18,25 +20,11 @@ logger = structlog.get_logger(__name__)
 _SIZE = 512  # get_image_data_uri genera 512x512 por defecto
 
 
-def format_credit_caption(credit: Any) -> str:
-    """Formatea la atribución requerida para imágenes de terceros en el pie de figura."""
-    if not credit:
-        return ""
-    from ova_engine.html import esc
-
-    author = esc(getattr(credit, "author", "") or "Autor")
-    license_name = esc(getattr(credit, "license", "") or "Licencia libre")
-    license_url = esc(getattr(credit, "license_url", "") or "#")
-    provider = esc(getattr(credit, "provider", "") or "web")
-    source_url = esc(getattr(credit, "source_url", "") or "#")
-
-    return (
-        f'<figcaption class="ova-image-credit">'
-        f'<span>{author}</span> · '
-        f'<a href="{license_url}" target="_blank" rel="noopener noreferrer">{license_name}</a> · '
-        f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{provider}</a>'
-        f'</figcaption>'
-    )
+def _plain_credit(credit: Any) -> Any:
+    """`Credit` como dict serializable; los renders leen ambos formatos."""
+    if dataclasses.is_dataclass(credit) and not isinstance(credit, type):
+        return dataclasses.asdict(credit)
+    return credit
 
 
 def image_items(json_data: Any) -> list[dict]:
@@ -84,14 +72,18 @@ def enrich_with_images(
         return {}
 
     settings = image_settings or {}
-    if settings.get("enabled") is False:
+    # Sin proveedor ni cadena no hay imágenes: unos settings vacíos no pueden
+    # saltarse el interruptor de imagen del admin con la clave de plataforma.
+    if settings.get("enabled") is False or not (settings.get("provider") or settings.get("chain")):
         return {}
     default_max = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
     max_images = int(settings.get("max_images", default_max))
     if max_images <= 0:
         return {}
+    # Las claves no viajan en los settings guardados: se resuelven ahora, en memoria.
+    settings = with_resolved_keys(settings)
 
-    provider = settings.get("provider", "cloudflare")
+    provider = settings.get("provider")
     api_key = settings.get("api_key") or None
     model = settings.get("image_model") or None
     chain = settings.get("chain") or []
@@ -148,8 +140,9 @@ def enrich_with_images(
                     ova_key=ova_key,
                 )
                 if res:
-                    item["image_credit"] = res.credit
-                    item["image_credit_html"] = format_credit_caption(res.credit)
+                    # Dict y no el dataclass `Credit`: `data` se guarda como JSONB en la
+                    # actividad del recurso y json.dumps fallaba con el dataclass.
+                    item["image_credit"] = _plain_credit(res.credit)
                     item["image_source"] = res.source
                     item["image_alt"] = res.alt
                     item["image_meta"] = res.meta

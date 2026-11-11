@@ -23,6 +23,12 @@ function pendingItem(file: File, index: number): UploadItem {
   return { clientId: `pending-${String(index)}-${file.name}`, contentType: file.type, filename: file.name, message: "", sizeBytes: file.size, status: "uploading", uploadId: "" };
 }
 
+/** Un abort por timeout llega como «signal is aborted without reason»: se traduce. */
+function uploadErrorText(error: unknown): string {
+  if (error instanceof Error && error.name === "AbortError") return i18n.t("workspace:subida_demasiado_lenta");
+  return error instanceof Error ? error.message : i18n.t("workspace:error_al_subir_archivo");
+}
+
 /**
  * Archivos de referencia de un contexto: el formulario de crear OVA (sin
  * `ovaId`) o el chat del editor de un OVA. Las listas no se mezclan: lo que se
@@ -62,7 +68,7 @@ export function useOvaUploads(ovaId?: string) {
       const result = await upload.mutateAsync(candidates);
       setUploadError(result.errors?.map((error) => error.message).join(' ') ?? '');
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : i18n.t("workspace:error_al_subir_archivo"));
+      setUploadError(uploadErrorText(error));
     } finally {
       setPending([]);
     }

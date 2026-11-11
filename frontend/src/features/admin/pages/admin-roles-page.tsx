@@ -28,7 +28,10 @@ export function AdminRolesPage() {
       <RegistrationModeCard
         tesis={controller.tesis}
         saving={controller.savingMode}
+        unavailable={controller.modeUnavailable}
+        loadFailed={controller.modeError}
         onToggle={controller.toggleMode}
+        onRetry={controller.retryMode}
       />
       <RolesPanel
         isLoading={controller.isLoading}

@@ -5,7 +5,7 @@ from uuid import UUID
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import literal, select
+from sqlalchemy import literal, or_, select
 from sqlalchemy.orm import Session
 
 from auth.interface.http.csrf import check_cookie_csrf
@@ -184,4 +184,37 @@ def require_permission(required_permission: str):
         return current_user
 
     dependency.required_permission = required_permission  # type: ignore[attr-defined]
+    return dependency
+
+
+@cache
+def require_any_permission(*permissions: str):
+    """Como `require_permission`, pero basta con uno de `permissions` (o ser
+    administrador). Cacheada por la tupla de permisos, igual que aquella."""
+    def dependency(
+        current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    ) -> User:
+        allowed = db.execute(
+            select(
+                select(UserRole.user_id)
+                .join(Role, Role.id == UserRole.role_id)
+                .where(
+                    UserRole.user_id == current_user.id,
+                    or_(
+                        Role.name == "administrador",
+                        *(Role.permissions.contains([p]) for p in permissions),
+                    ),
+                )
+                .exists()
+            )
+        ).scalar()
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acceso denegado: se requiere uno de los permisos "
+                + ", ".join(f"'{p}'" for p in permissions) + ".",
+            )
+        return current_user
+
+    dependency.required_permissions = permissions  # type: ignore[attr-defined]
     return dependency

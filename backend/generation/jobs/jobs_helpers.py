@@ -213,8 +213,8 @@ def job_params(
     lookup (and a later settings change doesn't mutate an in-flight job).
     `enabled_models` is the user's enabled model allowlist — snapshotted so
     the runner can enforce it.
-    `image_settings` carries {max_images, provider, api_key} resolved at
-    job-creation time so the runner doesn't need a DB lookup.
+    `image_settings` carries {max_images, provider, chain, owner_id} resolved at
+    job-creation time; the API keys are resolved when each image is generated.
     """
     return {
         "upload_ids": list(payload.upload_ids),

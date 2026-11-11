@@ -22,7 +22,24 @@ function errorStatus(error: Error | null): number {
  * job ya terminado, pediría el OVA de nuevo en bucle mientras siga el 409.
  */
 function showsGeneration(error: Error | null, awaitingReady: boolean, pending: boolean): boolean {
-  return errorStatus(error) === 409 || (awaitingReady && pending);
+  return isGenerating(error) || (lacksVersion(error) && !awaitingReady) || (awaitingReady && pending);
+}
+
+/** El 409 «ova_generating» (o sin código, de un backend antiguo): aún se está generando. */
+function isGenerating(error: Error | null): boolean {
+  return error instanceof HttpError && error.status === 409 && (error.code === "ova_generating" || error.code === "");
+}
+
+/**
+ * El 409 «generation_no_version» llega tanto si el job falló (el panel de
+ * generación ofrece «Reintentar generación») como si sus recursos terminaron
+ * pero la materialización falló. Solo en este último caso, cuando el panel ya
+ * avisó de que el job terminó y el OVA sigue sin versión, se pasa a la
+ * pantalla de error con el mensaje del backend: antes el docente se quedaba
+ * en «Generando tu OVA» sin ninguna acción.
+ */
+function lacksVersion(error: Error | null): boolean {
+  return error instanceof HttpError && error.status === 409 && error.code === "generation_no_version";
 }
 
 /** Un backend antiguo no manda `status`: se deja intentar y decide el servidor. */

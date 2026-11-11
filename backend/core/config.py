@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     sentry_dsn: str = ""
     sentry_traces_sample_rate: float = 0.0
     metrics_enabled: bool = False
+    # Bearer que exige /metrics (core.metrics). Vacío = /metrics responde 404.
+    metrics_token: str = ""
     # B4 — Pydantic Logfire (tracing distribuido + token/cost tracking de LLM).
     # Opt-in: sin token no se instrumenta nada. `console=False` evita ruido en logs.
     logfire_token: str = ""

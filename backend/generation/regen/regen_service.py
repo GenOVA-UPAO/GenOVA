@@ -223,6 +223,8 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
             regenerated=should_regen,
             resource_type_id=phase.resource_type_id,
             title=phase.title,
+            # Mismo recurso en la versión nueva: conserva su historial.
+            lineage_id=phase.lineage_id or phase.id,
         )
         db.add(new_phase)
         new_phases_data.append(

@@ -14,6 +14,7 @@ from editor.application.dto import (
     InterpretAndApplyInput,
 )
 from editor.container import EditorUseCases, build_editor
+from editor.domain.errors import EditConflictError
 from editor.domain.model import ResourceBlock
 from editor.interface.http.schemas import (
     ConfirmRequest,
@@ -41,7 +42,10 @@ def _verify_editor_access(
     ova_id: str,
     phase_id: str,
     user: Any,
+    *,
+    allow_admin: bool = True,
 ) -> None:
+    """`allow_admin=False` en escrituras: el admin ve el OVA pero solo su creador lo modifica."""
     phase_repo = editor.confirm_and_apply.phase_repo
     owner_id = phase_repo.get_ova_owner(ova_id)
     if owner_id is None:
@@ -51,7 +55,7 @@ def _verify_editor_access(
         )
 
     is_admin = bool(getattr(user, "admin_flag_cached", False) or getattr(user, "is_admin", False))
-    if not is_admin and owner_id != str(user.id):
+    if not (is_admin and allow_admin) and owner_id != str(user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permisos para editar este OVA.",
@@ -114,20 +118,23 @@ def confirm_and_apply(
     current_user: Any = Depends(get_current_user),
     editor: EditorUseCases = Depends(build_editor),
 ) -> dict[str, Any]:
-    _verify_editor_access(editor, ova_id, phase_id, current_user)
+    _verify_editor_access(editor, ova_id, phase_id, current_user, allow_admin=False)
     domain_blocks = _to_domain_blocks(payload.blocks)
     is_admin = bool(getattr(current_user, "admin_flag_cached", False) or getattr(current_user, "is_admin", False))
 
-    return editor.confirm_and_apply.execute(
-        ConfirmAndApplyInput(
-            ova_id=ova_id,
-            phase_id=phase_id,
-            instruction=payload.instruction,
-            blocks=domain_blocks,
-            actor_id=str(current_user.id),
-            is_admin=is_admin,
+    try:
+        return editor.confirm_and_apply.execute(
+            ConfirmAndApplyInput(
+                ova_id=ova_id,
+                phase_id=phase_id,
+                instruction=payload.instruction,
+                blocks=domain_blocks,
+                actor_id=str(current_user.id),
+                is_admin=is_admin,
+            )
         )
-    )
+    except EditConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=error.motivo) from error
 
 
 @router.post(

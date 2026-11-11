@@ -47,8 +47,12 @@ def _parse_editor_response(response: str) -> dict:
         return {}
 
 
-def _apply_patches(results: list[dict], parches: list[dict]) -> None:
-    """Apply text patches in-place. Anti-regression: skip if HTML shrinks below 80%."""
+def _apply_patches(results: list[dict], parches: list[dict]) -> list[dict]:
+    """Apply text patches in-place. Anti-regression: skip if HTML shrinks below 80%.
+
+    Devuelve los recursos cuyo HTML cambió (para persistirlos en su fila del job).
+    """
+    changed: list[dict] = []
     phase_index: dict[str, list[dict]] = {}
     for r in results:
         phase_index.setdefault(r.get("phase", ""), []).append(r)
@@ -66,7 +70,10 @@ def _apply_patches(results: list[dict], parches: list[dict]) -> None:
             html_nuevo = html_viejo.replace(buscar, reemplazar, 1)
             if len(html_nuevo) >= len(html_viejo) * 0.8:
                 r["html"] = html_nuevo
+                if all(c is not r for c in changed):
+                    changed.append(r)
             break
+    return changed
 
 
 def editor_node(state: OvaGenerationState) -> dict:
@@ -80,7 +87,7 @@ def _editor_node(state: OvaGenerationState) -> dict:
     """Nodo LangGraph: revisa coherencia 5E del arco completo.
 
     Noop cuando ova_editor != "1" (DB config o env). Best-effort: fallo →
-    coherence_report={}. Parches aplicados in-place en results.
+    coherence_report={}. Parches aplicados in-place en results y en las filas del job.
     """
     from prometheus.config.nodes_config import get_nodes_config
 
@@ -119,7 +126,14 @@ def _editor_node(state: OvaGenerationState) -> dict:
 
         parches = report.get("parches", [])
         if parches:
-            _apply_patches(results, parches)
+            from prometheus.engine.runtime import _persist_patched_html
+
+            # Las filas del job ya están `done`: sin esto el OVA entregado (que se
+            # materializa desde la fila) ignoraba los parches.
+            for r in _apply_patches(results, parches):
+                _persist_patched_html(
+                    state.get("job_id"), r.get("phase", ""), r.get("resource_type"), r["html"]
+                )
 
         logger.info(
             "editor: coherence report built",

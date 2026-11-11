@@ -4,7 +4,11 @@ import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 
 import { fieldDescribedBy } from "../../lib/field-described-by";
-import type { UserFormErrors, UserFormValues } from "../../lib/user-form";
+import {
+  UNIVERSITY_ID_MAX_DIGITS,
+  type UserFormErrors,
+  type UserFormValues,
+} from "../../lib/user-form";
 import { FieldMessage } from "./field-message";
 
 interface EditUserFieldsProps {
@@ -66,6 +70,7 @@ export function EditUserFields({
           id="edit-uni-id"
           type="text"
           inputMode="numeric"
+          maxLength={UNIVERSITY_ID_MAX_DIGITS}
           autoComplete="off"
           aria-invalid={errors.university_id !== undefined || undefined}
           aria-describedby={fieldDescribedBy("edit-uni-id", errors.university_id, uniHint)}

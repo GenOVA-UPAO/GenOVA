@@ -25,7 +25,9 @@ from core.config import settings
 from core.database import Base, engine
 from core.http_errors import data_error_handler
 from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
+from core.input_guardrail import set_input_guardrail
 from core.logging_setup import RequestContextMiddleware, configure_logging
+from core.metrics import setup_metrics
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
@@ -33,6 +35,7 @@ from core.sentry_setup import init_sentry
 from core.topic_area import set_topic_area_provider
 from editor.interface.http import router as editor_router
 from generation.infrastructure.guardrails_store import active_topic_area
+from generation.infrastructure.input_guardrail import prompt_refusal
 from generation.interface.http.admin_guardrails_router import public_router as topic_area_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
@@ -236,11 +239,8 @@ app.add_middleware(
 )
 logger.info("CORS origins configurados", origins=allowed_origins)
 
-if settings.metrics_enabled:
-    from prometheus_fastapi_instrumentator import Instrumentator
-
-    Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
-    logger.info("Prometheus /metrics habilitado")
+if setup_metrics(app):
+    logger.info("Prometheus /metrics habilitado (requiere METRICS_TOKEN)")
 
 from core.observability import init_langsmith, init_logfire
 
@@ -298,6 +298,8 @@ def admin_refresh_catalog(
 
 # `llm` no puede importar `generation`: el área temática se le inyecta como proveedor.
 set_topic_area_provider(active_topic_area)
+# Ni el guardarraíl de entrada: las vistas previas de fase lo usan por `core`.
+set_input_guardrail(prompt_refusal)
 app.include_router(agents_router, prefix="/api/agents")
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(rag_router, prefix="/api/rag")

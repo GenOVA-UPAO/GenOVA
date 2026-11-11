@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 import structlog
 from fastapi import BackgroundTasks
 
+from auth.domain.reset_policy import ADMIN_RESET_TTL, ttl_hours
 from core.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -26,7 +27,11 @@ def email_configured() -> bool:
     return bool(SMTP_USER and SMTP_PASSWORD)
 
 
-def _html_body(reset_link: str, greeting: str) -> str:
+def _expires_text(hours: int) -> str:
+    return "1 hora" if hours == 1 else f"{hours} horas"
+
+
+def _html_body(reset_link: str, greeting: str, expires_hours: int) -> str:
     return f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 24px; color: #334155; margin: 0;">
@@ -37,7 +42,7 @@ def _html_body(reset_link: str, greeting: str) -> str:
           <div style="margin: 32px 0; text-align: center;">
             <a href="{reset_link}" style="background-color: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);">Restablecer Contraseña</a>
           </div>
-          <p style="font-size: 14px; line-height: 1.5; color: #64748b; margin-bottom: 24px;">Este enlace expirará en 24 horas. Si no solicitaste este restablecimiento, puedes ignorar este correo de forma segura; tu contraseña seguirá siendo la misma.</p>
+          <p style="font-size: 14px; line-height: 1.5; color: #64748b; margin-bottom: 24px;">Este enlace expirará en {_expires_text(expires_hours)}. Si no solicitaste este restablecimiento, puedes ignorar este correo de forma segura; tu contraseña seguirá siendo la misma.</p>
           <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
           <p style="font-size: 12px; color: #94a3b8; text-align: center; margin: 0;">Soporte GenOVA - UPAO</p>
         </div>
@@ -100,7 +105,13 @@ def _send_html(to_email: str, subject: str, html: str, log_label: str) -> None:
         raise
 
 
-def send_reset_email(to_email: str, reset_link: str, full_name: str | None = None) -> None:
+def send_reset_email(
+    to_email: str,
+    reset_link: str,
+    full_name: str | None = None,
+    *,
+    expires_hours: int = ttl_hours(ADMIN_RESET_TTL),
+) -> None:
     """Send a password-reset email. Raises EmailNotConfigured when credentials
     are missing so callers (typically a BackgroundTasks job) can log the failure
     without leaking creds in the response."""
@@ -108,7 +119,7 @@ def send_reset_email(to_email: str, reset_link: str, full_name: str | None = Non
     _send_html(
         to_email,
         "Restablece tu contraseña en GenOVA",
-        _html_body(reset_link, greeting),
+        _html_body(reset_link, greeting, expires_hours),
         "reset password email",
     )
 

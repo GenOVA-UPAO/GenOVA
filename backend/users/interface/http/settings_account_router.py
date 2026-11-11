@@ -13,6 +13,7 @@ from auth.dependencies import get_current_user
 from auth.infrastructure.cookies import clear_auth_cookie
 from auth.infrastructure.jwt import issue_session_response
 from core.rate_limit import limiter
+from core.security import PASSWORD_MAX_LENGTH
 from users.application.dto import ChangePasswordInput, DeleteAccountInput
 from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
@@ -22,9 +23,17 @@ router = APIRouter()
 
 
 class UserPasswordChange(BaseModel):
-    current_password: str = Field(..., description="Contraseña actual")
-    new_password: str = Field(..., min_length=8, description="Nueva contraseña alfanumérica")
-    confirm_password: str = Field(..., min_length=8, description="Confirmación de nueva contraseña")
+    current_password: str = Field(
+        ..., max_length=PASSWORD_MAX_LENGTH, description="Contraseña actual"
+    )
+    new_password: str = Field(
+        ..., min_length=8, max_length=PASSWORD_MAX_LENGTH,
+        description="Nueva contraseña alfanumérica",
+    )
+    confirm_password: str = Field(
+        ..., min_length=8, max_length=PASSWORD_MAX_LENGTH,
+        description="Confirmación de nueva contraseña",
+    )
 
 
 @router.post("/me/change-password", summary="Cambiar la contraseña propia")

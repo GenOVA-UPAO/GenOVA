@@ -6,6 +6,7 @@ import { exportOva } from "@/core/export/api/ova-export.api";
 import type { ExportFormatId } from "@/core/export/lib/formats";
 
 import { ovaLibraryApi } from "../api/ova-library.api";
+import { toastBatchResult } from "../lib/batch-toast";
 import type { MetadataInput } from "../lib/metadata-schema";
 import { useOvaMutation } from "./use-ova-library";
 
@@ -41,8 +42,8 @@ export function useOvaActions() {
   const batchMoveToTrash = async (ids: string[]) => {
     setBulkLoading(true);
     try {
-      await bulkTrashMut.mutateAsync(ids);
-      toast.success(i18n.t("ova-library:moved", { count: ids.length }));
+      const res = await bulkTrashMut.mutateAsync(ids);
+      toastBatchResult("ova-library:moved", res.moved.length, res.skipped.length);
       return true;
     } catch {
       toast.error(i18n.t("ova-library:no_se_pudieron_mover_los_ovas_a_la_papelera"));

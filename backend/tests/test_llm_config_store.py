@@ -308,3 +308,25 @@ def test_semillas_estan_en_el_catalogo_curado():
     for chain in router._SEED_FALLBACK_CHAIN.values():
         semillas |= {(p, m) for p, m, _ in chain}
     assert semillas - curados == set()
+
+
+def test_continuacion_respeta_el_presupuesto_del_recurso(monkeypatch):
+    """Con poco presupuesto no se continúa la salida cortada; con más, cabe en lo que queda."""
+    import time
+
+    from llm import router
+
+    timeouts = []
+
+    def truncated(provider, model_id, msgs, max_tokens, extra, timeout=None, key=None):
+        timeouts.append(timeout)
+        return "parte", "length"
+
+    monkeypatch.setattr(router, "_chat_once", truncated)
+    out = router._chat("openrouter", "m", "hola", 100, {}, 100, deadline=time.monotonic() + 5)
+    assert out == "parte" and len(timeouts) == 1
+
+    timeouts.clear()
+    router._chat("openrouter", "m", "hola", 100, {}, 100, deadline=time.monotonic() + 50)
+    assert len(timeouts) > 1
+    assert all(t <= 50 for t in timeouts[1:])

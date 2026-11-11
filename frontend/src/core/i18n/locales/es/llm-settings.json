@@ -441,6 +441,7 @@
     "allTasks": "Todas las tareas",
     "taskTypesAria": "Tipos de tarea",
     "readOnlyTaskDesc": "Esta configuración la define el administrador. Con tu propia clave API puedes elegir otros modelos, que se pagan con tu cuenta.",
+    "mediaPlatformOnly": "Las imágenes y los videos usan siempre la configuración de la plataforma; tu clave propia no cambia estos modelos.",
     "addKey": "Añadir clave"
   },
   "profiles": {

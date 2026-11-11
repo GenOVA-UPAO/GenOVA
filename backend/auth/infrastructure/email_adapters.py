@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from functools import partial
+
 import structlog
 from fastapi import BackgroundTasks
 
+from auth.domain.reset_policy import SELF_SERVICE_RESET_TTL, ttl_hours
 from auth.domain.user import EmailRecipient, PasswordResetUser
 from auth.infrastructure.smtp_email import (
     dispatch_or_log,
@@ -42,7 +45,7 @@ class SmtpAuthEmailSender:
         reset_link = f"{self._frontend_url}/reset-password?token={token}"
         dispatch_or_log(
             self._background_tasks,
-            send_reset_email,
+            partial(send_reset_email, expires_hours=ttl_hours(SELF_SERVICE_RESET_TTL)),
             user.email,
             reset_link,
             user.full_name,

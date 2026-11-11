@@ -30,4 +30,11 @@ describe("validateUserForm", () => {
     );
     expect(validateUserForm({ ...valid, university_id: "12" }).university_id).toBeUndefined();
   });
+
+  it("rejects a university id longer than 9 digits (out of the INTEGER column range)", () => {
+    expect(validateUserForm({ ...valid, university_id: "12345678901" }).university_id).toBe(
+      "El código tiene como máximo 9 dígitos.",
+    );
+    expect(validateUserForm({ ...valid, university_id: "123456789" }).university_id).toBeUndefined();
+  });
 });

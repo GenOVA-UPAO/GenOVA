@@ -10,12 +10,12 @@ import uuid
 from datetime import UTC, datetime
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
 from core.package_themes import default_package_theme
-from core.text import ova_title, split_education_level
+from core.text import ova_description, ova_title, split_education_level
 from models import Ova, OvaJob, OvaJobResource
 
 logger = structlog.get_logger(__name__)
@@ -33,6 +33,9 @@ _STALE_THRESHOLDS = {"running": STALE_AFTER_SECONDS, "queued": QUEUED_STALE_AFTE
 # `degraded` = HTML conservado que no pasó el validador; reanudable sin
 # reutilizar `error` (fallo duro) ni `pending` (aún no intentado).
 _RESUMABLE_RESOURCE_STATUSES = ("pending", "running", "error", "degraded")
+# Un job en estos estados ya tiene un run vivo o encolado en arq: reanudarlo
+# lanzaría un segundo run del mismo job.
+_ACTIVE_JOB_STATUSES = ("queued", "running")
 
 
 def _now() -> datetime:
@@ -65,7 +68,7 @@ def create_job(
     ova = Ova(
         user_id=user_id,
         title=title,
-        description=description,
+        description=ova_description(description),
         educational_level=level,
         status="generando",
         package_theme=default_package_theme((params or {}).get("theme")),
@@ -180,14 +183,28 @@ def resumable_subset(db: Session, job_id: uuid.UUID, requested: list[uuid.UUID])
     return [rid for rid in requested if rid in eligible]
 
 
-def mark_job_resuming(db: Session, job: OvaJob) -> None:
-    """Flip a finished/interrupted job back to running before relaunching (R7)."""
-    job.status = "running"
-    job.finished_at = None
+def mark_job_resuming(db: Session, job: OvaJob) -> bool:
+    """Flip a finished/interrupted job back to running before relaunching (R7).
+
+    Claim atómico: el UPDATE condicional solo gana si el job no tiene ya un run
+    activo, así dos «Reintentar» simultáneos (doble clic, dos pestañas) no lanzan
+    dos runs. Devuelve False si otro lo reclamó antes.
+    """
+    claimed = db.execute(
+        update(OvaJob)
+        .where(OvaJob.id == job.id, OvaJob.status.notin_(_ACTIVE_JOB_STATUSES))
+        .values(status="running", finished_at=None)
+        .execution_options(synchronize_session=False)
+    )
+    if claimed.rowcount != 1:
+        db.rollback()
+        return False
     for resource in list_resources(db, job.id):
         if resource.defect_reason in ("provider_auth", "provider_auth_personal"):
             resource.defect_reason = None
     commit_or_500(db, op="mark_job_resuming")
+    db.refresh(job)
+    return True
 
 
 def cancel_job(db: Session, job: OvaJob) -> None:

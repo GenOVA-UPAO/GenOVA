@@ -1,7 +1,9 @@
-FROM python:3.12-slim
+# Misma versión que CI (setup-python 3.11): lo que se prueba es lo que corre.
+FROM python:3.11-slim
 
 # uv: instalador de dependencias ~10x más rápido que pip (binario oficial).
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# Versión fija: con :latest dos builds del mismo commit podían usar uv distintos.
+COPY --from=ghcr.io/astral-sh/uv:0.11.32 /uv /uvx /bin/
 
 WORKDIR /app
 

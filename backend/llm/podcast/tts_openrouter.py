@@ -83,7 +83,7 @@ def encode_mp3(pcm: bytes) -> bytes:
     return bytes(encoder.encode(pcm) + encoder.flush())
 
 
-def _stream_pcm(text: str, api_key: str) -> bytes:
+def _stream_pcm(text: str, api_key: str, timeout: float = _TIMEOUT_S) -> bytes:
     payload = {
         "model": _MODEL,
         "modalities": ["text", "audio"],
@@ -106,7 +106,7 @@ def _stream_pcm(text: str, api_key: str) -> bytes:
             "X-Title": "GenOVA",
         },
         json=payload,
-        timeout=_TIMEOUT_S,
+        timeout=timeout,
     ) as resp:
         if resp.status_code >= 400:
             body = resp.read().decode("utf-8", "replace")[:240].replace("\n", " ")
@@ -124,12 +124,15 @@ def _stream_pcm(text: str, api_key: str) -> bytes:
     return base64.b64decode("".join(chunks))
 
 
-def synthesize_mp3(text: str, api_key: str | None) -> bytes | None:
-    """MP3 con `text` leído en español, o None si no hay clave o la síntesis falla."""
+def synthesize_mp3(text: str, api_key: str | None, timeout: float | None = None) -> bytes | None:
+    """MP3 con `text` leído en español, o None si no hay clave o la síntesis falla.
+
+    `timeout` acota la espera (el presupuesto que le queda al recurso); sin él, 180 s.
+    """
     if not api_key or not text.strip():
         return None
     try:
-        pcm = trim_silence(_stream_pcm(text, api_key))
+        pcm = trim_silence(_stream_pcm(text, api_key, min(timeout or _TIMEOUT_S, _TIMEOUT_S)))
     except Exception as exc:
         # Solo el tipo y el mensaje: nunca la clave.
         logger.warning("openrouter tts failed", model=_MODEL, error_type=type(exc).__name__, error=str(exc)[:200])

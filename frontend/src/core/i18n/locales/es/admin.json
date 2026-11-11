@@ -136,7 +136,9 @@
   "thesis": {
     "title": "Modo tesis",
     "enabledDesc": "Activado: las cuentas que se registren reciben el rol «Usuarios prueba», pensado para los participantes del estudio. Sus permisos se ajustan en la lista de roles.",
-    "disabledDesc": "Desactivado: las cuentas que se registren reciben el rol «Usuario», con acceso completo. Actívalo durante el estudio de tesis."
+    "disabledDesc": "Desactivado: las cuentas que se registren reciben el rol «Usuario», con acceso completo. Actívalo durante el estudio de tesis.",
+    "loading": "Consultando el modo de registro…",
+    "loadError": "No se pudo consultar el modo de registro."
   },
   "users": {
     "title": "Usuarios",
@@ -249,6 +251,7 @@
       "emailInvalid": "Ingresa un correo electrónico válido.",
       "universityIdDigits": "El código solo debe contener números.",
       "universityIdMin": "El código debe ser mayor o igual a 1.",
+      "universityIdMax": "El código tiene como máximo 9 dígitos.",
       "phoneFormat": "El teléfono solo debe contener dígitos y el signo +."
     }
   }

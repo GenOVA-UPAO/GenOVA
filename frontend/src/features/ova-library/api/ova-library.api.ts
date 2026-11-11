@@ -17,6 +17,9 @@ export interface OvaListPage {
   total_items?: number;
 }
 
+/** Respuesta de las acciones por lote: los procesados y los omitidos (sin permiso o en otro estado). */
+export type BatchResult<K extends string> = Record<K, string[]> & { skipped: string[] };
+
 // 12 llena filas completas de 1, 2, 3 o 4 tarjetas.
 const PAGE_SIZE = "12";
 const json = (body: unknown) => JSON.stringify(body);
@@ -48,14 +51,20 @@ export const ovaLibraryApi = {
   restore: (id: string) => apiJson(`/api/ovas/${id}/restaurar`, { method: "PATCH" }),
   deleteForever: (id: string) => apiJson(`/api/ovas/${id}/permanente`, { method: "DELETE" }),
   batchMoveToTrash: (ids: string[]) =>
-    apiJson<{ moved?: unknown[]; message?: string }>("/api/ovas/lote/papelera", {
+    apiJson<BatchResult<"moved">>("/api/ovas/lote/papelera", {
       method: "POST",
       body: json({ ova_ids: ids }),
     }),
   batchRestore: (ids: string[]) =>
-    apiJson("/api/ovas/lote/restaurar", { method: "POST", body: json({ ova_ids: ids }) }),
+    apiJson<BatchResult<"restored">>("/api/ovas/lote/restaurar", {
+      method: "POST",
+      body: json({ ova_ids: ids }),
+    }),
   batchDeleteForever: (ids: string[]) =>
-    apiJson("/api/ovas/lote/permanente", { method: "DELETE", body: json({ ova_ids: ids }) }),
+    apiJson<BatchResult<"deleted">>("/api/ovas/lote/permanente", {
+      method: "DELETE",
+      body: json({ ova_ids: ids }),
+    }),
   duplicate: (id: string) =>
     apiJson<{ message?: string; edit_url: string }>(`/api/ovas/${id}/duplicar`, {
       method: "POST",

@@ -43,6 +43,10 @@ router = APIRouter(prefix="/lti", tags=[TAG_LTI])
 _SESSION_TOKEN = re.compile(r"[A-Za-z0-9_-]{1,2048}\.[A-Za-z0-9_-]{1,2048}\.[A-Za-z0-9_-]{1,512}")
 
 _STATE_COOKIE_PREFIX = "lti_state_"
+# Único documento del paquete generado por GenOVA (no por el docente): no va en sandbox.
+_PLAYER_SHELL_FILES = frozenset({"index.html"})
+# Tipos que el navegador ejecuta como documento (scripts incluidos) al navegar a ellos.
+_ACTIVE_DOCUMENT_TYPES = frozenset({"text/html", "application/xhtml+xml", "image/svg+xml"})
 _STATE_COOKIE_MAX_AGE = 600
 
 # Cachés compartidas entre peticiones (JWKS de las plataformas, tokens de AGS).
@@ -265,20 +269,21 @@ def play_content(token: str, path: str, service: Service):
     if data is None:
         return Response("No encontrado", status_code=404, media_type="text/plain")
     media_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
+    # `frame-ancestors` se evalúa contra TODOS los ancestros: el paquete va dentro
+    # del reproductor, que a su vez va dentro del LMS. Sin el origen del LMS, el
+    # navegador bloquea el contenido aunque el reproductor sí cargue.
+    csp = " ".join(["frame-ancestors 'self'", *platform_origins(platform)])
+    if path not in _PLAYER_SHELL_FILES and media_type in _ACTIVE_DOCUMENT_TYPES:
+        # El HTML de cada fase lo escribe el dueño de la OVA: el mismo aislamiento que
+        # el `<iframe sandbox="allow-scripts">` del shell, también si se abre la URL
+        # directamente. Sin esto el script correría en el origen de la API (cookie de sesión).
+        csp = f"sandbox allow-scripts; {csp}"
     if media_type.startswith("text/") or media_type in ("application/javascript",):
         media_type += "; charset=utf-8"
     return Response(
         data,
         media_type=media_type,
-        headers={
-            # `frame-ancestors` se evalúa contra TODOS los ancestros: el paquete va dentro
-            # del reproductor, que a su vez va dentro del LMS. Sin el origen del LMS, el
-            # navegador bloquea el contenido aunque el reproductor sí cargue.
-            "Content-Security-Policy": " ".join(
-                ["frame-ancestors 'self'", *platform_origins(platform)]
-            ),
-            "Cache-Control": "private, max-age=300",
-        },
+        headers={"Content-Security-Policy": csp, "Cache-Control": "private, max-age=300"},
     )
 
 
