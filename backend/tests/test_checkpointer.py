@@ -50,8 +50,30 @@ def test_segundo_job_reutiliza_el_saver_sin_cerrar_el_primero(fake_pg):
     assert fake_pg[0]["conninfo"] == "postgresql://u:p@db:5432/genova"
 
 
-def test_sin_flag_sigue_usando_memory_saver(monkeypatch):
-    from langgraph.checkpoint.memory import MemorySaver
-
+def test_sin_flag_no_hay_checkpointer(monkeypatch):
+    # Un MemorySaver guardaba una copia del estado (HTML con medios en base64) en
+    # cada paso del grafo y llevaba el proceso por encima de 512 MB en Render.
     monkeypatch.delenv("OVA_PG_CHECKPOINT", raising=False)
-    assert isinstance(cp.get_checkpointer(), MemorySaver)
+    assert cp.get_checkpointer() is None
+
+
+def test_grafo_sin_checkpointer_no_retiene_copias_del_estado(monkeypatch):
+    import operator
+    from typing import Annotated, TypedDict
+
+    from langgraph.graph import END, START, StateGraph
+
+    class _S(TypedDict, total=False):
+        results: Annotated[list, operator.add]
+
+    g = StateGraph(_S)
+    g.add_node("a", lambda s: {"results": ["x"]})
+    g.add_node("b", lambda s: {"results": ["y"]})
+    g.add_edge(START, "a")
+    g.add_edge("a", "b")
+    g.add_edge("b", END)
+    monkeypatch.delenv("OVA_PG_CHECKPOINT", raising=False)
+    compiled = g.compile(checkpointer=cp.get_checkpointer())
+    out = compiled.invoke({"results": []}, {"configurable": {"thread_id": "t"}})
+    assert out["results"] == ["x", "y"]
+    assert compiled.checkpointer is None
