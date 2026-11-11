@@ -205,6 +205,18 @@ def test_render_despliega_main_solo_si_pasan_los_checks():
             assert service.get("autoDeployTrigger") == "checksPass", service["name"]
 
 
+def test_ci_ningun_job_informativo_deja_el_check_en_rojo():
+    # Con checksPass, Render no despliega si algún check del commit falla. Un job con
+    # continue-on-error no tumba el workflow, pero su check sale en rojo igualmente:
+    # lo informativo se marca en el paso, que deja el job (y el check) en verde.
+    jobs = yaml.safe_load(_read(".github/workflows/ci.yml"))["jobs"]
+    informativos = [name for name, job in jobs.items() if job.get("continue-on-error")]
+    assert not informativos, informativos
+    pasos = jobs["api-contract"]["steps"]
+    schemathesis = next(p for p in pasos if p.get("name") == "Run Schemathesis")
+    assert schemathesis.get("continue-on-error") is True
+
+
 # ── `pnpm dev:docker` ─────────────────────────────────────────────────────────
 
 
