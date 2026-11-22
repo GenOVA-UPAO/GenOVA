@@ -1,31 +1,31 @@
 # Core infrastructure — strictly pinned for reproducibility (latest at 2026-06-19)
-fastapi==0.162.0
+fastapi==0.165.0
 uvicorn[standard]==0.54.0
-sqlalchemy==2.1.6
-psycopg[binary]==3.3.6
+sqlalchemy==2.1.9
+psycopg[binary]==3.3.9
 python-dotenv==1.2.4
 bcrypt==5.0.0
 PyJWT==2.15.1
-python-multipart==0.0.32
-pydantic[email]==2.14.2
-pydantic-settings==2.16.2
+python-multipart==0.0.34
+pydantic[email]==2.14.3
+pydantic-settings==2.16.3
 slowapi==0.1.10
-sse-starlette==3.6.0
+sse-starlette==3.7.0
 # Job queue + cache (B2/B3) — arq pulls redis-py, also used by slowapi storage
 arq==0.28.0
 # Observability
-sentry-sdk[fastapi]==2.73.0
+sentry-sdk[fastapi]==2.75.0
 prometheus-fastapi-instrumentator==8.1.0
 # NO agregar el extra [fastapi]: opentelemetry-instrumentation-fastapi 0.63b1 es
 # incompatible con FastAPI 0.138 (routing con _IncludedRouter sin `.path`) y crashea
 # el middleware ASGI en cada request /api/* (500 antes de CORS → login roto). Ver
 # core/observability.py::init_logfire.
-logfire[sqlalchemy]==5.4.0
+logfire[sqlalchemy]==5.6.0
 structlog==26.1.0
 # Multi-agent orchestration (Prometheus via LangGraph) + LangSmith traces
-langgraph==1.2.18
-langgraph-checkpoint-postgres==3.2.0
-langsmith==0.14.16
+langgraph==1.2.22
+langgraph-checkpoint-postgres==3.2.1
+langsmith==0.15.0
 # AI SDKs
 openai==3.3.0
 groq==1.7.0
@@ -35,14 +35,14 @@ lameenc==1.9.0
 pillow==13.0.0
 # Structured LLM output (Pydantic-validated JSON + auto-retry) — wraps openai/groq
 instructor==1.17.0
-supabase==2.33.0
+supabase==2.34.1
 google-genai==2.34.0
 pypdf==6.21.4
 python-docx==1.2.0
 python-pptx==1.0.2
 filetype==1.2.0
 # 2FA
-pyotp==2.10.0
+pyotp==2.12.1
 # Validación de sintaxis JS de los OVAs generados (motor QuickJS)
 quickjs==1.19.4
 # Conversión HTML → XHTML para la exportación EPUB 3 (ya venía por python-docx)
