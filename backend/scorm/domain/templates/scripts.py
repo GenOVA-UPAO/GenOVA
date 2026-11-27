@@ -25,6 +25,8 @@ _SCORM_JS = """(function (global) {
       setValue: 'LMSSetValue',
       commit: 'LMSCommit',
       finish: 'LMSFinish',
+      getLastError: 'LMSGetLastError',
+      getErrorString: 'LMSGetErrorString',
     },
     '2004': {
       initialize: 'Initialize',
@@ -32,10 +34,13 @@ _SCORM_JS = """(function (global) {
       setValue: 'SetValue',
       commit: 'Commit',
       finish: 'Terminate',
+      getLastError: 'GetLastError',
+      getErrorString: 'GetErrorString',
     },
   }
   let api = null
   let version = null
+  let lastError = { code: '0', message: '' }
 
   function safeApi(win, name) {
     try {
@@ -87,9 +92,8 @@ _SCORM_JS = """(function (global) {
     return null
   }
 
-  function rawCall(method, args) {
-    const handle = getApi()
-    const name = handle && METHODS[version][method]
+  function invoke(handle, method, args) {
+    const name = METHODS[version][method]
     if (!name || typeof handle[name] !== 'function') {
       return null
     }
@@ -98,6 +102,32 @@ _SCORM_JS = """(function (global) {
     } catch (error) {
       return null
     }
+  }
+
+  // Tras cada llamada se consulta el código de error del LMS (RTE §3.3.3):
+  // un rechazo queda registrado en lugar de perderse en silencio.
+  function checkError(method) {
+    const handle = getApi()
+    const code = String(invoke(handle, 'getLastError', []) || '0')
+    if (code === '0') {
+      lastError = { code: '0', message: '' }
+      return
+    }
+    const message = String(invoke(handle, 'getErrorString', [code]) || '')
+    lastError = { code: code, message: message, method: method }
+    if (global.console && typeof global.console.warn === 'function') {
+      global.console.warn('SCORM ' + method + ': error ' + code + (message ? ' (' + message + ')' : ''))
+    }
+  }
+
+  function rawCall(method, args) {
+    const handle = getApi()
+    if (!handle) {
+      return null
+    }
+    const result = invoke(handle, method, args)
+    checkError(method)
+    return result
   }
 
   function call(method, args) {
@@ -206,6 +236,9 @@ _SCORM_JS = """(function (global) {
       getApi()
       return version
     },
+    lastError: function () {
+      return lastError
+    },
   }
 })(window)
 """
@@ -244,6 +277,34 @@ def build_app_js() -> str:
 
   const initialized = lmsApi
   const xapi = localMode ? null : window.GenovaXapi || null
+
+  // cmi.suspend_data (máx. 4096 caracteres en SCORM 1.2) guarda las actividades
+  // completadas y el último recurso abierto para retomar el OVA en otra sesión.
+  function saveSuspendData() {
+    if (!initialized || finished) { return }
+    const data = JSON.stringify({ v: 1, c: completed, l: lastResource })
+    if (data.length <= 4096) {
+      window.GenovaScorm.setValue('cmi.suspend_data', data)
+      window.GenovaScorm.commit()
+    }
+  }
+
+  if (initialized) {
+    try {
+      const saved = JSON.parse(window.GenovaScorm.getValue('cmi.suspend_data') || 'null')
+      if (saved && typeof saved === 'object') {
+        Object.keys(saved.c || {}).forEach(function (src) {
+          const value = Number(saved.c[src])
+          if (resourceSources.includes(src) && Number.isFinite(value)) {
+            completed[src] = Math.max(0, Math.min(100, value))
+          }
+        })
+        if (resourceSources.includes(saved.l)) { lastResource = saved.l }
+      }
+    } catch (error) {
+      // Datos de suspensión ajenos o dañados: el OVA arranca desde el inicio.
+    }
+  }
 
   function showLocalProgress() {
     const prefix = storageAvailable ? 'Progreso local: ' : 'Progreso de esta sesión: '
@@ -290,6 +351,9 @@ def build_app_js() -> str:
       if (localMode) {
         lastResource = src
         saveLocalProgress()
+      } else if (initialized && lastResource !== src) {
+        lastResource = src
+        saveSuspendData()
       }
       if (xapi) { xapi.experienced(btn.textContent.trim()) }
       if (focus) { btn.focus() }
@@ -385,6 +449,7 @@ def build_app_js() -> str:
     const raw = Number(event.data.score)
     if (!Number.isFinite(raw)) return
     completed[src] = Math.max(0, Math.min(100, raw))
+    saveSuspendData()
     maybeComplete()
   })
 
