@@ -16,6 +16,7 @@ from dataclasses import dataclass
 
 from core.package_themes import inject_package_theme
 from scorm.domain.activities import Activity, phase_activity
+from scorm.domain.svg_paths import repair_svg_paths
 from scorm.domain.templates.html import phase_label, wrap_resource_html
 
 DEFAULT_PHASES = [
@@ -89,6 +90,8 @@ def prepare_phase_resources(phases: list[dict] | None, theme: str = "upao") -> l
         label = custom_title or phase_label(phase.get("type", ""), idx)
         page = wrap_resource_html(phase.get("content", ""), label)
         page = inject_package_theme(page, theme)
+        # Un `<path d>` mal formado genera errores de consola en el LMS (criterio S16).
+        page = repair_svg_paths(page)
         html, media = extract_videos(page, idx)
         resources.append(
             PhaseResource(
