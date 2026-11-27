@@ -25,8 +25,10 @@ _HARNESS = r"""
 const vm = require('node:vm')
 const memory = Object.assign({}, CONFIG.storage || {})
 const results = []
+const lmsValues = {}
 for (const session of CONFIG.sessions) {
-  const listeners = {}, calls = [], values = {}
+  const listeners = {}, calls = [], values = CONFIG.sharedLms ? lmsValues : {}
+  let lastError = '0'
   const status = { textContent: '' }, button = { addEventListener: (k, fn) => { button[k] = fn } }
   const frame = {
     src: '', contentWindow: {},
@@ -61,20 +63,31 @@ for (const session of CONFIG.sessions) {
   if (session.api) {
     const api = {
       initialize: () => { calls.push(['initialize']); return 'true' },
-      get: k => values[k] || 'not attempted',
-      set: (k, v) => { calls.push(['set', k, v]); values[k] = v; return 'true' },
+      get: k => { lastError = '0'; return values[k] || (k.endsWith('status') ? 'not attempted' : '') },
+      set: (k, v) => {
+        calls.push(['set', k, v])
+        if (k === session.failKey) { lastError = '405'; return 'false' }
+        lastError = '0'; values[k] = v; return 'true'
+      },
+      lastError: () => { calls.push(['getLastError', lastError]); return lastError },
+      errorString: c => c === '405' ? 'Incorrect Data Type' : 'No error',
       commit: () => { calls.push(['commit']); return 'true' },
       finish: () => { calls.push(['finish']); return 'true' },
     }
     if (CONFIG.format === 'scorm2004') {
       window.API_1484_11 = { Initialize: api.initialize, GetValue: api.get,
-        SetValue: api.set, Commit: api.commit, Terminate: api.finish }
+        SetValue: api.set, Commit: api.commit, Terminate: api.finish,
+        GetLastError: api.lastError, GetErrorString: api.errorString }
     } else {
       window.API = { LMSInitialize: api.initialize, LMSGetValue: api.get,
-        LMSSetValue: api.set, LMSCommit: api.commit, LMSFinish: api.finish }
+        LMSSetValue: api.set, LMSCommit: api.commit, LMSFinish: api.finish,
+        LMSGetLastError: api.lastError, LMSGetErrorString: api.errorString }
     }
   }
-  const context = vm.createContext({ window, document })
+  const warnings = []
+  const console = { warn: m => warnings.push(m), log: () => {}, error: () => {} }
+  window.console = console
+  const context = vm.createContext({ window, document, console })
   vm.runInContext(CONFIG.scorm, context)
   vm.runInContext(CONFIG.app, context)
   listeners.DOMContentLoaded()
@@ -89,13 +102,13 @@ for (const session of CONFIG.sessions) {
     if (action.type === 'unload') listeners.beforeunload()
     statuses.push(status.textContent)
   }
-  results.push({ statuses, src: frame.src, calls, storage: { ...memory } })
+  results.push({ statuses, src: frame.src, calls, warnings, storage: { ...memory } })
 }
 console.log(JSON.stringify(results))
 """
 
 
-def _run(format_id, sessions, storage=None):
+def _run(format_id, sessions, storage=None, shared_lms=False):
     if not shutil.which("node"):
         pytest.skip("node no disponible")
     z = _package(format_id)
@@ -107,6 +120,7 @@ def _run(format_id, sessions, storage=None):
         "app": z.read("resources/app.js").decode(),
         "sessions": sessions,
         "storage": storage or {},
+        "sharedLms": shared_lms,
     }
     out = subprocess.run(  # noqa: S603 — argv fijo, JS del paquete generado aquí
         [shutil.which("node"), "-e", "const CONFIG = " + json.dumps(config) + _HARNESS],
@@ -250,3 +264,41 @@ def test_status_uses_theme_text_color_with_aa_default_contrast():
 
     low, high = sorted(luminance(v) for v in colors.values())
     assert (high + 0.05) / (low + 0.05) >= 4.5
+
+
+@pytest.mark.parametrize("format_id", ["scorm12", "scorm2004"])
+def test_scorm_checks_last_error_after_each_api_call(format_id):
+    """S08: el OVA consulta GetLastError y registra el rechazo sin romper el flujo."""
+    fail_key = "cmi.core.session_time" if format_id == "scorm12" else "cmi.session_time"
+    result = _run(format_id, [{"api": True, "failKey": fail_key, "actions": [
+        {"type": "complete"}, {"type": "unload"},
+    ]}])[0]
+    checks = [c for c in result["calls"] if c[0] == "getLastError"]
+    assert checks, "no se consultó el código de error"
+    assert ["getLastError", "405"] in checks
+    assert any("405" in w and "Incorrect Data Type" in w for w in result["warnings"])
+    assert result["statuses"][1] == "Estado LMS: completado y guardado."
+    assert ["finish"] in result["calls"]
+
+
+@pytest.mark.parametrize("format_id", ["scorm12", "scorm2004"])
+def test_scorm_suspend_data_resumes_in_a_new_session(format_id):
+    """S12: escribe cmi.suspend_data y, al relanzar, retoma recursos y pestaña."""
+    first, second = _run(format_id, [
+        {"api": True, "actions": [
+            {"type": "resource", "score": 60},
+            {"type": "select", "index": 1},
+            {"type": "unload"},
+        ]},
+        {"api": True, "actions": [{"type": "resource", "score": 80}]},
+    ], shared_lms=True)
+    saved = [c for c in first["calls"] if c[0] == "set" and c[1] == "cmi.suspend_data"]
+    assert saved and len(saved[-1][2]) <= 4096
+    data = json.loads(saved[-1][2])
+    assert data["c"] == {"resources/recurso_1.html": 60}
+    assert data["l"] == "resources/recurso_2.html"
+    assert second["src"] == "resources/recurso_2.html"
+    assert second["statuses"][-1] == "Estado LMS: completado y guardado."
+    sets = {c[1]: c[2] for c in second["calls"] if c[0] == "set"}
+    score_key = "cmi.core.score.raw" if format_id == "scorm12" else "cmi.score.raw"
+    assert sets[score_key] == "70"
